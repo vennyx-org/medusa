@@ -15,6 +15,7 @@ import {
   PromotionRuleDTO,
   UpdatePromotionDTO,
   UpdatePromotionRuleDTO,
+  UsageComputedActions,
 } from "./common"
 import {
   AddPromotionsToCampaignDTO,
@@ -51,7 +52,7 @@ export interface IPromotionModuleService extends IModuleService {
    *   },
    * ])
    */
-  registerUsage(computedActions: ComputeActions[]): Promise<void>
+  registerUsage(computedActions: UsageComputedActions[]): Promise<void>
 
   /**
    * This method provides the actions to perform on a cart based on the specified promotions

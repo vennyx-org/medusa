@@ -120,6 +120,9 @@ export default class PromotionModuleService
     return joinerConfig
   }
 
+  // Q: Should this store full usage data?
+  // i.e. which amount was used for which line item and what promo code
+  // This might be helpful in being able to reliably revert usage data.
   @InjectManager("baseRepository_")
   async registerUsage(
     computedActions: PromotionTypes.UsageComputedActions[],
@@ -146,10 +149,6 @@ export default class PromotionModuleService
     )
 
     for (let computedAction of computedActions) {
-      if (!ComputeActionUtils.canRegisterUsage(computedAction)) {
-        continue
-      }
-
       const promotion = existingPromotionsMap.get(computedAction.code)
 
       if (!promotion) {
