@@ -69,9 +69,16 @@ class OasSchemaHelper {
 
     // check if schema has child schemas
     // and convert those
-    if (schema.properties) {
-      Object.keys(schema.properties).forEach((property) => {
-        const propertySchema = schema.properties![property]
+    const properties = schema.properties
+      ? schema.properties
+      : schema.additionalProperties &&
+          typeof schema.additionalProperties !== "boolean" &&
+          !this.isRefObject(schema.additionalProperties)
+        ? schema.additionalProperties.properties
+        : undefined
+    if (properties) {
+      Object.keys(properties).forEach((property) => {
+        const propertySchema = properties![property]
         if ("$ref" in propertySchema) {
           return
         }
@@ -105,7 +112,7 @@ class OasSchemaHelper {
           })
         }
 
-        schema.properties![property] =
+        properties![property] =
           this.namedSchemaToReference(
             propertySchema as OpenApiSchema,
             level + 1
@@ -113,7 +120,9 @@ class OasSchemaHelper {
       })
     }
 
-    this.schemas.set(schema["x-schemaName"], schema)
+    if (this.canAddSchema(schema)) {
+      this.schemas.set(schema["x-schemaName"], schema)
+    }
 
     return {
       $ref: this.constructSchemaReference(schema["x-schemaName"]),
@@ -176,9 +185,68 @@ class OasSchemaHelper {
           this.namedSchemaToReference(transformedProperty) ||
           transformedProperty
       })
+    } else if (
+      clonedSchema.additionalProperties &&
+      typeof clonedSchema.additionalProperties !== "boolean" &&
+      !this.isRefObject(clonedSchema.additionalProperties) &&
+      clonedSchema.additionalProperties.properties
+    ) {
+      const additionalProps = schema.additionalProperties as OpenApiSchema
+      Object.entries(clonedSchema.additionalProperties.properties).forEach(
+        ([key, property]) => {
+          if (this.isRefObject(property)) {
+            return
+          }
+
+          const transformedProperty = this.schemaChildrenToRefs(
+            property,
+            level + 1
+          )
+          additionalProps.properties![key] =
+            this.namedSchemaToReference(transformedProperty) ||
+            transformedProperty
+        }
+      )
     }
 
     return clonedSchema
+  }
+
+  isSchemaEmpty(schema: OpenApiSchema): boolean {
+    switch (schema.type) {
+      case "object":
+        const isPropertiesEmpty =
+          schema.properties === undefined ||
+          Object.keys(schema.properties).length === 0
+        const isAdditionalPropertiesEmpty =
+          schema.additionalProperties === undefined ||
+          typeof schema.additionalProperties === "boolean" ||
+          (!this.isRefObject(schema.additionalProperties) &&
+            (schema.additionalProperties.properties === undefined ||
+              Object.keys(schema.additionalProperties.properties).length == 0))
+
+        return isPropertiesEmpty && isAdditionalPropertiesEmpty
+      case "array":
+        return (
+          !this.isRefObject(schema.items) && this.isSchemaEmpty(schema.items)
+        )
+      default:
+        return false
+    }
+  }
+
+  canAddSchema(schema: OpenApiSchema): boolean {
+    if (!schema["x-schemaName"]) {
+      return false
+    }
+
+    const existingSchema = this.schemas.get(schema["x-schemaName"])
+
+    if (!existingSchema) {
+      return true
+    }
+
+    return this.isSchemaEmpty(existingSchema) && !this.isSchemaEmpty(schema)
   }
 
   /**
@@ -212,7 +280,7 @@ class OasSchemaHelper {
     // check if it already exists in the schemas map
     if (this.schemas.has(schemaName)) {
       return {
-        schema: this.schemas.get(schemaName)!,
+        schema: JSON.parse(JSON.stringify(this.schemas.get(schemaName)!)),
         schemaPrefix: `@schema ${schemaName}`,
       }
     }
@@ -272,7 +340,7 @@ class OasSchemaHelper {
     return name
       .replace("DTO", "")
       .replace(this.schemaRefPrefix, "")
-      .replace(/(?<!AdminProduct)Type$/, "")
+      .replace(/(?<!(AdminProduct|CreateProduct))Type$/, "")
   }
 
   /**
@@ -318,6 +386,7 @@ class OasSchemaHelper {
       | OpenApiSchema
       | OpenAPIV3.RequestBodyObject
       | OpenAPIV3.ResponseObject
+      | OpenAPIV3.ParameterObject
       | undefined
   ): schema is OpenAPIV3.ReferenceObject {
     return schema !== undefined && "$ref" in schema

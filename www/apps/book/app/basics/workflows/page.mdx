@@ -96,7 +96,7 @@ To execute the workflow, invoke it passing the Medusa container as a parameter. 
 <CodeTabs group="resource-types">
   <CodeTab label="API Route" value="api-route">
     
-    ```ts title="src/api/store/workflow/route.ts" highlights={[["11"], ["12"], ["13"], ["14"], ["15"], ["16"]]} collapsibleLines="1-6" expandButtonLabel="Show Imports"
+    ```ts title="src/api/workflow/route.ts" highlights={[["11"], ["12"], ["13"], ["14"], ["15"], ["16"]]} collapsibleLines="1-6" expandButtonLabel="Show Imports"
     import type {
       MedusaRequest,
       MedusaResponse,
@@ -127,7 +127,7 @@ To execute the workflow, invoke it passing the Medusa container as a parameter. 
       type SubscriberArgs,
     } from "@medusajs/medusa"
     import myWorkflow from "../workflows/hello-world"
-    import { ModuleRegistrationName } from "@medusajs/utils"
+    import { Modules } from "@medusajs/utils"
     import { IUserModuleService } from "@medusajs/types"
 
     export default async function handleCustomerCreate({
@@ -136,7 +136,7 @@ To execute the workflow, invoke it passing the Medusa container as a parameter. 
     }: SubscriberArgs<{ id: string }>) {
       const userId = data.id
       const userModuleService: IUserModuleService = container.resolve(
-        ModuleRegistrationName.USER
+        Modules.USER
       )
 
       const user = await userModuleService.retrieveUser(userId)
@@ -193,10 +193,10 @@ To test out your workflow, start your Medusa application:
 npm run dev
 ```
 
-Then, send a `GET` request to `/store/workflow`:
+Then, send a `GET` request to `/workflow`:
 
-```bash apiTesting testApiMethod="GET" testApiUrl="http://localhost:9000/store/workflow"
-curl http://localhost:9000/store/workflow
+```bash
+curl http://localhost:9000/workflow
 ```
 
 You’ll receive the following response:
@@ -213,9 +213,7 @@ You’ll receive the following response:
 
 <Note title="Use workflows when" type="success">
 
-- You're defining a flow with interactions across multiple systems and services.
-- You're defining flows to be used across different resources. For example, if you want to invoke the flow manually through an API Router, but also want to automate its running through a scheduled job.
-- You want to maintain data consistency and handle errors gracefully by rolling-back steps. This is explained more in later chapters.
+You're implementing a custom feature exposed by an API route, or used in subscribers or scheduled jobs.
 
 </Note>
 
@@ -231,7 +229,7 @@ export const highlights = [
   ["12", "resolve", "Resolve the Product Module's main service."],
   [
     "12",
-    "ModuleRegistrationName.PRODUCT",
+    "Modules.PRODUCT",
     "The resource registration name imported from `@medusajs/utils`.",
   ],
 ]
@@ -244,11 +242,11 @@ import {
   WorkflowResponse,
 } from "@medusajs/workflows-sdk"
 import { IProductModuleService } from "@medusajs/types"
-import { ModuleRegistrationName } from "@medusajs/utils"
+import { Modules } from "@medusajs/utils"
 
 const step1 = createStep("step-1", async (_, context) => {
   const productModuleService: IProductModuleService =
-    context.container.resolve(ModuleRegistrationName.PRODUCT)
+    context.container.resolve(Modules.PRODUCT)
 
   const [, count] = await productModuleService.listAndCountProducts()
 

@@ -1,7 +1,6 @@
 import {
   Context,
   DAL,
-  IEventBusModuleService,
   InternalModuleDeclaration,
   ModulesSdkTypes,
   UserTypes,
@@ -26,7 +25,6 @@ type InjectedDependencies = {
   baseRepository: DAL.RepositoryService
   userService: ModulesSdkTypes.IMedusaInternalService<any>
   inviteService: ModulesSdkTypes.IMedusaInternalService<any>
-  eventBusModuleService: IEventBusModuleService
 }
 
 // 1 day
@@ -73,7 +71,7 @@ export default class UserModuleService
     }
   }
 
-  @InjectTransactionManager("baseRepository_")
+  @InjectTransactionManager()
   async validateInviteToken(
     token: string,
     @MedusaContext() sharedContext: Context = {}
@@ -99,7 +97,7 @@ export default class UserModuleService
     })
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   @EmitEvents()
   async refreshInviteTokens(
     inviteIds: string[],
@@ -126,7 +124,7 @@ export default class UserModuleService
     )
   }
 
-  @InjectTransactionManager("baseRepository_")
+  @InjectTransactionManager()
   async refreshInviteTokens_(
     inviteIds: string[],
     @MedusaContext() sharedContext: Context = {}
@@ -174,7 +172,7 @@ export default class UserModuleService
     sharedContext?: Context
   ): Promise<UserTypes.UserDTO>
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   @EmitEvents()
   async createUsers(
     data: UserTypes.CreateUserDTO[] | UserTypes.CreateUserDTO,
@@ -214,7 +212,7 @@ export default class UserModuleService
     sharedContext?: Context
   ): Promise<UserTypes.UserDTO>
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   @EmitEvents()
   async updateUsers(
     data: UserTypes.UpdateUserDTO | UserTypes.UpdateUserDTO[],
@@ -254,7 +252,7 @@ export default class UserModuleService
     sharedContext?: Context
   ): Promise<UserTypes.InviteDTO>
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   @EmitEvents()
   async createInvites(
     data: UserTypes.CreateInviteDTO[] | UserTypes.CreateInviteDTO,
@@ -295,11 +293,24 @@ export default class UserModuleService
     return Array.isArray(data) ? serializedInvites : serializedInvites[0]
   }
 
-  @InjectTransactionManager("baseRepository_")
+  @InjectTransactionManager()
   private async createInvites_(
     data: UserTypes.CreateInviteDTO[],
     @MedusaContext() sharedContext: Context = {}
   ): Promise<Invite[]> {
+    const alreadyExistingUsers = await this.listUsers({
+      email: data.map((d) => d.email),
+    })
+
+    if (alreadyExistingUsers.length) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        `User account for following email(s) already exist: ${alreadyExistingUsers
+          .map((u) => u.email)
+          .join(", ")}`
+      )
+    }
+
     const toCreate = data.map((invite) => {
       return {
         ...invite,
@@ -333,7 +344,7 @@ export default class UserModuleService
     sharedContext?: Context
   ): Promise<UserTypes.InviteDTO>
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   @EmitEvents()
   async updateInvites(
     data: UserTypes.UpdateInviteDTO | UserTypes.UpdateInviteDTO[],

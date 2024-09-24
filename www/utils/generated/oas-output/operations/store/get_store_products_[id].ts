@@ -6,7 +6,7 @@
  * x-authenticated: false
  * externalDocs:
  *   url: https://docs.medusajs.com/v2/resources/storefront-development/products/price
- *   description: Storefront guide: How to retrieve a product variants' prices.
+ *   description: "Storefront guide: How to retrieve a product variants' prices."
  * parameters:
  *   - name: id
  *     in: path
@@ -36,13 +36,13 @@
  *     in: query
  *     description: The ID of the region the product is being viewed from. This is required if you're retrieving product variant prices with taxes.
  *     required: false
- *     externalDocs:
- *       url: https://docs.medusajs.com/v2/resources/storefront-development/products/price/examples/tax-price
- *       description: Storefront guide: How to show product variants' prices with taxes.
  *     schema:
  *       type: string
  *       title: region_id
  *       description: The ID of the region the product is being viewed from. This is required if you're retrieving product variant prices with taxes.
+ *       externalDocs:
+ *         url: https://docs.medusajs.com/v2/resources/storefront-development/products/price/examples/tax-price
+ *         description: "Storefront guide: How to show product variants' prices with taxes."
  *   - name: country_code
  *     in: query
  *     description: The country code the product is being viewed from. This is required if you're retrieving product variant prices with taxes.
@@ -70,7 +70,9 @@
  * x-codeSamples:
  *   - lang: Shell
  *     label: cURL
- *     source: curl '{backend_url}/store/products/{id}'
+ *     source: |-
+ *       curl '{backend_url}/store/products/{id}' \
+ *       -H 'x-publishable-api-key: {your_publishable_api_key}'
  * tags:
  *   - Products
  * responses:

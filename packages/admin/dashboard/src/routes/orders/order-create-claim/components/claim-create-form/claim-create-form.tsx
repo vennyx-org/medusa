@@ -52,6 +52,7 @@ import {
 import { useUpdateReturn } from "../../../../../hooks/api/returns.tsx"
 import { sdk } from "../../../../../lib/client"
 import { currencies } from "../../../../../lib/data/currencies"
+import { ReturnShippingPlaceholder } from "../../../common/placeholders.tsx"
 import { ClaimOutboundSection } from "./claim-outbound-section"
 import { ItemPlaceholder } from "./item-placeholder"
 
@@ -323,22 +324,26 @@ export const ClaimCreateForm = ({
   }, [previewItems])
 
   useEffect(() => {
-    let method = preview.shipping_methods.find(
+    const inboundShipping = preview.shipping_methods.find(
       (s) =>
         !!s.actions?.find((a) => a.action === "SHIPPING_ADD" && !!a.return_id)
     )
 
-    if (method) {
-      form.setValue("inbound_option_id", method.shipping_option_id)
+    if (inboundShipping) {
+      form.setValue("inbound_option_id", inboundShipping.shipping_option_id)
+    } else {
+      form.setValue("inbound_option_id", null)
     }
 
-    method = preview.shipping_methods.find(
+    const outboundShipping = preview.shipping_methods.find(
       (s) =>
         !!s.actions?.find((a) => a.action === "SHIPPING_ADD" && !a.return_id)
     )
 
-    if (method) {
-      form.setValue("outbound_option_id", method.shipping_option_id)
+    if (outboundShipping) {
+      form.setValue("outbound_option_id", outboundShipping.shipping_option_id)
+    } else {
+      form.setValue("outbound_option_id", null)
     }
   }, [preview.shipping_methods])
 
@@ -420,10 +425,25 @@ export const ClaimCreateForm = ({
   }
 
   const onShippingOptionChange = async (selectedOptionId: string) => {
-    const promises = preview.shipping_methods
-      .map((s) => s.actions?.find((a) => a.action === "SHIPPING_ADD")?.id)
+    const inboundShippingMethods = preview.shipping_methods.filter((s) => {
+      const action = s.actions?.find(
+        (a) => a.action === "SHIPPING_ADD" && !!a.return_id
+      )
+
+      return action && !!!action?.return_id
+    })
+
+    const promises = inboundShippingMethods
       .filter(Boolean)
-      .map(deleteInboundShipping)
+      .map((inboundShippingMethod) => {
+        const action = inboundShippingMethod.actions?.find(
+          (a) => a.action === "SHIPPING_ADD" && !!a.return_id
+        )
+
+        if (action) {
+          return deleteInboundShipping(action.id)
+        }
+      })
 
     await Promise.all(promises)
 
@@ -696,12 +716,15 @@ export const ClaimCreateForm = ({
                 {/*INBOUND SHIPPING*/}
                 <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                   <div>
-                    <Form.Label
-                      tooltip={t(
-                        "orders.claims.tooltips.onlyReturnShippingOptions"
-                      )}
-                    >
+                    <Form.Label>
                       {t("orders.returns.inboundShipping")}
+                      <Text
+                        size="small"
+                        leading="compact"
+                        className="text-ui-fg-muted inline ml-1"
+                      >
+                        ({t("fields.optional")})
+                      </Text>
                     </Form.Label>
 
                     <Form.Hint className="!mt-1">
@@ -729,6 +752,9 @@ export const ClaimCreateForm = ({
                                 value: so.id,
                               }))}
                               disabled={!locationId}
+                              noResultsPlaceholder={
+                                <ReturnShippingPlaceholder />
+                              }
                             />
                           </Form.Control>
                         </Form.Item>

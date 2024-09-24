@@ -8,6 +8,73 @@ export const metadata = {
 
 The Cart Module is the `@medusajs/cart` NPM package that provides cart-related features in your Medusa and Node.js applications.
 
+## How to Use Cart Module's Service
+
+You can use the Cart Module's main service by resolving from the Medusa container the resource `Modules.CART` imported from `@medusajs/utils`.
+
+For example:
+
+<CodeTabs groupId="resource-type">
+  <CodeTab label="API Route" value="api-route">
+
+  ```ts title="src/api/store/custom/route.ts"
+  import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
+  import { ICartModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+export async function GET(
+  req: MedusaRequest,
+  res: MedusaResponse
+): Promise<void> {
+  const cartModuleService: ICartModuleService = req.scope.resolve(
+    Modules.CART
+  )
+
+  res.json({
+    carts: await cartModuleService.listCarts(),
+  })
+}
+```
+
+  </CodeTab>
+  <CodeTab label="Subscriber" value="subscribers">
+
+  ```ts title="src/subscribers/custom-handler.ts"
+  import { SubscriberArgs } from "@medusajs/medusa"
+  import { ICartModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+export default async function subscriberHandler({ container }: SubscriberArgs) {
+  const cartModuleService: ICartModuleService = container.resolve(
+    Modules.CART
+  )
+
+  const carts = await cartModuleService.listCarts()
+}
+```
+
+  </CodeTab>
+  <CodeTab label="Workflow Step" value="workflow-step">
+
+  ```ts title="src/workflows/hello-world/step1.ts"
+  import { createStep } from "@medusajs/workflows-sdk"
+  import { ICartModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+const step1 = createStep("step-1", async (_, { container }) => {
+  const cartModuleService: ICartModuleService = container.resolve(
+    Modules.CART
+  )
+
+  const carts = await cartModuleService.listCarts()
+})
+```
+
+  </CodeTab>
+</CodeTabs>
+
+---
+
 ## Features
 
 ### Cart Management
@@ -59,70 +126,3 @@ When used with their respective modules and other commerce modules, you benefit 
 - Checking product availability in a sales channel.
 - Retrieving pricing per region.
 - Applying promotions based on the customer's group.
-
----
-
-## How to Use Cart Module's Service
-
-You can use the Cart Module's main service by resolving from the Medusa container the resource `ModuleRegistrationName.CART` imported from `@medusajs/utils`.
-
-For example:
-
-<CodeTabs groupId="resource-type">
-  <CodeTab label="API Route" value="api-route">
-
-  ```ts title="src/api/store/custom/route.ts"
-  import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
-  import { ICartModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-export async function GET(
-  req: MedusaRequest,
-  res: MedusaResponse
-): Promise<void> {
-  const cartModuleService: ICartModuleService = req.scope.resolve(
-    ModuleRegistrationName.CART
-  )
-
-  res.json({
-    carts: await cartModuleService.listCarts(),
-  })
-}
-```
-
-  </CodeTab>
-  <CodeTab label="Subscriber" value="subscribers">
-
-  ```ts title="src/subscribers/custom-handler.ts"
-  import { SubscriberArgs } from "@medusajs/medusa"
-  import { ICartModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-export default async function subscriberHandler({ container }: SubscriberArgs) {
-  const cartModuleService: ICartModuleService = container.resolve(
-    ModuleRegistrationName.CART
-  )
-
-  const carts = await cartModuleService.listCarts()
-}
-```
-
-  </CodeTab>
-  <CodeTab label="Workflow Step" value="workflow-step">
-
-  ```ts title="src/workflows/hello-world/step1.ts"
-  import { createStep } from "@medusajs/workflows-sdk"
-  import { ICartModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-const step1 = createStep("step-1", async (_, { container }) => {
-  const cartModuleService: ICartModuleService = container.resolve(
-    ModuleRegistrationName.CART
-  )
-
-  const carts = await cartModuleService.listCarts()
-})
-```
-
-  </CodeTab>
-</CodeTabs>

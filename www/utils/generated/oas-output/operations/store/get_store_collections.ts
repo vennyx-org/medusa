@@ -6,7 +6,7 @@
  * x-authenticated: false
  * externalDocs:
  *   url: https://docs.medusajs.com/v2/resources/storefront-development/products/collections/list
- *   description: Storefront guide: How to retrieve a list of collections.
+ *   description: "Storefront guide: How to retrieve a list of collections."
  * parameters:
  *   - name: expand
  *     in: query
@@ -802,7 +802,9 @@
  * x-codeSamples:
  *   - lang: Shell
  *     label: cURL
- *     source: curl '{backend_url}/store/collections'
+ *     source: |-
+ *       curl '{backend_url}/store/collections' \
+ *       -H 'x-publishable-api-key: {your_publishable_api_key}'
  * tags:
  *   - Collections
  * responses:

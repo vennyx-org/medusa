@@ -6,7 +6,7 @@
  * x-authenticated: false
  * externalDocs:
  *   url: https://docs.medusajs.com/v2/resources/storefront-development/checkout/complete-cart
- *   description: Storefront guide: How to implement cart completion during checkout.
+ *   description: "Storefront guide: How to implement cart completion during checkout."
  * parameters:
  *   - name: id
  *     in: path
@@ -35,7 +35,9 @@
  * x-codeSamples:
  *   - lang: Shell
  *     label: cURL
- *     source: curl -X POST '{backend_url}/store/carts/{id}/complete'
+ *     source: |-
+ *       curl -X POST '{backend_url}/store/carts/{id}/complete' \
+ *       -H 'x-publishable-api-key: {your_publishable_api_key}'
  * tags:
  *   - Carts
  * responses:

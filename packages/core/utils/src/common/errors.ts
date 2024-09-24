@@ -29,6 +29,8 @@ export const MedusaErrorCodes = {
  * @extends Error
  */
 export class MedusaError extends Error {
+  __isMedusaError = true
+
   public type: string
   public message: string
   public code?: string
@@ -54,5 +56,12 @@ export class MedusaError extends Error {
     this.code = code
     this.message = message
     this.date = new Date()
+  }
+
+  /**
+   * Checks the object for the MedusaError type.
+   */
+  static isMedusaError(error: any): error is MedusaError {
+    return !!error.__isMedusaError
   }
 }

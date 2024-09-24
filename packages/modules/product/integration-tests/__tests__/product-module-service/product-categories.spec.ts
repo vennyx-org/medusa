@@ -18,7 +18,7 @@ jest.setTimeout(30000)
 moduleIntegrationTestRunner<IProductModuleService>({
   moduleName: Modules.PRODUCT,
   injectedDependencies: {
-    eventBusModuleService: new MockEventBusService(),
+    [Modules.EVENT_BUS]: new MockEventBusService(),
   },
   testSuite: ({ MikroOrmWrapper, service }) => {
     describe("ProductModuleService product categories", () => {
@@ -692,11 +692,11 @@ moduleIntegrationTestRunner<IProductModuleService>({
             [
               expect.objectContaining({
                 data: { id: productCategoryOne.id },
-                name: "product-category.deleted",
+                name: "Product.product-category.deleted",
                 metadata: {
-                  action: "",
-                  object: "",
-                  source: "",
+                  action: CommonEvents.DELETED,
+                  object: "product_category",
+                  source: Modules.PRODUCT,
                 },
               }),
             ],

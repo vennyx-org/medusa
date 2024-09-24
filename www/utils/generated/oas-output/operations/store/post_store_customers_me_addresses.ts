@@ -6,7 +6,7 @@
  * description: Create an address for the logged-in customer.
  * externalDocs:
  *   url: https://docs.medusajs.com/v2/resources/storefront-development/customers/addresses#add-customer-address
- *   description: Storefront guide: How to create an address for the logged-in customer.
+ *   description: "Storefront guide: How to create an address for the logged-in customer."
  * x-authenticated: true
  * parameters:
  *   - name: expand
@@ -98,7 +98,8 @@
  *     source: |-
  *       curl -X POST '{backend_url}/store/customers/me/addresses' \
  *       -H 'Authorization: Bearer {access_token}' \
- *       -H 'Content-Type: application/json' \
+ *       -H 'Content-Type: application/json' \ \
+ *       -H 'x-publishable-api-key: {your_publishable_api_key}'
  *       --data-raw '{
  *         "metadata": {},
  *         "first_name": "{value}",

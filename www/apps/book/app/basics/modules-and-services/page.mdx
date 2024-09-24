@@ -38,7 +38,7 @@ For example, create the file `src/modules/hello/service.ts` with the following c
 
 ```ts title="src/modules/hello/service.ts"
 export default class HelloModuleService {
-  getMessage() {
+  async getMessage() {
     return "Hello, world!"
   }
 }
@@ -72,9 +72,11 @@ The last step is to add the module in Medusa’s configurations.
 
 In `medusa-config.js`, add a `modules` property and pass to it your custom module:
 
-```js title="medusa-config.js" highlights={[["4", "helloModuleService", "The key of the main service to be registered in the Medusa container."]]}
+```js title="medusa-config.js" highlights={[["7", "helloModuleService", "The key of the main service to be registered in the Medusa container."]]}
 module.exports = defineConfig({
-  // ...
+  projectConfig: {
+    // ...
+  },
   modules: {
     helloModuleService: {
       resolve: "./modules/hello",
@@ -105,12 +107,12 @@ Resolving a module's service is essential to use its methods that perform action
 
 </Note>
 
-For example, create the API route `src/api/store/custom/route.ts` with the following content:
+For example, create the API route `src/api/custom/route.ts` with the following content:
 
-```ts title="src/api/store/custom/route.ts"
+```ts title="src/api/custom/route.ts"
 import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
-import HelloModuleService from "../../../modules/hello/service"
-import { HELLO_MODULE } from "../../../modules/hello"
+import HelloModuleService from "../../modules/hello/service"
+import { HELLO_MODULE } from "../../modules/hello"
 
 export async function GET(
   req: MedusaRequest,
@@ -121,7 +123,7 @@ export async function GET(
   )
 
   res.json({
-    message: helloModuleService.getMessage(),
+    message: await helloModuleService.getMessage(),
   })
 }
 ```
@@ -132,10 +134,10 @@ Then, start the Medusa application:
 npm run dev
 ```
 
-Finally, send a `GET` request to `/store/custom`:
+Finally, send a `GET` request to `/custom`:
 
-```bash apiTesting testApiUrl="http://localhost:9000/store/custom" testApiMethod="GET"
-curl http://localhost:9000/store/custom
+```bash
+curl http://localhost:9000/custom
 ```
 
 You’ll receive the following response:

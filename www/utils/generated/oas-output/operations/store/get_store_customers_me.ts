@@ -7,7 +7,7 @@
  * x-authenticated: true
  * externalDocs:
  *   url: https://docs.medusajs.com/v2/resources/storefront-development/customers/retrieve
- *   description: Storefront guide: How to retrieve the logged-in customer.
+ *   description: "Storefront guide: How to retrieve the logged-in customer."
  * parameters:
  *   - name: expand
  *     in: query
@@ -35,7 +35,8 @@
  *     label: cURL
  *     source: |-
  *       curl '{backend_url}/store/customers/me' \
- *       -H 'Authorization: Bearer {access_token}'
+ *       -H 'Authorization: Bearer {access_token}' \
+ *       -H 'x-publishable-api-key: {your_publishable_api_key}'
  * tags:
  *   - Customers
  * responses:

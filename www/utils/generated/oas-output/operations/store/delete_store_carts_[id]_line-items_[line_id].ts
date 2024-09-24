@@ -6,7 +6,7 @@
  * description: Remove a line item from a cart.
  * externalDocs:
  *   url: https://docs.medusajs.com/v2/resources/storefront-development/cart/manage-items#remove-line-item-from-cart
- *   description: Storefront guide: How to remove line item from cart.
+ *   description: "Storefront guide: How to remove line item from cart."
  * x-authenticated: false
  * parameters:
  *   - name: id
@@ -42,7 +42,9 @@
  * x-codeSamples:
  *   - lang: Shell
  *     label: cURL
- *     source: curl -X DELETE '{backend_url}/store/carts/{id}/line-items/{line_id}'
+ *     source: |-
+ *       curl -X DELETE '{backend_url}/store/carts/{id}/line-items/{line_id}' \
+ *       -H 'x-publishable-api-key: {your_publishable_api_key}'
  * tags:
  *   - Carts
  * responses:

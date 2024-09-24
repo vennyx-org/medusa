@@ -7,7 +7,7 @@
  * x-authenticated: true
  * externalDocs:
  *   url: https://docs.medusajs.com/v2/resources/storefront-development/customers/addresses#list-customer-addresses
- *   description: Storefront guide: How to retrieve the logged-in customer's addresses.
+ *   description: "Storefront guide: How to retrieve the logged-in customer's addresses."
  * parameters:
  *   - name: expand
  *     in: query
@@ -91,7 +91,8 @@
  *     label: cURL
  *     source: |-
  *       curl '{backend_url}/store/customers/me/addresses' \
- *       -H 'Authorization: Bearer {access_token}'
+ *       -H 'Authorization: Bearer {access_token}' \
+ *       -H 'x-publishable-api-key: {your_publishable_api_key}'
  * tags:
  *   - Customers
  * responses:

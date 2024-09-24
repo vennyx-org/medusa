@@ -9,7 +9,6 @@ const mockRegisterMedusaModule = jest.fn().mockImplementation(() => {
     moduleKey: {
       definition: {
         key: "moduleKey",
-        registrationName: "moduleKey",
       },
       moduleDeclaration: {
         scope: MODULE_SCOPE.INTERNAL,
@@ -130,7 +129,7 @@ describe("Medusa Modules", () => {
       } as InternalModuleDeclaration,
     })
 
-    const moduleB = await MedusaModule.bootstrap({
+    await MedusaModule.bootstrap({
       moduleKey: "moduleKey",
       defaultPath: "@path",
       declaration: {
@@ -147,7 +146,7 @@ describe("Medusa Modules", () => {
   })
 
   it("should return the module flagged as 'main' when multiple instances are available", async () => {
-    const moduleA = await MedusaModule.bootstrap({
+    await MedusaModule.bootstrap({
       moduleKey: "moduleKey",
       defaultPath: "@path",
       declaration: {

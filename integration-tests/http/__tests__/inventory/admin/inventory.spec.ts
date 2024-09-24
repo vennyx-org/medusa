@@ -128,7 +128,7 @@ medusaIntegrationTestRunner({
             `/admin/inventory-items/${inventoryItem1.id}/location-levels`,
             {
               location_id: stockLocation1.id,
-              stocked_quantity: 10,
+              stocked_quantity: 0,
             },
             adminHeaders
           )
@@ -138,11 +138,7 @@ medusaIntegrationTestRunner({
           const result = await api.post(
             `/admin/inventory-items/${inventoryItem1.id}/location-levels/batch`,
             {
-              create: [
-                {
-                  location_id: "location_2",
-                },
-              ],
+              create: [{ location_id: "location_2" }],
               delete: [stockLocation1.id],
             },
             adminHeaders
@@ -157,6 +153,60 @@ medusaIntegrationTestRunner({
           expect(levelsListResult.status).toEqual(200)
           expect(levelsListResult.data.inventory_levels).toHaveLength(1)
         })
+
+        it("should not delete an inventory location level when there is stocked items", async () => {
+          await api.post(
+            `/admin/inventory-items/${inventoryItem1.id}/location-levels/${stockLocation1.id}`,
+            { stocked_quantity: 10 },
+            adminHeaders
+          )
+
+          const { response } = await api
+            .post(
+              `/admin/inventory-items/${inventoryItem1.id}/location-levels/batch`,
+              { delete: [stockLocation1.id] },
+              adminHeaders
+            )
+            .catch((e) => e)
+
+          expect(response.status).toEqual(400)
+          expect(response.data).toEqual({
+            type: "not_allowed",
+            message: `Cannot remove Inventory Levels for ${stockLocation1.id} because there are stocked or reserved items at the locations`,
+          })
+        })
+
+        it("should successfully add an inventory location", async () => {
+          await api.post(
+            `/admin/inventory-items/${inventoryItem1.id}/location-levels/${stockLocation1.id}`,
+            { stocked_quantity: 10 },
+            adminHeaders
+          )
+
+          await api.post(
+            `/admin/inventory-items/${inventoryItem1.id}/location-levels/batch`,
+            { create: [{ location_id: stockLocation2.id }] },
+            adminHeaders
+          )
+
+          const {
+            data: { inventory_levels: inventoryLevels },
+          } = await api.get(
+            `/admin/inventory-items/${inventoryItem1.id}/location-levels`,
+            adminHeaders
+          )
+
+          expect(inventoryLevels).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                location_id: stockLocation1.id,
+              }),
+              expect.objectContaining({
+                location_id: stockLocation2.id,
+              }),
+            ])
+          )
+        })
       })
 
       describe("DELETE /admin/inventory-items/:id/location-levels/:id", () => {
@@ -165,7 +215,7 @@ medusaIntegrationTestRunner({
             `/admin/inventory-items/${inventoryItem1.id}/location-levels`,
             {
               location_id: stockLocation1.id,
-              stocked_quantity: 10,
+              stocked_quantity: 0,
             },
             adminHeaders
           )
@@ -187,6 +237,12 @@ medusaIntegrationTestRunner({
         })
 
         it("should fail delete an inventory location level with reservations", async () => {
+          await api.post(
+            `/admin/inventory-items/${inventoryItem1.id}/location-levels/${stockLocation1.id}`,
+            { stocked_quantity: 10 },
+            adminHeaders
+          )
+
           await api.post(
             `/admin/reservations`,
             {
@@ -622,11 +678,6 @@ medusaIntegrationTestRunner({
           ).data.reservation
 
           await api.delete(
-            `/admin/inventory-items/${inventoryItem1.id}/location-levels/${item.location_levels[0].id}`,
-            adminHeaders
-          )
-
-          await api.delete(
             `/admin/reservations/${reservation.id}`,
             adminHeaders
           )
@@ -639,7 +690,7 @@ medusaIntegrationTestRunner({
           expect(response.data.inventory_item).toEqual(
             expect.objectContaining({
               id: inventoryItem1.id,
-              stocked_quantity: 10,
+              stocked_quantity: 20,
               reserved_quantity: 1,
             })
           )

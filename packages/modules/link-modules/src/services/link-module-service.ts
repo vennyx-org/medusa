@@ -18,6 +18,7 @@ import {
   MapToConfig,
   MedusaContext,
   MedusaError,
+  Modules,
   ModulesSdkUtils,
 } from "@medusajs/utils"
 import { LinkService } from "@services"
@@ -26,12 +27,12 @@ import { shouldForceTransaction } from "../utils"
 type InjectedDependencies = {
   baseRepository: DAL.RepositoryService
   linkService: LinkService<any>
-  eventBusModuleService?: IEventBusModuleService
   primaryKey: string | string[]
   foreignKey: string
   extraFields: string[]
   entityName: string
   serviceName: string
+  [Modules.EVENT_BUS]?: IEventBusModuleService
 }
 
 export default class LinkModuleService<TLink> implements ILinkModule {
@@ -48,12 +49,12 @@ export default class LinkModuleService<TLink> implements ILinkModule {
     {
       baseRepository,
       linkService,
-      eventBusModuleService,
       primaryKey,
       foreignKey,
       extraFields,
       entityName,
       serviceName,
+      [Modules.EVENT_BUS]: eventBusModuleService,
     }: InjectedDependencies,
     readonly moduleDeclaration: InternalModuleDeclaration
   ) {
@@ -115,7 +116,7 @@ export default class LinkModuleService<TLink> implements ILinkModule {
     })
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async retrieve(
     primaryKeyData: string | string[],
     foreignKeyData: string,
@@ -138,7 +139,7 @@ export default class LinkModuleService<TLink> implements ILinkModule {
     return entry[0]
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async list(
     filters: Record<string, unknown> = {},
     config: FindConfig<unknown> = {},
@@ -153,7 +154,7 @@ export default class LinkModuleService<TLink> implements ILinkModule {
     return await this.baseRepository_.serialize<object[]>(rows)
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async listAndCount(
     filters: Record<string, unknown> = {},
     config: FindConfig<unknown> = {},

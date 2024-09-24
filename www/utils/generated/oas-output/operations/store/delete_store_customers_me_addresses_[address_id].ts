@@ -7,7 +7,7 @@
  * x-authenticated: true
  * externalDocs:
  *   url: https://docs.medusajs.com/v2/resources/storefront-development/customers/addresses#delete-customer-address
- *   description: Storefront guide: How to delete a customer's address.
+ *   description: "Storefront guide: How to delete a customer's address."
  * parameters:
  *   - name: address_id
  *     in: path
@@ -40,7 +40,8 @@
  *   - lang: Shell
  *     label: cURL
  *     source: |-
- *       curl -X DELETE '{backend_url}/store/customers/me/addresses/{address_id}' \
+ *       curl -X DELETE '{backend_url}/store/customers/me/addresses/{address_id}' \ \
+ *       -H 'x-publishable-api-key: {your_publishable_api_key}'
  *       -H 'Authorization: Bearer {access_token}'
  * tags:
  *   - Customers

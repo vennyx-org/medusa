@@ -8,6 +8,73 @@ export const metadata = {
 
 The Promotion Module is the `@medusajs/promotion` NPM package that provides promotion-related features in your Medusa and Node.js applications.
 
+## How to Use the Promotion Module's Service
+
+You can use the Promotion Module's main service by resolving from the Medusa container the resource `Modules.PROMOTION` imported from `@medusajs/utils`.
+
+For example:
+
+<CodeTabs groupId="resource-type">
+  <CodeTab label="API Route" value="api-route">
+
+  ```ts title="src/api/store/custom/route.ts"
+  import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
+  import { IPromotionModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+export async function GET(
+  request: MedusaRequest,
+  res: MedusaResponse
+): Promise<void> {
+  const promotionModuleService: IPromotionModuleService = request.scope.resolve(
+    Modules.PROMOTION
+  )
+
+  res.json({
+    promotions: await promotionModuleService.listPromotions(),
+  })
+}
+```
+
+  </CodeTab>
+  <CodeTab label="Subscriber" value="subscribers">
+
+  ```ts title="src/subscribers/custom-handler.ts"
+  import { SubscriberArgs } from "@medusajs/medusa"
+  import { IPromotionModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+export default async function subscriberHandler({ container }: SubscriberArgs) {
+  const promotionModuleService: IPromotionModuleService = container.resolve(
+    Modules.PROMOTION
+  )
+
+  const promotions = await promotionModuleService.listPromotions()
+}
+```
+
+  </CodeTab>
+  <CodeTab label="Workflow Step" value="workflow-step">
+
+  ```ts title="src/workflows/hello-world/step1.ts"
+  import { createStep } from "@medusajs/workflows-sdk"
+  import { IPromotionModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+const step1 = createStep("step-1", async (_, { container }) => {
+  const promotionModuleService: IPromotionModuleService = container.resolve(
+    Modules.PROMOTION
+  )
+
+  const promotions = await promotionModuleService.listPromotions()
+})
+```
+
+  </CodeTab>
+</CodeTabs>
+
+---
+
 ## Features
 
 ### Discount Functionalities
@@ -67,70 +134,3 @@ const campaign = await promotionModuleService.createCampaigns({
   ends_at: new Date("2024-07-20"),
 })
 ```
-
----
-
-## How to Use the Promotion Module's Service
-
-You can use the Promotion Module's main service by resolving from the Medusa container the resource `ModuleRegistrationName.PROMOTION` imported from `@medusajs/utils`.
-
-For example:
-
-<CodeTabs groupId="resource-type">
-  <CodeTab label="API Route" value="api-route">
-
-  ```ts title="src/api/store/custom/route.ts"
-  import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
-  import { IPromotionModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-export async function GET(
-  request: MedusaRequest,
-  res: MedusaResponse
-): Promise<void> {
-  const promotionModuleService: IPromotionModuleService = request.scope.resolve(
-    ModuleRegistrationName.PROMOTION
-  )
-
-  res.json({
-    promotions: await promotionModuleService.listPromotions(),
-  })
-}
-```
-
-  </CodeTab>
-  <CodeTab label="Subscriber" value="subscribers">
-
-  ```ts title="src/subscribers/custom-handler.ts"
-  import { SubscriberArgs } from "@medusajs/medusa"
-  import { IPromotionModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-export default async function subscriberHandler({ container }: SubscriberArgs) {
-  const promotionModuleService: IPromotionModuleService = container.resolve(
-    ModuleRegistrationName.PROMOTION
-  )
-
-  const promotions = await promotionModuleService.listPromotions()
-}
-```
-
-  </CodeTab>
-  <CodeTab label="Workflow Step" value="workflow-step">
-
-  ```ts title="src/workflows/hello-world/step1.ts"
-  import { createStep } from "@medusajs/workflows-sdk"
-  import { IPromotionModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-const step1 = createStep("step-1", async (_, { container }) => {
-  const promotionModuleService: IPromotionModuleService = container.resolve(
-    ModuleRegistrationName.PROMOTION
-  )
-
-  const promotions = await promotionModuleService.listPromotions()
-})
-```
-
-  </CodeTab>
-</CodeTabs>

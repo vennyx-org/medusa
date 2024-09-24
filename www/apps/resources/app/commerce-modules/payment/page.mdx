@@ -9,6 +9,75 @@ export const metadata = {
 
 The Payment Module is the `@medusajs/payment` NPM package that provides payment-related features in your Medusa and Node.js applications.
 
+## How to Use Payment Module's Service
+
+You can use the Payment Module's main service by resolving from the Medusa container the resource `Modules.PAYMENT` imported from `@medusajs/utils`.
+
+For example:
+
+<CodeTabs groupId="resource-type">
+  <CodeTab label="API Route" value="api-route">
+
+  ```ts title="src/api/store/custom/route.ts"
+  import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
+  import { IPaymentModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+export async function GET(
+  req: MedusaRequest,
+  res: MedusaResponse
+): Promise<void> {
+  const paymentModuleService: IPaymentModuleService = req.scope.resolve(
+    Modules.PAYMENT
+  )
+
+  res.json({
+    payment_collections: await paymentModuleService.listPaymentCollections(),
+  })
+}
+```
+
+  </CodeTab>
+  <CodeTab label="Subscriber" value="subscribers">
+
+  ```ts title="src/subscribers/custom-handler.ts"
+  import { SubscriberArgs } from "@medusajs/medusa"
+  import { IPaymentModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+export default async function subscriberHandler({ container }: SubscriberArgs) {
+  const paymentModuleService: IPaymentModuleService = container.resolve(
+    Modules.PAYMENT
+  )
+
+  const payment_collections =
+    await paymentModuleService.listPaymentCollections()
+}
+```
+
+  </CodeTab>
+  <CodeTab label="Workflow Step" value="workflow-step">
+
+  ```ts title="src/workflows/hello-world/step1.ts"
+  import { createStep } from "@medusajs/workflows-sdk"
+  import { IPaymentModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+const step1 = createStep("step-1", async (_, { container }) => {
+  const paymentModuleService: IPaymentModuleService = container.resolve(
+    Modules.PAYMENT
+  )
+
+  const payment_collections =
+    await paymentModuleService.listPaymentCollections()
+})
+```
+
+  </CodeTab>
+</CodeTabs>
+
+---
+
 ## Features
 
 ### Add Payment Functionalities to Any Resource
@@ -68,72 +137,3 @@ await paymentModuleService.processEvent({
 ## Configure Payment Module
 
 Refer to [this documentation](./module-options/page.mdx) for details on the module's options.
-
----
-
-## How to Use Payment Module's Service
-
-You can use the Payment Module's main service by resolving from the Medusa container the resource `ModuleRegistrationName.PAYMENT` imported from `@medusajs/utils`.
-
-For example:
-
-<CodeTabs groupId="resource-type">
-  <CodeTab label="API Route" value="api-route">
-
-  ```ts title="src/api/store/custom/route.ts"
-  import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
-  import { IPaymentModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-export async function GET(
-  req: MedusaRequest,
-  res: MedusaResponse
-): Promise<void> {
-  const paymentModuleService: IPaymentModuleService = req.scope.resolve(
-    ModuleRegistrationName.PAYMENT
-  )
-
-  res.json({
-    payment_collections: await paymentModuleService.listPaymentCollections(),
-  })
-}
-```
-
-  </CodeTab>
-  <CodeTab label="Subscriber" value="subscribers">
-
-  ```ts title="src/subscribers/custom-handler.ts"
-  import { SubscriberArgs } from "@medusajs/medusa"
-  import { IPaymentModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-export default async function subscriberHandler({ container }: SubscriberArgs) {
-  const paymentModuleService: IPaymentModuleService = container.resolve(
-    ModuleRegistrationName.PAYMENT
-  )
-
-  const payment_collections =
-    await paymentModuleService.listPaymentCollections()
-}
-```
-
-  </CodeTab>
-  <CodeTab label="Workflow Step" value="workflow-step">
-
-  ```ts title="src/workflows/hello-world/step1.ts"
-  import { createStep } from "@medusajs/workflows-sdk"
-  import { IPaymentModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-const step1 = createStep("step-1", async (_, { container }) => {
-  const paymentModuleService: IPaymentModuleService = container.resolve(
-    ModuleRegistrationName.PAYMENT
-  )
-
-  const payment_collections =
-    await paymentModuleService.listPaymentCollections()
-})
-```
-
-  </CodeTab>
-</CodeTabs>

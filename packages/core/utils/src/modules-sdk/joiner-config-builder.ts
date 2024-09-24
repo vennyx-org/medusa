@@ -176,6 +176,7 @@ export function defineJoinerConfig(
         return (Object.values(entityLinkConfig as any) as any[])
           .filter((linkableConfig) => isObject(linkableConfig))
           .map((linkableConfig) => {
+            // @ts-ignore
             return linkableConfig.primaryKey
           })
       })
@@ -192,17 +193,17 @@ export function defineJoinerConfig(
     alias: [
       ...[...(alias ?? ([] as any))].map((alias) => ({
         name: alias.name,
+        entity: alias.entity,
         args: {
-          entity: alias.args.entity,
           methodSuffix:
-            alias.args.methodSuffix ??
-            pluralize(upperCaseFirst(alias.args.entity)),
+            alias.args?.methodSuffix ?? pluralize(upperCaseFirst(alias.entity)),
         },
       })),
       ...deduplicatedLoadedModels
         .filter((model) => {
           return (
-            !alias || !alias.some((alias) => alias.args?.entity === model.name)
+            !alias ||
+            !alias.some((alias) => alias.entity === upperCaseFirst(model.name))
           )
         })
         .map((entity, i) => ({
@@ -210,8 +211,8 @@ export function defineJoinerConfig(
             `${camelToSnakeCase(entity.name).toLowerCase()}`,
             `${pluralize(camelToSnakeCase(entity.name).toLowerCase())}`,
           ],
+          entity: upperCaseFirst(entity.name),
           args: {
-            entity: upperCaseFirst(entity.name),
             methodSuffix: pluralize(upperCaseFirst(entity.name)),
           },
         })),
@@ -377,6 +378,7 @@ export function buildLinkConfigFromModelObjects<
           primaryKey: property,
           serviceName,
           field: lowerCaseFirst(model.name),
+          entity: upperCaseFirst(model.name),
         }
       }
     }
@@ -411,6 +413,7 @@ export function buildLinkConfigFromLinkableKeys<
       primaryKey: inferredReferenceProperty,
       serviceName,
       field: keyName,
+      entity: upperCaseFirst(modelName),
     }
 
     linkConfig[keyName] ??= {

@@ -53,6 +53,7 @@ import {
   validateApplicationMethodAttributes,
   validatePromotionRuleAttributes,
 } from "@utils"
+import { EligibleItem } from "src/utils/compute-actions"
 import { joinerConfig } from "../joiner-config"
 import { CreatePromotionRuleValueDTO } from "../types/promotion-rule-value"
 
@@ -120,11 +121,12 @@ export default class PromotionModuleService
     return joinerConfig
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async registerUsage(
     computedActions: PromotionTypes.UsageComputedActions[],
     @MedusaContext()
-    @MedusaContext() sharedContext: Context = {}
+    @MedusaContext()
+    sharedContext: Context = {}
   ): Promise<void> {
     const promotionCodes = computedActions
       .map((computedAction) => computedAction.code)
@@ -228,7 +230,7 @@ export default class PromotionModuleService
     }
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async revertUsage(
     computedActions: PromotionTypes.UsageComputedActions[],
     @MedusaContext() sharedContext: Context = {}
@@ -319,7 +321,7 @@ export default class PromotionModuleService
     }
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async computeActions(
     promotionCodes: string[],
     applicationContext: PromotionTypes.ComputeActionContext,
@@ -337,6 +339,10 @@ export default class PromotionModuleService
       PromotionTypes.ComputeActionAdjustmentLine[]
     >()
     const methodIdPromoValueMap = new Map<string, number>()
+    // Keeps a map of all elgible items in the buy section and its eligible quantity
+    const eligibleBuyItemMap = new Map<string, EligibleItem[]>()
+    // Keeps a map of all elgible items in the target section and its eligible quantity
+    const eligibleTargetItemMap = new Map<string, EligibleItem[]>()
     const automaticPromotions = preventAutoPromotions
       ? []
       : await this.listPromotions(
@@ -467,8 +473,10 @@ export default class PromotionModuleService
         const computedActionsForItems =
           ComputeActionUtils.getComputedActionsForBuyGet(
             promotion,
-            applicationContext[ApplicationMethodTargetType.ITEMS],
-            methodIdPromoValueMap
+            applicationContext[ApplicationMethodTargetType.ITEMS]!,
+            methodIdPromoValueMap,
+            eligibleBuyItemMap,
+            eligibleTargetItemMap
           )
 
         computedActions.push(...computedActionsForItems)
@@ -527,7 +535,7 @@ export default class PromotionModuleService
     sharedContext?: Context
   ): Promise<PromotionTypes.PromotionDTO[]>
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async createPromotions(
     data:
       | PromotionTypes.CreatePromotionDTO
@@ -559,7 +567,7 @@ export default class PromotionModuleService
     return Array.isArray(data) ? promotions : promotions[0]
   }
 
-  @InjectTransactionManager("baseRepository_")
+  @InjectTransactionManager()
   protected async createPromotions_(
     data: PromotionTypes.CreatePromotionDTO[],
     @MedusaContext() sharedContext: Context = {}
@@ -795,7 +803,7 @@ export default class PromotionModuleService
     sharedContext?: Context
   ): Promise<PromotionTypes.PromotionDTO[]>
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async updatePromotions(
     data:
       | PromotionTypes.UpdatePromotionDTO
@@ -825,7 +833,7 @@ export default class PromotionModuleService
     return Array.isArray(data) ? promotions : promotions[0]
   }
 
-  @InjectTransactionManager("baseRepository_")
+  @InjectTransactionManager()
   protected async updatePromotions_(
     data: PromotionTypes.UpdatePromotionDTO[],
     @MedusaContext() sharedContext: Context = {}
@@ -923,7 +931,7 @@ export default class PromotionModuleService
     return updatedPromotions
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   // @ts-ignore
   async updatePromotionRules(
     data: PromotionTypes.UpdatePromotionRuleDTO[],
@@ -941,7 +949,7 @@ export default class PromotionModuleService
     )
   }
 
-  @InjectTransactionManager("baseRepository_")
+  @InjectTransactionManager()
   protected async updatePromotionRules_(
     data: PromotionTypes.UpdatePromotionRuleDTO[],
     @MedusaContext() sharedContext: Context = {}
@@ -1004,7 +1012,7 @@ export default class PromotionModuleService
     return updatedRules
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async addPromotionRules(
     promotionId: string,
     rulesData: PromotionTypes.CreatePromotionRuleDTO[],
@@ -1026,7 +1034,7 @@ export default class PromotionModuleService
     )
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async addPromotionTargetRules(
     promotionId: string,
     rulesData: PromotionTypes.CreatePromotionRuleDTO[],
@@ -1059,7 +1067,7 @@ export default class PromotionModuleService
     )
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async addPromotionBuyRules(
     promotionId: string,
     rulesData: PromotionTypes.CreatePromotionRuleDTO[],
@@ -1094,7 +1102,7 @@ export default class PromotionModuleService
     )
   }
 
-  @InjectTransactionManager("baseRepository_")
+  @InjectTransactionManager()
   protected async createPromotionRulesAndValues_(
     rulesData: PromotionTypes.CreatePromotionRuleDTO[],
     relationName: "promotions" | "method_target_rules" | "method_buy_rules",
@@ -1150,7 +1158,7 @@ export default class PromotionModuleService
     return createdPromotionRules
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async removePromotionRules(
     promotionId: string,
     ruleIds: string[],
@@ -1159,7 +1167,7 @@ export default class PromotionModuleService
     await this.removePromotionRules_(promotionId, ruleIds, sharedContext)
   }
 
-  @InjectTransactionManager("baseRepository_")
+  @InjectTransactionManager()
   protected async removePromotionRules_(
     promotionId: string,
     ruleIds: string[],
@@ -1177,7 +1185,7 @@ export default class PromotionModuleService
     await this.promotionRuleService_.delete(idsToRemove, sharedContext)
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async removePromotionTargetRules(
     promotionId: string,
     ruleIds: string[],
@@ -1191,7 +1199,7 @@ export default class PromotionModuleService
     )
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async removePromotionBuyRules(
     promotionId: string,
     ruleIds: string[],
@@ -1205,7 +1213,7 @@ export default class PromotionModuleService
     )
   }
 
-  @InjectTransactionManager("baseRepository_")
+  @InjectTransactionManager()
   protected async removeApplicationMethodRules_(
     promotionId: string,
     ruleIds: string[],
@@ -1250,7 +1258,7 @@ export default class PromotionModuleService
     sharedContext?: Context
   ): Promise<PromotionTypes.CampaignDTO[]>
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async createCampaigns(
     data: PromotionTypes.CreateCampaignDTO | PromotionTypes.CreateCampaignDTO[],
     @MedusaContext() sharedContext: Context = {}
@@ -1270,7 +1278,7 @@ export default class PromotionModuleService
     return Array.isArray(data) ? campaigns : campaigns[0]
   }
 
-  @InjectTransactionManager("baseRepository_")
+  @InjectTransactionManager()
   protected async createCampaigns_(
     data: PromotionTypes.CreateCampaignDTO[],
     @MedusaContext() sharedContext: Context = {}
@@ -1360,7 +1368,7 @@ export default class PromotionModuleService
     sharedContext?: Context
   ): Promise<PromotionTypes.CampaignDTO[]>
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async updateCampaigns(
     data: PromotionTypes.UpdateCampaignDTO | PromotionTypes.UpdateCampaignDTO[],
     @MedusaContext() sharedContext: Context = {}
@@ -1380,7 +1388,7 @@ export default class PromotionModuleService
     return Array.isArray(data) ? campaigns : campaigns[0]
   }
 
-  @InjectTransactionManager("baseRepository_")
+  @InjectTransactionManager()
   protected async updateCampaigns_(
     data: PromotionTypes.UpdateCampaignDTO[],
     @MedusaContext() sharedContext: Context = {}
@@ -1452,7 +1460,7 @@ export default class PromotionModuleService
     return updatedCampaigns
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async addPromotionsToCampaign(
     data: PromotionTypes.AddPromotionsToCampaignDTO,
     sharedContext?: Context
@@ -1466,7 +1474,7 @@ export default class PromotionModuleService
   // - introduce currency_code to promotion
   // - allow promotions to be queried by currency code
   // - when the above is present, validate adding promotion to campaign based on currency code
-  @InjectTransactionManager("baseRepository_")
+  @InjectTransactionManager()
   protected async addPromotionsToCampaign_(
     data: PromotionTypes.AddPromotionsToCampaignDTO,
     @MedusaContext() sharedContext: Context = {}
@@ -1519,7 +1527,7 @@ export default class PromotionModuleService
     return promotionsToAdd.map((promo) => promo.id)
   }
 
-  @InjectManager("baseRepository_")
+  @InjectManager()
   async removePromotionsFromCampaign(
     data: PromotionTypes.AddPromotionsToCampaignDTO,
     sharedContext?: Context
@@ -1529,7 +1537,7 @@ export default class PromotionModuleService
     return { ids }
   }
 
-  @InjectTransactionManager("baseRepository_")
+  @InjectTransactionManager()
   protected async removePromotionsFromCampaign_(
     data: PromotionTypes.AddPromotionsToCampaignDTO,
     @MedusaContext() sharedContext: Context = {}

@@ -55,7 +55,7 @@ type AuthRequests = {
 class OasKindGenerator extends FunctionKindGenerator {
   public name = "oas"
   protected allowedKinds: SyntaxKind[] = [ts.SyntaxKind.FunctionDeclaration]
-  private MAX_LEVEL = 4
+  private MAX_LEVEL = 5
   readonly REQUEST_TYPE_NAMES = [
     "MedusaRequest",
     "RequestWithContext",
@@ -463,6 +463,7 @@ class OasKindGenerator extends FunctionKindGenerator {
       node,
       tagName,
       methodName,
+      forUpdate: true,
     })
 
     // update query parameters
@@ -511,6 +512,7 @@ class OasKindGenerator extends FunctionKindGenerator {
     const newResponseSchema = this.getResponseSchema({
       node,
       tagName,
+      forUpdate: true,
     })
     let updatedResponseSchema: OpenApiSchema | undefined
 
@@ -968,6 +970,7 @@ class OasKindGenerator extends FunctionKindGenerator {
     node,
     tagName,
     methodName,
+    forUpdate = false,
   }: {
     /**
      * The node to retrieve its request parameters.
@@ -981,6 +984,10 @@ class OasKindGenerator extends FunctionKindGenerator {
      * The tag's name.
      */
     tagName?: string
+    /**
+     * Whether the request parameters are retrieved for update purposes only.
+     */
+    forUpdate?: boolean
   }): {
     /**
      * The query parameters.
@@ -1040,7 +1047,8 @@ class OasKindGenerator extends FunctionKindGenerator {
                 itemType: propertyType,
                 title: propertyName,
                 descriptionOptions,
-                context: "request",
+                context: "query",
+                saveSchema: !forUpdate,
               }),
             })
           )
@@ -1055,6 +1063,7 @@ class OasKindGenerator extends FunctionKindGenerator {
           typeReferenceNode: node.parameters[0].type,
           itemType: requestTypeArguments[0],
         })
+        const isQuery = methodName === "get"
         const parameterSchema = this.typeToSchema({
           itemType: requestTypeArguments[0],
           descriptionOptions: {
@@ -1062,12 +1071,13 @@ class OasKindGenerator extends FunctionKindGenerator {
             rawParentName: this.checker.typeToString(requestTypeArguments[0]),
           },
           zodObjectTypeName: zodObjectTypeName,
-          context: "request",
+          context: isQuery ? "query" : "request",
+          saveSchema: !forUpdate,
         })
 
         // If function is a GET function, add the type parameter to the
         // query parameters instead of request parameters.
-        if (methodName === "get") {
+        if (isQuery) {
           if (parameterSchema.type === "object" && parameterSchema.properties) {
             Object.entries(parameterSchema.properties).forEach(
               ([key, propertySchema]) => {
@@ -1135,6 +1145,7 @@ class OasKindGenerator extends FunctionKindGenerator {
   getResponseSchema({
     node,
     tagName,
+    forUpdate = false,
   }: {
     /**
      * The node to retrieve its response schema.
@@ -1144,6 +1155,10 @@ class OasKindGenerator extends FunctionKindGenerator {
      * The tag's name.
      */
     tagName?: string
+    /**
+     * Whether the response schema is retrieved for update only.
+     */
+    forUpdate?: boolean
   }): OpenApiSchema | undefined {
     let responseSchema: OpenApiSchema | undefined
 
@@ -1170,6 +1185,7 @@ class OasKindGenerator extends FunctionKindGenerator {
             itemType: responseTypeArguments[0],
           }),
           context: "response",
+          saveSchema: !forUpdate,
         })
       }
     }
@@ -1191,6 +1207,7 @@ class OasKindGenerator extends FunctionKindGenerator {
     allowedChildren,
     disallowedChildren,
     zodObjectTypeName,
+    saveSchema = true,
     ...rest
   }: {
     /**
@@ -1228,7 +1245,11 @@ class OasKindGenerator extends FunctionKindGenerator {
     /**
      * Whether the type is in a request / response
      */
-    context?: "request" | "response"
+    context?: "request" | "response" | "query"
+    /**
+     * Whether to save object schemas. Useful when only getting schemas to update.
+     */
+    saveSchema?: boolean
   }): OpenApiSchema {
     if (level > this.MAX_LEVEL) {
       return {}
@@ -1354,6 +1375,7 @@ class OasKindGenerator extends FunctionKindGenerator {
                     parentName: title || descriptionOptions?.parentName,
                   }
                 : undefined,
+            saveSchema,
             ...rest,
           }),
         }
@@ -1384,6 +1406,7 @@ class OasKindGenerator extends FunctionKindGenerator {
             level,
             title,
             descriptionOptions,
+            saveSchema,
             ...rest,
           })
         )
@@ -1407,6 +1430,7 @@ class OasKindGenerator extends FunctionKindGenerator {
             level,
             title,
             descriptionOptions,
+            saveSchema,
             ...rest,
           })
         })
@@ -1437,6 +1461,7 @@ class OasKindGenerator extends FunctionKindGenerator {
           level,
           descriptionOptions,
           allowedChildren: pickedProperties,
+          saveSchema,
           ...rest,
         })
       case typeAsString.startsWith("Omit"):
@@ -1458,6 +1483,7 @@ class OasKindGenerator extends FunctionKindGenerator {
           level,
           descriptionOptions,
           disallowedChildren: omitProperties,
+          saveSchema,
           ...rest,
         })
       case typeAsString.startsWith("Partial"):
@@ -1475,6 +1501,7 @@ class OasKindGenerator extends FunctionKindGenerator {
           descriptionOptions,
           disallowedChildren,
           allowedChildren,
+          saveSchema,
           ...rest,
         })
 
@@ -1485,47 +1512,11 @@ class OasKindGenerator extends FunctionKindGenerator {
       case itemType.isClassOrInterface() ||
         itemType.isTypeParameter() ||
         (itemType as ts.Type).flags === ts.TypeFlags.Object:
-        const properties: Record<string, OpenApiSchema> = {}
         const requiredProperties: string[] = []
 
         const baseType = itemType.getBaseTypes()?.[0]
         const isDeleteResponse =
           baseType?.aliasSymbol?.getEscapedName() === "DeleteResponse"
-
-        if (level + 1 <= this.MAX_LEVEL) {
-          itemType.getProperties().forEach((property) => {
-            if (
-              (allowedChildren && !allowedChildren.includes(property.name)) ||
-              (disallowedChildren && disallowedChildren.includes(property.name))
-            ) {
-              return
-            }
-            if (this.isRequired(property)) {
-              requiredProperties.push(property.name)
-            }
-            const propertyType = this.checker.getTypeOfSymbol(property)
-            properties[property.name] = this.typeToSchema({
-              itemType: propertyType,
-              level: level + 1,
-              title: property.name,
-              descriptionOptions: {
-                ...descriptionOptions,
-                typeStr: property.name,
-                parentName: title || descriptionOptions?.parentName,
-              },
-              ...rest,
-            })
-
-            if (isDeleteResponse && property.name === "object") {
-              // try to retrieve default from `DeleteResponse`'s type argument
-              const deleteTypeArg = baseType.aliasTypeArguments?.[0]
-              properties[property.name].default =
-                deleteTypeArg && "value" in deleteTypeArg
-                  ? (deleteTypeArg.value as string)
-                  : properties[property.name].default
-            }
-          })
-        }
 
         const objSchema: OpenApiSchema = {
           type: "object",
@@ -1536,15 +1527,131 @@ class OasKindGenerator extends FunctionKindGenerator {
             (isZodObject(itemType) && zodObjectTypeName)
               ? this.oasSchemaHelper.normalizeSchemaName(typeAsString)
               : undefined,
-          required:
-            requiredProperties.length > 0 ? requiredProperties : undefined,
+          // this is changed later
+          required: undefined,
+        }
+
+        const properties: Record<
+          string,
+          OpenApiSchema | OpenAPIV3.ReferenceObject
+        > = {}
+        let isAdditionalProperties = false
+
+        if (level + 1 <= this.MAX_LEVEL) {
+          let itemProperties = itemType.getProperties()
+
+          if (
+            !itemProperties.length &&
+            itemType.aliasTypeArguments?.length === 2 &&
+            itemType.aliasTypeArguments[0].flags === ts.TypeFlags.String
+          ) {
+            // object has dynamic keys, so put the properties under additionalProperties
+            itemProperties = itemType.aliasTypeArguments[1].getProperties()
+            isAdditionalProperties = true
+          }
+
+          itemProperties.forEach((property) => {
+            if (
+              (allowedChildren && !allowedChildren.includes(property.name)) ||
+              (disallowedChildren && disallowedChildren.includes(property.name))
+            ) {
+              return
+            }
+
+            const shouldIgnore = property
+              .getJsDocTags()
+              .some((tag) => tag.name === "ignore")
+
+            if (shouldIgnore) {
+              return
+            }
+
+            if (this.isRequired(property)) {
+              requiredProperties.push(property.name)
+            }
+            const propertyType = this.checker.getTypeOfSymbol(property)
+
+            // if property's type is same as parent's property,
+            // create a reference to the parent
+            const arrHasParentType =
+              rest.context !== "query" &&
+              this.checker.isArrayType(propertyType) &&
+              this.areTypesEqual(
+                itemType,
+                this.checker.getTypeArguments(
+                  propertyType as ts.TypeReference
+                )[0]
+              )
+            const isParentType =
+              rest.context !== "query" &&
+              this.areTypesEqual(itemType, propertyType)
+
+            if (isParentType && objSchema["x-schemaName"]) {
+              properties[property.name] = {
+                $ref: this.oasSchemaHelper.constructSchemaReference(
+                  objSchema["x-schemaName"]
+                ),
+              }
+
+              return
+            } else if (arrHasParentType && objSchema["x-schemaName"]) {
+              properties[property.name] = {
+                type: "array",
+                description,
+                items: {
+                  $ref: this.oasSchemaHelper.constructSchemaReference(
+                    objSchema["x-schemaName"]
+                  ),
+                },
+              } as OpenAPIV3.ArraySchemaObject
+
+              return
+            }
+
+            properties[property.name] = this.typeToSchema({
+              itemType: propertyType,
+              level: level + 1,
+              title: property.name,
+              descriptionOptions: {
+                ...descriptionOptions,
+                typeStr: property.name,
+                parentName: title || descriptionOptions?.parentName,
+              },
+              saveSchema,
+              ...rest,
+            })
+
+            if (
+              isDeleteResponse &&
+              property.name === "object" &&
+              !this.oasSchemaHelper.isRefObject(properties[property.name])
+            ) {
+              const schemaProperty = properties[property.name] as OpenApiSchema
+              // try to retrieve default from `DeleteResponse`'s type argument
+              const deleteTypeArg = baseType.aliasTypeArguments?.[0]
+              schemaProperty.default =
+                deleteTypeArg && "value" in deleteTypeArg
+                  ? (deleteTypeArg.value as string)
+                  : schemaProperty.default
+            }
+          })
         }
 
         if (Object.values(properties).length) {
-          objSchema.properties = properties
+          if (isAdditionalProperties) {
+            objSchema.additionalProperties = {
+              type: "object",
+              properties,
+            }
+          } else {
+            objSchema.properties = properties
+          }
         }
 
-        if (objSchema["x-schemaName"]) {
+        objSchema.required =
+          requiredProperties.length > 0 ? requiredProperties : undefined
+
+        if (saveSchema && objSchema["x-schemaName"]) {
           // add object to schemas to be created
           // if necessary
           this.oasSchemaHelper.namedSchemaToReference(objSchema)
@@ -1901,6 +2008,26 @@ class OasKindGenerator extends FunctionKindGenerator {
         oldSchemaObj!.properties = newSchemaObj.properties
       } else if (!newSchemaObj?.properties) {
         delete oldSchemaObj!.properties
+
+        // check if additionalProperties should be updated
+        if (
+          !oldSchemaObj!.additionalProperties &&
+          newSchemaObj.additionalProperties
+        ) {
+          oldSchemaObj!.additionalProperties = newSchemaObj.additionalProperties
+        } else if (!newSchemaObj.additionalProperties) {
+          delete oldSchemaObj!.additionalProperties
+        } else if (
+          typeof oldSchemaObj!.additionalProperties !== "boolean" &&
+          typeof newSchemaObj!.additionalProperties !== "boolean"
+        ) {
+          oldSchemaObj!.additionalProperties =
+            this.updateSchema({
+              oldSchema: oldSchemaObj!.additionalProperties,
+              newSchema: newSchemaObj.additionalProperties,
+              level: level + 1,
+            }) || oldSchemaObj!.additionalProperties
+        }
       } else {
         // update existing properties
         Object.entries(oldSchemaObj!.properties!).forEach(
@@ -1946,8 +2073,6 @@ class OasKindGenerator extends FunctionKindGenerator {
           level: level + 1,
         }) || oldSchemaObj.items
     }
-
-    // update schema
 
     if (
       oldSchemaObj!.description !== newSchemaObj?.description &&
@@ -2183,6 +2308,10 @@ class OasKindGenerator extends FunctionKindGenerator {
 
       return true
     })
+  }
+
+  private areTypesEqual(type1: ts.Type, type2: ts.Type): boolean {
+    return "id" in type1 && "id" in type2 && type1.id === type2.id
   }
 }
 

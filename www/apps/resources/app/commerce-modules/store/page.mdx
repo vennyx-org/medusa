@@ -8,6 +8,73 @@ export const metadata = {
 
 The Store Module is the `@medusajs/store` NPM package that provides store-related features in your Medusa and Node.js applications.
 
+## How to Use Store Module's Service
+
+You can use the Store Module's main service by resolving from the Medusa container the resource `Modules.STORE` imported from `@medusajs/utils`.
+
+For example:
+
+<CodeTabs groupId="resource-type">
+  <CodeTab label="API Route" value="api-route">
+
+  ```ts title="src/api/store/custom/route.ts"
+  import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
+  import { IStoreModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+export async function GET(
+  request: MedusaRequest,
+  res: MedusaResponse
+): Promise<void> {
+  const storeModuleService: IStoreModuleService = request.scope.resolve(
+    Modules.STORE
+  )
+
+  res.json({
+    stores: await storeModuleService.listStores(),
+  })
+}
+```
+
+  </CodeTab>
+  <CodeTab label="Subscriber" value="subscribers">
+
+  ```ts title="src/subscribers/custom-handler.ts"
+  import { SubscriberArgs } from "@medusajs/medusa"
+  import { IStoreModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+export default async function subscriberHandler({ container }: SubscriberArgs) {
+  const storeModuleService: IStoreModuleService = container.resolve(
+    Modules.STORE
+  )
+
+  const stores = await storeModuleService.listStores()
+}
+```
+
+  </CodeTab>
+  <CodeTab label="Workflow Step" value="workflow-step">
+
+  ```ts title="src/workflows/hello-world/step1.ts"
+  import { createStep } from "@medusajs/workflows-sdk"
+  import { IStoreModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+const step1 = createStep("step-1", async (_, { container }) => {
+  const storeModuleService: IStoreModuleService = container.resolve(
+    Modules.STORE
+  )
+
+  const stores = await storeModuleService.listStores()
+})
+```
+
+  </CodeTab>
+</CodeTabs>
+
+---
+
 ## Features
 
 ### Store Management
@@ -37,70 +104,3 @@ const stores = await storeModuleService.createStores([
   },
 ])
 ```
-
----
-
-## How to Use Store Module's Service
-
-You can use the Store Module's main service by resolving from the Medusa container the resource `ModuleRegistrationName.STORE` imported from `@medusajs/utils`.
-
-For example:
-
-<CodeTabs groupId="resource-type">
-  <CodeTab label="API Route" value="api-route">
-
-  ```ts title="src/api/store/custom/route.ts"
-  import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
-  import { IStoreModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-export async function GET(
-  request: MedusaRequest,
-  res: MedusaResponse
-): Promise<void> {
-  const storeModuleService: IStoreModuleService = request.scope.resolve(
-    ModuleRegistrationName.STORE
-  )
-
-  res.json({
-    stores: await storeModuleService.listStores(),
-  })
-}
-```
-
-  </CodeTab>
-  <CodeTab label="Subscriber" value="subscribers">
-
-  ```ts title="src/subscribers/custom-handler.ts"
-  import { SubscriberArgs } from "@medusajs/medusa"
-  import { IStoreModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-export default async function subscriberHandler({ container }: SubscriberArgs) {
-  const storeModuleService: IStoreModuleService = container.resolve(
-    ModuleRegistrationName.STORE
-  )
-
-  const stores = await storeModuleService.listStores()
-}
-```
-
-  </CodeTab>
-  <CodeTab label="Workflow Step" value="workflow-step">
-
-  ```ts title="src/workflows/hello-world/step1.ts"
-  import { createStep } from "@medusajs/workflows-sdk"
-  import { IStoreModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-const step1 = createStep("step-1", async (_, { container }) => {
-  const storeModuleService: IStoreModuleService = container.resolve(
-    ModuleRegistrationName.STORE
-  )
-
-  const stores = await storeModuleService.listStores()
-})
-```
-
-  </CodeTab>
-</CodeTabs>

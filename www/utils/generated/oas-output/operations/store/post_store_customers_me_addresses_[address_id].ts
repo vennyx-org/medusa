@@ -6,7 +6,7 @@
  * description: Update the logged-in customer's address.
  * externalDocs:
  *   url: https://docs.medusajs.com/v2/resources/storefront-development/customers/addresses#edit-an-address
- *   description: Storefront guide: How to update an address of the logged-in customer.
+ *   description: "Storefront guide: How to update an address of the logged-in customer."
  * x-authenticated: true
  * parameters:
  *   - name: address_id
@@ -104,7 +104,8 @@
  *     source: |-
  *       curl -X POST '{backend_url}/store/customers/me/addresses/{address_id}' \
  *       -H 'Authorization: Bearer {access_token}' \
- *       -H 'Content-Type: application/json' \
+ *       -H 'Content-Type: application/json' \ \
+ *       -H 'x-publishable-api-key: {your_publishable_api_key}'
  *       --data-raw '{
  *         "first_name": "{value}",
  *       }'

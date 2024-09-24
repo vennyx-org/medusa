@@ -31,7 +31,7 @@ moduleIntegrationTestRunner<IUserModuleService>({
     jwt_secret: "test",
   },
   injectedDependencies: {
-    eventBusModuleService: new MockEventBusService(),
+    [Modules.EVENT_BUS]: new MockEventBusService(),
   },
   testSuite: ({ service }) => {
     describe("UserModuleService - Invite", () => {
@@ -220,6 +220,29 @@ moduleIntegrationTestRunner<IUserModuleService>({
             expect.objectContaining({
               id: "1",
             })
+          )
+        })
+
+        it("should throw if there is an existing user with the invite email", async () => {
+          let error
+          await service.createUsers([
+            {
+              email: "existing@email.com",
+            },
+          ])
+
+          try {
+            await service.createInvites([
+              {
+                email: "existing@email.com",
+              },
+            ])
+          } catch (e) {
+            error = e
+          }
+
+          expect(error.message).toBe(
+            `User account for following email(s) already exist: existing@email.com`
           )
         })
 

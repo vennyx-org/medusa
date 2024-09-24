@@ -6,7 +6,7 @@
  * description: Initialize and add a payment session to a payment collection. This is used during checkout, where you create a payment collection for the cart, then initialize a payment session for the payment provider that the customer chooses.
  * externalDocs:
  *   url: https://docs.medusajs.com/v2/resources/storefront-development/checkout/payment
- *   description: Storefront guide: How to implement payment during checkout.
+ *   description: "Storefront guide: How to implement payment during checkout."
  * x-authenticated: false
  * parameters:
  *   - name: id
@@ -61,7 +61,8 @@
  *     label: cURL
  *     source: |-
  *       curl -X POST '{backend_url}/store/payment-collections/{id}/payment-sessions' \
- *       -H 'Content-Type: application/json' \
+ *       -H 'Content-Type: application/json' \ \
+ *       -H 'x-publishable-api-key: {your_publishable_api_key}'
  *       --data-raw '{
  *         "provider_id": "{value}"
  *       }'

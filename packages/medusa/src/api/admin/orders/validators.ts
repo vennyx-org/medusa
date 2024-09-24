@@ -47,11 +47,6 @@ export const AdminGetOrdersParams = createFindParams({
 
 export type AdminGetOrdersParamsType = z.infer<typeof AdminGetOrdersParams>
 
-export const AdminArchiveOrder = z.object({
-  order_id: z.string(),
-})
-export type AdminArchiveOrderType = z.infer<typeof AdminArchiveOrder>
-
 export const AdminCompleteOrder = WithAdditionalData(z.object({}))
 
 const Item = z.object({
@@ -106,3 +101,8 @@ export const AdminOrderChanges = z.object({
   deleted_at: createOperatorMap().optional(),
 })
 export type AdminOrderChangesType = z.infer<typeof AdminOrderChanges>
+
+export type AdminMarkOrderFulfillmentDeliveredType = z.infer<
+  typeof AdminMarkOrderFulfillmentDelivered
+>
+export const AdminMarkOrderFulfillmentDelivered = z.object({})

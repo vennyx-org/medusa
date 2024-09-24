@@ -8,6 +8,73 @@ export const metadata = {
 
 The API Key Module is the `@medusajs/api-key` NPM package that provides API-key-related features in your Medusa and Node.js applications.
 
+## How to Use API Key Module's Service
+
+You can use the API Key Module's main service by resolving from the Medusa container the resource `Modules.API_KEY` imported from `@medusajs/utils`.
+
+For example:
+
+<CodeTabs groupId="resource-type">
+  <CodeTab label="API Route" value="api-route">
+
+  ```ts title="src/api/store/custom/route.ts"
+  import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
+  import { IApiKeyModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+export async function GET(
+  request: MedusaRequest,
+  res: MedusaResponse
+): Promise<void> {
+  const apiKeyModuleService: IApiKeyModuleService = request.scope.resolve(
+    Modules.API_KEY
+  )
+
+  res.json({
+    api_keys: await apiKeyModuleService.listApiKeys(),
+  })
+}
+```
+
+  </CodeTab>
+  <CodeTab label="Subscriber" value="subscribers">
+
+  ```ts title="src/subscribers/custom-handler.ts"
+  import { SubscriberArgs } from "@medusajs/medusa"
+  import { IApiKeyModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+export default async function subscriberHandler({ container }: SubscriberArgs) {
+  const apiKeyModuleService: IApiKeyModuleService = container.resolve(
+    Modules.API_KEY
+  )
+
+  const apiKeys = await apiKeyModuleService.listApiKeys()
+}
+```
+
+  </CodeTab>
+  <CodeTab label="Workflow Step" value="workflow-step">
+
+  ```ts title="src/workflows/hello-world/step1.ts"
+  import { createStep } from "@medusajs/workflows-sdk"
+  import { IApiKeyModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+const step1 = createStep("step-1", async (_, { container }) => {
+  const apiKeyModuleService: IApiKeyModuleService = container.resolve(
+    Modules.API_KEY
+  )
+
+  const apiKeys = await apiKeyModuleService.listApiKeys()
+})
+```
+
+  </CodeTab>
+</CodeTabs>
+
+---
+
 ## Features
 
 ### API Key Types and Management
@@ -71,70 +138,3 @@ const newKey = await apiKeyModuleService.createApiKeys({
   created_by: revokedKey.created_by,
 })
 ```
-
----
-
-## How to Use API Key Module's Service
-
-You can use the API Key Module's main service by resolving from the Medusa container the resource `ModuleRegistrationName.API_KEY` imported from `@medusajs/utils`.
-
-For example:
-
-<CodeTabs groupId="resource-type">
-  <CodeTab label="API Route" value="api-route">
-
-  ```ts title="src/api/store/custom/route.ts"
-  import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
-  import { IApiKeyModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-export async function GET(
-  request: MedusaRequest,
-  res: MedusaResponse
-): Promise<void> {
-  const apiKeyModuleService: IApiKeyModuleService = request.scope.resolve(
-    ModuleRegistrationName.API_KEY
-  )
-
-  res.json({
-    api_keys: await apiKeyModuleService.listApiKeys(),
-  })
-}
-```
-
-  </CodeTab>
-  <CodeTab label="Subscriber" value="subscribers">
-
-  ```ts title="src/subscribers/custom-handler.ts"
-  import { SubscriberArgs } from "@medusajs/medusa"
-  import { IApiKeyModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-export default async function subscriberHandler({ container }: SubscriberArgs) {
-  const apiKeyModuleService: IApiKeyModuleService = container.resolve(
-    ModuleRegistrationName.API_KEY
-  )
-
-  const apiKeys = await apiKeyModuleService.listApiKeys()
-}
-```
-
-  </CodeTab>
-  <CodeTab label="Workflow Step" value="workflow-step">
-
-  ```ts title="src/workflows/hello-world/step1.ts"
-  import { createStep } from "@medusajs/workflows-sdk"
-  import { IApiKeyModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-const step1 = createStep("step-1", async (_, { container }) => {
-  const apiKeyModuleService: IApiKeyModuleService = container.resolve(
-    ModuleRegistrationName.API_KEY
-  )
-
-  const apiKeys = await apiKeyModuleService.listApiKeys()
-})
-```
-
-  </CodeTab>
-</CodeTabs>

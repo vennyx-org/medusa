@@ -14,23 +14,17 @@ import {
   ModuleExports,
   ModuleJoinerConfig,
   ModuleServiceInitializeOptions,
-  RemoteJoinerOptions,
-  RemoteJoinerQuery,
   RemoteQueryFunction,
-  RemoteQueryObjectConfig,
-  RemoteQueryObjectFromStringResult,
 } from "@medusajs/types"
 import {
   ContainerRegistrationKeys,
+  MedusaError,
+  Modules,
+  ModulesSdkUtils,
   createMedusaContainer,
   isObject,
   isString,
-  MedusaError,
-  ModuleRegistrationName,
-  Modules,
-  ModulesSdkUtils,
   promiseAll,
-  remoteQueryObjectFromString,
 } from "@medusajs/utils"
 import type { Knex } from "@mikro-orm/knex"
 import { asValue } from "awilix"
@@ -42,7 +36,7 @@ import {
   RegisterModuleJoinerConfig,
 } from "./medusa-module"
 import { RemoteLink } from "./remote-link"
-import { RemoteQuery } from "./remote-query"
+import { RemoteQuery, createQuery } from "./remote-query"
 import { MODULE_RESOURCE_TYPE, MODULE_SCOPE } from "./types"
 import { cleanGraphQLSchema } from "./utils"
 
@@ -54,6 +48,7 @@ declare module "@medusajs/types" {
     [ContainerRegistrationKeys.CONFIG_MODULE]: ConfigModule
     [ContainerRegistrationKeys.PG_CONNECTION]: Knex<any>
     [ContainerRegistrationKeys.REMOTE_QUERY]: RemoteQueryFunction
+    [ContainerRegistrationKeys.QUERY]: Omit<RemoteQueryFunction, symbol>
     [ContainerRegistrationKeys.LOGGER]: Logger
   }
 }
@@ -107,6 +102,11 @@ export async function loadModules(
       let declaration: any = {}
       let definition: Partial<ModuleDefinition> | undefined = undefined
 
+      // Skip disabled modules
+      if (mod === false) {
+        return
+      }
+
       if (isObject(mod)) {
         const mod_ = mod as unknown as InternalModuleDeclaration
         path = mod_.resolve ?? MODULE_PACKAGE_NAMES[moduleName]
@@ -146,7 +146,7 @@ export async function loadModules(
 
       const service = loaded[moduleName]
       sharedContainer.register({
-        [service.__definition.registrationName]: asValue(service),
+        [service.__definition.key]: asValue(service),
       })
 
       if (allModules[moduleName] && !Array.isArray(allModules[moduleName])) {
@@ -357,9 +357,11 @@ async function MedusaApp_({
   )
 
   if (loaderOnly) {
-    async function query(...args: Parameters<RemoteQueryFunction>) {
+    async function query(...args: any[]) {
       throw new Error("Querying not allowed in loaderOnly mode")
     }
+    query.graph = query
+    query.gql = query
 
     return {
       onApplicationShutdown,
@@ -367,7 +369,7 @@ async function MedusaApp_({
       onApplicationStart,
       modules: allModules,
       link: undefined,
-      query: query as RemoteQueryFunction,
+      query: query as unknown as RemoteQueryFunction,
       runMigrations: async () => {
         throw new Error("Migrations not allowed in loaderOnly mode")
       },
@@ -386,10 +388,12 @@ async function MedusaApp_({
   }
 
   // Share Event bus with link modules
-  injectedDependencies[ModuleRegistrationName.EVENT_BUS] =
-    sharedContainer_.resolve(ModuleRegistrationName.EVENT_BUS, {
+  injectedDependencies[Modules.EVENT_BUS] = sharedContainer_.resolve(
+    Modules.EVENT_BUS,
+    {
       allowUnregistered: true,
-    })
+    }
+  )
 
   linkModules ??= []
   if (!Array.isArray(linkModules)) {
@@ -414,83 +418,13 @@ async function MedusaApp_({
 
   const loadedSchema = getLoadedSchema()
   const { schema, notFound } = cleanAndMergeSchema(loadedSchema)
+  const entitiesMap = schema.getTypeMap() as unknown as Map<string, any>
 
   const remoteQuery = new RemoteQuery({
     servicesConfig,
     customRemoteFetchData: remoteFetchData,
+    entitiesMap,
   })
-
-  /**
-   * Query wrapper to provide specific API's and pre processing around remoteQuery.query
-   * @param queryConfig
-   * @param options
-   */
-  async function query<const TEntry extends string>(
-    queryConfig: RemoteQueryObjectConfig<TEntry>,
-    options?: RemoteJoinerOptions
-  ): Promise<any>
-
-  async function query<
-    const TConfig extends RemoteQueryObjectFromStringResult<any>
-  >(queryConfig: TConfig, options?: RemoteJoinerOptions): Promise<any>
-
-  /**
-   * Query wrapper to provide specific API's and pre processing around remoteQuery.query
-   * @param query
-   * @param options
-   */
-  async function query(
-    query: RemoteJoinerQuery,
-    options?: RemoteJoinerOptions
-  ): Promise<any>
-
-  /**
-   * Query wrapper to provide specific API's and pre processing around remoteQuery.query
-   * @param query
-   * @param options
-   */
-  async function query<const TEntry extends string>(
-    query:
-      | RemoteJoinerQuery
-      | RemoteQueryObjectConfig<TEntry>
-      | RemoteQueryObjectFromStringResult<any>,
-    options?: RemoteJoinerOptions
-  ) {
-    if (!isObject(query)) {
-      throw new MedusaError(
-        MedusaError.Types.INVALID_DATA,
-        "Invalid query, expected object and received something else."
-      )
-    }
-
-    let normalizedQuery: any = query
-
-    if ("__value" in query) {
-      normalizedQuery = query.__value
-    } else if (
-      "entryPoint" in normalizedQuery ||
-      "service" in normalizedQuery
-    ) {
-      normalizedQuery = remoteQueryObjectFromString(
-        normalizedQuery as Parameters<typeof remoteQueryObjectFromString>[0]
-      ).__value
-    }
-
-    return await remoteQuery.query(normalizedQuery, undefined, options)
-  }
-  /**
-   * Query wrapper to provide specific GraphQL like API around remoteQuery.query
-   * @param query
-   * @param variables
-   * @param options
-   */
-  query.gql = async function (
-    query: string,
-    variables?: Record<string, unknown>,
-    options?: RemoteJoinerOptions
-  ) {
-    return await remoteQuery.query(query, variables, options)
-  }
 
   const applyMigration = async ({
     modulesNames,
@@ -593,8 +527,8 @@ async function MedusaApp_({
     onApplicationStart,
     modules: allModules,
     link: remoteLink,
-    query,
-    entitiesMap: schema.getTypeMap(),
+    query: createQuery(remoteQuery) as any, // TODO: rm any once we remove the old RemoteQueryFunction and rely on the Query object instead,
+    entitiesMap,
     gqlSchema: schema,
     notFound,
     runMigrations,

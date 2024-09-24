@@ -8,6 +8,73 @@ export const metadata = {
 
 The Region Module is the `@medusajs/region` NPM package that provides region-related features in your Medusa and Node.js applications.
 
+## How to Use Region Module's Service
+
+You can use the Region Module's main service by resolving from the Medusa container the resource `Modules.REGION` imported from `@medusajs/utils`.
+
+For example:
+
+<CodeTabs groupId="resource-type">
+  <CodeTab label="API Route" value="api-route">
+
+  ```ts title="src/api/store/custom/route.ts"
+  import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
+  import { IRegionModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+export async function GET(
+  req: MedusaRequest,
+  res: MedusaResponse
+): Promise<void> {
+  const regionModuleService: IRegionModuleService = req.scope.resolve(
+    Modules.REGION
+  )
+
+  res.json({
+    regions: await regionModuleService.listRegions(),
+  })
+}
+```
+
+  </CodeTab>
+  <CodeTab label="Subscriber" value="subscribers">
+
+  ```ts title="src/subscribers/custom-handler.ts"
+  import { SubscriberArgs } from "@medusajs/medusa"
+  import { IRegionModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+export default async function subscriberHandler({ container }: SubscriberArgs) {
+  const regionModuleService: IRegionModuleService = container.resolve(
+    Modules.REGION
+  )
+
+  const regions = await regionModuleService.listRegions()
+}
+```
+
+  </CodeTab>
+  <CodeTab label="Workflow Step" value="workflow-step">
+
+  ```ts title="src/workflows/hello-world/step1.ts"
+  import { createStep } from "@medusajs/workflows-sdk"
+  import { IRegionModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+const step1 = createStep("step-1", async (_, { container }) => {
+  const regionModuleService: IRegionModuleService = container.resolve(
+    Modules.REGION
+  )
+
+  const regions = await regionModuleService.listRegions()
+})
+```
+
+  </CodeTab>
+</CodeTabs>
+
+---
+
 ## What is a Region?
 
 A region represents the area you sell products in. Each region can cover multiple countries, but uses a single currency.
@@ -64,70 +131,3 @@ const regions = await regionModuleService.createRegions([
   },
 ])
 ```
-
----
-
-## How to Use Region Module's Service
-
-You can use the Region Module's main service by resolving from the Medusa container the resource `ModuleRegistrationName.REGION` imported from `@medusajs/utils`.
-
-For example:
-
-<CodeTabs groupId="resource-type">
-  <CodeTab label="API Route" value="api-route">
-
-  ```ts title="src/api/store/custom/route.ts"
-  import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
-  import { IRegionModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-export async function GET(
-  req: MedusaRequest,
-  res: MedusaResponse
-): Promise<void> {
-  const regionModuleService: IRegionModuleService = req.scope.resolve(
-    ModuleRegistrationName.REGION
-  )
-
-  res.json({
-    regions: await regionModuleService.listRegions(),
-  })
-}
-```
-
-  </CodeTab>
-  <CodeTab label="Subscriber" value="subscribers">
-
-  ```ts title="src/subscribers/custom-handler.ts"
-  import { SubscriberArgs } from "@medusajs/medusa"
-  import { IRegionModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-export default async function subscriberHandler({ container }: SubscriberArgs) {
-  const regionModuleService: IRegionModuleService = container.resolve(
-    ModuleRegistrationName.REGION
-  )
-
-  const regions = await regionModuleService.listRegions()
-}
-```
-
-  </CodeTab>
-  <CodeTab label="Workflow Step" value="workflow-step">
-
-  ```ts title="src/workflows/hello-world/step1.ts"
-  import { createStep } from "@medusajs/workflows-sdk"
-  import { IRegionModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-const step1 = createStep("step-1", async (_, { container }) => {
-  const regionModuleService: IRegionModuleService = container.resolve(
-    ModuleRegistrationName.REGION
-  )
-
-  const regions = await regionModuleService.listRegions()
-})
-```
-
-  </CodeTab>
-</CodeTabs>

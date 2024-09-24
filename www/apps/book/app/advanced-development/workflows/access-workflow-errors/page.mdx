@@ -19,7 +19,7 @@ export const highlights = [
   ["14", "throwOnError", "Specify that errors occuring during the workflow's execution should be returned, not thrown."],
 ]
 
-```ts title="src/api/store/workflows/route.ts" highlights={highlights} collapsibleLines="1-6" expandButtonLabel="Show Imports"
+```ts title="src/api/workflows/route.ts" highlights={highlights} collapsibleLines="1-6" expandButtonLabel="Show Imports"
 import type {
   MedusaRequest,
   MedusaResponse,
@@ -47,6 +47,6 @@ export async function GET(
 
 ```
 
-The object passed to the `run` method accepts a `throwOnError` property. When disabled, the errors are returned in the `errors` property of the `run`'s output. The value of `errors` is an array of error objects.
+The object passed to the `run` method accepts a `throwOnError` property. When disabled, the errors are returned in the `errors` property of `run`'s output.
 
-Then, you can check the items in the `errors` array and handle them accordingly. Each error object has an `error` property, which holds the name or the text of the thrown error.
+The value of `errors` is an array of error objects. Each object has an `error` property, whose value is the name or text of the thrown error.

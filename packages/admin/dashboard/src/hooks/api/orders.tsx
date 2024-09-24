@@ -1,3 +1,5 @@
+import { FetchError } from "@medusajs/js-sdk"
+import { HttpTypes } from "@medusajs/types"
 import {
   QueryKey,
   useMutation,
@@ -5,8 +7,6 @@ import {
   useQuery,
   UseQueryOptions,
 } from "@tanstack/react-query"
-import { FetchError } from "@medusajs/js-sdk"
-import { HttpTypes } from "@medusajs/types"
 import { sdk } from "../../lib/client"
 import { queryClient } from "../../lib/query-client"
 import { queryKeysFactory, TQueryKey } from "../../lib/query-key-factory"
@@ -121,11 +121,7 @@ export const useCreateOrderFulfillment = (
       sdk.admin.order.createFulfillment(orderId, payload),
     onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({
-        queryKey: ordersQueryKeys.details(),
-      })
-
-      queryClient.invalidateQueries({
-        queryKey: ordersQueryKeys.preview(orderId),
+        queryKey: ordersQueryKeys.all,
       })
 
       queryClient.invalidateQueries({
@@ -148,7 +144,7 @@ export const useCancelOrderFulfillment = (
       sdk.admin.order.cancelFulfillment(orderId, fulfillmentId, payload),
     onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({
-        queryKey: ordersQueryKeys.details(),
+        queryKey: ordersQueryKeys.all,
       })
 
       queryClient.invalidateQueries({
@@ -175,7 +171,34 @@ export const useCreateOrderShipment = (
       sdk.admin.order.createShipment(orderId, fulfillmentId, payload),
     onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({
-        queryKey: ordersQueryKeys.details(),
+        queryKey: ordersQueryKeys.all,
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ordersQueryKeys.preview(orderId),
+      })
+
+      options?.onSuccess?.(data, variables, context)
+    },
+    ...options,
+  })
+}
+
+export const useMarkOrderFulfillmentAsDelivered = (
+  orderId: string,
+  fulfillmentId: string,
+  options?: UseMutationOptions<
+    { order: HttpTypes.AdminOrder },
+    FetchError,
+    HttpTypes.AdminMarkOrderFulfillmentAsDelivered
+  >
+) => {
+  return useMutation({
+    mutationFn: (payload: HttpTypes.AdminMarkOrderFulfillmentAsDelivered) =>
+      sdk.admin.order.markAsDelivered(orderId, fulfillmentId, payload),
+    onSuccess: (data: any, variables: any, context: any) => {
+      queryClient.invalidateQueries({
+        queryKey: ordersQueryKeys.all,
       })
 
       queryClient.invalidateQueries({

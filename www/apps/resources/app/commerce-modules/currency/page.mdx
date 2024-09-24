@@ -8,6 +8,73 @@ export const metadata = {
 
 The Currency Module is the `@medusajs/currency` NPM package that provides currency-related features in your Medusa and Node.js applications.
 
+## How to Use Currency Module's Service
+
+You can use the Currency Module's main service by resolving from the Medusa container the resource `Modules.CURRENCY` imported from `@medusajs/utils`.
+
+For example:
+
+<CodeTabs groupId="resource-type">
+  <CodeTab label="API Route" value="api-route">
+
+  ```ts title="src/api/store/custom/route.ts"
+  import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
+  import { ICurrencyModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+export async function GET(
+  req: MedusaRequest,
+  res: MedusaResponse
+): Promise<void> {
+  const currencyModuleService: ICurrencyModuleService = req.scope.resolve(
+    Modules.CURRENCY
+  )
+
+  res.json({
+    currencies: await currencyModuleService.listCurrencies(),
+  })
+}
+```
+
+  </CodeTab>
+  <CodeTab label="Subscriber" value="subscribers">
+
+  ```ts title="src/subscribers/custom-handler.ts"
+  import { SubscriberArgs } from "@medusajs/medusa"
+  import { ICurrencyModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+export default async function subscriberHandler({ container }: SubscriberArgs) {
+  const currencyModuleService: ICurrencyModuleService = container.resolve(
+    Modules.CURRENCY
+  )
+
+  const currencies = await currencyModuleService.listCurrencies()
+}
+```
+
+  </CodeTab>
+  <CodeTab label="Workflow Step" value="workflow-step">
+
+  ```ts title="src/workflows/hello-world/step1.ts"
+  import { createStep } from "@medusajs/workflows-sdk"
+  import { ICurrencyModuleService } from "@medusajs/types"
+  import { Modules } from "@medusajs/utils"
+
+const step1 = createStep("step-1", async (_, { container }) => {
+  const currencyModuleService: ICurrencyModuleService = container.resolve(
+    Modules.CURRENCY
+  )
+
+  const currencies = await currencyModuleService.listCurrencies()
+})
+```
+
+  </CodeTab>
+</CodeTabs>
+
+---
+
 ## Features
 
 ### Currency Retrieval
@@ -30,70 +97,3 @@ const currency = await currencyModuleService.retrieveCurrency(
   region.currency_code
 )
 ```
-
----
-
-## How to Use Currency Module's Service
-
-You can use the Currency Module's main service by resolving from the Medusa container the resource `ModuleRegistrationName.CURRENCY` imported from `@medusajs/utils`.
-
-For example:
-
-<CodeTabs groupId="resource-type">
-  <CodeTab label="API Route" value="api-route">
-
-  ```ts title="src/api/store/custom/route.ts"
-  import { MedusaRequest, MedusaResponse } from "@medusajs/medusa"
-  import { ICurrencyModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-export async function GET(
-  req: MedusaRequest,
-  res: MedusaResponse
-): Promise<void> {
-  const currencyModuleService: ICurrencyModuleService = req.scope.resolve(
-    ModuleRegistrationName.CURRENCY
-  )
-
-  res.json({
-    currencies: await currencyModuleService.listCurrencies(),
-  })
-}
-```
-
-  </CodeTab>
-  <CodeTab label="Subscriber" value="subscribers">
-
-  ```ts title="src/subscribers/custom-handler.ts"
-  import { SubscriberArgs } from "@medusajs/medusa"
-  import { ICurrencyModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-export default async function subscriberHandler({ container }: SubscriberArgs) {
-  const currencyModuleService: ICurrencyModuleService = container.resolve(
-    ModuleRegistrationName.CURRENCY
-  )
-
-  const currencies = await currencyModuleService.listCurrencies()
-}
-```
-
-  </CodeTab>
-  <CodeTab label="Workflow Step" value="workflow-step">
-
-  ```ts title="src/workflows/hello-world/step1.ts"
-  import { createStep } from "@medusajs/workflows-sdk"
-  import { ICurrencyModuleService } from "@medusajs/types"
-  import { ModuleRegistrationName } from "@medusajs/utils"
-
-const step1 = createStep("step-1", async (_, { container }) => {
-  const currencyModuleService: ICurrencyModuleService = container.resolve(
-    ModuleRegistrationName.CURRENCY
-  )
-
-  const currencies = await currencyModuleService.listCurrencies()
-})
-```
-
-  </CodeTab>
-</CodeTabs>

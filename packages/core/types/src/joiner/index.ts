@@ -3,6 +3,7 @@ export type JoinerRelationship = {
   foreignKey: string
   primaryKey: string
   serviceName: string
+  entity?: string
   /**
    * In an inverted relationship the foreign key is on the other service and the primary key is on the current service
    */
@@ -19,6 +20,7 @@ export type JoinerRelationship = {
 
 export interface JoinerServiceConfigAlias {
   name: string | string[]
+  entity?: string
   /**
    * Extra arguments to pass to the remoteFetchData callback
    */
@@ -95,7 +97,8 @@ export type InternalJoinerServiceConfig = Omit<
   JoinerServiceConfig,
   "relationships"
 > & {
-  relationships?: Map<string, JoinerRelationship>
+  relationships?: Map<string, JoinerRelationship | JoinerRelationship[]>
+  entity?: string
 }
 
 export interface RemoteExpandProperty {
@@ -103,6 +106,7 @@ export interface RemoteExpandProperty {
   parent: string
   parentConfig?: InternalJoinerServiceConfig
   serviceConfig: InternalJoinerServiceConfig
+  entity?: string
   fields?: string[]
   args?: JoinerArgument[]
   expands?: RemoteNestedExpands

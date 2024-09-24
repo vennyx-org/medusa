@@ -6,7 +6,7 @@
  * description: Add a shipping method to a cart. Use this API route when the customer chooses their preferred shipping option.
  * externalDocs:
  *   url: https://docs.medusajs.com/v2/resources/storefront-development/checkout/shipping
- *   description: Storefront guide: How to implement shipping during checkout.
+ *   description: "Storefront guide: How to implement shipping during checkout."
  * x-authenticated: false
  * parameters:
  *   - name: id
@@ -57,7 +57,8 @@
  *     label: cURL
  *     source: |-
  *       curl -X POST '{backend_url}/store/carts/{id}/shipping-methods' \
- *       -H 'Content-Type: application/json' \
+ *       -H 'Content-Type: application/json' \ \
+ *       -H 'x-publishable-api-key: {your_publishable_api_key}'
  *       --data-raw '{
  *         "option_id": "{value}"
  *       }'

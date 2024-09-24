@@ -3,10 +3,10 @@ import { validateAndTransformBody } from "../../utils/validate-body"
 import { validateAndTransformQuery } from "../../utils/validate-query"
 import * as QueryConfig from "./query-config"
 import {
-  AdminArchiveOrder,
   AdminCompleteOrder,
   AdminGetOrdersOrderParams,
   AdminGetOrdersParams,
+  AdminMarkOrderFulfillmentDelivered,
   AdminOrderCancelFulfillment,
   AdminOrderChanges,
   AdminOrderCreateFulfillment,
@@ -58,7 +58,6 @@ export const adminOrderRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/orders/:id/archive",
     middlewares: [
-      validateAndTransformBody(AdminArchiveOrder),
       validateAndTransformQuery(
         AdminGetOrdersOrderParams,
         QueryConfig.retrieveTransformQueryConfig
@@ -115,6 +114,17 @@ export const adminOrderRoutesMiddlewares: MiddlewareRoute[] = [
     matcher: "/admin/orders/:id/fulfillments/:fulfillment_id/shipments",
     middlewares: [
       validateAndTransformBody(AdminOrderCreateShipment),
+      validateAndTransformQuery(
+        AdminGetOrdersOrderParams,
+        QueryConfig.retrieveTransformQueryConfig
+      ),
+    ],
+  },
+  {
+    method: ["POST"],
+    matcher: "/admin/orders/:id/fulfillments/:fulfillment_id/mark-as-delivered",
+    middlewares: [
+      validateAndTransformBody(AdminMarkOrderFulfillmentDelivered),
       validateAndTransformQuery(
         AdminGetOrdersOrderParams,
         QueryConfig.retrieveTransformQueryConfig

@@ -6,7 +6,7 @@
  * x-authenticated: false
  * externalDocs:
  *   url: https://docs.medusajs.com/v2/resources/storefront-development/products/categories/retrieve
- *   description: Storefront guide: How to retrieve a product category.
+ *   description: "Storefront guide: How to retrieve a product category."
  * parameters:
  *   - name: id
  *     in: path
@@ -51,7 +51,9 @@
  * x-codeSamples:
  *   - lang: Shell
  *     label: cURL
- *     source: curl '{backend_url}/store/product-categories/{id}'
+ *     source: |-
+ *       curl '{backend_url}/store/product-categories/{id}' \
+ *       -H 'x-publishable-api-key: {your_publishable_api_key}'
  * tags:
  *   - Product Categories
  * responses:

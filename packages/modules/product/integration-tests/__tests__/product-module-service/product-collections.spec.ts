@@ -1,5 +1,5 @@
 import { IProductModuleService } from "@medusajs/types"
-import { Modules, ProductStatus } from "@medusajs/utils"
+import { CommonEvents, Modules, ProductStatus } from "@medusajs/utils"
 import { Product, ProductCollection } from "@models"
 import {
   MockEventBusService,
@@ -12,7 +12,7 @@ jest.setTimeout(30000)
 moduleIntegrationTestRunner<IProductModuleService>({
   moduleName: Modules.PRODUCT,
   injectedDependencies: {
-    eventBusModuleService: new MockEventBusService(),
+    [Modules.EVENT_BUS]: new MockEventBusService(),
   },
   testSuite: ({ MikroOrmWrapper, service }) => {
     describe("ProductModuleService product collections", () => {
@@ -281,12 +281,12 @@ moduleIntegrationTestRunner<IProductModuleService>({
           expect(eventBusSpy).toHaveBeenCalledWith(
             [
               {
-                name: "product-collection.deleted",
+                name: "Product.product-collection.deleted",
                 data: { id: collectionId },
                 metadata: {
-                  action: "",
-                  object: "",
-                  source: "",
+                  action: CommonEvents.DELETED,
+                  object: "product_collection",
+                  source: Modules.PRODUCT,
                 },
               },
             ],

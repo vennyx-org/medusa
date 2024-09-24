@@ -9,7 +9,7 @@
  *   The shipping options also be sorted or paginated.
  * externalDocs:
  *   url: https://docs.medusajs.com/v2/resources/storefront-development/checkout/shipping
- *   description: Storefront guide: How to implement shipping during checkout.
+ *   description: "Storefront guide: How to implement shipping during checkout."
  * x-authenticated: false
  * parameters:
  *   - name: fields
@@ -77,7 +77,9 @@
  * x-codeSamples:
  *   - lang: Shell
  *     label: cURL
- *     source: curl '{backend_url}/store/shipping-options'
+ *     source: |-
+ *       curl '{backend_url}/store/shipping-options' \
+ *       -H 'x-publishable-api-key: {your_publishable_api_key}'
  * tags:
  *   - Shipping Options
  * responses:
