@@ -1,5 +1,16 @@
 # @medusajs/promotion
 
+## 0.0.5
+
+### Patch Changes
+
+- [#7269](https://github.com/medusajs/medusa/pull/7269) [`6da2964998c12bd9bcf8536e2c6fc25fab76e84a`](https://github.com/medusajs/medusa/commit/6da2964998c12bd9bcf8536e2c6fc25fab76e84a) Thanks [@riqwan](https://github.com/riqwan)! - feat(dashboard,core,medusa,promotion): add campaigns UI
+
+- [#7341](https://github.com/medusajs/medusa/pull/7341) [`2e42e053d4c9d5445d227bdc268c66713aad8e2e`](https://github.com/medusajs/medusa/commit/2e42e053d4c9d5445d227bdc268c66713aad8e2e) Thanks [@olivermrbl](https://github.com/olivermrbl)! - chore: Preview release changeset
+
+- Updated dependencies [[`2e42e053d4c9d5445d227bdc268c66713aad8e2e`](https://github.com/medusajs/medusa/commit/2e42e053d4c9d5445d227bdc268c66713aad8e2e)]:
+  - @medusajs/framework@0.0.2
+
 ## 0.0.4
 
 ### Patch Changes

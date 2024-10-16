@@ -1,5 +1,20 @@
 # @medusajs/fulfillment
 
+## 0.1.3
+
+### Patch Changes
+
+- [#7341](https://github.com/medusajs/medusa/pull/7341) [`2e42e053d4c9d5445d227bdc268c66713aad8e2e`](https://github.com/medusajs/medusa/commit/2e42e053d4c9d5445d227bdc268c66713aad8e2e) Thanks [@olivermrbl](https://github.com/olivermrbl)! - chore: Preview release changeset
+
+- [#7230](https://github.com/medusajs/medusa/pull/7230) [`520867b074c9b1b77ad78388d6d326058c7d8195`](https://github.com/medusajs/medusa/commit/520867b074c9b1b77ad78388d6d326058c7d8195) Thanks [@adrien2p](https://github.com/adrien2p)! - feat(fulfillment, core-flows): Apply correct address and context + cleanup
+
+- [#7204](https://github.com/medusajs/medusa/pull/7204) [`25b0ccc60a979f1a0145277d06690a04850b2da7`](https://github.com/medusajs/medusa/commit/25b0ccc60a979f1a0145277d06690a04850b2da7) Thanks [@adrien2p](https://github.com/adrien2p)! - fix(fulfillment): Update shipping options rules
+
+- [#7169](https://github.com/medusajs/medusa/pull/7169) [`9d3f49531493b4cf73def5a10a57ff0d432cc6db`](https://github.com/medusajs/medusa/commit/9d3f49531493b4cf73def5a10a57ff0d432cc6db) Thanks [@carlos-r-l-rodrigues](https://github.com/carlos-r-l-rodrigues)! - Fulfillment - shipping options with context
+
+- Updated dependencies [[`2e42e053d4c9d5445d227bdc268c66713aad8e2e`](https://github.com/medusajs/medusa/commit/2e42e053d4c9d5445d227bdc268c66713aad8e2e)]:
+  - @medusajs/framework@0.0.2
+
 ## 0.1.2
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @medusajs/inventory-next
 
+## 0.0.4
+
+### Patch Changes
+
+- [#7341](https://github.com/medusajs/medusa/pull/7341) [`2e42e053d4c9d5445d227bdc268c66713aad8e2e`](https://github.com/medusajs/medusa/commit/2e42e053d4c9d5445d227bdc268c66713aad8e2e) Thanks [@olivermrbl](https://github.com/olivermrbl)! - chore: Preview release changeset
+
+- [#7209](https://github.com/medusajs/medusa/pull/7209) [`c32a31e1394609845a5f202b1684d70fea019dc9`](https://github.com/medusajs/medusa/commit/c32a31e1394609845a5f202b1684d70fea019dc9) Thanks [@carlos-r-l-rodrigues](https://github.com/carlos-r-l-rodrigues)! - Check stock to create reservation and support backorder
+
+- Updated dependencies [[`2e42e053d4c9d5445d227bdc268c66713aad8e2e`](https://github.com/medusajs/medusa/commit/2e42e053d4c9d5445d227bdc268c66713aad8e2e)]:
+  - @medusajs/framework@0.0.2
+
 ## 0.0.3
 
 ### Patch Changes

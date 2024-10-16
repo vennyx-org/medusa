@@ -1,5 +1,16 @@
 # Change Log
 
+## 1.1.45
+
+### Patch Changes
+
+- [#8568](https://github.com/medusajs/medusa/pull/8568) [`96bdf3e2c6a1d435bc5ac554eeddb6c20de591b4`](https://github.com/medusajs/medusa/commit/96bdf3e2c6a1d435bc5ac554eeddb6c20de591b4) Thanks [@carlos-r-l-rodrigues](https://github.com/carlos-r-l-rodrigues)! - Order transactions
+
+- [#7341](https://github.com/medusajs/medusa/pull/7341) [`2e42e053d4c9d5445d227bdc268c66713aad8e2e`](https://github.com/medusajs/medusa/commit/2e42e053d4c9d5445d227bdc268c66713aad8e2e) Thanks [@olivermrbl](https://github.com/olivermrbl)! - chore: Preview release changeset
+
+- Updated dependencies [[`2e42e053d4c9d5445d227bdc268c66713aad8e2e`](https://github.com/medusajs/medusa/commit/2e42e053d4c9d5445d227bdc268c66713aad8e2e)]:
+  - @medusajs/framework@0.0.2
+
 ## 1.1.44
 
 ### Patch Changes
