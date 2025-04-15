@@ -52,159 +52,96 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq
 
-      - name: Install Dependencies
-        run: yarn
-
-      - name: Update package.json files - Part 1 (Names only)
+      - name: Build original packages
         run: |
-          echo "Starting step 1: Update package names only..."
-          
-          # First pass: Just update the package names
-          find packages -name "package.json" -not -path "*/node_modules/*" -type f | while read -r pkg_file; do
-            # Check if package is private
-            if ! grep -q "\"private\":\s*true" "$pkg_file"; then
-              # Get the original name
-              ORIGINAL_NAME=$(jq -r '.name' "$pkg_file")
-              
-              if [ -n "$ORIGINAL_NAME" ] && [ "$ORIGINAL_NAME" != "null" ]; then
-                # Create the new name
-                if [[ "$ORIGINAL_NAME" == @* ]]; then
-                  # For scoped packages
-                  NEW_NAME="@vennyx-org${ORIGINAL_NAME#*@*}"
-                else
-                  # For regular packages
-                  NEW_NAME="@vennyx-org/$ORIGINAL_NAME"
-                fi
-                
-                echo "Renaming $ORIGINAL_NAME to $NEW_NAME"
-                
-                # Only update the name
-                jq --arg name "$NEW_NAME" '.name = $name' "$pkg_file" > tmp.json && mv tmp.json "$pkg_file"
-              fi
-            fi
-          done
-          
-          echo "Step 1 complete: Package names updated"
+          # Build packages with original names first
+          yarn
+          yarn build
 
-      - name: Update dependencies references
+      - name: List and prepare publishable packages
         run: |
-          echo "Starting step 2: Update all dependency references..."
+          echo "Creating directory for publishable packages..."
+          mkdir -p ./publishable-packages
           
-          # Create a list of package names and their new names
-          echo "Creating mapping of original to new names..."
-          declare -A PKG_MAP
-          
-          # Build the package map
+          # Find all non-private packages and prepare them for publishing
           find packages -name "package.json" -not -path "*/node_modules/*" -type f | while read -r pkg_file; do
-            if ! grep -q "\"private\":\s*true" "$pkg_file"; then
-              OLD_NAME=$(jq -r '.name | gsub("@vennyx-org/"; "")' "$pkg_file")
-              NEW_NAME=$(jq -r '.name' "$pkg_file")
-              
-              if [[ "$OLD_NAME" == @* ]]; then
-                # For packages that were already scoped
-                BASE_NAME="${OLD_NAME#*@*/}"
-                ORIGINAL_NAME="@${OLD_NAME#*@}"
-              else
-                # For regular packages
-                BASE_NAME="$OLD_NAME"
-                ORIGINAL_NAME="$OLD_NAME"
-              fi
-              
-              echo "$ORIGINAL_NAME → $NEW_NAME" >> name_mapping.txt
+            # Skip private packages
+            if grep -q "\"private\":\s*true" "$pkg_file"; then
+              continue
             fi
-          done
-          
-          cat name_mapping.txt || echo "No mapping file created"
-          
-          # Update all dependencies, devDependencies, and peerDependencies
-          find packages -name "package.json" -not -path "*/node_modules/*" -type f | while read -r pkg_file; do
-            echo "Updating dependencies in $pkg_file"
             
-            # For each package in our name_mapping, update references
-            while IFS=" → " read -r old_name new_name; do
-              old_name=$(echo "$old_name" | tr -d '[:space:]')
-              new_name=$(echo "$new_name" | tr -d '[:space:]')
-              
-              if [ -n "$old_name" ] && [ -n "$new_name" ]; then
-                echo "  Replacing $old_name with $new_name"
-                
-                # Update all dependency types
-                for dep_type in dependencies devDependencies peerDependencies; do
-                  jq --arg old "$old_name" --arg new "$new_name" \
-                    "if .$dep_type != null and .$dep_type[\"$old\"] != null then .$dep_type[\"$new\"] = .$dep_type[\"$old\"] | del(.$dep_type[\"$old\"]) else . end" \
-                    "$pkg_file" > tmp.json && mv tmp.json "$pkg_file"
-                done
-              fi
-            done < name_mapping.txt
-          done
-          
-          echo "Step 2 complete: All dependency references updated"
-
-      - name: Reinstall dependencies
-        run: |
-          echo "Reinstalling dependencies to update workspace references..."
-          
-          # Remove the yarn.lock file and node_modules to ensure a clean state
-          # rm -f yarn.lock
-          # rm -rf node_modules
-          
-          # Reinstall with updated package names
-          yarn install
-
-      - name: Update repository info
-        run: |
-          echo "Updating repository and publishConfig information..."
-          
-          find packages -name "package.json" -not -path "*/node_modules/*" -type f | while read -r pkg_file; do
-            if ! grep -q "\"private\":\s*true" "$pkg_file"; then
-              PKG_NAME=$(jq -r '.name' "$pkg_file")
-              DIR_PATH=$(dirname "$pkg_file" | sed "s|$(pwd)/||")
-              
-              echo "Updating repository info for $PKG_NAME"
-              
-              # Add repository and publishConfig
-              jq --arg url "https://github.com/vennyx-org/medusa.git" \
-                 --arg dir "$DIR_PATH" \
-                 '.repository = {type: "git", url: $url, directory: $dir} | .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"}' \
-                 "$pkg_file" > tmp.json && mv tmp.json "$pkg_file"
+            PKG_DIR=$(dirname "$pkg_file")
+            PKG_NAME=$(jq -r '.name' "$pkg_file")
+            PKG_VERSION=$(jq -r '.version' "$pkg_file")
+            
+            if [ -z "$PKG_NAME" ] || [ "$PKG_NAME" = "null" ]; then
+              echo "Warning: Invalid package name in $pkg_file, skipping"
+              continue
             fi
+            
+            echo "Preparing package: $PKG_NAME@$PKG_VERSION"
+            
+            # Create a clean directory for each package
+            TARGET_DIR="./publishable-packages/$(basename "$PKG_DIR")"
+            mkdir -p "$TARGET_DIR"
+            
+            # Copy the built files (lib, dist, etc.)
+            if [ -d "$PKG_DIR/lib" ]; then
+              cp -r "$PKG_DIR/lib" "$TARGET_DIR/"
+            fi
+            if [ -d "$PKG_DIR/dist" ]; then
+              cp -r "$PKG_DIR/dist" "$TARGET_DIR/"
+            fi
+            
+            # Copy essential files
+            cp "$pkg_file" "$TARGET_DIR/package.json"
+            if [ -f "$PKG_DIR/README.md" ]; then
+              cp "$PKG_DIR/README.md" "$TARGET_DIR/"
+            fi
+            if [ -f "$PKG_DIR/LICENSE" ]; then
+              cp "$PKG_DIR/LICENSE" "$TARGET_DIR/"
+            fi
+            
+            # Update package.json with vennyx-org scope
+            if [[ "$PKG_NAME" == @* ]]; then
+              # For scoped packages like @medusajs/utils -> @vennyx-org/utils
+              PACKAGE_NAME_WITHOUT_SCOPE=$(echo "$PKG_NAME" | sed 's/^@[^\/]*\///')
+              NEW_NAME="@vennyx-org/$PACKAGE_NAME_WITHOUT_SCOPE"
+            else
+              # For regular packages
+              NEW_NAME="@vennyx-org/$PKG_NAME"
+            fi
+            
+            # Update package.json
+            jq --arg name "$NEW_NAME" \
+               --arg url "https://github.com/vennyx-org/medusa.git" \
+               --arg dir "$PKG_DIR" \
+               '.name = $name | .repository = {type: "git", url: $url, directory: $dir} | .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"}' \
+               "$TARGET_DIR/package.json" > "$TARGET_DIR/package.json.new" && \
+                mv "$TARGET_DIR/package.json.new" "$TARGET_DIR/package.json"
+            
+            echo "Prepared $NEW_NAME (original: $PKG_NAME) in $TARGET_DIR"
           done
           
-          echo "Repository info update complete"
+          echo "Package preparation complete."
 
-      - name: Build packages
+      - name: Publish prepared packages
         run: |
-          echo "Building packages with updated names and dependencies..."
-          yarn build || {
-            echo "Failed to build packages. Showing error details:"
-            echo "Contents of package.json files that might be causing issues:"
-            find packages -name "package.json" -not -path "*/node_modules/*" -type f | xargs grep -l "@vennyx-org" | xargs cat
-            exit 1
-          }
-
-      - name: Publish packages
-        run: |
-          echo "Starting package publishing process..."
+          echo "Publishing prepared packages..."
           
           export SUCCESS_COUNT=0
           export FAIL_COUNT=0
           
-          find packages -name "package.json" -not -path "*/node_modules/*" -type f | while read -r pkg_file; do
-            PKG_DIR=$(dirname "$pkg_file")
-            
-            # Verify package.json exists and isn't private
-            if [ -f "$pkg_file" ] && ! grep -q "\"private\":\s*true" "$pkg_file"; then
-              # Get package info for logging
-              PKG_NAME=$(jq -r '.name' "$pkg_file")
-              PKG_VERSION=$(jq -r '.version' "$pkg_file")
+          find ./publishable-packages -type d -maxdepth 1 -mindepth 1 | while read -r pkg_dir; do
+            if [ -f "$pkg_dir/package.json" ]; then
+              PKG_NAME=$(jq -r '.name' "$pkg_dir/package.json")
+              PKG_VERSION=$(jq -r '.version' "$pkg_dir/package.json")
               
-              echo "Publishing $PKG_NAME@$PKG_VERSION from $PKG_DIR"
+              echo "Publishing $PKG_NAME@$PKG_VERSION from $pkg_dir"
               
-              # Navigate to package directory and publish
-              pushd "$PKG_DIR" > /dev/null
+              pushd "$pkg_dir" > /dev/null
               
-              # Use NPM_CONFIG_LEGACY_PEER_DEPS to handle potential peer dependency issues
-              if NPM_CONFIG_LEGACY_PEER_DEPS=true npm publish --access restricted --tag ${{ github.event.inputs.version || 'latest' }}; then
+              if npm publish --access restricted --tag ${{ github.event.inputs.version || 'latest' }}; then
                 echo "✅ Successfully published $PKG_NAME@$PKG_VERSION"
                 export SUCCESS_COUNT=$((SUCCESS_COUNT+1))
               else
