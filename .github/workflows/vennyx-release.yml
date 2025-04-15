@@ -50,22 +50,51 @@ jobs:
       - name: Install Dependencies
         run: yarn
 
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
       - name: Build packages
         run: yarn build
 
-      - name: Update package.json files for GitHub Package Registry
+      - name: Debug packages structure
         run: |
-          for pkg_file in $(find packages -name "package.json" -not -path "*/node_modules/*" -type f); do
-            echo "Processing $pkg_file"
-            
-            # Check if package is private
-            IS_PRIVATE=$(grep -c "\"private\": true" $pkg_file || echo "0")
-            
-            if [ "$IS_PRIVATE" -eq "0" ]; then
-              # Get the original name
-              ORIGINAL_NAME=$(grep -o '"name": "[^"]*"' $pkg_file | cut -d'"' -f4)
+          echo "Listing all package.json files to debug folder structure:"
+          find . -name "package.json" -not -path "*/node_modules/*" | tee package_files.txt
+          echo "Checking workspace packages configuration:"
+          grep -A 20 "workspaces" package.json || echo "No workspaces found"
+
+      - name: Update package.json files
+        run: |
+          echo "Starting package.json update process..."
+          
+          while IFS= read -r pkg_file; do
+            if [[ $pkg_file != *"node_modules"* ]]; then
+              echo "=== Processing $pkg_file ==="
               
-              # Create temp file with updated package.json
+              # Check if package exists
+              if [ ! -f "$pkg_file" ]; then
+                echo "Warning: File $pkg_file does not exist, skipping"
+                continue
+              fi
+
+              # Check if package is private
+              if grep -q "\"private\":\s*true" "$pkg_file"; then
+                echo "Package is private, skipping"
+                continue
+              fi
+              
+              # Get the original name from package.json
+              ORIGINAL_NAME=$(jq -r '.name' "$pkg_file")
+              if [ -z "$ORIGINAL_NAME" ] || [ "$ORIGINAL_NAME" = "null" ]; then
+                echo "Warning: Could not determine package name for $pkg_file, skipping"
+                continue
+              fi
+              
+              echo "Processing package: $ORIGINAL_NAME"
+              
+              # Create the new name
               if [[ "$ORIGINAL_NAME" == @* ]]; then
                 # For scoped packages
                 NEW_NAME="@vennyx-org${ORIGINAL_NAME#*@*}"
@@ -74,43 +103,77 @@ jobs:
                 NEW_NAME="@vennyx-org/$ORIGINAL_NAME"
               fi
               
-              echo "Updating $ORIGINAL_NAME to $NEW_NAME"
+              echo "Renaming $ORIGINAL_NAME to $NEW_NAME"
               
-              # Use jq to update the package.json (install if needed)
-              if ! command -v jq &> /dev/null; then
-                apt-get update && apt-get install -y jq
-              fi
-              
+              # Get relative directory path for repository field
               DIR_PATH=$(dirname "$pkg_file" | sed "s|$(pwd)/||")
               
-              jq --arg name "$NEW_NAME" \
-                 --arg url "https://github.com/vennyx-org/medusa.git" \
-                 --arg dir "$DIR_PATH" \
-                 '.name = $name | .repository = {type: "git", url: $url, directory: $dir} | .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"}' \
-                 $pkg_file > temp.json && mv temp.json $pkg_file
+              # Update package.json with jq
+              cat "$pkg_file" | jq --arg name "$NEW_NAME" \
+                                   --arg url "https://github.com/vennyx-org/medusa.git" \
+                                   --arg dir "$DIR_PATH" \
+                                   '.name = $name | .repository = {type: "git", url: $url, directory: $dir} | .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"}' > tmp.json
               
-              echo "Updated package.json for $ORIGINAL_NAME"
+              # Verify the updated JSON is valid
+              if jq empty tmp.json; then
+                mv tmp.json "$pkg_file"
+                echo "✅ Successfully updated package.json for $ORIGINAL_NAME to $NEW_NAME"
+              else
+                echo "❌ Error: Generated invalid JSON for $pkg_file, skipping"
+                rm tmp.json
+              fi
             fi
-          done
+          done < <(find packages -name "package.json" -not -path "*/node_modules/*" -type f)
 
-      - name: Publish to GitHub Package Registry
+      - name: Publish packages
         run: |
-          for pkg_file in $(find packages -name "package.json" -not -path "*/node_modules/*" -type f); do
-            ORIGINAL_DIR=$(pwd)
-            PKG_DIR=$(dirname "$pkg_file")
-            echo "Checking package in $PKG_DIR"
-            
-            cd "$PKG_DIR"
-            
-            # Check if package is private
-            IS_PRIVATE=$(grep -c "\"private\": true" package.json || echo "0")
-            
-            if [ "$IS_PRIVATE" -eq "0" ]; then
-              echo "Publishing from $PKG_DIR"
-              npm publish --access restricted --tag ${{ github.event.inputs.version || 'latest' }}
+          echo "Starting package publishing process..."
+          
+          export SUCCESS_COUNT=0
+          export FAIL_COUNT=0
+          
+          while IFS= read -r pkg_file; do
+            if [[ $pkg_file != *"node_modules"* ]]; then
+              PKG_DIR=$(dirname "$pkg_file")
+              echo "===== Checking package in $PKG_DIR ====="
+              
+              # Verify package.json exists
+              if [ ! -f "$pkg_file" ]; then
+                echo "Warning: File $pkg_file does not exist, skipping"
+                continue
+              fi
+              
+              # Check if package is private
+              if grep -q "\"private\":\s*true" "$pkg_file"; then
+                echo "Package is private, skipping"
+                continue
+              fi
+              
+              # Get package info for logging
+              PKG_NAME=$(jq -r '.name' "$pkg_file")
+              PKG_VERSION=$(jq -r '.version' "$pkg_file")
+              
+              echo "Publishing $PKG_NAME@$PKG_VERSION from $PKG_DIR"
+              
+              # Navigate to package directory and publish
+              pushd "$PKG_DIR" > /dev/null
+              
+              if npm publish --access restricted --tag ${{ github.event.inputs.version || 'latest' }}; then
+                echo "✅ Successfully published $PKG_NAME@$PKG_VERSION"
+                export SUCCESS_COUNT=$((SUCCESS_COUNT+1))
+              else
+                echo "❌ Failed to publish $PKG_NAME"
+                export FAIL_COUNT=$((FAIL_COUNT+1))
+              fi
+              
+              popd > /dev/null
             fi
-            
-            cd "$ORIGINAL_DIR"
-          done
+          done < <(find packages -name "package.json" -not -path "*/node_modules/*" -type f)
+          
+          echo "Publishing complete: $SUCCESS_COUNT packages published successfully, $FAIL_COUNT failed"
+          
+          if [ "$FAIL_COUNT" -gt 0 ]; then
+            echo "::warning::$FAIL_COUNT packages failed to publish"
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
