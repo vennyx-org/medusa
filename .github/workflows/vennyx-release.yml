@@ -55,48 +55,52 @@ jobs:
 
       - name: Update package.json files for GitHub Package Registry
         run: |
-          find packages -name "package.json" -not -path "*/node_modules/*" -type f -exec node -e '
-            const fs = require("fs");
-            const packagePath = process.argv[1];
-            try {
-              const pkg = require(packagePath);
-              if (!pkg.private) {
-                const originalName = pkg.name;
-                // Replace scope or add scope if not present
-                if (originalName.startsWith("@")) {
-                  pkg.name = "@vennyx-org" + originalName.substring(originalName.indexOf("/"));
-                } else {
-                  pkg.name = "@vennyx-org/" + originalName;
+          find packages -name "package.json" -not -path "*/node_modules/*" -type f | while read pkg_file; do
+            echo "Processing $pkg_file"
+            node -e '
+              const fs = require("fs");
+              const path = process.argv[1];
+              try {
+                const pkg = JSON.parse(fs.readFileSync(path, "utf8"));
+                if (!pkg.private) {
+                  const originalName = pkg.name;
+                  // Replace scope or add scope if not present
+                  if (originalName.startsWith("@")) {
+                    pkg.name = "@vennyx-org" + originalName.substring(originalName.indexOf("/"));
+                  } else {
+                    pkg.name = "@vennyx-org/" + originalName;
+                  }
+                  // Add repository field
+                  pkg.repository = {
+                    type: "git",
+                    url: "https://github.com/vennyx-org/medusa.git",
+                    directory: path.replace(process.cwd() + "/", "")
+                  };
+                  // Add publishConfig
+                  pkg.publishConfig = {
+                    registry: "https://npm.pkg.github.com",
+                    access: "restricted"
+                  };
+                  fs.writeFileSync(path, JSON.stringify(pkg, null, 2));
+                  console.log("Updated package.json for", originalName);
                 }
-                // Add repository field
-                pkg.repository = {
-                  type: "git",
-                  url: "https://github.com/vennyx-org/medusa.git",
-                  directory: packagePath.replace(process.cwd() + "/", "")
-                };
-                // Add publishConfig
-                pkg.publishConfig = {
-                  registry: "https://npm.pkg.github.com",
-                  access: "restricted"
-                };
-                fs.writeFileSync(packagePath, JSON.stringify(pkg, null, 2));
-                console.log("Updated package.json for", originalName);
+              } catch (error) {
+                console.error("Error processing", path, error);
               }
-            } catch (error) {
-              console.error("Error processing", packagePath, error);
-            }
-          ' {} \;
+            ' "$pkg_file"
+          done
 
       - name: Publish to GitHub Package Registry
         run: |
-          find packages -name "package.json" -not -path "*/node_modules/*" -type f -exec sh -c '
-            PKG_DIR=$(dirname "$1")
+          find packages -name "package.json" -not -path "*/node_modules/*" -type f | while read pkg_file; do
+            PKG_DIR=$(dirname "$pkg_file")
             cd "$PKG_DIR"
             if [ -f "package.json" ] && ! grep -q "\"private\": true" package.json; then
               echo "Publishing from $PKG_DIR"
-              VERSION=$(node -p "require(\"./package.json\").version")
+              VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('./package.json', 'utf8')).version)")
               npm publish --access restricted --tag ${{ github.event.inputs.version || 'latest' }}
             fi
-          ' sh {} \;
+            cd - > /dev/null
+          done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
