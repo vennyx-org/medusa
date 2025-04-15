@@ -142,6 +142,7 @@ function normalizeItemTaxLinesForCart(
     tax_rate_id: taxLine.rate_id,
     code: taxLine.code!,
     rate: taxLine.rate!,
+    is_compound: taxLine.is_compound,
     provider_id: taxLine.provider_id,
     item_id: taxLine.line_item_id,
   }))

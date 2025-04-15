@@ -1,4 +1,4 @@
-import { AdjustmentLineDTO, BigNumberInput, TaxLineDTO } from "@medusajs/types"
+import { AdjustmentLineDTO, BigNumberInput, ItemTaxLineDTO } from "@medusajs/types"
 import { isDefined, pickValueFromObject } from "../../common"
 import { calculateAdjustmentTotal } from "../adjustment"
 import { BigNumber } from "../big-number"
@@ -15,7 +15,7 @@ export interface GetItemTotalInput {
   unit_price: BigNumber
   quantity: BigNumber
   is_tax_inclusive?: boolean
-  tax_lines?: Pick<TaxLineDTO, "rate">[]
+  tax_lines?: ItemTaxLineDTO[]
   adjustments?: Pick<AdjustmentLineDTO, "amount">[]
   detail?: {
     fulfilled_quantity: BigNumber

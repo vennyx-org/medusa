@@ -597,20 +597,27 @@ export default class TaxModuleService
 
     const ratesToReturn = [rate]
 
-    // If the rate can be combined we need to find the rate's
-    // parent region and add that rate too. If not we can return now.
-    if (!(rate.is_combinable && rate.tax_region.parent_id)) {
-      return ratesToReturn
-    }
-
-    // First parent region rate in prioritized rates
-    // will be the most granular rate.
-    const parentRate = prioritizedRates.find(
-      (r) => r.tax_region.id === rate.tax_region.parent_id
-    )
-
-    if (parentRate) {
-      ratesToReturn.push(parentRate)
+    // Modified to support combinable rates without parent regions
+    if (rate.is_combinable) {
+      // If there's a parent region, add its rate (original behavior)
+      if (rate.tax_region.parent_id) {
+        const parentRate = prioritizedRates.find(
+          (r) => r.tax_region.id === rate.tax_region.parent_id
+        )
+        if (parentRate) {
+          ratesToReturn.push(parentRate)
+        }
+      }
+      
+      // Include any other applicable rates from the same region that have is_combinable=true
+      // This allows multiple tax rates to apply in a single region without parent-child relationship
+      const otherCombinableRates = prioritizedRates.filter(r => 
+        r.id !== rate.id && 
+        r.is_combinable && 
+        r.tax_region.id === rate.tax_region.id
+      )
+      
+      ratesToReturn.push(...otherCombinableRates)
     }
 
     return ratesToReturn
@@ -656,6 +663,7 @@ export default class TaxModuleService
         isProductMatch: false,
         isProductTypeMatch: false,
         isShippingMatch: false,
+        isPriceThresholdMatch: false,
       }
     }
 
