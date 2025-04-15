@@ -94,7 +94,8 @@ jobs:
             cd "$PKG_DIR"
             if [ -f "package.json" ] && ! grep -q "\"private\": true" package.json; then
               echo "Publishing from $PKG_DIR"
-              yarn publish --non-interactive --new-version $(node -p "require('./package.json').version") --tag ${{ github.event.inputs.version || 'latest' }}
+              VERSION=$(node -p "require(\"./package.json\").version")
+              npm publish --access restricted --tag ${{ github.event.inputs.version || 'latest' }}
             fi
           ' sh {} \;
         env:
