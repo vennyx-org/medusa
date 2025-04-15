@@ -1,0 +1,101 @@
+name: Vennyx Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: choice
+        default: "latest"
+        description: "Which tag to use for publishing"
+        required: true
+        options:
+          - latest
+          - beta
+          - alpha
+          - next
+  push:
+    branches:
+      - develop
+      - vennyx
+    paths-ignore:
+      - "docs/**"
+      - "www/**"
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  build-and-publish:
+    name: Build and Publish to Vennyx Organization
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@vennyx-org'
+
+      - name: Create GitHub .npmrc
+        run: |
+          cat << EOF > .npmrc
+          @vennyx-org:registry=https://npm.pkg.github.com
+          //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
+          EOF
+
+      - name: Install Dependencies
+        run: yarn
+
+      - name: Build packages
+        run: yarn build
+
+      - name: Update package.json files for GitHub Package Registry
+        run: |
+          find packages -name "package.json" -not -path "*/node_modules/*" -type f -exec node -e '
+            const fs = require("fs");
+            const packagePath = process.argv[1];
+            try {
+              const pkg = require(packagePath);
+              if (!pkg.private) {
+                const originalName = pkg.name;
+                // Replace scope or add scope if not present
+                if (originalName.startsWith("@")) {
+                  pkg.name = "@vennyx-org" + originalName.substring(originalName.indexOf("/"));
+                } else {
+                  pkg.name = "@vennyx-org/" + originalName;
+                }
+                // Add repository field
+                pkg.repository = {
+                  type: "git",
+                  url: "https://github.com/vennyx-org/medusa.git",
+                  directory: packagePath.replace(process.cwd() + "/", "")
+                };
+                // Add publishConfig
+                pkg.publishConfig = {
+                  registry: "https://npm.pkg.github.com",
+                  access: "restricted"
+                };
+                fs.writeFileSync(packagePath, JSON.stringify(pkg, null, 2));
+                console.log("Updated package.json for", originalName);
+              }
+            } catch (error) {
+              console.error("Error processing", packagePath, error);
+            }
+          ' {} \;
+
+      - name: Publish to GitHub Package Registry
+        run: |
+          find packages -name "package.json" -not -path "*/node_modules/*" -type f -exec sh -c '
+            PKG_DIR=$(dirname "$1")
+            cd "$PKG_DIR"
+            if [ -f "package.json" ] && ! grep -q "\"private\": true" package.json; then
+              echo "Publishing from $PKG_DIR"
+              yarn publish --non-interactive --new-version $(node -p "require('./package.json').version") --tag ${{ github.event.inputs.version || 'latest' }}
+            fi
+          ' sh {} \;
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
