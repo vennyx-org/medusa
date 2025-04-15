@@ -55,52 +55,62 @@ jobs:
 
       - name: Update package.json files for GitHub Package Registry
         run: |
-          find packages -name "package.json" -not -path "*/node_modules/*" -type f | while read pkg_file; do
+          for pkg_file in $(find packages -name "package.json" -not -path "*/node_modules/*" -type f); do
             echo "Processing $pkg_file"
-            node -e '
-              const fs = require("fs");
-              const path = process.argv[1];
-              try {
-                const pkg = JSON.parse(fs.readFileSync(path, "utf8"));
-                if (!pkg.private) {
-                  const originalName = pkg.name;
-                  // Replace scope or add scope if not present
-                  if (originalName.startsWith("@")) {
-                    pkg.name = "@vennyx-org" + originalName.substring(originalName.indexOf("/"));
-                  } else {
-                    pkg.name = "@vennyx-org/" + originalName;
-                  }
-                  // Add repository field
-                  pkg.repository = {
-                    type: "git",
-                    url: "https://github.com/vennyx-org/medusa.git",
-                    directory: path.replace(process.cwd() + "/", "")
-                  };
-                  // Add publishConfig
-                  pkg.publishConfig = {
-                    registry: "https://npm.pkg.github.com",
-                    access: "restricted"
-                  };
-                  fs.writeFileSync(path, JSON.stringify(pkg, null, 2));
-                  console.log("Updated package.json for", originalName);
-                }
-              } catch (error) {
-                console.error("Error processing", path, error);
-              }
-            ' "$pkg_file"
+            
+            # Check if package is private
+            IS_PRIVATE=$(grep -c "\"private\": true" $pkg_file || echo "0")
+            
+            if [ "$IS_PRIVATE" -eq "0" ]; then
+              # Get the original name
+              ORIGINAL_NAME=$(grep -o '"name": "[^"]*"' $pkg_file | cut -d'"' -f4)
+              
+              # Create temp file with updated package.json
+              if [[ "$ORIGINAL_NAME" == @* ]]; then
+                # For scoped packages
+                NEW_NAME="@vennyx-org${ORIGINAL_NAME#*@*}"
+              else
+                # For regular packages
+                NEW_NAME="@vennyx-org/$ORIGINAL_NAME"
+              fi
+              
+              echo "Updating $ORIGINAL_NAME to $NEW_NAME"
+              
+              # Use jq to update the package.json (install if needed)
+              if ! command -v jq &> /dev/null; then
+                apt-get update && apt-get install -y jq
+              fi
+              
+              DIR_PATH=$(dirname "$pkg_file" | sed "s|$(pwd)/||")
+              
+              jq --arg name "$NEW_NAME" \
+                 --arg url "https://github.com/vennyx-org/medusa.git" \
+                 --arg dir "$DIR_PATH" \
+                 '.name = $name | .repository = {type: "git", url: $url, directory: $dir} | .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"}' \
+                 $pkg_file > temp.json && mv temp.json $pkg_file
+              
+              echo "Updated package.json for $ORIGINAL_NAME"
+            fi
           done
 
       - name: Publish to GitHub Package Registry
         run: |
-          find packages -name "package.json" -not -path "*/node_modules/*" -type f | while read pkg_file; do
+          for pkg_file in $(find packages -name "package.json" -not -path "*/node_modules/*" -type f); do
+            ORIGINAL_DIR=$(pwd)
             PKG_DIR=$(dirname "$pkg_file")
+            echo "Checking package in $PKG_DIR"
+            
             cd "$PKG_DIR"
-            if [ -f "package.json" ] && ! grep -q "\"private\": true" package.json; then
+            
+            # Check if package is private
+            IS_PRIVATE=$(grep -c "\"private\": true" package.json || echo "0")
+            
+            if [ "$IS_PRIVATE" -eq "0" ]; then
               echo "Publishing from $PKG_DIR"
-              VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('./package.json', 'utf8')).version)")
               npm publish --access restricted --tag ${{ github.event.inputs.version || 'latest' }}
             fi
-            cd - > /dev/null
+            
+            cd "$ORIGINAL_DIR"
           done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
