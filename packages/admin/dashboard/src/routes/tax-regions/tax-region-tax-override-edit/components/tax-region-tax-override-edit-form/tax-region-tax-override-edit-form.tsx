@@ -12,6 +12,7 @@ import {
   clx,
   toast,
 } from "@medusajs/ui"
+import { useEffect } from "react"
 import { useFieldArray, useForm, useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod"
@@ -55,6 +56,7 @@ const TaxRegionTaxRateEditSchema = z.object({
     value: z.string().optional(),
   }),
   is_combinable: z.boolean().optional(),
+  is_compound: z.boolean().optional(),
   enabled_rules: z.object({
     product: z.boolean(),
     product_type: z.boolean(),
@@ -86,6 +88,7 @@ export const TaxRegionTaxOverrideEditForm = ({
         value: taxRate.rate?.toString() || "",
       },
       is_combinable: taxRate.is_combinable,
+      is_compound: taxRate.is_compound,
       enabled_rules: {
         product: initialValues.product.length > 0,
         product_type: initialValues.product_type.length > 0,
@@ -148,9 +151,10 @@ export const TaxRegionTaxOverrideEditForm = ({
     await mutateAsync(
       {
         name: values.name,
-        code: values.code || null,
+        code: values.code || "",
         rate: values.rate?.float,
         is_combinable: values.is_combinable,
+        is_compound: values.is_compound,
         rules,
       },
       {
@@ -308,6 +312,17 @@ export const TaxRegionTaxOverrideEditForm = ({
     name: "enabled_rules",
   })
 
+  const watchedIsCombinable = useWatch({
+    control: form.control,
+    name: "is_combinable",
+  })
+
+  useEffect(() => {
+    if (!watchedIsCombinable) {
+      form.setValue("is_compound", false)
+    }
+  }, [watchedIsCombinable, form])
+
   const addRule = () => {
     const firstDisabledRule = Object.keys(watchedEnabledRules).find(
       (key) => !watchedEnabledRules[key as TaxRateRuleReferenceType]
@@ -408,6 +423,15 @@ export const TaxRegionTaxOverrideEditForm = ({
               name="is_combinable"
               label={t("taxRegions.fields.isCombinable.label")}
               description={t("taxRegions.fields.isCombinable.hint")}
+            />
+          )}
+          {isCombinable && (
+            <SwitchBox
+              control={form.control}
+              name="is_compound"
+              label={t("taxRegions.fields.isCompound.label")}
+              description={t("taxRegions.fields.isCompound.hint")}
+              disabled={!watchedIsCombinable}
             />
           )}
           <div className="flex flex-col gap-y-3">
