@@ -116,7 +116,7 @@ jobs:
                --arg url "https://github.com/vennyx-org/medusa.git" \
                --arg dir "$PKG_DIR" \
                --arg buildnum "$(date +%s)" \
-               '.name = $name | .version = .version + "." + $buildnum | .repository = {type: "git", url: $url, directory: $dir} | .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"}' \
+               '.name = $name | .version = .version + "-" + $buildnum | .repository = {type: "git", url: $url, directory: $dir} | .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"}' \
                "$TARGET_DIR/package.json" > "$TARGET_DIR/package.json.new" && \
                 mv "$TARGET_DIR/package.json.new" "$TARGET_DIR/package.json"
             
