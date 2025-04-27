@@ -36,8 +36,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@vennyx-org'
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@vennyx-org"
 
       - name: Create GitHub .npmrc
         run: |
@@ -61,7 +61,7 @@ jobs:
         run: |
           echo "Creating directory for publishable packages..."
           mkdir -p ./publishable-packages
-          
+
           # Find all non-private packages and prepare them for publishing
           find packages -name "package.json" -not -path "*/node_modules/*" -type f | while read -r pkg_file; do
             # Skip private packages
@@ -115,22 +115,23 @@ jobs:
             jq --arg name "$NEW_NAME" \
                --arg url "https://github.com/vennyx-org/medusa.git" \
                --arg dir "$PKG_DIR" \
-               '.name = $name | .repository = {type: "git", url: $url, directory: $dir} | .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"}' \
+               --arg buildnum "$(date +%s)" \
+               '.name = $name | .version = .version + "." + $buildnum | .repository = {type: "git", url: $url, directory: $dir} | .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"}' \
                "$TARGET_DIR/package.json" > "$TARGET_DIR/package.json.new" && \
                 mv "$TARGET_DIR/package.json.new" "$TARGET_DIR/package.json"
             
             echo "Prepared $NEW_NAME (original: $PKG_NAME) in $TARGET_DIR"
           done
-          
+
           echo "Package preparation complete."
 
       - name: Publish prepared packages
         run: |
           echo "Publishing prepared packages..."
-          
+
           export SUCCESS_COUNT=0
           export FAIL_COUNT=0
-          
+
           find ./publishable-packages -type d -maxdepth 1 -mindepth 1 | while read -r pkg_dir; do
             if [ -f "$pkg_dir/package.json" ]; then
               PKG_NAME=$(jq -r '.name' "$pkg_dir/package.json")
@@ -151,9 +152,9 @@ jobs:
               popd > /dev/null
             fi
           done
-          
+
           echo "Publishing complete: $SUCCESS_COUNT packages published successfully, $FAIL_COUNT failed"
-          
+
           if [ "$FAIL_COUNT" -gt 0 ]; then
             echo "::warning::$FAIL_COUNT packages failed to publish"
           fi
