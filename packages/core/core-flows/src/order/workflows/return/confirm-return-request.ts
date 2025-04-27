@@ -169,26 +169,25 @@ function prepareFulfillmentData({
 }
 
 function extractReturnShippingOptionId({ orderPreview, orderReturn }) {
-  let returnShippingMethod
   for (const shippingMethod of orderPreview.shipping_methods ?? []) {
     const modifiedShippingMethod_ = shippingMethod as any
     if (!modifiedShippingMethod_.actions) {
       continue
     }
 
-    returnShippingMethod = modifiedShippingMethod_.actions.find((action) => {
+    const methodAction = modifiedShippingMethod_.actions.find((action) => {
       return (
         action.action === ChangeActionType.SHIPPING_ADD &&
         action.return_id === orderReturn.id
       )
     })
+
+    if (methodAction) {
+      return modifiedShippingMethod_.shipping_option_id
+    }
   }
 
-  if (!returnShippingMethod) {
-    return null
-  }
-
-  return returnShippingMethod.shipping_option_id
+  return null
 }
 
 function getUpdateReturnData({ orderReturn }: { orderReturn: { id: string } }) {

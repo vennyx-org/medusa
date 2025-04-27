@@ -22,6 +22,8 @@ export const MenuItem = ({ item, onClick }: MenuItemProps) => {
         )}
         href={item.link}
         onClick={() => onClick?.(item)}
+        target={item.openInNewTab ? "_blank" : undefined}
+        rel={item.openInNewTab ? "noopener noreferrer" : undefined}
       >
         {item.icon && (
           <span className="text-medusa-fg-subtle mt-[2.5px] block">

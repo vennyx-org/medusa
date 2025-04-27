@@ -381,6 +381,7 @@ Read-only module links are most useful when working with data models that aren't
 To define the read-only module link to a virtual data model, you must:
 
 1. Create a `list` method in the custom module's service. This method retrieves the linked records filtered by the ID(s) of the first data model.
+    - You can also create a `listAndCount` method to retrieve the related records with pagination.
 2. Define the read-only module link from the first data model to the virtual data model.
 3. Use Query to retrieve the first data model and its linked records from the virtual data model.
 
@@ -395,6 +396,8 @@ Refer to the [Modules chapter](../../modules/page.mdx) to learn how to create a 
 </Note>
 
 ```ts title="src/modules/cms/service.ts"
+import { FindConfig } from "@medusajs/framework/types"
+
 type CmsModuleOptions = {
   apiKey: string
 }
@@ -427,12 +430,44 @@ export default class CmsModuleService {
      * ]
     */
   }
+
+  // To retrieve with pagination
+  async listAndCount(
+    filter: {
+      id: string | string[]
+    },
+    config?: FindConfig<any> | undefined 
+  ) {
+    return this.client.getPosts(filter, {
+      limit: config?.take,
+      offset: config?.skip,
+    })
+    /**
+     * Example of returned data:
+     * 
+     * {
+     *   count: 2,
+     *   data: [
+     *     {
+     *       "id": "post_123",
+     *       "product_id": "prod_321"
+     *     },
+     *     {
+     *       "id": "post_456",
+     *       "product_id": "prod_654"
+     *     }
+     *   ]
+     * }
+    */
+  }
 }
 ```
 
 The above service initializes a client, assuming your CMS has an SDK that allows you to retrieve posts.
 
 The service must have a `list` method to be part of the read-only module link. This method accepts the ID(s) of the products to retrieve their associated posts. The posts must include the product's ID in a field, such as `product_id`.
+
+You can also create a `listAndCount` method to retrieve the posts with pagination. This method is called if you pass [pagination parameters to Query](../query/page.mdx#apply-pagination).
 
 Next, define a read-only module link from the Product Module to the CMS Module:
 

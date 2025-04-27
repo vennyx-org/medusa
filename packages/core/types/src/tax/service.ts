@@ -417,7 +417,7 @@ export interface ITaxModuleService extends IModuleService {
    *
    * @example
    * const taxRegion = await taxModule.updateTaxRegions({
-   *   province_code: "be",
+   *   province_code: "us-ca",
    * })
    */
   updateTaxRegions(
@@ -436,11 +436,11 @@ export interface ITaxModuleService extends IModuleService {
    * const taxRegions = await taxModule.updateTaxRegions([
    *   {
    *     id: "tx-1",
-   *     province_code: "be",
+   *     province_code: "us-ca",
    *   },
    *   {
    *     id: "tx-2",
-   *     province_code: "ca",
+   *     province_code: "us-ny",
    *   },
    * ])
    */

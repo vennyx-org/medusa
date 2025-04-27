@@ -1,0 +1,41 @@
+import { CodeTab, CodeTabs } from "docs-ui"
+
+If you get the following error while using `query.graph` or `useQueryGraphStep`:
+
+```bash
+Expression produces a union type that is too complex to represent. ts(2590)
+```
+
+## Why this Error Occurred
+
+This type error may occur when you use Query, but it's only a type error that doesn't affect the functionality of your code. It occurs because the models you're retrieving may be too complicated for the TypeScript compiler to infer the types correctly.
+
+---
+
+## How to Fix it
+
+You can ignore this error by using the `// @ts-ignore` directive before the line of code that produces the error. For example:
+
+<CodeTabs group="query">
+  <CodeTab label="query.graph" value="query.graph">
+
+```ts
+// @ts-ignore
+const { data } = await query.graph({
+  // ...
+})
+```
+
+  </CodeTab>
+  <CodeTab label="useQueryGraphStep" value="useQueryGraphStep">
+
+```ts
+// @ts-ignore
+const { data } = useQueryGraphStep({
+  // ...
+})
+```
+
+  </CodeTab>
+
+</CodeTabs>

@@ -48,7 +48,7 @@ export interface UpsertAddressDTO {
   country_code?: string
 
   /**
-   * The province of the address.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province/state of the address.
    */
   province?: string
 

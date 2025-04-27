@@ -8,5 +8,26 @@ swap:
   "Admin Extensions SDK": Admin Extension SDK
   "Module SDK": Modules SDK
   "Data Modeling Language": "Data Model Language"
+  '(?:[\w\d'']+) framework': $1 Framework
   "Medusa's Framework": "Medusa Framework"
-  
+  "Architecural Module[s]?": "Infrastructure Module"
+  "Architectural module[s]?": "Infrastructure module"
+  "architectural module[s]?": "infrastructure module"
+  "Infrastructure module[s]?": "Infrastructure Module"
+  "infrastructure module[s]?": "Infrastructure Module"
+  "Commerce module[s]?": "Commerce Module"
+  "commerce module[s]?": "Commerce Module"
+exceptions:
+  - 'storefront framework'
+  - 'Storefront Framework'
+  - 'Storefront framework'
+  - 'storefront''s framework'
+  - 'Storfront''s framework'
+  - 'Storefront''s Framework'
+  - 'JavaScript framework'
+  - 'frontend framework'
+  - 'Frontend Framework'
+  - 'Frontend framework'
+  - 'frontend''s framework'
+  - 'Frontend''s Framework'
+  - 'Frontend''s framework'

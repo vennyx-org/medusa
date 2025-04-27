@@ -6,7 +6,7 @@ export const metadata = {
 
 # {metadata.title}
 
-This document showcases the module links defined between the API Key Module and other commerce modules.
+This document showcases the module links defined between the API Key Module and other Commerce Modules.
 
 ## Summary
 
@@ -38,7 +38,7 @@ The API Key Module has the following links to other modules:
         [SalesChannel](/references/sales-channel/models/SalesChannel) in [Sales Channel Module](../../sales-channel/page.mdx)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - many-to-many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#sales-channel-module)
@@ -74,7 +74,7 @@ const { data: apiKeys } = await query.graph({
   ],
 })
 
-// apiKeys.sales_channels
+// apiKeys[0].sales_channels
 ```
 
   </CodeTab>
@@ -92,7 +92,7 @@ const { data: apiKeys } = useQueryGraphStep({
   ],
 })
 
-// apiKeys.sales_channels
+// apiKeys[0].sales_channels
 ```
 
   </CodeTab>
@@ -112,7 +112,7 @@ import { Modules } from "@medusajs/framework/utils"
 
 await link.create({
   [Modules.API_KEY]: {
-    api_key_id: "apk_123",
+    publishable_key_id: "apk_123",
   },
   [Modules.SALES_CHANNEL]: {
     sales_channel_id: "sc_123",
@@ -131,7 +131,7 @@ import { createRemoteLinkStep } from "@medusajs/medusa/core-flows"
 
 createRemoteLinkStep({
   [Modules.API_KEY]: {
-    api_key_id: "apk_123",
+    publishable_key_id: "apk_123",
   },
   [Modules.SALES_CHANNEL]: {
     sales_channel_id: "sc_123",

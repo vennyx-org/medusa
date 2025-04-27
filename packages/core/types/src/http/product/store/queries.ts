@@ -17,7 +17,7 @@ export interface StoreProductPricingContext {
    */
   country_code?: string
   /**
-   * The province, which can be taken from a customer's address. This parameter helps further narrowing down the taxes applied on a the product variant's prices.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province, which can be taken from a customer's address. This parameter helps further narrowing down the taxes applied on a the product variant's prices.
    */
   province?: string
   /**

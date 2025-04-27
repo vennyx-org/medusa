@@ -31,7 +31,7 @@ export const metadata = {
 
 In this tutorial, you'll learn how to integrate Medusa with Algolia.
 
-When you install a Medusa application, you get a fully-fledged commerce platform with a framework for customization. Medusa's architecture supports integrating third-party services, such as a search engine, allowing you to build your unique requirements around core commerce flows.
+When you install a Medusa application, you get a fully-fledged commerce platform with a Framework for customization. Medusa's architecture supports integrating third-party services, such as a search engine, allowing you to build your unique requirements around core commerce flows.
 
 [Algolia](https://www.algolia.com/doc/) is a search engine that enables you to build and manage an intuitive search experience for your customers. By integrating Algolia with Medusa, you can index e-commerce data, such as products, and allow clients to search through them.
 
@@ -453,7 +453,7 @@ You create a step with `createStep` from the Workflows SDK. It accepts two param
 1. The step's unique name, which is `sync-products`.
 2. An async function that receives two parameters:
     - The step's input, which is in this case an object holding an array of products to sync into Algolia.
-    - An object that has properties including the [Medusa container](!docs!/learn/fundamentals/medusa-container), which is a registry of framework and commerce tools that you can access in the step.
+    - An object that has properties including the [Medusa container](!docs!/learn/fundamentals/medusa-container), which is a registry of Framework and commerce tools that you can access in the step.
 
 In the step function, you resolve the Algolia Module's service from the Medusa container using the name you exported in the module definition's file.
 
@@ -690,7 +690,7 @@ Since you export a `POST` route handler function, you expose an `API` route at `
 1. A request object with details and context on the request, such as body parameters or authenticated user details.
 2. A response object to manipulate and send the response.
 
-In the route handler, you use the Medusa container that is available in the request object to resolve the [Event Module](../../../architectural-modules/event/page.mdx). This module manages events and their subscribers.
+In the route handler, you use the Medusa container that is available in the request object to resolve the [Event Module](../../../infrastructure-modules/event/page.mdx). This module manages events and their subscribers.
 
 Then, you emit the `algolia.sync` event using the Event Module's `emit` method, passing it the event name.
 

@@ -8,10 +8,30 @@ import {
 export const createDraftOrderShippingMethodAdjustmentsStepId =
   "create-draft-order-shipping-method-adjustments"
 
-interface CreateDraftOrderShippingMethodAdjustmentsStepInput {
+/**
+ * The details of the shipping method adjustments to create.
+ */
+export interface CreateDraftOrderShippingMethodAdjustmentsStepInput {
+  /**
+   * The shipping method adjustments to create.
+   */
   shippingMethodAdjustmentsToCreate: CreateShippingMethodAdjustmentDTO[]
 }
 
+/**
+ * This step creates shipping method adjustments for a draft order.
+ * 
+ * @example
+ * const data = createDraftOrderShippingMethodAdjustmentsStep({
+ *   shippingMethodAdjustmentsToCreate: [
+ *     {
+ *       shipping_method_id: "sm_123",
+ *       code: "PROMO_123",
+ *       amount: 10,
+ *     }
+ *   ]
+ * })
+ */
 export const createDraftOrderShippingMethodAdjustmentsStep = createStep(
   createDraftOrderShippingMethodAdjustmentsStepId,
   async function (

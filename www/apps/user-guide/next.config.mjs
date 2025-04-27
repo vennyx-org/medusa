@@ -105,6 +105,9 @@ const nextConfig = {
 
   transpilePackages: ["docs-ui"],
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || "/user-guide",
+  outputFileTracingIncludes: {
+    "/md\\-content/\\[\\[\\.\\.\\.slug\\]\\]": ["./app/**/*.mdx"],
+  },
   outputFileTracingExcludes: {
     "*": ["node_modules/@medusajs/icons"],
   },

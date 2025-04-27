@@ -19,7 +19,7 @@ export interface AdminGeoZone {
    */
   country_code: string
   /**
-   * The geo zone's province code.
+   * The geo zone's lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code.
    */
   province_code: string | null
   /**

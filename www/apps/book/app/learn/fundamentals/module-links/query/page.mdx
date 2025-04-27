@@ -12,7 +12,7 @@ In this chapter, you’ll learn about Query and how to use it to fetch data from
 
 Query fetches data across modules. It’s a set of methods registered in the Medusa container under the `query` key.
 
-In all resources that can access the [Medusa Container](../../medusa-container/page.mdx), such as API routes or workflows, you can resolve Query to fetch data across custom modules and Medusa’s commerce modules.
+In all resources that can access the [Medusa Container](../../medusa-container/page.mdx), such as API routes or workflows, you can resolve Query to fetch data across custom modules and Medusa’s Commerce Modules.
 
 ---
 
@@ -175,7 +175,7 @@ In the object passed to the `graph` method:
     - `product.*` to retrieve the fields of a product record linked to a `Post` record.
     - `post.*` to retrieve the fields of a `Post` record linked to a product record.
 
-You can then apply any [filters](#apply-filters) or [pagination configurations](#apply-pagination).
+You can then apply any [filters](#apply-filters) or [pagination configurations](#apply-pagination) on the module link's table. For example, you can apply filters on the `product_id`, `post_id`, and any other custom columns you defined in the link table.
 
 The returned `data` is similar to the following:
 
@@ -238,7 +238,12 @@ Filters don't apply on fields of linked data models from other modules. Refer to
 
 ### Advanced Query Filters
 
-Under the hood, Query uses the `listX` (`listPosts`) method of the data model's module's service to retrieve records. This method accepts a filter object that can be used to filter records.
+Under the hood, Query uses one of the following methods from the data model's module's service to retrieve records:
+
+- `listX` if you don't pass [pagination parameters](#apply-pagination). For example, `listPosts`.
+- `listAndCountX` if you pass pagination parameters. For example, `listAndCountPosts`.
+
+Both methods accepts a filter object that can be used to filter records.
 
 Those filters don't just allow you to filter by exact values. You can also filter by properties that don't match a value, match multiple values, and other filter types.
 

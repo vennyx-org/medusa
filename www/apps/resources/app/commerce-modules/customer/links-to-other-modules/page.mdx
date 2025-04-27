@@ -6,7 +6,7 @@ export const metadata = {
 
 # {metadata.title}
 
-This document showcases the module links defined between the Customer Module and other commerce modules.
+This document showcases the module links defined between the Customer Module and other Commerce Modules.
 
 ## Summary
 
@@ -44,7 +44,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [AccountHolder](/references/payment/models/AccountHolder) in [Payment Module](../../payment/page.mdx)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - many-to-many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#payment-module)
@@ -58,7 +58,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [Customer](/references/customer/models/Customer)
       </Table.Cell>
       <Table.Cell>
-        Read-only
+        Read-only - has one
       </Table.Cell>
       <Table.Cell>
         [Learn more](#cart-module)
@@ -72,7 +72,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [Customer](/references/customer/models/Customer)
       </Table.Cell>
       <Table.Cell>
-        Read-only
+        Read-only - has one
       </Table.Cell>
       <Table.Cell>
         [Learn more](#order-module)
@@ -105,11 +105,11 @@ To retrieve the account holder associated with a customer with [Query](!docs!/le
 const { data: customers } = await query.graph({
   entity: "customer",
   fields: [
-    "account_holders.*",
+    "account_holder_link.account_holder.*",
   ],
 })
 
-// customers.account_holders
+// customers[0].account_holder_link?.[0]?.account_holder
 ```
 
   </CodeTab>
@@ -123,11 +123,11 @@ import { useQueryGraphStep } from "@medusajs/medusa/core-flows"
 const { data: customers } = useQueryGraphStep({
   entity: "customer",
   fields: [
-    "account_holders.*",
+    "account_holder_link.account_holder.*",
   ],
 })
 
-// customers.account_holders
+// customers[0].account_holder_link?.[0]?.account_holder
 ```
 
   </CodeTab>

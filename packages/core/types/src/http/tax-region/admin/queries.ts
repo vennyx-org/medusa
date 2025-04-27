@@ -21,7 +21,7 @@ export interface AdminTaxRegionListParams
    */
   country_code?: string | string[] | OperatorMap<string | string[]>
   /**
-   * Filter by the tax region's province code(s).
+   * Filter by the tax region's lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province or state code(s).
    */
   province_code?: string | string[] | OperatorMap<string | string[]>
   /**

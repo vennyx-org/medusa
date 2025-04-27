@@ -28,6 +28,13 @@ export const updateShippingOptionsWorkflowId =
  * You can use this workflow within your own customizations or custom workflows, allowing you to
  * update shipping options within your custom flows.
  * 
+ * :::note
+ * 
+ * Learn more about adding rules to the shipping option's prices in the Pricing Module's 
+ * [Price Rules](https://docs.medusajs.com/resources/commerce-modules/pricing/price-rules) documentation.
+ * 
+ * :::note
+ * 
  * @example
  * const { result } = await updateShippingOptionsWorkflow(container)
  * .run({

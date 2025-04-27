@@ -8,6 +8,9 @@ export interface BeginorderEditWorkflowInput {
   order_id: string
   /**
    * The ID of the user requesting the order edit.
+   * 
+   * @example
+   * "user_123"
    */
   created_by?: string
   /**

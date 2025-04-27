@@ -44,7 +44,7 @@ export type UploadFilesWorkflowInput = {
 export const uploadFilesWorkflowId = "upload-files"
 /**
  * This workflow uploads one or more files using the installed 
- * [File Module Provider](https://docs.medusajs.com/resources/architectural-modules/file). The workflow is used by the
+ * [File Module Provider](https://docs.medusajs.com/resources/infrastructure-modules/file). The workflow is used by the
  * [Upload Files Admin API Route](https://docs.medusajs.com/api/admin#uploads_postuploads).
  * 
  * You can use this workflow within your customizations or your own custom workflows, allowing you to

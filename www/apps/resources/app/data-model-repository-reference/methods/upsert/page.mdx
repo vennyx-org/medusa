@@ -1,0 +1,92 @@
+---
+sidebar_label: "upsert"
+---
+
+import { TypeList } from "docs-ui"
+
+export const metadata = {
+  title: `upsert Method - Data Model Repository Reference`,
+}
+
+# {metadata.title}
+
+The `upsert` method of a data model repository creates or updates one or more records of the data model.
+
+<Note>
+
+This reference assumes you've already resolved the data model repository, as explained in the [Data Model Repository Reference](../../page.mdx) documentation.
+
+</Note>
+
+## `upsert` Parameters
+
+<TypeList
+  types={[
+    {
+      type: "`array`",
+      name: "data",
+      description: "An array of records to create or update. If a record object has an `id` property, the method will try to update the record. Otherwise, the method will create a new record.",
+      required: true,
+    }
+  ]}
+  sectionTitle="upsert Parameters"
+/>
+---
+
+## Upsert Records
+
+```ts
+import { 
+  InjectTransactionManager,
+  MedusaContext,
+  MedusaService,
+} from "@medusajs/framework/utils"
+import { Context, InferTypeOf, DAL } from "@medusajs/framework/types"
+import { EntityManager } from "@mikro-orm/knex"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  // ...
+  @InjectTransactionManager()
+  protected async doSomething_(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    const posts = await this.postRepository_.upsert([
+      {
+        id: "01JSHAW6Z7KW4X6E8MFPGNEKHC",
+        title: "My Old Post",
+      },
+      {
+        title: "My New Post",
+      },
+    ])
+
+    return posts
+  }
+
+  @InjectManager()
+  async doSomething(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    return await this.doSomething_(id, sharedContext)
+  }
+}
+```
+
+### Parameters
+
+The `upsert` method accepts an array of objects, each representing a record to create or update.
+
+If a record object has an `id` property, the method will try to update a record with that `id`. Otherwise, the method will create a new record.
+
+If the `id` property is specified but no record with that `id` exists, the created record will have the specified `id`.
+
+Each object has the same shape as the data model.
+
+### Returns
+
+The method returns an array of the created or updated records.

@@ -12,6 +12,12 @@ import {
   Modules,
   TransactionHandlerType,
 } from "@medusajs/framework/utils"
+import {
+  createStep,
+  createWorkflow,
+  StepResponse,
+  WorkflowResponse,
+} from "@medusajs/framework/workflows-sdk"
 import { moduleIntegrationTestRunner } from "@medusajs/test-utils"
 import { WorkflowsModuleService } from "@services"
 import { asFunction } from "awilix"
@@ -31,7 +37,7 @@ import {
 } from "../__fixtures__/workflow_event_group_id"
 import { createScheduled } from "../__fixtures__/workflow_scheduled"
 
-jest.setTimeout(300000)
+jest.setTimeout(60000)
 
 const failTrap = (done) => {
   setTimeoutSync(() => {
@@ -157,6 +163,83 @@ moduleIntegrationTestRunner<IWorkflowEngineService>({
         )
       })
 
+      it("should compose nested workflows w/ async steps", (done) => {
+        const asyncResults: any[] = []
+        const mockStep1Fn = jest.fn().mockImplementation(() => {
+          const res = { obj: "return from 1" }
+          asyncResults.push(res)
+          return new StepResponse(res)
+        })
+        const mockStep2Fn = jest.fn().mockImplementation(async () => {
+          await setTimeoutPromise(100)
+          const res = { obj: "return from 2" }
+          asyncResults.push(res)
+          return new StepResponse(res)
+        })
+
+        const mockStep3Fn = jest.fn().mockImplementation(() => {
+          const res = { obj: "return from 3" }
+          asyncResults.push(res)
+          return new StepResponse(res)
+        })
+
+        const step1 = createStep("step1", mockStep1Fn)
+        const step2 = createStep(
+          {
+            name: "step2",
+            async: true,
+            backgroundExecution: true,
+          },
+          mockStep2Fn
+        )
+        const step3 = createStep("step3", mockStep3Fn)
+
+        const wf3 = createWorkflow("workflow3", function (input) {
+          return new WorkflowResponse(step2(input))
+        })
+
+        const wf2 = createWorkflow("workflow2", function (input) {
+          const ret3 = wf3.runAsStep({
+            input: {},
+          })
+          return new WorkflowResponse(ret3)
+        })
+
+        const workflowId = "workflow1"
+        createWorkflow(workflowId, function (input) {
+          step1(input)
+          wf2.runAsStep({ input })
+          const fourth = step3({})
+          return new WorkflowResponse(fourth)
+        })
+
+        asyncResults.push("begin workflow")
+        workflowOrcModule
+          .run(workflowId, {
+            input: {},
+          })
+          .then(() => {
+            asyncResults.push("returned workflow")
+
+            void workflowOrcModule.subscribe({
+              workflowId,
+              subscriber: (event) => {
+                if (event.eventType === "onFinish") {
+                  expect(asyncResults).toEqual([
+                    "begin workflow",
+                    { obj: "return from 1" },
+                    "returned workflow",
+                    { obj: "return from 2" },
+                    { obj: "return from 3" },
+                  ])
+                }
+              },
+            })
+          })
+
+        failTrap(done)
+      })
+
       describe("Testing basic workflow", function () {
         beforeEach(() => {
           jest.clearAllMocks()
@@ -270,7 +353,7 @@ moduleIntegrationTestRunner<IWorkflowEngineService>({
           expect(transaction.getFlow().state).toEqual("reverted")
         })
 
-        it.skip("should subscribe to a async workflow and receive the response when it finishes", (done) => {
+        it("should subscribe to a async workflow and receive the response when it finishes", (done) => {
           const transactionId = "trx_123"
 
           const onFinish = jest.fn(() => {
@@ -296,6 +379,7 @@ moduleIntegrationTestRunner<IWorkflowEngineService>({
           })
 
           expect(onFinish).toHaveBeenCalledTimes(0)
+          failTrap(done)
         })
 
         it("should cancel and revert a completed workflow", async () => {
@@ -367,6 +451,15 @@ moduleIntegrationTestRunner<IWorkflowEngineService>({
         beforeEach(() => {
           jest.useFakeTimers()
           jest.clearAllMocks()
+
+          // Register test-value in the container for all tests
+          const sharedContainer =
+            workflowOrcModule["workflowOrchestratorService_"]["container_"]
+
+          sharedContainer.register(
+            "test-value",
+            asFunction(() => "test")
+          )
         })
 
         afterEach(() => {
@@ -375,44 +468,56 @@ moduleIntegrationTestRunner<IWorkflowEngineService>({
 
         it("should execute a scheduled workflow", async () => {
           const spy = createScheduled("standard", {
-            cron: "0 0 * * * *", // Jest issue: clearExpiredExecutions runs every hour, this is scheduled to run every hour to match the number of calls
+            cron: "0 0 * * * *", // Runs at the start of every hour
           })
 
+          expect(spy).toHaveBeenCalledTimes(0)
+
           await jest.runOnlyPendingTimersAsync()
+
           expect(spy).toHaveBeenCalledTimes(1)
 
           await jest.runOnlyPendingTimersAsync()
+
           expect(spy).toHaveBeenCalledTimes(2)
         })
 
         it("should stop executions after the set number of executions", async () => {
           const spy = await createScheduled("num-executions", {
-            cron: "* * * * * *",
+            interval: 1000,
             numberOfExecutions: 2,
           })
 
-          await jest.runOnlyPendingTimersAsync()
+          expect(spy).toHaveBeenCalledTimes(0)
+
+          await jest.advanceTimersByTimeAsync(1100)
+
           expect(spy).toHaveBeenCalledTimes(1)
 
-          await jest.runOnlyPendingTimersAsync()
+          await jest.advanceTimersByTimeAsync(1100)
+
           expect(spy).toHaveBeenCalledTimes(2)
 
-          await jest.runOnlyPendingTimersAsync()
+          await jest.advanceTimersByTimeAsync(1100)
+
           expect(spy).toHaveBeenCalledTimes(2)
         })
 
         it("should remove scheduled workflow if workflow no longer exists", async () => {
           const spy = await createScheduled("remove-scheduled", {
-            cron: "* * * * * *",
+            interval: 1000,
           })
           const logSpy = jest.spyOn(console, "warn")
 
-          await jest.runOnlyPendingTimersAsync()
+          expect(spy).toHaveBeenCalledTimes(0)
+
+          await jest.advanceTimersByTimeAsync(1100)
+
           expect(spy).toHaveBeenCalledTimes(1)
 
           WorkflowManager["workflows"].delete("remove-scheduled")
 
-          await jest.runOnlyPendingTimersAsync()
+          await jest.advanceTimersByTimeAsync(1100)
           expect(spy).toHaveBeenCalledTimes(1)
           expect(logSpy).toHaveBeenCalledWith(
             "Tried to execute a scheduled workflow with ID remove-scheduled that does not exist, removing it from the scheduler."
@@ -420,22 +525,23 @@ moduleIntegrationTestRunner<IWorkflowEngineService>({
         })
 
         it("the scheduled workflow should have access to the shared container", async () => {
-          const sharedContainer =
-            workflowOrcModule["workflowOrchestratorService_"]["container_"]
-
-          sharedContainer.register(
-            "test-value",
-            asFunction(() => "test")
-          )
-
           const spy = await createScheduled("shared-container-job", {
-            cron: "* * * * * *",
+            interval: 1000,
+            numberOfExecutions: 1,
           })
-          await jest.runOnlyPendingTimersAsync()
-          expect(spy).toHaveBeenCalledTimes(1)
+
+          const initialCallCount = spy.mock.calls.length
+
+          await jest.advanceTimersByTimeAsync(1100)
+
+          expect(spy).toHaveBeenCalledTimes(initialCallCount + 1)
           expect(spy).toHaveReturnedWith(
             expect.objectContaining({ output: { testValue: "test" } })
           )
+
+          await jest.advanceTimersByTimeAsync(1100)
+
+          expect(spy).toHaveBeenCalledTimes(initialCallCount + 1)
         })
 
         it("should fetch an idempotent workflow after its completion", async () => {

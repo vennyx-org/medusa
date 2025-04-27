@@ -9,7 +9,7 @@ export const metadata = {
 
 In this guide, you'll learn how to build a marketplace with Medusa.
 
-When you install a Medusa application, you get a fully-fledged commerce platform with support for customizations. While Medusa doesn't provide marketplace functionalities natively, it provides features that you can extend and a framework to support all your customization needs to build a marketplace.
+When you install a Medusa application, you get a fully-fledged commerce platform with support for customizations. While Medusa doesn't provide marketplace functionalities natively, it provides features that you can extend and a Framework to support all your customization needs to build a marketplace.
 
 ## Summary
 
@@ -23,7 +23,7 @@ You can follow this guide whether you're new to Medusa or an advanced Medusa dev
 
 <Note>
 
-This guide provides an example of an approach to implement marketplaces. You're free to choose a different approach using Medusa's framework.
+This guide provides an example of an approach to implement marketplaces. You're free to choose a different approach using the Medusa Framework.
 
 </Note>
 
@@ -498,7 +498,7 @@ You create a step with `createStep` from the Workflows SDK. It accepts three par
 1. The step's unique name, which is `create-vendor`.
 2. An async function that receives two parameters:
     - An input object with the details of the vendor to create.
-    - The [Medusa container](!docs!/learn/fundamentals/medusa-container), which is a registry of framework and commerce tools that you can access in the step.
+    - The [Medusa container](!docs!/learn/fundamentals/medusa-container), which is a registry of Framework and commerce tools that you can access in the step.
 3. An async compensation function. This function is only executed when an error occurs in the workflow. It undoes the changes made by the step.
 
 In the step function, you resolve the Marketplace Module's service from the container. Then, you use the service's generated `createVendors` method to create the vendor.

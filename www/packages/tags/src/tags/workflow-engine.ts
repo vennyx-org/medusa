@@ -1,6 +1,6 @@
 export const workflowEngine = [
   {
     "title": "Use Workflow Engine Module",
-    "path": "https://docs.medusajs.com/resources/architectural-modules/workflow-engine/how-to-use"
+    "path": "https://docs.medusajs.com/resources/infrastructure-modules/workflow-engine/how-to-use"
   }
 ]

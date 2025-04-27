@@ -112,7 +112,7 @@ module.exports = defineConfig({
 `,
       `## 5. Test it Out
 
-To test out your Authentication Module Provider, use any of the [Authentication Routes](https://docs.medusajs.com/v2/resources/commerce-modules/auth/authentication-route), using your provider's ID as a path parameter.
+To test out your Authentication Module Provider, use any of the [Authentication Routes](https://docs.medusajs.com/resources/commerce-modules/auth/authentication-route), using your provider's ID as a path parameter.
 
 For example, to get a registration token for an admin user, send a \`POST\` request to \`/auth/user/my-auth/register\` replacing \`my-auth\` with your Authentication Module Provider's ID:
 

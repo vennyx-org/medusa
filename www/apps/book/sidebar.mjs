@@ -130,6 +130,11 @@ export const sidebars = [
         children: [
           {
             type: "link",
+            path: "/learn/fundamentals/framework",
+            title: "Overview",
+          },
+          {
+            type: "link",
             path: "/learn/fundamentals/medusa-container",
             title: "Medusa Container",
           },
@@ -190,8 +195,8 @@ export const sidebars = [
               },
               {
                 type: "link",
-                path: "/learn/fundamentals/modules/architectural-modules",
-                title: "Architectural Modules",
+                path: "/learn/fundamentals/modules/infrastructure-modules",
+                title: "Infrastructure Modules",
               },
             ],
           },
@@ -327,7 +332,12 @@ export const sidebars = [
               {
                 type: "link",
                 path: "/learn/fundamentals/api-routes/additional-data",
-                title: "Additional Data",
+                title: "Pass Additional Data",
+              },
+              {
+                type: "link",
+                path: "/learn/fundamentals/api-routes/retrieve-custom-links",
+                title: "Retrieve Custom Links",
               },
             ],
           },
@@ -343,8 +353,13 @@ export const sidebars = [
               },
               {
                 type: "link",
+                path: "/learn/fundamentals/workflows/compensation-function",
+                title: "Compensation Function",
+              },
+              {
+                type: "link",
                 path: "/learn/fundamentals/workflows/variable-manipulation",
-                title: "Transform Variables",
+                title: "Transform Data",
               },
               {
                 type: "link",
@@ -353,8 +368,8 @@ export const sidebars = [
               },
               {
                 type: "link",
-                path: "/learn/fundamentals/workflows/compensation-function",
-                title: "Compensation Function",
+                path: "/learn/fundamentals/workflows/errors",
+                title: "Error Handling",
               },
               {
                 type: "link",
@@ -365,11 +380,6 @@ export const sidebars = [
                 type: "link",
                 path: "/learn/fundamentals/workflows/add-workflow-hook",
                 title: "Expose a Hook",
-              },
-              {
-                type: "link",
-                path: "/learn/fundamentals/workflows/access-workflow-errors",
-                title: "Access Workflow Errors",
               },
               {
                 type: "link",

@@ -1,0 +1,113 @@
+---
+sidebar_label: "update"
+---
+
+import { TypeList } from "docs-ui"
+
+export const metadata = {
+  title: `update Method - Data Model Repository Reference`,
+}
+
+# {metadata.title}
+
+The `update` method of a data model repository updates one or more records of the data model.
+
+<Note>
+
+This reference assumes you've already resolved the data model repository, as explained in the [Data Model Repository Reference](../../page.mdx) documentation.
+
+</Note>
+
+## `update` Parameters
+
+<TypeList
+  types={[
+    {
+      type: "`array`",
+      name: "data",
+      description: "An array of update details.",
+      required: true,
+      children: [
+        {
+          type: "`object`",
+          name: "entity",
+          description: "The entity to update. It must be the entire entity, which can be retrieved using the `find` method.",
+          required: true,
+        },
+        {
+          type: "`object`",
+          name: "update",
+          description: "The properties to update. The keys are the property names of the data model, and the values are the values to update.",
+          required: true,
+        }
+      ]
+    }
+  ]}
+  openedLevel={1}
+  sectionTitle="update Parameters"
+/>
+---
+
+## Update Records
+
+```ts
+import { 
+  InjectTransactionManager,
+  MedusaContext,
+  MedusaService,
+} from "@medusajs/framework/utils"
+import { Context, InferTypeOf, DAL } from "@medusajs/framework/types"
+import { EntityManager } from "@mikro-orm/knex"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  // ...
+  @InjectTransactionManager()
+  protected async doSomething_(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    const existingPost = await this.postRepository_.find({
+      where: {
+        id,
+      },
+    })    
+    
+    const posts = await this.postRepository_.update([
+      {
+        entity: existingPost[0],
+        update: {
+          title: "My Post Updated",
+        },
+      },
+    ])
+
+    return posts
+  }
+
+  @InjectManager()
+  async doSomething(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    return await this.doSomething_(id, sharedContext)
+  }
+}
+```
+
+### Parameters
+
+The `update` method accepts an array of objects, each representing a record to update.
+
+Each object has two properties:
+
+- `entity`: The entity or record to update. It must be the entire record, which can be retrieved using the [find](../find/page.mdx) or [findAndCount](../findAndCount/page.mdx) methods.
+- `update`: The properties to update. The keys are the property names of the data model, and the values are the values to update.
+
+In the example above, you retrieve the record to update using the `find` method. Then, you pass the entire record and the properties to update to the `update` method.
+
+### Returns
+
+The method returns an array of the updated records.

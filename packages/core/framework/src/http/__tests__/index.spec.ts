@@ -2,6 +2,7 @@ import express from "express"
 import { resolve } from "path"
 import {
   customersCreateMiddlewareMock,
+  customersCreateMiddlewareValidatorMock,
   customersGlobalMiddlewareMock,
   storeGlobalMiddlewareMock,
 } from "../__fixtures__/mocks"
@@ -201,6 +202,16 @@ describe("RoutesLoader", function () {
       expect(res.text).toBe("create customer")
       expect(customersGlobalMiddlewareMock).toHaveBeenCalled()
       expect(customersCreateMiddlewareMock).toHaveBeenCalled()
+    })
+
+    it("should assign the req.additionalDataValidator when the method and route matches", async function () {
+      const res = await request("POST", "/customers")
+
+      expect(res.status).toBe(200)
+      expect(res.text).toBe("create customer")
+      expect(customersGlobalMiddlewareMock).toHaveBeenCalled()
+      expect(customersCreateMiddlewareMock).toHaveBeenCalled()
+      expect(customersCreateMiddlewareValidatorMock).toHaveBeenCalled()
     })
 
     it("should call store global middleware on `/store/*` routes", async function () {

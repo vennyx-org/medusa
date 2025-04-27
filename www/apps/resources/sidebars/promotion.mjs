@@ -47,7 +47,7 @@ export const promotionSidebar = [
       {
         type: "category",
         title: "Server Guides",
-        autogenerate_tags: "server+promotion",
+        autogenerate_tags: "promotion+server",
         autogenerate_as_ref: true,
         sort_sidebar: "alphabetize",
         description:

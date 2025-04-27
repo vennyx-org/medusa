@@ -47,7 +47,7 @@ export interface CreateProvinceGeoZoneDTO extends CreateGeoZoneBaseDTO {
   type: "province"
 
   /**
-   * The province code of the geo zone.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code of the geo zone.
    */
   province_code: string
 }
@@ -63,7 +63,7 @@ export interface CreateCityGeoZoneDTO extends CreateGeoZoneBaseDTO {
   type: "city"
 
   /**
-   * The province code of the geo zone.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code of the geo zone.
    */
   province_code: string
 
@@ -84,7 +84,7 @@ export interface CreateZipGeoZoneDTO extends CreateGeoZoneBaseDTO {
   type: "zip"
 
   /**
-   * The province code of the geo zone.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code of the geo zone.
    */
   province_code: string
 
@@ -140,7 +140,7 @@ export interface UpdateProvinceGeoZoneDTO extends UpdateGeoZoneBaseDTO {
   type: "province"
 
   /**
-   * The province code of the geo zone.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code of the geo zone.
    */
   province_code: string
 }
@@ -156,7 +156,7 @@ export interface UpdateCityGeoZoneDTO extends UpdateGeoZoneBaseDTO {
   type: "city"
 
   /**
-   * The province code of the geo zone.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code of the geo zone.
    */
   province_code?: string
 
@@ -177,7 +177,7 @@ export interface UpdateZipGeoZoneDTO extends UpdateGeoZoneBaseDTO {
   type: "zip"
 
   /**
-   * The province code of the geo zone.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code of the geo zone.
    */
   province_code?: string
 

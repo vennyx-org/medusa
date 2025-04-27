@@ -33,6 +33,7 @@ function buildStepContext({
     eventGroupId:
       flowMetadata?.eventGroupId ?? stepArguments.context!.eventGroupId,
     parentStepIdempotencyKey: flowMetadata?.parentStepIdempotencyKey as string,
+    preventReleaseEvents: flowMetadata?.preventReleaseEvents ?? false,
     transactionId: stepArguments.context!.transactionId,
     context: stepArguments.context!,
     " getStepResult"(

@@ -199,7 +199,7 @@ You then use the logger to log a message.
 
 ---
 
-## Handle Errors in Loops
+## Handle Step Errors in Loops
 
 <Note>
 
@@ -274,3 +274,9 @@ try {
 The `StepResponse.permanentFailure` fails the step and its workflow, triggering current and previous steps' compensation functions. The `permanentFailure` function accepts as a first parameter the error message, which is saved in the workflow's error details, and as a second parameter the data to pass to the compensation function.
 
 So, if an error occurs during the loop, the compensation function will still receive the `prevData` variable to undo the changes made before the step failed.
+
+<Note>
+
+For more details on error handling in workflows and steps, check the [Handling Errors chapter](../errors/page.mdx).
+
+</Note>

@@ -27,6 +27,7 @@ const promotions = await promotionModuleService.createPromotions([
   {
     code: "50OFF",
     type: "standard",
+    status: "active",
     application_method: {
       type: "percentage",
       target_type: "items",
@@ -36,6 +37,7 @@ const promotions = await promotionModuleService.createPromotions([
   {
     code: "FREESHIPPING",
     type: "standard",
+    status: "active",
     application_method: {
       type: "percentage",
       target_type: "shipping_methods",
@@ -45,6 +47,7 @@ const promotions = await promotionModuleService.createPromotions([
   {
     code: "BUY2GET1",
     type: "buyget",
+    status: "active",
     application_method: {
       type: "fixed",
       target_type: "items",
@@ -80,6 +83,7 @@ This method creates a promotion.
 const promotionA = await promotionModuleService.createPromotions({
   code: "50OFF",
   type: "standard",
+  status: "active",
   application_method: {
     type: "percentage",
     target_type: "items",
@@ -90,6 +94,7 @@ const promotionA = await promotionModuleService.createPromotions({
 const promotionB = await promotionModuleService.createPromotions({
   code: "FREESHIPPING",
   type: "standard",
+  status: "active",
   application_method: {
     type: "percentage",
     target_type: "shipping_methods",
@@ -100,6 +105,7 @@ const promotionB = await promotionModuleService.createPromotions({
 const promotionC = await promotionModuleService.createPromotions({
   code: "BUY2GET1",
   type: "buyget",
+  status: "active",
   application_method: {
     type: "fixed",
     target_type: "items",

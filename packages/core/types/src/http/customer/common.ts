@@ -63,7 +63,7 @@ export interface BaseCustomerAddress {
    */
   country_code: string | null
   /**
-   * The address's province.
+   * The address's lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province.
    */
   province: string | null
   /**
@@ -234,7 +234,7 @@ export interface BaseCustomerAddressFilters
    */
   country_code?: string[] | string
   /**
-   * Filter by province(s).
+   * Filter by lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code(s).
    */
   province?: string[] | string
   /**
@@ -330,7 +330,7 @@ export interface BaseCreateCustomerAddress {
    */
   country_code?: string
   /**
-   * The address's province.
+   * The address's lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province.
    */
   province?: string
   /**
@@ -392,7 +392,7 @@ export interface BaseUpdateCustomerAddress {
    */
   country_code?: string
   /**
-   * The address's province.
+   * The address's lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province.
    */
   province?: string
   /**

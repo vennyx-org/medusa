@@ -1,6 +1,6 @@
 {
   "name": "@medusajs/oas-github-ci",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "description": "OAS Github CI",
   "main": "scripts/build-openapi.js",
   "files": [
@@ -21,7 +21,7 @@
     "test": "jest --passWithNoTests"
   },
   "dependencies": {
-    "@medusajs/medusa-oas-cli": "2.7.0",
+    "@medusajs/medusa-oas-cli": "2.7.1",
     "execa": "^5.1.1"
   }
 }

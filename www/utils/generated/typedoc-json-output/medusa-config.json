@@ -2750,7 +2750,7 @@
 						"summary": [
 							{
 								"kind": "text",
-								"text": "This property holds all custom modules installed in your Medusa application.\n\n:::note\n\nMedusa's commerce modules are configured by default, so only\nadd them to this property if you're changing their configurations or adding providers to a module.\n\n:::\n\n"
+								"text": "This property holds all custom modules installed in your Medusa application.\n\n:::note\n\nMedusa's Commerce Modules are configured by default, so only\nadd them to this property if you're changing their configurations or adding providers to a module.\n\n:::\n\n"
 							},
 							{
 								"kind": "code",

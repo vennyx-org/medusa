@@ -1,5 +1,16 @@
 # @medusajs/index
 
+## 2.7.1
+
+### Patch Changes
+
+- [#12183](https://github.com/medusajs/medusa/pull/12183) [`4ea1a2e09fc220555166c9bb013c0e11c99b4235`](https://github.com/medusajs/medusa/commit/4ea1a2e09fc220555166c9bb013c0e11c99b4235) Thanks [@adrien2p](https://github.com/adrien2p)! - fix(index): Default schema typings
+
+- [#12157](https://github.com/medusajs/medusa/pull/12157) [`2f6963a5fbea05537680cb1b1f6a2b9822c36325`](https://github.com/medusajs/medusa/commit/2f6963a5fbea05537680cb1b1f6a2b9822c36325) Thanks [@adrien2p](https://github.com/adrien2p)! - fix: event group propagation and event managements
+
+- Updated dependencies [[`ee35f3ce9097832c10cdf2fd168763088e6c3fcb`](https://github.com/medusajs/medusa/commit/ee35f3ce9097832c10cdf2fd168763088e6c3fcb), [`2f6963a5fbea05537680cb1b1f6a2b9822c36325`](https://github.com/medusajs/medusa/commit/2f6963a5fbea05537680cb1b1f6a2b9822c36325), [`b8902637251e9ed4f8762ef280659bbab6d967de`](https://github.com/medusajs/medusa/commit/b8902637251e9ed4f8762ef280659bbab6d967de)]:
+  - @medusajs/framework@2.7.1
+
 ## 2.7.0
 
 ### Patch Changes

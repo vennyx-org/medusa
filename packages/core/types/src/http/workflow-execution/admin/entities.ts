@@ -40,7 +40,7 @@ export type StepInvokeResult = {
    */
   output: {
     /**
-     * The output of the step. This is the first parameter 
+     * The output of the step. This is the first parameter
      * passed to the returned `StepResponse` function.
      */
     output: unknown
@@ -75,7 +75,7 @@ export interface WorkflowExecutionContext {
     /**
      * The details of the invocation of the workflow execution's steps.
      * The key is the step's ID, and the value is the step's details.
-     * 
+     *
      * These details are only included for steps that have their `saveResponse` property set to `true`.
      */
     invoke: Record<string, StepInvokeResult>
@@ -87,7 +87,7 @@ export interface WorkflowExecutionContext {
   /**
    * The output of the compensation function of the workflow execution.
    * The key is the step's ID, and the value is the compensation function's output.
-   * 
+   *
    * These details are only included for steps that have their `saveResponse` property set to `true`.
    */
   compensate: Record<string, unknown>
@@ -114,9 +114,16 @@ export interface WorkflowExecutionDefinition {
   noCompensation?: boolean
   /**
    * Indicates whether the workflow should continue even if there is a permanent failure in this step.
-   * In case it is set to true, the children steps of this step will not be executed and their status will be marked as `TransactionStepState`.SKIPPED_FAILURE.
+   * In case it is set to true, the the current step will be marked as TransactionStepState.PERMANENT_FAILURE and the next steps will be executed.
    */
   continueOnPermanentFailure?: boolean
+  /**
+   * Indicates whether the workflow should skip all subsequent steps in case of a permanent failure in this step.
+   * In case it is set to true, the next steps of the workflow will not be executed and their status will be marked as TransactionStepState.SKIPPED_FAILURE.
+   * In case it is a string, the next steps until the step name provided will be skipped and the workflow will be resumed from the step provided.
+   */
+  skipOnPermanentFailure?: boolean | string
+
   /**
    * The maximum number of times this step should be retried in case of temporary failures.
    * The default is 0 (no retries).

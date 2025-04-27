@@ -1,0 +1,160 @@
+import { Table, CardList } from "docs-ui"
+
+export const metadata = {
+  title: `Locking Module`,
+}
+
+# {metadata.title}
+
+In this document, you'll learn about the Locking Module and its providers.
+
+## What is the Locking Module?
+
+The Locking Module manages access to shared resources by multiple processes or threads. It prevents conflicts between processes that are trying to access the same resource at the same time, and ensures data consistency.
+
+Medusa uses the Locking Module to control concurrency, avoid race conditions, and protect parts of code that should not be executed by more than one process at a time. This is especially essential in distributed or multi-threaded environments.
+
+For example, Medusa uses the Locking Module in inventory management to ensure that only one transaction can update the stock levels at a time. By using the Locking Module in this scenario, Medusa prevents overselling an inventory item and keeps its quantity amounts accurate, even during high traffic periods or when receiving concurrent requests.
+
+---
+
+## How to Use the Locking Module?
+
+You can use the Locking Module as part of the [workflows](!docs!/learn/fundamentals/workflows) you build for your custom features. A workflow is a special function composed of a series of steps that guarantees data consistency and reliable roll-back mechanism.
+
+In a step of your workflow, you can resolve the Locking Module's service and use its methods to execute an asynchronous job, acquire a lock, or release locks.
+
+For example:
+
+```ts
+import { Modules } from "@medusajs/framework/utils"
+import { 
+  createStep,
+  createWorkflow,
+} from "@medusajs/framework/workflows-sdk"
+
+const step1 = createStep(
+  "step-1",
+  async ({}, { container }) => {
+    const lockingModuleService = container.resolve(
+      Modules.LOCKING
+    )
+    const productModuleService = container.resolve(
+      Modules.PRODUCT
+    )
+
+    await lockingModuleService.execute("prod_123", async () => {
+      await productModuleService.deleteProduct("prod_123")
+    })
+  } 
+)
+
+export const workflow = createWorkflow(
+  "workflow-1",
+  () => {
+    step1()
+  }
+)
+```
+
+In the example above, you create a workflow that has a step. In the step, you resolve the services of the Locking and Product modules from the [Medusa container](!docs!/learn/fundamentals/medusa-container).
+
+Then, you use the `execute` method of the Locking Module to acquire a lock for the product with the ID `prod_123` and execute an asynchronous function, which deletes the product.
+
+---
+
+## When to Use the Locking Module?
+
+You should use the Locking Module when you need to ensure that only one process can access a shared resource at a time. As mentioned in the inventory example previously, you don't want customers to order quantities of inventory that are not available, or to update the stock levels of an item concurrently.
+
+In those scenarios, you can use the Locking Module to acquire a lock for a resource and execute a critical section of code that should not be accessed by multiple processes simultaneously.
+
+---
+
+## What is a Locking Module Provider?
+
+A Locking Module Provider implements the underlying logic of the Locking Module. It manages the locking mechanisms and ensures that only one process can access a shared resource at a time.
+
+Medusa provides [multiple Locking Module Providers](#list-of-locking-module-providers) that are suitable for development and production. You can also create a [custom Locking Module Provider](/references/locking-module-provider) to implement custom locking mechanisms or integrate with third-party services.
+
+### Default Locking Module Provider
+
+By default, Medusa uses the In-Memory Locking Module Provider. This provider uses a plain JavaScript map to store the locks. While this is useful for development, it is not recommended for production environments as it is only intended for use in a single-instance environment.
+
+To add more providers, you can register them in the `medusa-config.ts` file. For example:
+
+```ts
+module.exports = defineConfig({
+  // ...
+  modules: [
+    {
+      resolve: "@medusajs/medusa/locking",
+      options: {
+        providers: [
+          // add providers here...
+        ],
+      },
+    },
+  ],
+})
+```
+
+When you register other providers in `medusa-config.ts`, Medusa will set the default provider based on the following scenarios:
+
+<Table>
+  <Table.Header>
+    <Table.Row>
+      <Table.HeaderCell>Scenario</Table.HeaderCell>
+      <Table.HeaderCell>Default Provider</Table.HeaderCell>
+    </Table.Row>
+  </Table.Header>
+  <Table.Body>
+    <Table.Row>
+      <Table.Cell>
+        One provider is registered.
+      </Table.Cell>
+      <Table.Cell>
+        The registered provider.
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell>
+        Multiple providers are registered and none of them has an `is_default` flag.
+      </Table.Cell>
+      <Table.Cell>
+        In-Memory Locking Module Provider.
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell>
+        Multiple providers and one of them has an `is_default` flag.
+      </Table.Cell>
+      <Table.Cell>
+        The provider with the `is_default` flag.
+      </Table.Cell>
+    </Table.Row>
+  </Table.Body>
+</Table>
+
+---
+
+## List of Locking Module Providers
+
+Medusa provides the following Locking Module Providers. You can use one of them, or [Create a Locking Module Provider](/references/locking-module-provider).
+
+<CardList
+  items={[
+    {
+      title: "Redis",
+      href: "/infrastructure-modules/locking/redis",
+      badge: {
+        variant: "green",
+        children: "Recommended"
+      }
+    },
+    {
+      title: "PostgreSQL",
+      href: "/infrastructure-modules/locking/postgres",
+    }
+  ]}
+/>

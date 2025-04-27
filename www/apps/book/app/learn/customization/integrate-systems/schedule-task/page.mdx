@@ -320,7 +320,7 @@ A scheduled job file must export:
     - `name`: A unique name for the scheduled job.
     - `schedule`: A string that holds a [cron expression](https://crontab.guru/) indicating the schedule to run the job.
 
-The scheduled job function accepts as a parameter the [Medusa container](../../../fundamentals/medusa-container/page.mdx) used to resolve framework and commerce tools. You then execute the `syncBrandsFromCmsWorkflow` and use its result to log how many brands were created or updated.
+The scheduled job function accepts as a parameter the [Medusa container](../../../fundamentals/medusa-container/page.mdx) used to resolve Framework and commerce tools. You then execute the `syncBrandsFromCmsWorkflow` and use its result to log how many brands were created or updated.
 
 Based on the cron expression specified in `config.schedule`, Medusa will run the scheduled job every day at midnight. You can also change it to `* * * * *` to run it every minute for easier debugging.
 
@@ -340,6 +340,6 @@ If you set the schedule to `* * * * *` for debugging, the scheduled job will run
 
 ## Summary
 
-By following the previous chapters, you utilized Medusa's framework and orchestration tools to perform and automate tasks that span across systems.
+By following the previous chapters, you utilized the Medusa Framework and orchestration tools to perform and automate tasks that span across systems.
 
 With Medusa, you can integrate any service from your commerce ecosystem with ease. You don't have to set up separate applications to manage your different customizations, or worry about data inconsistency across systems. Your efforts only go into implementing the business logic that ties your systems together.

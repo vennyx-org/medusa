@@ -1,0 +1,87 @@
+import { ChildDocs } from "docs-ui"
+
+export const metadata = {
+  title: `Data Model Repository Reference`,
+}
+
+# {metadata.title}
+
+This section of the documentation provides a reference of the methods generated for data model repositories that are injected into a module's container.
+
+<Note title="Tip">
+
+Learn more about the data model repository in the [Database Operations](!docs!/learn/fundamentals/modules/db-operations) documentation.
+
+</Note>
+
+## When to Use the Data Model Repository?
+
+If your module has data models, then you should always extend the [service factory](!docs!/learn/fundamentals/modules/service-factory). It generates basic data-mangement operations for your module's data models.
+
+However, there are some cases where you might need to perform more complex database operations and need more control over the parameters you're passing.
+
+In those cases, you can use the data model repository.
+
+---
+
+## Data Model Repository Registration Name
+
+When the Medusa application injects a data model repository into a module's container, it formats the registration name by:
+
+- Taking the data model's name that's passed as the first parameter of `model.define`
+- Lower-casing the first character
+- Suffixing the result with `Repository`.
+
+For example:
+
+- `Post` model: `postRepository`
+- `My_Custom` model: `my_CustomRepository`
+
+---
+
+## Resolve Data Model Repository
+
+To resolve a data model repository from a module's container, pass the data model's name in the first parameter of the module's constructor.
+
+For example:
+
+export const resolveRepoHighlights = [
+  ["17", "postRepository", "Resolve the data model repository for the `Post` model."],
+]
+
+```ts highlights={resolveRepoHighlights}
+import { MedusaService } from "@medusajs/framework/utils"
+import { InferTypeOf, DAL } from "@medusajs/framework/types"
+import Post from "./models/post"
+
+type Post = InferTypeOf<typeof Post>
+
+type InjectedDependencies = {
+  postRepository: DAL.RepositoryService<Post>
+}
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  protected postRepository_: DAL.RepositoryService<Post>
+
+  constructor({ 
+    postRepository, 
+  }: InjectedDependencies) {
+    super(...arguments)
+    this.postRepository_ = postRepository
+  }
+}
+
+export default BlogModuleService
+```
+
+In this example, the `BlogModuleService` class resolves the `postRepository` from its container.
+
+---
+
+## Methods Reference
+
+Learn how to use the data model repository's methods to perform database operations on the data model.
+
+<ChildDocs showItems={["Methods"]} hideTitle />

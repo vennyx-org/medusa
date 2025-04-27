@@ -131,7 +131,7 @@ In the example above, you create a `handlePayment` function in the payment compo
 - Send a request to the [Complete Cart API route](!api!/store#carts_postcartsidcomplete) once all actions with the third-party payment provider are performed.
 - In the received response of the request, if the `type` is `cart`, it means that the cart completion failed. The error is set in the `error` response field.
 - If the `type` is `order`, it means the card was completed and the order was placed successfully. You can access the order in the `order` response field.
-- When the order is placed, you must unset the `cart_id` from the `localStorage`. You can redirect the customer to an order success page at this point. The redirection logic depends on the framework you're using.
+- When the order is placed, you must unset the `cart_id` from the `localStorage`. You can redirect the customer to an order success page at this point. The redirection logic depends on the storefront framework you're using.
 
 ---
 

@@ -110,11 +110,11 @@ So, add the following script in `package.json`:
 
 By default, your Medusa application uses modules and providers useful for development, such as the In-Memory Cache Module or the Local File Module Provider. It’s highly recommended to instead use modules and providers suitable for production, including:
 
-- [Redis Cache Module](../../../architectural-modules/cache/redis/page.mdx)
-- [Redis Event Bus Module](../../../architectural-modules/event/redis/page.mdx)
-- [Workflow Engine Redis Module](../../../architectural-modules/workflow-engine/redis/page.mdx)
-- [S3 File Module Provider](../../../architectural-modules/file/s3/page.mdx) (or other file module providers production-ready).
-- [SendGrid Notification Module Provider](../../../architectural-modules/notification/sendgrid/page.mdx) (or other notification module providers production-ready).
+- [Redis Cache Module](../../../infrastructure-modules/cache/redis/page.mdx)
+- [Redis Event Bus Module](../../../infrastructure-modules/event/redis/page.mdx)
+- [Workflow Engine Redis Module](../../../infrastructure-modules/workflow-engine/redis/page.mdx)
+- [S3 File Module Provider](../../../infrastructure-modules/file/s3/page.mdx) (or other file module providers production-ready).
+- [SendGrid Notification Module Provider](../../../infrastructure-modules/notification/sendgrid/page.mdx) (or other notification module providers production-ready).
 
 For example, add the following modules to `medusa-config.ts`:
 
@@ -150,7 +150,7 @@ module.exports = defineConfig({
 
 <Note title="Tip">
 
-Check out the [Integrations](../../../integrations/page.mdx) and [Architectural Modules](../../../architectural-modules/page.mdx) documentation for other modules and providers to use.
+Check out the [Integrations](../../../integrations/page.mdx) and [Infrastructure Modules](../../../infrastructure-modules/page.mdx) documentation for other modules and providers to use.
 
 </Note>
 

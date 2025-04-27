@@ -298,7 +298,10 @@ export function registerOtel(
     ...options,
   }
 
-  const { Resource } = require("@opentelemetry/resources")
+  const {
+    Resource,
+    resourceFromAttributes,
+  } = require("@opentelemetry/resources")
   const { NodeSDK } = require("@opentelemetry/sdk-node")
   const { SimpleSpanProcessor } = require("@opentelemetry/sdk-trace-node")
 
@@ -318,7 +321,15 @@ export function registerOtel(
 
   const sdk = new NodeSDK({
     serviceName,
-    resource: new Resource({ "service.name": serviceName }),
+    /**
+     * Older version of "@opentelemetry/resources" exports the "Resource" class.
+     * Whereas, the new one exports the "resourceFromAttributes" method.
+     */
+    resource: resourceFromAttributes
+      ? resourceFromAttributes({
+          "service.name": serviceName,
+        })
+      : new Resource({ "service.name": serviceName }),
     spanProcessor: new SimpleSpanProcessor(exporter),
     ...nodeSdkOptions,
     instrumentations: instrumentations,

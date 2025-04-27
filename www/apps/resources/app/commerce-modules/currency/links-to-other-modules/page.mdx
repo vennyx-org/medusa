@@ -6,7 +6,7 @@ export const metadata = {
 
 # {metadata.title}
 
-This document showcases the module links defined between the Currency Module and other commerce modules.
+This document showcases the module links defined between the Currency Module and other Commerce Modules.
 
 ## Summary
 
@@ -38,13 +38,13 @@ Read-only links are used to query data across modules, but the relations aren't 
   <Table.Body>
     <Table.Row>
       <Table.Cell>
-        [Store](/references/store/models/Store) in [Store Module](../../store/page.mdx)
+        [StoreCurrency](/references/store/models/StoreCurrency) in [Store Module](../../store/page.mdx)
       </Table.Cell>
       <Table.Cell>
         [Currency](/references/currency/models/Currency)
       </Table.Cell>
       <Table.Cell>
-        Read-only
+        Read-only - has one
       </Table.Cell>
       <Table.Cell>
         [Learn more](#store-module)
@@ -58,7 +58,7 @@ Read-only links are used to query data across modules, but the relations aren't 
 
 The Store Module has a `Currency` data model that stores the supported currencies of a store. However, these currencies don't hold all the details of a currency, such as its name or symbol.
 
-Instead, Medusa defines a read-only link between the [Store Module](../../store/page.mdx)'s `Currency` data model and the Currency Module's `Currency` data model. Because the link is read-only from the `Store`'s side, you can only retrieve the details of a store's supported currencies, and not the other way around.
+Instead, Medusa defines a read-only link between the [Store Module](../../store/page.mdx)'s `StoreCurrency` data model and the Currency Module's `Currency` data model. Because the link is read-only from the `Store`'s side, you can only retrieve the details of a store's supported currencies, and not the other way around.
 
 ### Retrieve with Query
 
@@ -75,7 +75,7 @@ const { data: stores } = await query.graph({
   ],
 })
 
-// stores.supported_currencies
+// stores[0].supported_currencies[0].currency
 ```
 
   </CodeTab>
@@ -93,7 +93,7 @@ const { data: stores } = useQueryGraphStep({
   ],
 })
 
-// stores.supported_currencies
+// stores[0].supported_currencies[0].currency
 ```
 
   </CodeTab>

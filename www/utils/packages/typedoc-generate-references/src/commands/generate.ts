@@ -59,6 +59,7 @@ export default async function generate(
             outputType: "json",
           })
         } catch (e) {
+          console.log(e)
           formatColoredLog({
             chalkInstance: chalk.bgRed,
             title: `Error generating for ${referenceName} models`,
@@ -77,6 +78,7 @@ export default async function generate(
         })
       }
     } catch (e) {
+      console.log(e)
       formatColoredLog({
         chalkInstance: chalk.bgRed,
         title: `Error generating for ${referenceName}`,

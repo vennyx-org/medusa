@@ -34,23 +34,22 @@ export function normalizeMenuItems({
   items: MenuItem[]
 }): MenuItem[] {
   return items.map((item) => {
-    if (item.type !== "link" && item.type !== "sub-menu") {
-      return item
+    const newItem = { ...item }
+    if (newItem.type !== "link" && newItem.type !== "sub-menu") {
+      return newItem
     }
 
-    if (item.type === "link") {
-      return {
-        ...item,
-        link: `${basePath}${item.link}`,
-      }
+    if (newItem.link) {
+      newItem.link = `${basePath}${newItem.link}`
     }
 
-    return {
-      ...item,
-      items: normalizeMenuItems({
+    if (newItem.type === "sub-menu") {
+      newItem.items = normalizeMenuItems({
         basePath,
-        items: item.items,
-      }),
+        items: newItem.items,
+      })
     }
+
+    return newItem
   })
 }

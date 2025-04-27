@@ -123,6 +123,7 @@ export interface IPromotionModuleService extends IModuleService {
    *   {
    *     code: "50OFF",
    *     type: "standard",
+   *     status: "active",
    *     application_method: {
    *       type: "percentage",
    *       target_type: "items",
@@ -132,6 +133,7 @@ export interface IPromotionModuleService extends IModuleService {
    *   {
    *     code: "FREESHIPPING",
    *     type: "standard",
+   *     status: "active",
    *     application_method: {
    *       type: "percentage",
    *       target_type: "shipping_methods",
@@ -141,6 +143,7 @@ export interface IPromotionModuleService extends IModuleService {
    *   {
    *     code: "BUY2GET1",
    *     type: "buyget",
+   *     status: "active",
    *     application_method: {
    *       type: "fixed",
    *       target_type: "items",
@@ -173,6 +176,7 @@ export interface IPromotionModuleService extends IModuleService {
    * const promotionA = await promotionModuleService.createPromotions({
    *   code: "50OFF",
    *   type: "standard",
+   *   status: "active",
    *   application_method: {
    *     type: "percentage",
    *     target_type: "items",
@@ -183,6 +187,7 @@ export interface IPromotionModuleService extends IModuleService {
    * const promotionB = await promotionModuleService.createPromotions({
    *   code: "FREESHIPPING",
    *   type: "standard",
+   *   status: "active",
    *   application_method: {
    *     type: "percentage",
    *     target_type: "shipping_methods",
@@ -193,6 +198,7 @@ export interface IPromotionModuleService extends IModuleService {
    * const promotionC = await promotionModuleService.createPromotions({
    *   code: "BUY2GET1",
    *   type: "buyget",
+   *   status: "active",
    *   application_method: {
    *     type: "fixed",
    *     target_type: "items",

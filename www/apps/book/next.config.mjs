@@ -169,6 +169,9 @@ const nextConfig = {
     }
   },
   redirects,
+  outputFileTracingIncludes: {
+    "/md\\-content/\\[\\.\\.\\.slug\\]": ["./app/**/*.mdx"],
+  },
   outputFileTracingExcludes: {
     "*": ["node_modules/@medusajs/icons"],
   },

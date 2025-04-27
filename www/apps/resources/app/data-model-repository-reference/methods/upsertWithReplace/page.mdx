@@ -1,0 +1,149 @@
+---
+sidebar_label: "upsertWithReplace"
+---
+
+import { TypeList } from "docs-ui"
+
+export const metadata = {
+  title: `upsertWithReplace Method - Data Model Repository Reference`,
+}
+
+# {metadata.title}
+
+The `upsertWithReplace` method of a data model repository can do three things:
+
+- Create a new record.
+- Update an existing record.
+- Delete a record related to the record being upserted. If a one-to-many or many-to-many relation is omitted in the new data of a record, the method will delete the related records if they belong to the record being upserted.
+
+This method is useful when you're doing complex upserts with relations, or you want details of the operations performed. Otherwise, use the [upsert](../upsert/page.mdx) method.
+
+<Note>
+
+This reference assumes you've already resolved the data model repository, as explained in the [Data Model Repository Reference](../../page.mdx) documentation.
+
+</Note>
+
+## `upsertWithReplace` Parameters
+
+<TypeList
+  types={[
+    {
+      type: "`array`",
+      name: "data",
+      description: "An array of records to create or update. If a record object has an `id` property, the method will try to update the record. Otherwise, the method will create a new record.",
+      required: true,
+    }
+  ]}
+  sectionTitle="upsertWithReplace Parameters"
+/>
+---
+
+## Upsert Records
+
+```ts
+import { 
+  InjectTransactionManager,
+  MedusaContext,
+  MedusaService,
+} from "@medusajs/framework/utils"
+import { Context, InferTypeOf, DAL } from "@medusajs/framework/types"
+import { EntityManager } from "@mikro-orm/knex"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  // ...
+  @InjectTransactionManager()
+  protected async doSomething_(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    const {
+      entities,
+      performedActions,
+    } = await this.postRepository_.upsertWithReplace([
+      {
+        id: "01JSHAW6Z7KW4X6E8MFPGNEKHC",
+        title: "My Old Post",
+        author_id: null,
+      },
+      {
+        id: "123",
+        title: "My New Post",
+      },
+    ])
+
+    return {
+      entities,
+      performedActions,
+    }
+  }
+
+  @InjectManager()
+  async doSomething(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    return await this.doSomething_(id, sharedContext)
+  }
+}
+```
+
+### Parameters
+
+The `upsertWithReplace` method accepts an array of objects, each representing a record to create or update.
+
+If a record object has an `id` property, the method will try to update a record with that `id`. Otherwise, the method will create a new record.
+
+If the `id` property is specified but no record with that `id` exists, the created record will have the specified `id`.
+
+Each object has the same shape as the data model.
+
+### Returns
+
+The method returns an object with two properties:
+
+- `entities`: An array of the created or updated records.
+- `performedActions`: An object with three properties:
+  - `created`: An object whose keys are the names of data models, and values are arrays of the records that were created.
+  - `updated`: An object whose keys are the names of data models, and values are arrays of the records that were updated.
+  - `deleted`: An object whose keys are the names of data models, and values are arrays of the records that were deleted.
+
+For example:
+
+```json title="Example"
+{
+  "entities": [
+    {
+      "id": "01JSHAW6Z7KW4X6E8MFPGNEKHC",
+      "title": "My Old Post",
+      "author_id": null
+    },
+    {
+      "id": "123",
+      "title": "My New Post"
+    }
+  ],
+  "performedActions": {
+    "created": {
+      "Post": [
+        {
+          "id": "123"
+        }
+      ]
+    },
+    "updated": {
+      "Post": [
+        {
+          "id": "01JSHAW6Z7KW4X6E8MFPGNEKHC"
+        }
+      ]
+    },
+    "deleted": {
+
+    }
+  }
+}
+```

@@ -1,0 +1,96 @@
+import { CardList } from "docs-ui"
+
+export const metadata = {
+  title: `File Module`,
+}
+
+# {metadata.title}
+
+In this document, you'll learn about the File Module and its providers.
+
+## What is the File Module?
+
+The File Module exposes the functionalities to upload assets, such as product images, to the Medusa application. Medusa uses the File Module in its core commerce features for all file operations, and you can use it in your custom features as well.
+
+---
+
+## How to Use the File Module?
+
+You can use the File Module as part of the [workflows](!docs!/learn/fundamentals/workflows) you build for your custom features. A workflow is a special function composed of a series of steps that guarantees data consistency and reliable roll-back mechanism.
+
+In a step of your workflow, you can resolve the File Module's service and use its methods to upload files, retrieve files, or delete files.
+
+For example:
+
+```ts
+import { Modules } from "@medusajs/framework/utils"
+import { 
+  createStep,
+  createWorkflow,
+  StepResponse,
+  WorkflowResponse,
+} from "@medusajs/framework/workflows-sdk"
+
+const step1 = createStep(
+  "step-1",
+  async ({}, { container }) => {
+    const fileModuleService = container.resolve(
+      Modules.FILE
+    )
+
+    const { url } = await fileModuleService.retrieveFile("image.png")
+
+    return new StepResponse(url)
+  } 
+)
+
+export const workflow = createWorkflow(
+  "workflow-1",
+  () => {
+    const url = step1()
+
+    return new WorkflowResponse(url)
+  }
+)
+```
+
+In the example above, you create a workflow that has a step. In the step, you resolve the service of the File Module from the [Medusa container](!docs!/learn/fundamentals/medusa-container).
+
+Then, you use the `retrieveFile` method of the File Module to retrieve the URL of the file with the name `"image.png"`. The URL is then returned as a response from the step and the workflow.
+
+---
+
+### What is a File Module Provider?
+
+A File Module Provider implements the underlying logic of handling uploads and downloads of assets, such as integrating third-party services. The File Module then uses the registered File Module Provider to handle file operations.
+
+<Note>
+
+Only one File Module Provider can be registered at a time. If you register multiple providers, the File Module will throw an error.
+
+</Note>
+
+By default, Medusa uses the [Local File Module](./local/page.mdx). This module uploads files to the `uploads` directory of your Medusa application.
+
+This is useful for development. However, for production, it’s highly recommended to use other File Module Providers, such as the S3 File Module Provider. You can also [Create a File Provider](/references/file-provider-module).
+
+<CardList
+  items={[
+    {
+      title: "Local",
+      href: "/infrastructure-modules/file/local",
+      badge: {
+        variant: "neutral",
+        children: "For Development"
+      }
+    },
+    {
+      title: "AWS S3 (and Compatible APIs)",
+      href: "/infrastructure-modules/file/s3",
+      badge: {
+        variant: "green",
+        children: "For Production"
+      }
+    }
+  ]}
+/>

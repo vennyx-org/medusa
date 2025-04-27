@@ -38,8 +38,8 @@ const Homepage = () => {
             <MainNav
               className="border-b border-medusa-border-base"
               itemsClassName={clsx(
-                "!my-1 [&_li_div]:!text-medusa-fg-subtle [&_li_a]:!text-medusa-fg-subtle",
-                "hover:[&_li_div]:!text-medusa-fg-base hover:[&_li_a]:!text-medusa-fg-base"
+                "!my-1 [&_li_div]:!text-medusa-fg-subtle [&_li_a]:!text-medusa-fg-subtle [&_li_span]:!text-medusa-fg-subtle",
+                "hover:[&_li_div]:!text-medusa-fg-base hover:[&_li_a]:!text-medusa-fg-base hover:[&_li_span]:!text-medusa-fg-base"
               )}
             />
             <HomepageTopSection />

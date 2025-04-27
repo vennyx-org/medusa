@@ -24,11 +24,17 @@ export default function () {
       } else {
         exampleTags.forEach((exampleTag) => {
           exampleTag.content.forEach((part) => {
-            if (
-              part.kind !== "code" ||
-              part.text.startsWith("```ts workflow={false}")
-            ) {
-              exampleStr.push(part.text)
+            const isCode = part.kind === "code"
+            const isCodeBlock = part.text.startsWith("```")
+            const isWorkflowDisabled = part.text.startsWith(
+              "```ts workflow={false}"
+            )
+            if (!isCode || !isCodeBlock || isWorkflowDisabled) {
+              if (!isCodeBlock && exampleStr.length > 0) {
+                exampleStr[exampleStr.length - 1] += part.text
+              } else {
+                exampleStr.push(part.text)
+              }
               return
             }
 

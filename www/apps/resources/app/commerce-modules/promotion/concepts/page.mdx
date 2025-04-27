@@ -6,7 +6,7 @@ export const metadata = {
 
 # {metadata.title}
 
-In this document, you’ll learn about the main promotion and rule concepts in the Promotion Module.
+In this guide, you’ll learn about the main promotion and rule concepts in the Promotion Module.
 
 <Note title="Looking for no-code docs?">
 
@@ -86,7 +86,7 @@ The Medusa Admin UI may not provide a way to create each of these promotion exam
 
 ---
 
-## PromotionRule
+## Promotion Rules
 
 A promotion can be restricted by a set of rules, each rule is represented by the [PromotionRule data model](/references/promotion/models/PromotionRule).
 
@@ -94,17 +94,15 @@ For example, you can create a promotion that only customers of the `VIP` custome
 
 ![A diagram showcasing the relation between Promotion and PromotionRule](https://res.cloudinary.com/dza7lstvk/image/upload/v1709833196/Medusa%20Resources/promotion-promotion-rule_msbx0w.jpg)
 
-A `PromotionRule`'s `attribute` property indicates the property's name to which this rule is applied.
+A `PromotionRule`'s `attribute` property indicates the property's name to which this rule is applied. For example, `customer_group_id`.
 
-For example, `customer_group_id`. Its value is stored in the `PromotionRuleValue` data model. So, a rule can have multiple values.
+The expected value for the attribute is stored in the `PromotionRuleValue` data model. So, a rule can have multiple values.
 
 When testing whether a promotion can be applied to a cart, the rule's `attribute` property and its values are tested on the cart itself.
 
 For example, the cart's customer must be part of the customer group(s) indicated in the promotion rule's value.
 
----
-
-## Flexible Rules
+### Flexible Rules
 
 The `PromotionRule`'s `operator` property adds more flexibility to the rule’s condition rather than simple equality (`eq`).
 
@@ -116,3 +114,114 @@ For example, to restrict the promotion to only `VIP` and `B2B` customer groups:
 ![A diagram showcasing the relation between PromotionRule and PromotionRuleValue when a rule has multiple values](https://res.cloudinary.com/dza7lstvk/image/upload/v1709897383/Medusa%20Resources/promotion-promotion-rule-multiple_hctpmt.jpg)
 
 In this case, a customer’s group must be in the `VIP` and `B2B` set of values to use the promotion.
+
+---
+
+## How to Apply Rules on a Promotion?
+
+### Using Workflows
+
+If you're managing promotions using [Medusa's workflows](../../../medusa-workflows-reference/page.mdx) or the API routes that use them, you can specify rules for the promotion or its [application method](../application-method/page.mdx).
+
+For example, if you're creating a promotion using the [createPromotionsWorkflow](!resources!/references/medusa-workflows/createPromotionsWorkflow):
+
+```ts
+const { result } = await createPromotionsWorkflow(container)
+  .run({
+    input: {
+      promotionsData: [{
+        code: "10OFF",
+        type: "standard",
+        status: "active",
+        application_method: {
+          type: "percentage",
+          target_type: "items",
+          allocation: "across",
+          value: 10,
+          currency_code: "usd",
+        },
+        rules: [
+          {
+            attribute: "customer.group.id",
+            operator: "eq",
+            values: [
+              "cusgrp_123",
+            ],
+          },
+        ],
+      }],
+    },
+  })
+```
+
+In this example, the promotion is restricted to customers with the `cusgrp_123` customer group.
+
+### Using Promotion Module's Service
+
+<Note>
+
+For most use cases, it's recommended to use [workflows](#using-workflows) instead of directly using the module's service.
+
+</Note>
+
+If you're managing promotions using the Promotion Module's service, you can specify rules for the promotion or its [application method](../application-method/page.mdx) in its methods.
+
+For example, if you're creating a promotion with the [createPromotions](!resources!/references/promotion/createPromotions) method:
+
+```ts
+const promotions = await promotionModuleService.createPromotions([
+  {
+    code: "50OFF",
+    type: "standard",
+    status: "active",
+    application_method: {
+      type: "percentage",
+      target_type: "items",
+      value: 50,
+    },
+    rules: [
+      {
+        attribute: "customer.group.id",
+        operator: "eq",
+        values: [
+          "cusgrp_123",
+        ],
+      },
+    ],
+  },
+])
+```
+
+In this example, the promotion is restricted to customers with the `cusgrp_123` customer group.
+
+### How is the Promotion Rule Applied?
+
+A promotion is applied on a resource if its attributes match the promotion's rules.
+
+For example, consider you have the following promotion with a rule that restricts the promotion to a specific customer:
+
+```json
+{
+  "code": "10OFF",
+  "type": "standard",
+  "status": "active",
+  "application_method": {
+    "type": "percentage",
+    "target_type": "items",
+    "allocation": "across",
+    "value": 10,
+    "currency_code": "usd"
+  },
+  "rules": [
+    {
+      "attribute": "customer_id",
+      "operator": "eq",
+      "values": [
+        "cus_123"
+      ]
+    }
+  ]
+}
+```
+
+When you try to apply this promotion on a cart, the cart's `customer_id` is compared to the promotion rule's value based on the specified operator. So, the promotion will only be applied if the cart's `customer_id` is equal to `cus_123`.

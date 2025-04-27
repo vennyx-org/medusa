@@ -8,7 +8,7 @@ import { StepResponse, createStep } from "@medusajs/framework/workflows-sdk"
 export const createReturnFulfillmentStepId = "create-return-fulfillment"
 /**
  * This step creates a fulfillment for a return.
- * 
+ *
  * @example
  * const data = createReturnFulfillmentStep({
  *   location_id: "sloc_123",

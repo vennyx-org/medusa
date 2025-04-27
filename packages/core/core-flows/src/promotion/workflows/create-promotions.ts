@@ -34,6 +34,7 @@ export const createPromotionsWorkflowId = "create-promotions"
  *       {
  *         code: "10OFF",
  *         type: "standard",
+ *         status: "active",
  *         application_method: {
  *           type: "percentage",
  *           target_type: "items",

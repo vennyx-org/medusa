@@ -6,7 +6,7 @@ export const metadata = {
 
 # {metadata.title}
 
-This document showcases the module links defined between the Pricing Module and other commerce modules.
+This document showcases the module links defined between the Pricing Module and other Commerce Modules.
 
 ## Summary
 
@@ -38,7 +38,7 @@ The Pricing Module has the following links to other modules:
         [PriceSet](/references/pricing/models/PriceSet)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - one-to-one
       </Table.Cell>
       <Table.Cell>
         [Learn more](#fulfillment-module)
@@ -52,7 +52,7 @@ The Pricing Module has the following links to other modules:
         [PriceSet](/references/pricing/models/PriceSet)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - one-to-one
       </Table.Cell>
       <Table.Cell>
         [Learn more](#product-module)
@@ -86,7 +86,7 @@ const { data: priceSets } = await query.graph({
   ],
 })
 
-// priceSets.shipping_option
+// priceSets[0].shipping_option
 ```
 
   </CodeTab>
@@ -104,7 +104,7 @@ const { data: priceSets } = useQueryGraphStep({
   ],
 })
 
-// priceSets.shipping_option
+// priceSets[0].shipping_option
 ```
 
   </CodeTab>
@@ -183,7 +183,7 @@ const { data: priceSets } = await query.graph({
   ],
 })
 
-// priceSets.variant
+// priceSets[0].variant
 ```
 
   </CodeTab>
@@ -201,7 +201,7 @@ const { data: priceSets } = useQueryGraphStep({
   ],
 })
 
-// priceSets.variant
+// priceSets[0].variant
 ```
 
   </CodeTab>

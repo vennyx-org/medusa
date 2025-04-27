@@ -13,7 +13,7 @@ export type NotifyOnFailureStepInput = {
   to: string
   /**
    * The channel to send the notification through. For example, `email`.
-   * A [Notification Module Provider](https://docs.medusajs.com/resources/architectural-modules/notification)
+   * A [Notification Module Provider](https://docs.medusajs.com/resources/infrastructure-modules/notification)
    * must be installed and configured for the specified channel.
    */
   channel: string

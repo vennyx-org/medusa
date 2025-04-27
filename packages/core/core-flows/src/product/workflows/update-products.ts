@@ -343,6 +343,13 @@ export const updateProductsWorkflowId = "update-products"
  * allows you to update custom data models linked to the products.
  *
  * You can also use this workflow within your customizations or your own custom workflows, allowing you to wrap custom logic around product update.
+ * 
+ * :::note
+ * 
+ * Learn more about adding rules to the product variant's prices in the Pricing Module's 
+ * [Price Rules](https://docs.medusajs.com/resources/commerce-modules/pricing/price-rules) documentation.
+ * 
+ * :::note
  *
  * @example
  * To update products by their IDs:

@@ -20,14 +20,16 @@
  *       type: string
  *   - name: fields
  *     in: query
- *     description: "Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default
- *       fields. without prefix it will replace the entire default fields. NOTE: This route doesn't allow expanding custom relations."
+ *     description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default
+ *       fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom
+ *       Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
  *     required: false
  *     schema:
  *       type: string
  *       title: fields
- *       description: "Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default
- *         fields. without prefix it will replace the entire default fields. NOTE: This route doesn't allow expanding custom relations."
+ *       description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default
+ *         fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom
+ *         Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
  *       externalDocs:
  *         url: "#select-fields-and-relations"
  * security:
@@ -98,7 +100,11 @@
  *               province:
  *                 type: string
  *                 title: province
- *                 description: The address's province.
+ *                 description: The address's ISO 3166-2 province code. Must be lower-case.
+ *                 example: "us-ca"
+ *                 externalDocs:
+ *                   url: https://en.wikipedia.org/wiki/ISO_3166-2
+ *                   description: Learn more about ISO 3166-2
  *               postal_code:
  *                 type: string
  *                 title: postal_code

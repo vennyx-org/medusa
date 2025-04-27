@@ -108,7 +108,7 @@ export type StockLocationAddressDTO = {
   postal_code?: string | null
 
   /**
-   * The province of the stock location address.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province of the stock location address.
    */
   province?: string | null
 
@@ -301,8 +301,8 @@ export interface FilterableStockLocationProps
  *     example: HD3-1G8
  *   province:
  *     type: string
- *     description: Stock location address' province
- *     example: Sinaloa
+ *     description: Stock location address' lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province
+ *     example: us-ca
  *   metadata:
  *     type: object
  *     description: An optional key-value map with additional details
@@ -335,7 +335,7 @@ export type StockLocationAddressInput = {
   phone?: string | null
 
   /**
-   * The province of the stock location address.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province of the stock location address.
    */
   province?: string | null
 

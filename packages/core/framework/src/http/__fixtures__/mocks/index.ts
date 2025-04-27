@@ -2,6 +2,7 @@ import { ConfigModule } from "@medusajs/types"
 
 export const customersGlobalMiddlewareMock = jest.fn()
 export const customersCreateMiddlewareMock = jest.fn()
+export const customersCreateMiddlewareValidatorMock = jest.fn()
 export const storeGlobalMiddlewareMock = jest.fn()
 
 export const config = {

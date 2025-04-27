@@ -9,7 +9,7 @@ tags:
       label: "Manage Shipping Options"
 ---
 
-import { EllipsisHorizontal, TaxExclusive, TaxInclusive } from "@medusajs/icons"
+import { EllipsisHorizontal, TaxExclusive, TaxInclusive, ArrowsPointingOut, Plus } from "@medusajs/icons"
 
 export const metadata = {
   title: `Manage Locations in Medusa Admin`,
@@ -133,9 +133,9 @@ To create a shipping option:
 
 If you chose a "Calculated" price type, you can click the "Save" button to create the shipping option. Otherwise click Continue to proceed to the Prices step.
 
-In the Prices step, use the [Bulk Editor](../../../tips/bulk-editor/page.mdx) to enter the shipping option's prices for every currency and region in your store. Once you're done, click the Save button.
+#### Fixed and Conditional Shipping Option Prices
 
-Learn how you can further manage the shipping option in the [Manage Shipping Options section](#manage-shipping-options).
+In the Prices step, use the [Bulk Editor](../../../tips/bulk-editor/page.mdx) to enter the shipping option's prices for every currency and region in your store.
 
 <Note title="Tips">
 
@@ -147,6 +147,29 @@ Tax-inclusive pricing is configured in the [currency's](../../store/page.mdx#edi
 </Note>
 
 ![Create shipping option form step 2](https://res.cloudinary.com/dza7lstvk/image/upload/v1739983344/User%20Guide/Screenshot_2025-02-19_at_6.42.12_PM_u3dk2g.png)
+
+Shipping option prices can also be conditioned based on the cart's total. For example, you can make the shipping option free if the cart's total exceeds `$100`. So, you can set a fixed price for a shipping option, and then set a conditioned price based on the cart's total.
+
+To set a conditioned price for the shipping option:
+
+1. Hover over a cell in the Bulk Editor based on the currency or region you want to set the conditioned price for.
+2. Click the <InlineIcon Icon={ArrowsPointingOut} alt="arrows-pointing-out" /> icon that appears to open the conditional pricing form.
+3. In the form that opens:
+    - Conditional pricing card will appear, and you can add another one by clicking the "Add price" button.
+    - Enter in the "Shipping option price" field the price when this condition is satisfied.
+    - To set the minimum cart total required for this price to apply:
+        - Click the <InlineIcon Icon={Plus} alt="plus" /> next to "Minimum cart total".
+        - In the field that shows, enter the minimum cart total required for this price to apply.
+    - To set the maximum cart total required for this price to apply:
+        - Click the <InlineIcon Icon={Plus} alt="plus" /> next to "Maximum cart total".
+        - In the field that shows, enter the maximum cart total required for this price to apply.
+    - Once you're done, click the Save button.
+
+Once you're done, click the Save button.
+
+![Conditional shipping option price form](https://res.cloudinary.com/dza7lstvk/image/upload/v1744889619/User%20Guide/Screenshot_2025-04-17_at_2.33.14_PM_wcqinw.png)
+
+Learn how you can further manage the shipping option in the [Manage Shipping Options section](#manage-shipping-options).
 
 ---
 
@@ -222,6 +245,7 @@ To edit the prices of shipping options whose price type is Fixed:
 2. In the "Pickup" or "Shipping" sections, find the shipping option and click on the <InlineIcon Icon={EllipsisHorizontal} alt="three-dots" /> icon at its right.
 3. Choose "Edit prices" from the dropdown.
 4. In the [Bulk Editor](../../../tips/bulk-editor/page.mdx) that opens, you can edit the shipping option's price for every currency and region in your store.
+    - Refer to the [Fixed and Conditional Shipping Option Prices](#fixed-and-conditional-shipping-option-prices) section to learn how to set a conditional price for the shipping option.
 5. Once you're done, click the Save button.
 
 <Note title="Tips">

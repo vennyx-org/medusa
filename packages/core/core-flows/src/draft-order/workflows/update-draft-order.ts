@@ -20,6 +20,9 @@ import { validateDraftOrderStep } from "../steps/validate-draft-order"
 
 export const updateDraftOrderWorkflowId = "update-draft-order"
 
+/**
+ * The details of the draft order to update.
+ */
 export interface UpdateDraftOrderWorkflowInput {
   /**
    * The ID of the draft order to update.
@@ -55,12 +58,42 @@ export interface UpdateDraftOrderWorkflowInput {
   metadata?: Record<string, unknown> | null
 }
 
-interface UpdateDraftOrderStepInput {
+/**
+ * The input for the update draft order step.
+ */
+export interface UpdateDraftOrderStepInput {
+  /**
+   * The draft order to update.
+   */
   order: OrderDTO
+  /**
+   * The details to update in the draft order.
+   */
   input: UpdateOrderDTO
 }
 
-const updateDraftOrderStep = createStep(
+/**
+ * This step updates a draft order's details.
+ * 
+ * :::note
+ * 
+ * You can retrieve a draft order's details using [Query](https://docs.medusajs.com/learn/fundamentals/module-links/query),
+ * or [useQueryGraphStep](https://docs.medusajs.com/resources/references/medusa-workflows/steps/useQueryGraphStep).
+ * 
+ * :::
+ * 
+ * @example
+ * const data = updateDraftOrderStep({
+ *   order: {
+ *     id: "order_123",
+ *     // other order details...
+ *   },
+ *   input: {
+ *     // details to update...
+ *   }
+ * })
+ */
+export const updateDraftOrderStep = createStep(
   "update-draft-order",
   async ({ order, input }: UpdateDraftOrderStepInput, { container }) => {
     const service = container.resolve<IOrderModuleService>(Modules.ORDER)
@@ -87,6 +120,32 @@ const updateDraftOrderStep = createStep(
   }
 )
 
+/**
+ * This workflow updates a draft order's details. It's used by the
+ * [Update Draft Order Admin API Route](https://docs.medusajs.com/api/admin#draft-orders_postdraftordersid).
+ * 
+ * This workflow doesn't update the draft order's items, shipping methods, or promotions. Instead, you have to 
+ * create a draft order edit using {@link beginDraftOrderEditWorkflow} and make updates in the draft order edit.
+ * Then, you can confirm the draft order edit using {@link confirmDraftOrderEditWorkflow} or request a draft order edit
+ * using {@link requestDraftOrderEditWorkflow}.
+ * 
+ * You can use this workflow within your customizations or your own custom workflows, allowing you to wrap custom logic around
+ * updating a draft order.
+ * 
+ * @example
+ * const { result } = await updateDraftOrderWorkflow(container)
+ * .run({
+ *   input: {
+ *     id: "order_123",
+ *     user_id: "user_123",
+ *     customer_id: "cus_123",
+ *   }
+ * })
+ * 
+ * @summary
+ * 
+ * Update a draft order's details.
+ */
 export const updateDraftOrderWorkflow = createWorkflow(
   updateDraftOrderWorkflowId,
   function (input: WorkflowData<UpdateDraftOrderWorkflowInput>) {

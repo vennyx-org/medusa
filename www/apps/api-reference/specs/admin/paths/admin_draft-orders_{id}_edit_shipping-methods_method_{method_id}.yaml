@@ -1,8 +1,8 @@
 post:
   operationId: PostDraftOrdersIdEditShippingMethodsMethodMethod_id
-  summary: Update Shipping Method in Draft Order
+  summary: Update Existing Shipping Method in Draft Order Edit
   x-sidebar-summary: Update Shipping Method
-  description: Update a shipping method in a draft order
+  description: Update an existing shipping method in a draft order edit.
   x-authenticated: true
   parameters:
     - name: id
@@ -55,3 +55,55 @@ post:
     '500':
       $ref: ../components/responses/500_error.yaml
   x-workflow: updateDraftOrderShippingMethodWorkflow
+delete:
+  operationId: DeleteDraftOrdersIdEditShippingMethodsMethodMethod_id
+  summary: Remove Shipping Method from Draft Order Edit
+  x-sidebar-summary: Remove Shipping Method
+  description: Remove an existing shipping method from a draft order edit.
+  x-authenticated: true
+  parameters:
+    - name: id
+      in: path
+      description: The draft order's ID.
+      required: true
+      schema:
+        type: string
+    - name: method_id
+      in: path
+      description: The shipping method's ID.
+      required: true
+      schema:
+        type: string
+  security:
+    - api_token: []
+    - cookie_auth: []
+    - jwt_token: []
+  x-codeSamples:
+    - lang: JavaScript
+      label: JS SDK
+      source:
+        $ref: >-
+          ../code_samples/JavaScript/admin_draft-orders_{id}_edit_shipping-methods_method_{method_id}/delete.js
+    - lang: Shell
+      label: cURL
+      source:
+        $ref: >-
+          ../code_samples/Shell/admin_draft-orders_{id}_edit_shipping-methods_method_{method_id}/delete.sh
+  tags:
+    - Draft Orders
+  responses:
+    '200':
+      description: OK
+    '400':
+      $ref: ../components/responses/400_error.yaml
+    '401':
+      $ref: ../components/responses/unauthorized.yaml
+    '404':
+      $ref: ../components/responses/not_found_error.yaml
+    '409':
+      $ref: ../components/responses/invalid_state_error.yaml
+    '422':
+      $ref: ../components/responses/invalid_request_error.yaml
+    '500':
+      $ref: ../components/responses/500_error.yaml
+  x-workflow: removeDraftOrderShippingMethodWorkflow

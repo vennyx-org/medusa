@@ -1,8 +1,8 @@
 import { IModuleService } from "../modules-sdk"
-import { FileDTO, FilterableFileProps } from "./common"
+import { FileDTO, FilterableFileProps, UploadFileUrlDTO } from "./common"
 import { FindConfig } from "../common"
 import { Context } from "../shared-context"
-import { CreateFileDTO } from "./mutations"
+import { CreateFileDTO, GetUploadFileUrlDTO } from "./mutations"
 
 export interface IFileModuleService extends IModuleService {
   /**
@@ -40,6 +40,43 @@ export interface IFileModuleService extends IModuleService {
    */
 
   createFiles(data: CreateFileDTO, sharedContext?: Context): Promise<FileDTO>
+
+  /**
+   * This method gets the upload URL for a file.
+   *
+   * @param {GetUploadFileUrlDTO} data - The file information to get the upload URL for.
+   * @param {Context} sharedContext - A context used to share resources, such as transaction manager, between the application and the module.
+   * @returns {Promise<UploadFileUrlDTO>} The upload URL for the file.
+   *
+   * @example
+   * const uploadInfo = await fileModuleService.getUploadFileUrls({
+   *   filename: "product.png",
+   *   mimeType: "image/png",
+   * })
+   */
+
+  getUploadFileUrls(
+    data: GetUploadFileUrlDTO,
+    sharedContext?: Context
+  ): Promise<UploadFileUrlDTO>
+
+  /**
+   * This method uploads files to the designated file storage system.
+   *
+   * @param {GetUploadFileUrlDTO[]} data - The file information to get the upload URL for.
+   * @param {Context} sharedContext - A context used to share resources, such as transaction manager, between the application and the module.
+   * @returns {Promise<UploadFileUrlDTO[]>} The upload URLs for the files.
+   *
+   * @example
+   * const [uploadInfo] = await fileModuleService.getUploadFileUrls([{
+   *   filename: "product.png",
+   *   mimeType: "image/png",
+   * }])
+   */
+  getUploadFileUrls(
+    data: GetUploadFileUrlDTO[],
+    sharedContext?: Context
+  ): Promise<UploadFileUrlDTO[]>
 
   /**
    * This method deletes files by their IDs.

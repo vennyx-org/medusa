@@ -1785,7 +1785,7 @@ post:
   summary: Create Draft Order
   description: >-
     Create a draft order. This creates an order with the `is_draft_order`
-    property enabled.
+    property enabled. You can later convert the draft order to an order.
   x-authenticated: true
   parameters:
     - name: fields

@@ -646,7 +646,7 @@ Where:
 
 <Note title="Tip">
 
-Medusa supports integrating third-party services, such as [S3](../../../architectural-modules/file/s3/page.mdx), in a File Module Provider. Refer to the [File Module](../../../architectural-modules/file/page.mdx) documentation to find other module providers and how to create a custom provider.
+Medusa supports integrating third-party services, such as [S3](../../../infrastructure-modules/file/s3/page.mdx), in a File Module Provider. Refer to the [File Module](../../../infrastructure-modules/file/page.mdx) documentation to find other module providers and how to create a custom provider.
 
 </Note>
 
@@ -763,7 +763,7 @@ You create a step using `createStep` from the Workflows SDK. It accepts two para
 1. The step's name, which is `get-magento-products`.
 1. An async function that executes the step's logic. The function receives two parameters:
    - The input data for the step, which in this case is the pagination parameters.
-   - An object holding the workflow's context, including the [Medusa Container](!docs!learn/fundamentals/medusa-container) that allows you to resolve framework and commerce tools.
+   - An object holding the workflow's context, including the [Medusa Container](!docs!learn/fundamentals/medusa-container) that allows you to resolve Framework and commerce tools.
 
 In the step function, you resolve the Magento Module's service from the container, then use its `getProducts` method to retrieve the products from Magento.
 

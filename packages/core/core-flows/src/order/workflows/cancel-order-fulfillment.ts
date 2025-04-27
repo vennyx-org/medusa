@@ -168,7 +168,7 @@ function prepareCancelOrderFulfillmentData({
       //   We need to take this into account when canceling the fulfillment to compute quantity of line items not being fulfilled based on fulfillment items and qunatities.
       //   NOTE: for now we only need to find one inventory item of a line item to compute this since when a fulfillment is created all inventory items are fulfilled together.
       //   If we allow to cancel partial fulfillments for an order item, we need to change this.
-      //
+
       if (iitems?.length) {
         const iitem = iitems.find(
           (i) => i.inventory.id === fitem.inventory_item_id

@@ -125,8 +125,6 @@ export class LocalWorkflow {
 
                 args[ctxIndex] = context
               }
-            } else if (hasContext) {
-              args[ctxIndex!].eventGroupId ??= this_.medusaContext?.eventGroupId
             }
 
             const method = target[prop]
@@ -364,12 +362,7 @@ export class LocalWorkflow {
       handler: handler(this.container_, context),
       payload: input,
       flowMetadata,
-      onLoad: (transaction) => {
-        if (this.medusaContext) {
-          this.medusaContext.eventGroupId =
-            transaction.getFlow().metadata?.eventGroupId
-        }
-      },
+      onLoad: this.onLoad.bind(this),
     })
 
     const { cleanUpEventListeners } = this.registerEventCallbacks({
@@ -451,12 +444,7 @@ export class LocalWorkflow {
       responseIdempotencyKey: idempotencyKey,
       handler: handler(this.container_, context),
       response,
-      onLoad: (transaction) => {
-        if (this.medusaContext) {
-          this.medusaContext.eventGroupId =
-            transaction.getFlow().metadata?.eventGroupId
-        }
-      },
+      onLoad: this.onLoad.bind(this),
     })
 
     try {
@@ -485,12 +473,7 @@ export class LocalWorkflow {
       responseIdempotencyKey: idempotencyKey,
       error,
       handler: handler(this.container_, context),
-      onLoad: (transaction) => {
-        if (this.medusaContext) {
-          this.medusaContext.eventGroupId =
-            transaction.getFlow().metadata?.eventGroupId
-        }
-      },
+      onLoad: this.onLoad.bind(this),
     })
 
     try {
@@ -592,6 +575,18 @@ export class LocalWorkflow {
       throw new Error(
         `Handler for action "${action}" is missing invoke function.`
       )
+    }
+  }
+
+  private onLoad(transaction: DistributedTransactionType) {
+    if (this.medusaContext) {
+      const flow = transaction.getFlow() ?? {}
+      const metadata = (flow.metadata ??
+        {}) as Required<TransactionFlow>["metadata"]
+      this.medusaContext.eventGroupId = metadata.eventGroupId
+      this.medusaContext.parentStepIdempotencyKey =
+        metadata.parentStepIdempotencyKey
+      this.medusaContext.preventReleaseEvents = metadata?.preventReleaseEvents
     }
   }
 }

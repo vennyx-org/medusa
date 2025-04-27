@@ -10,7 +10,7 @@ In this chapter, you’ll learn what a module link is and how to define one.
 
 Medusa's modular architecture isolates modules from one another to ensure they can be integrated into your application without side effects. Module isolation has other benefits, which you can learn about in the [Module Isolation chapter](../modules/isolation/page.mdx). Since modules are isolated, you can't access another module's data models to add a relation to it or extend it. Instead, you use a module link.
 
-A module link forms an association between two data models of different modules while maintaining module isolation. Using module links, you can build virtual relations between your custom data models and data models in the commerce modules, which is useful as you extend the features provided by the commerce modules. Then, Medusa creates a link table in the database to store the IDs of the linked records. You'll learn more about link tables later in this chapter.
+A module link forms an association between two data models of different modules while maintaining module isolation. Using module links, you can build virtual relations between your custom data models and data models in the Commerce Modules, which is useful as you extend the features provided by the Commerce Modules. Then, Medusa creates a link table in the database to store the IDs of the linked records. You'll learn more about link tables later in this chapter.
 
 For example, the [Brand Customizations Tutorial](../../customization/extend-features/page.mdx) shows how to create a Brand Module that adds the concept of brands to your application, then link those brands to a product.
 

@@ -1,0 +1,92 @@
+import { CardList } from "docs-ui"
+
+export const metadata = {
+  title: `Workflow Engine Module`,
+}
+
+# {metadata.title}
+
+In this document, you'll learn what a Workflow Engine Module is and how to use it in your Medusa application.
+
+## What is a Workflow Engine Module?
+
+A Workflow Engine Module handles tracking and recording the transactions and statuses of workflows and their steps. It can use custom mechanism or integrate a third-party service.
+
+### Default Workflow Engine Module
+
+Medusa uses the [In-Memory Workflow Engine Module](./in-memory/page.mdx) by default. For production purposes, it's recommended to use the [Redis Workflow Engine Module](./redis/page.mdx) instead.
+
+---
+
+## How to Use the Workflow Engine Module?
+
+You can use the registered Workflow Engine Module as part of the [workflows](!docs!/learn/fundamentals/workflows) you build for your custom features. A workflow is a special function composed of a series of steps that guarantees data consistency and reliable roll-back mechanism.
+
+In a step of your workflow, you can resolve the Workflow Engine Module's service and use its methods to track and record the transactions and statuses of workflows and their steps.
+
+For example:
+
+```ts
+import { Modules } from "@medusajs/framework/utils"
+import { 
+  createStep,
+  createWorkflow,
+  StepResponse,
+  WorkflowResponse,
+} from "@medusajs/framework/workflows-sdk"
+
+const step1 = createStep(
+  "step-1",
+  async ({}, { container }) => {
+    const workflowEngineService = container.resolve(
+      Modules.WORKFLOW_ENGINE
+    )
+
+    const [workflowExecution] = await workflowEngineService.listWorkflowExecutions({
+      transaction_id: transaction_id,
+    })
+
+    return new StepResponse(workflowExecution)
+  } 
+)
+
+export const workflow = createWorkflow(
+  "workflow-1",
+  () => {
+    const workflowExecution = step1()
+
+    return new WorkflowResponse(workflowExecution)
+  }
+)
+```
+
+In the example above, you create a workflow that has a step. In the step, you resolve the service of the Workflow Engine Module from the [Medusa container](!docs!/learn/fundamentals/medusa-container).
+
+Then, you use the `listWorkflowExecutions` method of the Workflow Engine Module to list the workflow executions with the transaction ID `transaction_id`. The workflow execution is then returned as a response from the step and the workflow.
+
+---
+
+## List of Workflow Engine Modules
+
+Medusa provides the following Workflow Engine Modules.
+
+<CardList
+  items={[
+    {
+      title: "In-Memory",
+      href: "/infrastructure-modules/workflow-engine/in-memory",
+      badge: {
+        variant: "neutral",
+        children: "For Development"
+      }
+    },
+    {
+      title: "Redis",
+      href: "/infrastructure-modules/workflow-engine/redis",
+      badge: {
+        variant: "green",
+        children: "For Production"
+      }
+    }
+  ]}
+/>

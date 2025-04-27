@@ -1,6 +1,6 @@
 {
   "name": "@medusajs/workflow-engine-inmemory",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "description": "Medusa Workflow Orchestrator module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,8 +36,8 @@
     "orm:cache:clear": " MIKRO_ORM_CLI_CONFIG=./mikro-orm.config.dev.ts medusa-mikro-orm cache:clear"
   },
   "devDependencies": {
-    "@medusajs/framework": "2.7.0",
-    "@medusajs/test-utils": "2.7.0",
+    "@medusajs/framework": "2.7.1",
+    "@medusajs/test-utils": "2.7.1",
     "@mikro-orm/cli": "6.4.3",
     "@mikro-orm/core": "6.4.3",
     "@mikro-orm/migrations": "6.4.3",
@@ -54,7 +54,7 @@
     "ulid": "^2.3.0"
   },
   "peerDependencies": {
-    "@medusajs/framework": "2.7.0",
+    "@medusajs/framework": "2.7.1",
     "@mikro-orm/core": "6.4.3",
     "@mikro-orm/migrations": "6.4.3",
     "@mikro-orm/postgresql": "6.4.3",

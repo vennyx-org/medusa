@@ -58,7 +58,7 @@ const nextConfig = {
   // Configure `pageExtensions` to include MDX files
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
 
-  transpilePackages: ["docs-ui"],
+  transpilePackages: ["docs-ui", "next-mdx-remote"],
 
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || "/resources",
   async redirects() {
@@ -168,10 +168,19 @@ const nextConfig = {
         destination: "/medusa-cli/commands/start",
         permanent: true,
       },
+      {
+        source: "/architectural-modules/:path*",
+        destination: "/infrastructure-modules/:path*",
+        permanent: true,
+      },
     ]
   },
   outputFileTracingExcludes: {
     "*": ["node_modules/@medusajs/icons"],
+  },
+  outputFileTracingIncludes: {
+    "/md\\-content/\\[\\[\\.\\.\\.slug\\]\\]": ["./app/**/*.mdx"],
+    "/md\\-content/references/**": ["./references/**/*.mdx"],
   },
   experimental: {
     optimizePackageImports: ["@medusajs/icons", "@medusajs/ui", "elkjs"],

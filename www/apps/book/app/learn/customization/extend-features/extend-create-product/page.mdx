@@ -87,7 +87,7 @@ createProductsWorkflow.hooks.productsCreated(
 Workflows have a special `hooks` property to access its hooks and consume them. Each hook, such as `productsCreated`, accepts a step function as a parameter. The step function accepts the following parameters:
 
 1. An object having an `additional_data` property, which is the custom data passed in the request body under `additional_data`. The object will also have properties passed from the workflow to the hook, which in this case is the `products` property that holds an array of the created products.
-2. An object of properties related to the step's context. It has a `container` property whose value is the [Medusa container](../../../fundamentals/medusa-container/page.mdx) to resolve framework and commerce tools.
+2. An object of properties related to the step's context. It has a `container` property whose value is the [Medusa container](../../../fundamentals/medusa-container/page.mdx) to resolve Framework and commerce tools.
 
 In the step, if a brand ID is passed in `additional_data`, you resolve the Brand Module's service and use its generated `retrieveBrand` method to retrieve the brand by its ID. The `retrieveBrand` method will throw an error if the brand doesn't exist.
 

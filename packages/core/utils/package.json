@@ -1,6 +1,6 @@
 {
   "name": "@medusajs/utils",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "description": "Medusa utilities functions shared by Medusa core and Modules",
   "main": "dist/index.js",
   "exports": {
@@ -47,7 +47,7 @@
     "@graphql-codegen/typescript": "^4.0.9",
     "@graphql-tools/merge": "^9.0.7",
     "@graphql-tools/schema": "^10.0.6",
-    "@medusajs/types": "2.7.0",
+    "@medusajs/types": "2.7.1",
     "@types/pluralize": "^0.0.33",
     "bignumber.js": "^9.1.2",
     "dotenv": "^16.4.5",

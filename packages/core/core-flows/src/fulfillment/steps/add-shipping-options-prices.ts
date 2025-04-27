@@ -125,6 +125,13 @@ export const createShippingOptionsPriceSetsStepId =
   "add-shipping-options-prices-step"
 /**
  * This step creates price sets for one or more shipping options.
+ * 
+ * :::note
+ * 
+ * Learn more about adding rules to the shipping option's prices in the Pricing Module's 
+ * [Price Rules](https://docs.medusajs.com/resources/commerce-modules/pricing/price-rules) documentation.
+ * 
+ * :::note
  */
 export const createShippingOptionsPriceSetsStep = createStep(
   createShippingOptionsPriceSetsStepId,

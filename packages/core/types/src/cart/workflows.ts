@@ -197,7 +197,7 @@ export interface CreateCartAddressDTO {
   country_code?: string
 
   /**
-   * The province or state of the address.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province or state of the address.
    */
   province?: string
 

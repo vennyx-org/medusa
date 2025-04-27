@@ -1,4 +1,4 @@
-import { architecturalModulesSidebar } from "./sidebars/architectural-modules.mjs"
+import { infrastructureModulesSidebar } from "./sidebars/infrastructure-modules.mjs"
 import { integrationsSidebar } from "./sidebars/integrations.mjs"
 import { recipesSidebar } from "./sidebars/recipes.mjs"
 import { referencesSidebar } from "./sidebars/references.mjs"
@@ -46,9 +46,9 @@ export const sidebar = [
     items: commerceModulesSidebar,
   },
   {
-    sidebar_id: "architectural-modules",
-    title: "Architectural Modules",
-    items: architecturalModulesSidebar,
+    sidebar_id: "infrastructure-modules",
+    title: "Infrastructure Modules",
+    items: infrastructureModulesSidebar,
   },
   {
     sidebar_id: "troubleshooting",

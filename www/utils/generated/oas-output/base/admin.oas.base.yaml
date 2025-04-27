@@ -555,7 +555,7 @@ tags:
       You can upload public files, such as product images, or private files, such as CSV files used to import products.
     externalDocs:
       description: Check out available file module providers.
-      url: https://docs.medusajs.com/resources/architectural-modules/file
+      url: https://docs.medusajs.com/resources/infrastructure-modules/file
   - name: Users
     description: >
       A user is an admin user that can authenticate and perform functionalities
@@ -580,7 +580,7 @@ tags:
       Depending on the workflow engine you use, executions may only be retained for a short while, or only until the Medusa application is restarted.
     externalDocs:
       description: Check out available Workflow Engine Modules
-      url: https://docs.medusajs.com/resources/architectural-modules/workflow-engine
+      url: https://docs.medusajs.com/resources/infrastructure-modules/workflow-engine
 servers:
   - url: http://localhost:9000
   - url: https://api.medusajs.com

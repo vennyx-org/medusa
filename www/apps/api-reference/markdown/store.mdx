@@ -17,7 +17,7 @@ import ClientLibraries from "./client-libraries.mdx"
 
 <DividedMarkdownContent>
 
-<H1 className={"!h2-docs scroll-m-[184px] lg:scroll-m-[264px]"} id="introduction">Medusa V2 Store API Reference</H1>
+<H1 className={"!h2-docs scroll-m-[184px] lg:scroll-m-[264px]"} id="introduction" hideLlmDropdown>Medusa V2 Store API Reference</H1>
 
 This API reference includes Medusa v2's Store APIs, which are REST APIs exposed by the Medusa application. They are used to create a storefront for your commerce store, such as a webshop or a commerce mobile app.
 
@@ -592,6 +592,20 @@ curl 'localhost:9000/store/products?fields=variants.title,variants.sku'
 This returns the variants of each product, but the variants only have their `id`, `title`, and `sku` fields. The `id` is always included.
 
 </DividedMarkdownCode>
+
+</DividedMarkdownLayout>
+
+<DividedMarkdownLayout>
+
+<DividedMarkdownContent>
+
+### Select Custom Linked Data Models
+
+Most of the API routes that accept a `fields` query parameter allow you to specify custom linked data models. For example, if you linked a `Brand` to a `Product`, you can pass `brand` in the `fields` query parameter to retrieve the brand of each product.
+
+However, some API routes restrict the fields and relations you can retrieve. To learn about those API routes and how to override the allowed fields and relations, refer to the [Retrieve Custom Linked Data Models from Medusa's API routes](!docs!/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
+
+</DividedMarkdownContent>
 
 </DividedMarkdownLayout>
 

@@ -504,11 +504,14 @@ export default class PaymentModuleService
       status !== PaymentSessionStatus.AUTHORIZED &&
       status !== PaymentSessionStatus.CAPTURED
     ) {
-      await this.paymentSessionService_.update({
-        id: session.id,
-        status,
-        data,
-    }, sharedContext);
+      await this.paymentSessionService_.update(
+        {
+          id: session.id,
+          status,
+          data,
+        },
+        sharedContext
+      )
       throw new MedusaError(
         MedusaError.Types.NOT_ALLOWED,
         `Session: ${session.id} was not authorized with the provider.`
@@ -770,7 +773,7 @@ export default class PaymentModuleService
     try {
       await this.refundPaymentFromProvider_(payment, refund, sharedContext)
     } catch (error) {
-      await super.deleteRefunds(data.payment_id, sharedContext)
+      await super.deleteRefunds({ id: refund.id }, sharedContext)
       throw error
     }
 

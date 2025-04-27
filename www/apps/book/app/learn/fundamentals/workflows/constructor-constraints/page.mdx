@@ -83,7 +83,7 @@ const myWorkflow = createWorkflow(
 })
 ```
 
-### Create Dates in transform
+#### Create Dates in transform
 
 When you use `new Date()` in a workflow's constructor function, the date is evaluated when Medusa creates the internal representation of the workflow, not during execution.
 
@@ -175,7 +175,7 @@ Learn more about why you can't use conditional operators [in this chapter](../co
 
 Instead, use `transform` to store the desired value in a variable.
 
-### Logical Or (||) Alternative
+#### Logical Or (||) Alternative
 
 ```ts
 // Don't
@@ -201,7 +201,7 @@ const myWorkflow = createWorkflow(
 })
 ```
 
-### Nullish Coalescing (??) Alternative
+#### Nullish Coalescing (??) Alternative
 
 ```ts
 // Don't
@@ -227,7 +227,7 @@ const myWorkflow = createWorkflow(
 })
 ```
 
-### Double Not (!!) Alternative
+#### Double Not (!!) Alternative
 
 ```ts
 // Don't
@@ -259,7 +259,7 @@ const myWorkflow = createWorkflow(
 })
 ```
 
-### Ternary Alternative
+#### Ternary Alternative
 
 ```ts
 // Don't
@@ -293,7 +293,7 @@ const myWorkflow = createWorkflow(
 })
 ```
 
-### Optional Chaining (?.) Alternative
+#### Optional Chaining (?.) Alternative
 
 ```ts
 // Don't
@@ -325,7 +325,11 @@ const myWorkflow = createWorkflow(
 })
 ```
 
+### No Try-Catch
 
+In a workflow, don't use try-catch blocks to handle errors.
+
+Instead, refer to the [Error Handling](../errors/page.mdx) chapter for alternative ways to handle errors.
 
 ---
 

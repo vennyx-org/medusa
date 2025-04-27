@@ -62,6 +62,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     headers: {
       "Content-Type": "text/markdown",
     },
+    status: 200,
   })
 }
 

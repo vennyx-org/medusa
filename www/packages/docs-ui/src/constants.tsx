@@ -16,14 +16,195 @@ export const navDropdownItems: NavigationItem[] = [
     title: "Product",
     children: [
       {
-        type: "link",
-        title: "Commerce Modules",
-        link: "/resources/commerce-modules",
+        type: "sub-menu",
+        title: "Framework",
+        link: "/learn/fundamentals/framework",
+        items: [
+          {
+            type: "link",
+            title: "API Routes",
+            link: "/learn/fundamentals/api-routes",
+          },
+          {
+            type: "link",
+            title: "Data Models",
+            link: "/learn/fundamentals/data-models",
+          },
+          {
+            type: "link",
+            title: "Events and Subscribers",
+            link: "/learn/fundamentals/events-and-subscribers",
+          },
+          {
+            type: "link",
+            title: "Medusa Container",
+            link: "/learn/fundamentals/medusa-container",
+          },
+          {
+            type: "link",
+            title: "Modules",
+            link: "/learn/fundamentals/modules",
+          },
+          {
+            type: "link",
+            title: "Module Links",
+            link: "/learn/fundamentals/module-links",
+          },
+          {
+            type: "link",
+            title: "Plugins",
+            link: "/learn/fundamentals/plugins",
+          },
+          {
+            type: "link",
+            title: "Query",
+            link: "/learn/fundamentals/module-links/query",
+          },
+          {
+            type: "link",
+            title: "Scheduled Jobs",
+            link: "/learn/fundamentals/scheduled-jobs",
+          },
+          {
+            type: "link",
+            title: "Workflows",
+            link: "/learn/fundamentals/workflows",
+          },
+        ],
       },
       {
-        type: "link",
-        title: "Architectural Modules",
-        link: "/resources/architectural-modules",
+        type: "sub-menu",
+        title: "Commerce Modules",
+        link: "/resources/commerce-modules",
+        items: [
+          {
+            type: "link",
+            title: "API Key",
+            link: "/resources/commerce-modules/api-key",
+          },
+          {
+            type: "link",
+            title: "Auth",
+            link: "/resources/commerce-modules/auth",
+          },
+          {
+            type: "link",
+            title: "Cart",
+            link: "/resources/commerce-modules/cart",
+          },
+          {
+            type: "link",
+            title: "Currency",
+            link: "/resources/commerce-modules/currency",
+          },
+          {
+            type: "link",
+            title: "Customer",
+            link: "/resources/commerce-modules/customer",
+          },
+          {
+            type: "link",
+            title: "Fulfillment",
+            link: "/resources/commerce-modules/fulfillment",
+          },
+          {
+            type: "link",
+            title: "Inventory",
+            link: "/resources/commerce-modules/inventory",
+          },
+          {
+            type: "link",
+            title: "Order",
+            link: "/resources/commerce-modules/order",
+          },
+          {
+            type: "link",
+            title: "Payment",
+            link: "/resources/commerce-modules/payment",
+          },
+          {
+            type: "link",
+            title: "Pricing",
+            link: "/resources/commerce-modules/pricing",
+          },
+          {
+            type: "link",
+            title: "Product",
+            link: "/resources/commerce-modules/product",
+          },
+          {
+            type: "link",
+            title: "Promotion",
+            link: "/resources/commerce-modules/promotion",
+          },
+          {
+            type: "link",
+            title: "Region",
+            link: "/resources/commerce-modules/region",
+          },
+          {
+            type: "link",
+            title: "Sales Channel",
+            link: "/resources/commerce-modules/sales-channel",
+          },
+          {
+            type: "link",
+            title: "Stock Location",
+            link: "/resources/commerce-modules/stock-location",
+          },
+          {
+            type: "link",
+            title: "Store",
+            link: "/resources/commerce-modules/store",
+          },
+          {
+            type: "link",
+            title: "Tax",
+            link: "/resources/commerce-modules/tax",
+          },
+          {
+            type: "link",
+            title: "User",
+            link: "/resources/commerce-modules/user",
+          },
+        ],
+      },
+      {
+        type: "sub-menu",
+        title: "Infrastructure Modules",
+        link: "/resources/infrastructure-modules",
+        items: [
+          {
+            type: "link",
+            title: "Cache",
+            link: "/resources/infrastructure-modules/cache",
+          },
+          {
+            type: "link",
+            title: "Event",
+            link: "/resources/infrastructure-modules/event",
+          },
+          {
+            type: "link",
+            title: "File",
+            link: "/resources/infrastructure-modules/file",
+          },
+          {
+            type: "link",
+            title: "Locking",
+            link: "/resources/infrastructure-modules/locking",
+          },
+          {
+            type: "link",
+            title: "Notification",
+            link: "/resources/infrastructure-modules/notification",
+          },
+          {
+            type: "link",
+            title: "Workflow Engine",
+            link: "/resources/infrastructure-modules/workflow-engine",
+          },
+        ],
       },
     ],
   },
@@ -131,6 +312,11 @@ export const navDropdownItems: NavigationItem[] = [
         type: "link",
         title: "Data Model Language",
         link: "/resources/references/data-model",
+      },
+      {
+        type: "link",
+        title: "Data Model Repository",
+        link: "/resources/data-model-repository-reference",
       },
       {
         type: "link",

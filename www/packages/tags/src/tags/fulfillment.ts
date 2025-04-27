@@ -16,6 +16,10 @@ export const fulfillment = [
     "path": "https://docs.medusajs.com/user-guide/settings/locations-and-shipping/shipping-profiles"
   },
   {
+    "title": "Shipping Option Price Rules",
+    "path": "https://docs.medusajs.com/resources/commerce-modules/pricing/price-rules"
+  },
+  {
     "title": "Product Shipping Requirement",
     "path": "https://docs.medusajs.com/resources/commerce-modules/product/selling-products"
   },
@@ -236,12 +240,24 @@ export const fulfillment = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createAndCompleteReturnOrderWorkflow"
   },
   {
+    "title": "createClaimShippingMethodWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createClaimShippingMethodWorkflow"
+  },
+  {
+    "title": "createExchangeShippingMethodWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createExchangeShippingMethodWorkflow"
+  },
+  {
     "title": "createOrderFulfillmentWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createOrderFulfillmentWorkflow"
   },
   {
     "title": "createOrderShipmentWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createOrderShipmentWorkflow"
+  },
+  {
+    "title": "createReturnShippingMethodWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createReturnShippingMethodWorkflow"
   },
   {
     "title": "markOrderFulfillmentAsDeliveredWorkflow",

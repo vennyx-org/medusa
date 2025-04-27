@@ -1,10 +1,10 @@
 /**
  * @oas [post] /admin/draft-orders/{id}/edit/items/{action_id}
  * operationId: PostDraftOrdersIdEditItemsAction_id
- * summary: Update Item Changes in Draft Order
- * x-sidebar-summary: Update Item Changes
+ * summary: Update New Item in Draft Order Edit
+ * x-sidebar-summary: Update New Item
  * description: |
- *   Update changes made on an item (addition or update) in the draft order by the ID of the item's `ITEM_ADD` or `ITEM_UPDATE` action.
+ *   Update a new item that was added to a draft order edit by the ID of the item's `ITEM_ADD` action.
  * 
  *   Every item has an `actions` property, whose value is an array of actions. You can check the action's name using its `action` property, and use the value of the `id` property.
  * x-authenticated: true
@@ -17,7 +17,7 @@
  *       type: string
  *   - name: action_id
  *     in: path
- *     description: The ID of the item's `ITEM_ADD` or `ITEM_UPDATE` action.
+ *     description: The ID of the item's `ITEM_ADD` action.
  *     required: true
  *     schema:
  *       type: string

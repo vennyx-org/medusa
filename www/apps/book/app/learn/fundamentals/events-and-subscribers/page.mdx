@@ -85,7 +85,7 @@ To test the subscriber, start the Medusa application:
 npm run dev
 ```
 
-Then, try placing an order either using Medusa's API routes or the [Next.js Storefront](../../storefront-development/nextjs-starter/page.mdx). You'll see the following message in the terminal:
+Then, try placing an order either using Medusa's API routes or the [Next.js Storefront](!resources!/nextjs-starter). You'll see the following message in the terminal:
 
 ```bash
 info:    Processing order.placed which has 1 subscribers
@@ -98,11 +98,11 @@ The first message indicates that the `order.placed` event was emitted, and the s
 
 ## Event Module
 
-The subscription and emitting of events is handled by an Event Module, an architectural module that implements the pub/sub functionalities of Medusa's event system.
+The subscription and emitting of events is handled by an Event Module, an Infrastructure Module that implements the pub/sub functionalities of Medusa's event system.
 
 Medusa provides two Event Modules out of the box:
 
-- [Local Event Module](!resources!/architectural-modules/event/local), used by default. It's useful for development, as you don't need additional setup to use it.
-- [Redis Event Module](!resources!/architectural-modules/event/redis), which is useful in production. It uses [Redis](https://redis.io/) to implement Medusa's pub/sub events system.
+- [Local Event Module](!resources!/infrastructure-modules/event/local), used by default. It's useful for development, as you don't need additional setup to use it.
+- [Redis Event Module](!resources!/infrastructure-modules/event/redis), which is useful in production. It uses [Redis](https://redis.io/) to implement Medusa's pub/sub events system.
 
-Medusa's [architecture](../../introduction/architecture/page.mdx) also allows you to build a custom Event Module that uses a different service or logic to implement the pub/sub system. Learn how to build an Event Module in [this guide](!resources!/architectural-modules/event/create).
+Medusa's [architecture](../../introduction/architecture/page.mdx) also allows you to build a custom Event Module that uses a different service or logic to implement the pub/sub system. Learn how to build an Event Module in [this guide](!resources!/infrastructure-modules/event/create).

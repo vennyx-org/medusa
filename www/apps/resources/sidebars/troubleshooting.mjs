@@ -48,14 +48,30 @@ export const troubleshootingSidebar = [
     initialOpen: true,
     children: [
       {
-        type: "link",
-        path: "/troubleshooting/eaddrinuse",
-        title: "EADDRINUSE Error",
+        type: "sub-category",
+        title: "API Routes",
+        children: [
+          {
+            type: "link",
+            title: "Unrecognized Additional Data",
+            path: "/troubleshooting/api-routes/additional-data-error",
+          },
+          {
+            type: "link",
+            title: "Middleware Registration",
+            path: "/troubleshooting/api-routes/middleware-registration",
+          },
+        ],
       },
       {
         type: "link",
         path: "/troubleshooting/database-errors",
         title: "Database Errors",
+      },
+      {
+        type: "link",
+        path: "/troubleshooting/eaddrinuse",
+        title: "EADDRINUSE Error",
       },
       {
         type: "link",
@@ -68,10 +84,25 @@ export const troubleshootingSidebar = [
         children: [
           {
             type: "link",
+            path: "/troubleshooting/query/expression-type-error",
+            title: "Expression Type Error",
+          },
+          {
+            type: "link",
             path: "/troubleshooting/query/filter-linked",
             title: "Not Exising Property",
           },
+          {
+            type: "link",
+            path: "/troubleshooting/query/service-list",
+            title: "service.list Error",
+          },
         ],
+      },
+      {
+        type: "link",
+        path: "/troubleshooting/test-errors",
+        title: "Test Errors",
       },
       {
         type: "sub-category",
@@ -91,8 +122,8 @@ export const troubleshootingSidebar = [
       },
       {
         type: "link",
-        path: "/troubleshooting/test-errors",
-        title: "Test Errors",
+        title: "ValidationError",
+        link: "/troubleshooting/validation-error",
       },
     ],
   },

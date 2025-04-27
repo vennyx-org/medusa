@@ -1,10 +1,19 @@
+---
+tags:
+    - name: product
+      label: "Variant Price Rules"
+    - name: fulfillment
+      label: "Shipping Option Price Rules"
+    - concept
+---
+
 export const metadata = {
   title: `Price Rules`,
 }
 
 # {metadata.title}
 
-In this document, you'll learn about price rules for price sets and price lists.
+In this Pricing Module guide, you'll learn about price rules for price sets and price lists, and how to add rules to a price.
 
 ## Price Rule
 
@@ -31,3 +40,142 @@ Rules applied to a price list are represented by the [PriceListRule data model](
 The `rules_count` property of a `PriceList` indicates how many rules are applied to it.
 
 ![A diagram showcasing the relation between the PriceSet, PriceList, Price, RuleType, and PriceListRuleValue](https://res.cloudinary.com/dza7lstvk/image/upload/v1709641999/Medusa%20Resources/price-list_zd10yd.jpg)
+
+---
+
+## How to Set Rules on a Price?
+
+### Using Workflows
+
+Medusa uses the Pricing Module to store prices of different resources, such as product variants and shipping options.
+
+When you manage one of these resources using [Medusa's workflows](../../../medusa-workflows-reference/page.mdx) or using the API routes that use them, you can set rules on a price using the `rules` property of the price object.
+
+For example, when creating a shipping option using the [createShippingOptionsWorkflow](!resources!/references/medusa-workflows/createShippingOptionsWorkflow) to create a shipping option, you can make the shipping price free based on the cart total:
+
+export const workflowHighlights = [
+  ["19", "rules", "The default price doesn't have rules."],
+  ["26", "item_total", "Apply the price if the cart or order's total matches the condition."]
+]
+
+```ts highlights={workflowHighlights}
+const { result } = await createShippingOptionsWorkflow(container)
+  .run({
+    input: [{
+      name: "Standard Shipping",
+      service_zone_id: "serzo_123",
+      shipping_profile_id: "sp_123",
+      provider_id: "prov_123",
+      type: {
+        label: "Standard",
+        description: "Standard shipping",
+        code: "standard",
+      },
+      price_type: "flat",
+      prices: [
+        // default price
+        {
+          currency_code: "usd",
+          amount: 10,
+          rules: {},
+        },
+        // price if cart total >= $100
+        {
+          currency_code: "usd",
+          amount: 0,
+          rules: {
+            item_total: {
+              operator: "gte",
+              value: 100,
+            },
+          },
+        },
+      ],
+    }],
+  })
+```
+
+In this example, you create a shipping option whose default price is `$10`. When the total of the cart or order using this shipping option is greater than `$100`, the shipping option's price becomes free.
+
+### Using Pricing Module's Service
+
+<Note>
+
+For most use cases, it's recommended to use [workflows](#using-workflows) instead of directly using the module's service.
+
+</Note>
+
+When adding a price using the [addPrices](!resources!/references/pricing/addPrices) method of the Pricing Module's service, pass the `rules` property to a price object.
+
+For example:
+
+```ts
+const priceSet = await pricingModule.addPrices({
+  priceSetId: "pset_1",
+  prices: [
+    // default price
+    {
+      currency_code: "usd",
+      amount: 10,
+      rules: {},
+    },
+    // price if cart total >= $100
+    {
+      currency_code: "usd",
+      amount: 0,
+      rules: {
+        item_total: {
+          operator: "gte",
+          value: 100,
+        },
+      },
+    },
+  ],
+})
+```
+
+In this example, you set the default price of a resource (for example, a shipping option), to `$10`. You also add a conditioned price that sets the price to `0` when the cart or order's total is greater than or equal to `$100`.
+
+### How is the Price Rule Applied?
+
+The [price calculation](../price-calculation/page.mdx) mechanism considers a price applicable when the resource that this price is in matches the specified rules.
+
+For example, a [cart object](!api!/store#carts_cart_schema) has an `item_total` property. So, if a shipping option has the following price:
+
+```json
+{
+  "currency_code": "usd",
+  "amount": 0,
+  "rules": {
+    "item_total": {
+      "operator": "gte",
+      "value": 100,
+    }
+  }
+}
+```
+
+The shipping option's price is applied when the cart's `item_total` is greater than or equal to `$100`.
+
+You can also apply the rule on nested relations and properties. For example, to apply a shipping option's price based on the customer's group, you can apply a rule on the `customer.group.id` attribute:
+
+```json
+{
+  "currency_code": "usd",
+  "amount": 0,
+  "rules": {
+    "customer.group.id": {
+      "operator": "eq",
+      "value": "cusgrp_123"
+    }
+  }
+}
+```
+
+In this example, the price is only applied if a cart's customer belongs to the customer group of ID `cusgrp_123`.
+
+<Note>
+
+These same rules apply to product variant prices as well, or any other resource that has a price.
+
+</Note>

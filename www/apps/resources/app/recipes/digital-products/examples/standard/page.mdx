@@ -9,7 +9,7 @@ export const metadata = {
 
 In this guide, you'll learn how to support digital products in Medusa.
 
-When you install a Medusa application, you get a fully-fledged commerce platform with support for customizations. Medusa provides all features related to products and managing them, and its framework allows you to extend those features and implement your custom use case.
+When you install a Medusa application, you get a fully-fledged commerce platform with support for customizations. Medusa provides all features related to products and managing them, and the Medusa Framework allows you to extend those features and implement your custom use case.
 
 You can extend Medusa's product features to support selling, storing, and fulfilling digital products. In this guide, you'll customize Medusa to add the following features:
 
@@ -21,7 +21,7 @@ You can extend Medusa's product features to support selling, storing, and fulfil
 
 <Note>
 
-This guide provides an example of an approach to implement digital products. You're free to choose a different approach using Medusa's framework.
+This guide provides an example of an approach to implement digital products. You're free to choose a different approach using the Medusa Framework.
 
 </Note>
 
@@ -65,7 +65,7 @@ Start by installing the Medusa application on your machine with the following co
 npx create-medusa-app@latest
 ```
 
-You'll first be asked for the project's name. You can also optionally choose to install the [Next.js starter storefront](../../../../nextjs-starter/page.mdx).
+You'll first be asked for the project's name. Then, when asked whether you want to install the [Next.js Starter Storefront](../../../../nextjs-starter/page.mdx), choose Yes.
 
 Afterwards, the installation process will start, which will install the Medusa application in a directory with your project's name. If you chose to install the Next.js starter, it'll be installed in a separate directory with the `{project-name}-storefront` name.
 
@@ -258,7 +258,7 @@ So, you can't have relations between data models in modules. Instead, you define
 
 Links are relations between data models of different modules that maintain the isolation between the modules.
 
-In this step, you’ll define links between your module’s data models and data models from Medusa’s commerce modules:
+In this step, you’ll define links between your module’s data models and data models from Medusa’s Commerce Modules:
 
 1. Link between the `DigitalProduct` model and the Product Module's `ProductVariant` model.
 2. Link between the `DigitalProductOrder` model and the Order Module's `Order` model.
@@ -791,7 +791,7 @@ To upload the digital product media files, use Medusa’s File Module.
 
 <Note>
 
-Your Medusa application uses the local file module provider by default, which uploads files to a local directory. However, you can use other file module providers, such as the [S3 module provider](../../../../architectural-modules/file/s3/page.mdx).
+Your Medusa application uses the local file module provider by default, which uploads files to a local directory. However, you can use other file module providers, such as the [S3 module provider](../../../../infrastructure-modules/file/s3/page.mdx).
 
 </Note>
 
@@ -1400,6 +1400,7 @@ fetch(`/admin/digital-products`, {
         options: {
           Default: "default",
         },
+        manage_inventory: false,
         // delegate setting the prices to the
         // product's page.
         prices: [],
@@ -1498,8 +1499,7 @@ To use this digital product in later steps (such as to create an order), you mus
 
 1. Change the status to published.
 2. Add it to the default sales channel.
-3. Disable manage inventory of the variant.
-4. Add prices to the variant.
+3. Add prices to the variant.
 
 </Note>
 
@@ -1572,7 +1572,7 @@ Then, you use Query to retrieve the digital products associated with the product
 
 Finally, you return the IDs of the digital products to delete.
 
-## deleteDigitalProductsSteps
+### deleteDigitalProductsSteps
 
 Next, you'll implement the step that deletes those digital products.
 
@@ -1837,11 +1837,11 @@ This is necessary to use the fulfillment provider's shipping option during check
 
 ---
 
-## Step 13: Customize Cart Completion
+## Step 13: Create Cart Completion Flow for Digital Products
 
-In this step, you’ll customize the cart completion flow to not only create a Medusa order, but also create a digital product order.
+In this step, you’ll create a new cart completion flow that not only creates a Medusa order, but also create a digital product order.
 
-To customize the cart completion flow, you’ll create a workflow and then use that workflow in an API route defined at `src/api/store/carts/[id]/complete/route.ts`.
+To create the cart completion flow, you’ll create a workflow and then use that workflow in an API route defined at `src/api/store/carts/[id]/complete-digital/route.ts`.
 
 ```mermaid
 graph TD
@@ -1945,12 +1945,12 @@ Create the file `src/workflows/create-digital-product-order/index.ts` with the f
 export const createDpoWorkflowHighlights = [
   ["27", "completeCartWorkflow", "Create an order for the cart."],
   ["33", "useQueryGraphStep", "Retrieve the order's items and their associated variants and linked digital products."],
-  ["57", "when", "Check whether the order has any digital products."],
-  ["63", "then", "Perform the callback function if an order has digital products."],
-  ["66", "createDigitalProductOrderStep", "Create the digital product order."],
-  ["70", "createRemoteLinkStep", "Link the digital product order to the Medusa order."],
-  ["79", "createOrderFulfillmentWorkflow", "Create a fulfillment for the digital products in the order."],
-  ["93", "emitEventStep", "Emit the `digital_product_order.created` event."]
+  ["58", "when", "Check whether the order has any digital products."],
+  ["64", "then", "Perform the callback function if an order has digital products."],
+  ["67", "createDigitalProductOrderStep", "Create the digital product order."],
+  ["71", "createRemoteLinkStep", "Link the digital product order to the Medusa order."],
+  ["80", "createOrderFulfillmentWorkflow", "Create a fulfillment for the digital products in the order."],
+  ["94", "emitEventStep", "Emit the `digital_product_order.created` event."]
 ]
 
 ```ts title="src/workflows/create-digital-product-order/index.ts" highlights={createDpoWorkflowHighlights} collapsibleLines="1-17" expandMoreLabel="Show Imports"
@@ -1993,6 +1993,7 @@ const createDigitalProductOrderWorkflow = createWorkflow(
         "items.*",
         "items.variant.*",
         "items.variant.digital_product.*",
+        "shipping_address.*",
       ],
       filters: {
         id,
@@ -2080,9 +2081,9 @@ The workflow returns the Medusa order and the digital product order, if created.
 
 ### Cart Completion API Route
 
-Next, create the file `src/api/store/carts/[id]/complete/route.ts` with the following content:
+Next, create the file `src/api/store/carts/[id]/complete-digital/route.ts` with the following content:
 
-```ts title="src/api/store/carts/[id]/complete/route.ts"
+```ts title="src/api/store/carts/[id]/complete-digital/route.ts"
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import createDigitalProductOrderWorkflow from "../../../../../workflows/create-digital-product-order"
 
@@ -2104,11 +2105,62 @@ export const POST = async (
 }
 ```
 
-This overrides the Cart Completion API route. In the route handler, you execute the `createDigitalProductOrderWorkflow` and return the created order in the response.
+Since you export a `POST` function, you expose a `POST` API route at `/store/carts/[id]/complete-digital`.
 
-### Test Cart Completion
+In the route handler, you execute the `createDigitalProductOrderWorkflow` and return the created order in the response.
 
-To test out the cart completion, it’s recommended to use the [Next.js Starter storefront](../../../../nextjs-starter/page.mdx) to place an order.
+### Test Cart Completion: Customize Next.js Starter Storefront
+
+To test out the cart completion, you'll customize the [Next.js Starter Storefront](../../../../nextjs-starter/page.mdx) that you installed in the first step to use the new cart completion route to place an order.
+
+<Note title="Reminder" forceMultiline>
+
+The Next.js Starter Storefront was installed in a separate directory from Medusa. The directory's name is `{your-project}-storefront`.
+
+So, if your Medusa application's directory is `medusa-digital-product`, you can find the storefront by going back to the parent directory and changing to the `medusa-digital-product-storefront` directory:
+
+```bash
+cd ../medusa-digital-product-storefront # change based on your project name
+```
+
+</Note>
+
+In the Next.js Starter Storefront, open the file `src/lib/data/cart.ts` and find the following lines in the `placeOrder` function:
+
+```ts title="src/lib/data/cart.ts" badgeLabel="Storefront" badgeColor="blue"
+const cartRes = await sdk.store.cart
+  .complete(id, {}, headers)
+```
+
+Replace these lines with the following:
+
+```ts title="src/lib/data/cart.ts" badgeLabel="Storefront" badgeColor="blue"
+const cartRes = await sdk.client.fetch<HttpTypes.StoreCompleteCartResponse>(
+  `/store/carts/${id}/complete-digital`,
+    {
+      method: "POST",
+      headers,
+    }
+  )
+```
+
+This will send a `POST` request to the new cart completion route you created to complete the cart.
+
+Then, run the following command in the Medusa application directory to start the Medusa application:
+
+```bash npm2yarn badgeLabel="Medusa application" badgeColor="green"
+npm run start
+```
+
+And run the following command in the Next.js Starter Storefront directory to start the Next.js application:
+
+```bash npm2yarn badgeLabel="Storefront" badgeColor="blue"
+npm run dev
+```
+
+Open the storefront in your browser at `http://localhost:8000` and add a digital product to the cart.
+
+Then, go through the checkout process. Make sure to choose the shipping option you created in the previous step for shipping.
 
 Once you place the order, the cart completion route you added above will run, creating the order and digital product order, if the order has digital products.
 
@@ -2128,6 +2180,7 @@ The workflow has the following steps:
 
 1. Retrieve the digital product order's details. For this, you'll use `useQueryGraphStep` from Medusa's core workflows.
 2. Send a notification to the customer with the digital products to download.
+3. Mark the Medusa order's fulfillment as delivered. For this, you'll use `markOrderFulfillmentAsDeliveredWorkflow` from Medusa's core workflows.
 
 So, you only need to implement the second step.
 
@@ -2243,8 +2296,9 @@ You use the `createNotifications` method of the Notification Module's main servi
 Create the workflow in the file `src/workflows/fulfill-digital-order/index.ts`:
 
 export const fulfillWorkflowHighlights = [
-  ["17", "useQueryGraphStep", "Retrieve the digital product order's details."],
-  ["33", "sendDigitalOrderNotificationStep", "Send a notification to the customer."]
+  ["18", "useQueryGraphStep", "Retrieve the digital product order's details."],
+  ["35", "sendDigitalOrderNotificationStep", "Send a notification to the customer."],
+  ["39", "markOrderFulfillmentAsDeliveredWorkflow", "Mark the order's fulfillment as delivered."],
 ]
 
 ```ts title="src/workflows/fulfill-digital-order/index.ts" highlights={fulfillWorkflowHighlights} collapsibleLines="1-10" expandMoreLabel="Show Imports"
@@ -2253,6 +2307,7 @@ import {
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk"
 import {
+  markOrderFulfillmentAsDeliveredWorkflow,
   useQueryGraphStep,
 } from "@medusajs/medusa/core-flows"
 import { sendDigitalOrderNotificationStep } from "./steps/send-digital-order-notification"
@@ -2271,6 +2326,7 @@ export const fulfillDigitalOrderWorkflow = createWorkflow(
         "products.*",
         "products.medias.*",
         "order.*",
+        "order.fulfillments.*",
       ],
       filters: {
         id,
@@ -2284,6 +2340,13 @@ export const fulfillDigitalOrderWorkflow = createWorkflow(
       digital_product_order: digitalProductOrders[0],
     })
 
+    markOrderFulfillmentAsDeliveredWorkflow.runAsStep({
+      input: {
+        orderId: digitalProductOrders[0].order.id,
+        fulfillmentId: digitalProductOrders[0].order.fulfillments[0].id,
+      },
+    })
+
     return new WorkflowResponse(
       digitalProductOrders[0]
     )
@@ -2295,6 +2358,7 @@ In the workflow, you:
 
 1. Retrieve the digital product order's details using `useQueryGraphStep` from Medusa's core workflows.
 2. Send a notification to the customer with the digital product download links using the `sendDigitalOrderNotificationStep`.
+3. Mark the order's fulfillment as delivered using `markOrderFulfillmentAsDeliveredWorkflow` from Medusa's core workflows.
 
 ### Configure Notification Module Provider
 
@@ -2609,13 +2673,23 @@ In this section, you’ll customize the [Next.js Starter storefront](../../../..
 2. Add a new tab in the customer’s dashboard to view their purchased digital products.
 3. Allow customers to download the digital products through the new page in the dashboard.
 
-If you haven't installed the Next.js Starter storefront in the first step, refer to [this guide](../../../../nextjs-starter/page.mdx#approach-2-install-separately) to learn how to install it.
+<Note title="Reminder" forceMultiline>
+
+The Next.js Starter Storefront was installed in a separate directory from Medusa. The directory's name is `{your-project}-storefront`.
+
+So, if your Medusa application's directory is `medusa-digital-product`, you can find the storefront by going back to the parent directory and changing to the `medusa-digital-product-storefront` directory:
+
+```bash
+cd ../medusa-digital-product-storefront # change based on your project name
+```
+
+</Note>
 
 ### Add Types
 
 In `src/types/global.ts`, add the following types that you’ll use in your customizations:
 
-```ts title="src/types/global.ts"
+```ts title="src/types/global.ts" badgeLabel="Storefront" badgeColor="blue"
 import { 
   // other imports...
   StoreProductVariant,
@@ -2655,7 +2729,7 @@ export const fieldHighlights = [
   ["24"]
 ]
 
-```ts title="src/lib/data/products.ts" highlights={fieldHighlights}
+```ts title="src/lib/data/products.ts" highlights={fieldHighlights} badgeLabel="Storefront" badgeColor="blue"
 export const listProducts = async ({
   pageParam = 1,
   queryParams,
@@ -2693,7 +2767,7 @@ When a customer views a product’s details page, digital products linked to var
 
 To retrieve the links of a digital product’s preview media, first, add the following import at the top of `src/lib/data/products.ts`:
 
-```ts title="src/lib/data/products.ts"
+```ts title="src/lib/data/products.ts" badgeLabel="Storefront" badgeColor="blue"
 import { DigitalProductPreview } from "../../types/global"
 ```
 
@@ -2735,7 +2809,7 @@ This function uses the API route you created in the previous section to get the 
 
 To add a button that shows the customer the preview media of a digital product, first, in `src/modules/products/components/product-actions/index.tsx`, cast the `selectedVariant` variable in the component to the `VariantWithDigitalProduct` type you created earlier:
 
-```tsx title="src/modules/products/components/product-actions/index.tsx"
+```tsx title="src/modules/products/components/product-actions/index.tsx" badgeLabel="Storefront" badgeColor="blue"
 // other imports...
 import { VariantWithDigitalProduct } from "../../../../types/global"
 
@@ -2757,7 +2831,7 @@ export default function ProductActions({
 
 Then, add the following function in the component:
 
-```tsx title="src/modules/products/components/product-actions/index.tsx"
+```tsx title="src/modules/products/components/product-actions/index.tsx" badgeLabel="Storefront" badgeColor="blue"
 // other imports...
 import { getDigitalProductPreview } from "../../../../lib/data/products"
 
@@ -2790,7 +2864,7 @@ This function uses the `getDigitalProductPreview` function you created earlier t
 
 Finally, in the `return` statement, add a new button above the add-to-cart button:
 
-```tsx title="src/modules/products/components/product-actions/index.tsx"
+```tsx title="src/modules/products/components/product-actions/index.tsx" badgeLabel="Storefront" badgeColor="blue"
 return (
   <div>
     {/* Before add to cart */}
@@ -2819,7 +2893,7 @@ You’ll now create the page customers can view their purchased digital product 
 
 Start by creating the file `src/lib/data/digital-products.ts` with the following content:
 
-```ts title="src/lib/data/digital-products.ts"
+```ts title="src/lib/data/digital-products.ts" badgeLabel="Storefront" badgeColor="blue"
 "use server"
 
 import { DigitalProduct } from "../../types/global"
@@ -2851,7 +2925,7 @@ The `getCustomerDigitalProducts` retrieves the logged-in customer’s purchased 
 
 Then, create the file `src/modules/account/components/digital-products-list/index.tsx` with the following content:
 
-```tsx title="src/modules/account/components/digital-products-list/index.tsx"
+```tsx title="src/modules/account/components/digital-products-list/index.tsx" badgeLabel="Storefront" badgeColor="blue"
 "use client"
 
 import { Table } from "@medusajs/ui"
@@ -2905,7 +2979,7 @@ This adds a `DigitalProductsList` component that receives a list of digital prod
 
 Next, create the file `src/app/[countryCode]/(main)/account/@dashboard/digital-products/page.tsx` with the following content:
 
-```tsx title="src/app/[countryCode]/(main)/account/@dashboard/digital-products/page.tsx"
+```tsx title="src/app/[countryCode]/(main)/account/@dashboard/digital-products/page.tsx" badgeLabel="Storefront" badgeColor="blue"
 import { Metadata } from "next"
 
 import { getCustomerDigitalProducts } from "../../../../../../lib/data/digital-products"
@@ -2941,7 +3015,7 @@ In the route, you retrieve the digital’s products using the `getCustomerDigita
 
 Finally, to add a tab in the customer’s account dashboard that links to this page, add it in the `src/modules/account/components/account-nav/index.tsx` file:
 
-```tsx title="src/modules/account/components/account-nav/index.tsx"
+```tsx title="src/modules/account/components/account-nav/index.tsx" badgeLabel="Storefront" badgeColor="blue"
 // other imports...
 import { Photo } from "@medusajs/icons"
 
@@ -3003,7 +3077,7 @@ Then, go to the customer’s account page and click on the new Digital Products 
 
 To add a download link for the purchased digital products’ medias, first, add a new function to `src/lib/data/digital-products.ts`:
 
-```ts title="src/lib/data/digital-products.ts"
+```ts title="src/lib/data/digital-products.ts" badgeLabel="Storefront" badgeColor="blue"
 export const getDigitalMediaDownloadLink = async (mediaId: string) => {
   const headers = {
     ...(await getAuthHeaders()),
@@ -3029,7 +3103,7 @@ In this function, you send a request to the download API route you created earli
 
 Then, in `src/modules/account/components/digital-products-list/index.tsx`, import the `getDigitalMediaDownloadLink` at the top of the file:
 
-```tsx title="src/modules/account/components/digital-products-list/index.tsx"
+```tsx title="src/modules/account/components/digital-products-list/index.tsx" badgeLabel="Storefront" badgeColor="blue"
 import { getDigitalMediaDownloadLink } from "../../../../lib/data/digital-products"
 ```
 

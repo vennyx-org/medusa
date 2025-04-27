@@ -63,8 +63,7 @@ Then, create in the Next.js Starter Storefront the custom endpoint that listens 
 
 ```ts title="src/app/api/revalidate/route.ts"
 import { NextRequest, NextResponse } from "next/server"
-import { revalidateTag } from "next/cache"
-import { getCacheTag } from "../../../lib/data/cookies"
+import { revalidatePath } from "next/cache"
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams
@@ -77,12 +76,27 @@ export async function GET(req: NextRequest) {
   const tagsArray = tags.split(",")
   await Promise.all(
     tagsArray.map(async (tag) => {
-      const cacheTag = await getCacheTag(tag)
-      // revalidate cache for the tag
-      revalidateTag(cacheTag)
+      switch (tag) {
+        case "products":
+          revalidatePath("/[countryCode]/(main)/store", "page")
+          revalidatePath("/[countryCode]/(main)/products/[handle]", "page")
+        // TODO add for other tags
+      }
     })
   )
 
   return NextResponse.json({ message: "Revalidated" }, { status: 200 })
 }
 ```
+
+In this example, you create a custom endpoint `/api/revalidate` that revalidates the cache for paths based on the tags passed as query parameters.
+
+You only handle the case of the `products` tag in this example, but you can extend the switch statement to handle other tags as needed.
+
+To revalidate the cache, you use Next.js's `revalidatePath` function. Learn more about in the [Next.js documentation](https://nextjs.org/docs/app/api-reference/functions/revalidatePath).
+
+### Test it Out
+
+To test out this mechanism, run the Medusa application and the Next.js Starter Storefront.
+
+Then, update a product in the Medusa application. You can see in the Next.js Starter Storefront's terminal that a request was sent to the `/api/revalidate` endpoint, meaning that the cache was revalidated successfully.

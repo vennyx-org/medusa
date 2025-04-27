@@ -165,6 +165,7 @@ const Row = ({
                 <Tooltip
                   tooltipChildren={<pre>{typeNode.tooltipContent}</pre>}
                   className="font-mono !max-w-none"
+                  tooltipClassName="!text-left"
                 >
                   <div className="flex items-center gap-x-1">
                     <code>{typeNode.text}</code>

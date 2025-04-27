@@ -1,0 +1,85 @@
+---
+sidebar_label: "create"
+---
+
+import { TypeList } from "docs-ui"
+
+export const metadata = {
+  title: `create Method - Data Model Repository Reference`,
+}
+
+# {metadata.title}
+
+The `create` method of a data model repository creates one or more records of the data model.
+
+<Note>
+
+This reference assumes you've already resolved the data model repository, as explained in the [Data Model Repository Reference](../../page.mdx) documentation.
+
+</Note>
+
+## `create` Parameters
+
+<TypeList
+  types={[
+    {
+      type: "`array`",
+      name: "data",
+      description: "An array of objects to create. The shape of the objects is the same as the shape of the data model.",
+      required: true,
+    }
+  ]}
+  sectionTitle="create Parameters"
+/>
+
+---
+
+## Create Records
+
+```ts
+import { 
+  InjectTransactionManager,
+  MedusaContext,
+  MedusaService,
+} from "@medusajs/framework/utils"
+import { Context, InferTypeOf, DAL } from "@medusajs/framework/types"
+import { EntityManager } from "@mikro-orm/knex"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  // ...
+  @InjectTransactionManager()
+  protected async doSomething_(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    const posts = await this.postRepository_.create([
+      {
+        title: "My Post",
+        content: "This is a post",
+        author_id: "01JSGRGQ8S61SR0Y7VCRV8FH66",
+      },
+    ])
+
+    return posts
+  }
+
+  @InjectManager()
+  async doSomething(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    return await this.doSomething_(id, sharedContext)
+  }
+}
+```
+
+### Parameters
+
+The `create` method accepts an array of objects, each representing a record to create. The shape of the objects is the same as the shape of the data model.
+
+### Returns
+
+The method returns an array of the created records.

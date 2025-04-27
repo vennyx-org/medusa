@@ -43,13 +43,13 @@ export const ReturnFulfillment: ModuleJoinerConfig = {
       serviceName: Modules.ORDER,
       entity: "Return",
       fieldAlias: {
-        return_fulfillments: {
+        fulfillments: {
           path: "return_fulfillment_link.fulfillments",
           isList: true,
         },
       },
       relationship: {
-        serviceName: LINKS.OrderFulfillment,
+        serviceName: LINKS.ReturnFulfillment,
         primaryKey: "return_id",
         foreignKey: "id",
         alias: "return_fulfillment_link",
@@ -60,7 +60,7 @@ export const ReturnFulfillment: ModuleJoinerConfig = {
       serviceName: Modules.FULFILLMENT,
       entity: "Fulfillment",
       relationship: {
-        serviceName: LINKS.OrderFulfillment,
+        serviceName: LINKS.ReturnFulfillment,
         primaryKey: "fulfillment_id",
         foreignKey: "id",
         alias: "return_link",

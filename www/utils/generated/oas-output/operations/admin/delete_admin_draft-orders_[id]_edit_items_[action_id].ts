@@ -1,10 +1,10 @@
 /**
  * @oas [delete] /admin/draft-orders/{id}/edit/items/{action_id}
  * operationId: DeleteDraftOrdersIdEditItemsAction_id
- * summary: Remove Item from Draft Order
+ * summary: Remove Item from Draft Order Edit
  * x-sidebar-summary: Remove Item
  * description: |
- *   Remove an order item from a draft order by the ID of the item's `ITEM_REMOVE` action.
+ *   Remove an order item from a draft order edit by the ID of the item's `ITEM_ADD` or `ITEM_UPDATE` action.
  * 
  *   Every item has an `actions` property, whose value is an array of actions. You can check the action's name using its `action` property, and use the value of the `id` property.
  * x-authenticated: true
@@ -17,7 +17,7 @@
  *       type: string
  *   - name: action_id
  *     in: path
- *     description: The ID of the order item's `ITEM_REMOVE` action.
+ *     description: The ID of the order item's `ITEM_ADD` or `ITEM_UPDATE` action.
  *     required: true
  *     schema:
  *       type: string

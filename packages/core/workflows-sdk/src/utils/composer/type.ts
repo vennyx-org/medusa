@@ -50,6 +50,8 @@ type ConvertHooksToFunctions<THooks extends any[]> = THooks extends [
   ? ConvertHookToObject<A> & ConvertHooksToFunctions<R>
   : {}
 
+export type Void = { " $$type": "void" }
+
 /**
  * A step function to be used in a workflow.
  *
@@ -62,7 +64,9 @@ export type StepFunction<
 > = (KeysOfUnion<TInput> extends []
   ? // Function that doesn't expect any input
     {
-      (): WorkflowData<TOutput> & StepFunctionReturnConfig<TOutput>
+      (): TOutput & {} extends never
+        ? WorkflowData<Void> & StepFunctionReturnConfig<TOutput>
+        : WorkflowData<TOutput> & StepFunctionReturnConfig<TOutput>
     }
   : // function that expects an input object
     {
@@ -143,6 +147,11 @@ export interface StepExecutionContext {
    * The idempoency key of the parent step.
    */
   parentStepIdempotencyKey?: string
+
+  /**
+   * Whether to prevent release events.
+   */
+  preventReleaseEvents?: boolean
 
   /**
    * The name of the step.

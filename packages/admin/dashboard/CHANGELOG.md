@@ -1,5 +1,17 @@
 # @medusajs/dashboard
 
+## 2.7.1
+
+### Patch Changes
+
+- [#12198](https://github.com/medusajs/medusa/pull/12198) [`f6b20a943e14ad6689cc1e118ae08ebc49fde603`](https://github.com/medusajs/medusa/commit/f6b20a943e14ad6689cc1e118ae08ebc49fde603) Thanks [@fPolic](https://github.com/fPolic)! - fix(dashboard): properly register settings custom routes
+
+- Updated dependencies [[`01542f69737b48346d924670296c551e4c4b47ec`](https://github.com/medusajs/medusa/commit/01542f69737b48346d924670296c551e4c4b47ec)]:
+  - @medusajs/js-sdk@2.7.1
+  - @medusajs/admin-shared@2.7.1
+  - @medusajs/icons@2.7.1
+  - @medusajs/ui@4.0.9
+
 ## 2.7.0
 
 ### Patch Changes

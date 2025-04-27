@@ -1,0 +1,86 @@
+import { CardList } from "docs-ui"
+
+export const metadata = {
+  title: `Cache Module`,
+}
+
+# {metadata.title}
+
+In this document, you'll learn what a Cache Module is and how to use it in your Medusa application.
+
+## What is a Cache Module?
+
+A Cache Module is used to cache the results of computations such as price selection or various tax calculations.
+
+The underlying database, third-party service, or caching logic is flexible since it's implemented in a module. You can choose from Medusa’s cache modules or create your own to support something more suitable for your architecture.
+
+### Default Cache Module
+
+By default, Medusa uses the [In-Memory Cache Module](./in-memory/page.mdx). This module uses a plain JavaScript Map object to store the cache data. While this is suitable for development, it's recommended to use other Cache Modules, such as the [Redis Cache Module](./redis/page.mdx), for production. You can also [Create a Cache Module](./create/page.mdx).
+
+---
+
+## How to Use the Cache Module?
+
+You can use the registered Cache Module as part of the [workflows](!docs!/learn/fundamentals/workflows) you build for your custom features. A workflow is a special function composed of a series of steps that guarantees data consistency and reliable roll-back mechanism.
+
+In a step of your workflow, you can resolve the Cache Module's service and use its methods to cache data, retrieve cached data, or clear the cache.
+
+For example:
+
+```ts
+import { Modules } from "@medusajs/framework/utils"
+import { 
+  createStep,
+  createWorkflow,
+} from "@medusajs/framework/workflows-sdk"
+
+const step1 = createStep(
+  "step-1",
+  async ({}, { container }) => {
+    const cacheModuleService = container.resolve(
+      Modules.CACHE
+    )
+
+    await cacheModuleService.set("key", "value")
+  } 
+)
+
+export const workflow = createWorkflow(
+  "workflow-1",
+  () => {
+    step1()
+  }
+)
+```
+
+In the example above, you create a workflow that has a step. In the step, you resolve the service of the Cache Module from the [Medusa container](!docs!/learn/fundamentals/medusa-container).
+
+Then, you use the `set` method of the Cache Module to cache the value `"value"` with the key `"key"`.
+
+---
+
+## List of Cache Modules
+
+Medusa provides the following Cache Modules. You can use one of them, or [Create a Cache Module](./create/page.mdx).
+
+<CardList
+  items={[
+    {
+      title: "In-Memory",
+      href: "/infrastructure-modules/cache/in-memory",
+      badge: {
+        variant: "neutral",
+        children: "For Development"
+      }
+    },
+    {
+      title: "Redis",
+      href: "/infrastructure-modules/cache/redis",
+      badge: {
+        variant: "green",
+        children: "For Production"
+      }
+    }
+  ]}
+/>

@@ -67,7 +67,7 @@ export interface CustomerAddressDTO {
   country_code?: string
 
   /**
-   * The province of the customer address.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province of the customer address.
    */
   province?: string
 
@@ -173,7 +173,7 @@ export interface FilterableCustomerAddressProps
   country_code?: string | OperatorMap<string>
 
   /**
-   * Filter addresses by province.
+   * Filter addresses by lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province.
    */
   province?: string | OperatorMap<string>
 

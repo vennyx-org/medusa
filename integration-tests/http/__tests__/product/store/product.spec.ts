@@ -1478,7 +1478,7 @@ medusaIntegrationTestRunner({
       describe("with inventory items", () => {
         let location1
         let location2
-        let salesChannel1
+        let salesChannel1, salesChannel2
         let publishableKey1
 
         beforeEach(async () => {
@@ -1500,6 +1500,11 @@ medusaIntegrationTestRunner({
 
           salesChannel1 = await createSalesChannel(
             { name: "sales channel test" },
+            [product.id, product2.id]
+          )
+
+          salesChannel2 = await createSalesChannel(
+            { name: "sales channel test 2" },
             [product.id, product2.id]
           )
 
@@ -1719,6 +1724,63 @@ medusaIntegrationTestRunner({
               }),
             ])
           )
+        })
+
+        it("should list all inventory items for a variant in a given sales channel passed as a query param AND when there are multiple sales channels associated with the publishable key", async () => {
+          await api.post(
+            `/admin/api-keys/${publishableKey1.id}/sales-channels`,
+            { add: [salesChannel2.id] },
+            adminHeaders
+          )
+
+          let response = await api.get(
+            `/store/products?sales_channel_id[]=${salesChannel1.id}&fields=variants.inventory_items.inventory.location_levels.*`,
+            { headers: { "x-publishable-api-key": publishableKey1.token } }
+          )
+
+          expect(response.status).toEqual(200)
+          expect(response.data.count).toEqual(2)
+          expect(response.data.products).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                id: product.id,
+                variants: expect.arrayContaining([
+                  expect.objectContaining({
+                    inventory_items: expect.arrayContaining([
+                      expect.objectContaining({
+                        inventory_item_id: inventoryItem1.id,
+                      }),
+                      expect.objectContaining({
+                        inventory_item_id: inventoryItem2.id,
+                      }),
+                    ]),
+                  }),
+                ]),
+              }),
+            ])
+          )
+        })
+
+        it("should throw when multiple sales channels are passed as a query param AND there are multiple sales channels associated with the publishable key", async () => {
+          await api.post(
+            `/admin/api-keys/${publishableKey1.id}/sales-channels`,
+            { add: [salesChannel2.id] },
+            adminHeaders
+          )
+
+          let error = await api
+            .get(
+              `/store/products?sales_channel_id[]=${salesChannel1.id}&sales_channel_id[]=${salesChannel2.id}&fields=variants.inventory_quantity`,
+              { headers: { "x-publishable-api-key": publishableKey1.token } }
+            )
+            .catch((e) => e)
+
+          expect(error.response.status).toEqual(400)
+          expect(error.response.data).toEqual({
+            message:
+              "Inventory availability cannot be calculated in the given context. Either provide a single sales channel id or configure a single sales channel in the publishable key",
+            type: "invalid_data",
+          })
         })
 
         it("should return inventory quantity when variant's manage_inventory is true", async () => {

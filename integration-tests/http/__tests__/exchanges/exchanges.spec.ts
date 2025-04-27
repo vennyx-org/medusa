@@ -582,6 +582,23 @@ medusaIntegrationTestRunner({
         expect(result[0].additional_items).toHaveLength(1)
         expect(result[0].canceled_at).toBeNull()
 
+        const return_ = (
+          await api.get(
+            `/admin/returns/${result[0].return_id}?fields=*fulfillments`,
+            adminHeaders
+          )
+        ).data.return
+
+        expect(return_.fulfillments).toHaveLength(1)
+        expect(return_.fulfillments[0].canceled_at).toBeNull()
+
+        // all exchange return fulfillments should be canceled before canceling the exchange
+        await api.post(
+          `/admin/fulfillments/${return_.fulfillments[0].id}/cancel`,
+          {},
+          adminHeaders
+        )
+
         await api.post(
           `/admin/exchanges/${exchangeId}/cancel`,
           {},

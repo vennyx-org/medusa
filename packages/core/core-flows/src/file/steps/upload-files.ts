@@ -40,7 +40,7 @@ export type UploadFilesStepInput = {
 export const uploadFilesStepId = "upload-files"
 /**
  * This step uploads one or more files using the installed
- * [File Module Provider](https://docs.medusajs.com/resources/architectural-modules/file).
+ * [File Module Provider](https://docs.medusajs.com/resources/infrastructure-modules/file).
  * 
  * @example
  * const data = uploadFilesStep({

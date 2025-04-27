@@ -179,14 +179,20 @@ async function getOASFromPaths(
   customBaseFile?: string
 ): Promise<OpenAPIObject> {
   console.log(`🔵 Gathering custom OAS`)
-  const gen = await swaggerInline(additionalPaths, {
-    base:
-      customBaseFile ?? path.resolve(basePath, "oas", "default.oas.base.yaml"),
-    format: ".json",
-    logger: (log) => {
-      console.log(log)
-    },
-  })
+  const gen = await swaggerInline(
+    additionalPaths.map((additionalPath) => {
+      return additionalPath.replace(/\\/g, "/")
+    }),
+    {
+      base:
+        customBaseFile ??
+        path.resolve(basePath, "oas", "default.oas.base.yaml"),
+      format: ".json",
+      logger: (log) => {
+        console.log(log)
+      },
+    }
+  )
   return (await OpenAPIParser.parse(JSON.parse(gen))) as OpenAPIObject
 }
 

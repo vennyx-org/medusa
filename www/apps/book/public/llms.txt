@@ -4,7 +4,7 @@
 
 Medusa ships with three main tools:
 
-- A suite of commerce modules with core commerce functionalities, such as tracking inventory, calculating cart totals, accepting payments, managing orders, and much more.
+- A suite of Commerce Modules with core commerce functionalities, such as tracking inventory, calculating cart totals, accepting payments, managing orders, and much more.
 - A framework for building custom functionalities specific to your business, product, or industry. This includes tools for introducing custom API endpoints, business logic, and data models; building workflows and automations; and integrating with third-party services.
 - A customizable admin dashboard for merchants to configure and operate their store.
 
@@ -16,7 +16,7 @@ Businesses of all sizes can use Medusa, from small start ups to large enterprise
 
 - [Get Started](https://docs.medusajs.com/learn/installation/index.html.md): Install a digital commerce application with Medusa.
 - [Main docs](https://docs.medusajs.com/learn/index.html.md): Chapters to learn Medusa's concepts and toolings.
-- [Development guides and resources](https://docs.medusajs.com/resources/index.html.md): Development guides for storefront, admin, commerce modules, and more.
+- [Development guides and resources](https://docs.medusajs.com/resources/index.html.md): Development guides for storefront, admin, Commerce Modules, and more.
 - [Medusa UI](https://docs.medusajs.com/ui/index.html.md): A React library to build applications using Medusa's primitives and design system.
 - [Admin API Reference](https://docs.medusajs.com/api/admin): List of all Admin API routes in Medusa with code snippets.
 - [Store API Reference](https://docs.medusajs.com/api/store): List of all Store API Routes in Medusa with code snippets.
@@ -41,8 +41,8 @@ Businesses of all sizes can use Medusa, from small start ups to large enterprise
 
 ## Built-in Modules
 
-- [Commerce Modules](https://docs.medusajs.com/resources/commerce-modules): A commerce module provides features for a commerce domain within its service. The Medusa application exposes these features in its API routes to clients.
-- [Architectural Modules](https://docs.medusajs.com/resources/architectural-modules): An architectural module is a package that can be installed and used in any Medusa application. These modules allow you to choose and integrate custom services for architectural purposes.
+- [Commerce Modules](https://docs.medusajs.com/resources/commerce-modules): A Commerce Module provides features for a commerce domain within its service. The Medusa application exposes these features in its API routes to clients.
+- [Infrastructure Modules](https://docs.medusajs.com/resources/infrastructure-modules): An infrastructure module is a package that can be installed and used in any Medusa application. These modules allow you to choose and integrate custom services to modify your application's infrastructure.
 
 ## Tools and SDKs
 
@@ -260,13 +260,13 @@ Businesses of all sizes can use Medusa, from small start ups to large enterprise
 - [User Module's Service Reference](https://docs.medusajs.com/resources/references/user/index.html.md): Methods of the User Module's Service.
 - [User Module's Data Models Reference](https://docs.medusajs.com/resources/references/user/models/index.html.md): Data models created by the User Module.
 
-## Architectural Modules
+## Infrastructure Modules
 
-- [Cache Modules](https://docs.medusajs.com/resources/architectural-modules/cache/index.html.md): A Cache Module is used to cache the results of computations such as price selection or various tax calculations.
-- [Event Modules](https://docs.medusajs.com/resources/architectural-modules/event/index.html.md): An Event Module implements the underlying publish/subscribe system that handles queueing events, emitting them, and executing their subscribers.
-- [File Module Providers](https://docs.medusajs.com/resources/architectural-modules/file/index.html.md): A file module provider implements the underlying logic of handling uploads and downloads of assets, such as integrating third-party services. The File Module must have one file module provider configured.
-- [Notification Module Provider](https://docs.medusajs.com/resources/architectural-modules/notification/index.html.md): A notification module provider implements the underlying logic of sending notification. It either integrates a third-party service or uses custom logic to send the notification.
-- [Workflow Engine Modules](https://docs.medusajs.com/resources/architectural-modules/workflow-engine/index.html.md): Workflow engine modules handle tracking and recording the transactions and statuses of workflows and their steps.
+- [Cache Modules](https://docs.medusajs.com/resources/infrastructure-modules/cache/index.html.md): A Cache Module is used to cache the results of computations such as price selection or various tax calculations.
+- [Event Modules](https://docs.medusajs.com/resources/infrastructure-modules/event/index.html.md): An Event Module implements the underlying publish/subscribe system that handles queueing events, emitting them, and executing their subscribers.
+- [File Module Providers](https://docs.medusajs.com/resources/infrastructure-modules/file/index.html.md): A file module provider implements the underlying logic of handling uploads and downloads of assets, such as integrating third-party services. The File Module must have one file module provider configured.
+- [Notification Module Provider](https://docs.medusajs.com/resources/infrastructure-modules/notification/index.html.md): A notification module provider implements the underlying logic of sending notification. It either integrates a third-party service or uses custom logic to send the notification.
+- [Workflow Engine Modules](https://docs.medusajs.com/resources/infrastructure-modules/workflow-engine/index.html.md): Workflow engine modules handle tracking and recording the transactions and statuses of workflows and their steps.
 
 ## Optional
 

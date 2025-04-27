@@ -654,12 +654,16 @@
  *         description: "Storefront guide: How to show product variants' prices with taxes."
  *   - name: province
  *     in: query
- *     description: The province the products are being viewed from. This is useful to narrow down the tax context when calculating product variant prices with taxes.
+ *     description: The lower-case ISO 3166-2 province code the products are being viewed from. This is useful to narrow down the tax context when calculating product variant prices with taxes.
  *     required: false
  *     schema:
  *       type: string
  *       title: province
- *       description: The province the products are being viewed from. This is useful to narrow down the tax context when calculating product variant prices with taxes.
+ *       description: The lower-case ISO 3166-2 province code the products are being viewed from. This is useful to narrow down the tax context when calculating product variant prices with taxes.
+ *       example: "us-ca"
+ *       externalDocs:
+ *         url: https://en.wikipedia.org/wiki/ISO_3166-2
+ *         description: Learn more about ISO 3166-2
  *   - name: sales_channel_id
  *     in: query
  *     required: false

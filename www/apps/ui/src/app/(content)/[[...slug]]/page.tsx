@@ -5,6 +5,7 @@ import { notFound } from "next/navigation"
 import { Mdx } from "@/components/mdx-components"
 import { siteConfig } from "@/config/site"
 import { Metadata } from "next"
+import { H1 } from "docs-ui"
 
 interface DocPageProps {
   params: Promise<{
@@ -58,7 +59,7 @@ export default async function DocPage(props: DocPageProps) {
 
   return (
     <div className="flex flex-col">
-      <h1 className="h1-docs text-medusa-fg-base mb-2">{doc.title}</h1>
+      <H1>{doc.title}</H1>
       <Text className="text-medusa-fg-subtle mb-6" size="large">
         {doc.description}
       </Text>

@@ -6,7 +6,7 @@ export const metadata = {
 
 # {metadata.title}
 
-This document showcases the module links defined between the Promotion Module and other commerce modules.
+This document showcases the module links defined between the Promotion Module and other Commerce Modules.
 
 ## Summary
 
@@ -44,7 +44,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [Promotion](/references/promotion/models/Promotion)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - many-to-many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#cart-module)
@@ -58,7 +58,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [Promotion](/references/promotion/models/Promotion)
       </Table.Cell>
       <Table.Cell>
-        Read-only
+        Read-only - has one
       </Table.Cell>
       <Table.Cell>
         [Learn more](#cart-module)
@@ -72,7 +72,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [Promotion](/references/promotion/models/Promotion)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - many-to-many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#order-module)
@@ -112,7 +112,7 @@ const { data: promotions } = await query.graph({
   ],
 })
 
-// promotions.carts
+// promotions[0].carts
 ```
 
   </CodeTab>
@@ -130,7 +130,7 @@ const { data: promotions } = useQueryGraphStep({
   ],
 })
 
-// promotions.carts
+// promotions[0].carts
 ```
 
   </CodeTab>
@@ -203,7 +203,7 @@ const { data: promotions } = await query.graph({
   ],
 })
 
-// promotions.orders
+// promotions[0].orders
 ```
 
   </CodeTab>
@@ -221,7 +221,7 @@ const { data: promotions } = useQueryGraphStep({
   ],
 })
 
-// promotions.orders
+// promotions[0].orders
 ```
 
   </CodeTab>

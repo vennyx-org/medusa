@@ -6,7 +6,7 @@ export const metadata = {
 
 # {metadata.title}
 
-This document showcases the module links defined between the Stock Location Module and other commerce modules.
+This document showcases the module links defined between the Stock Location Module and other Commerce Modules.
 
 ## Summary
 
@@ -44,7 +44,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [StockLocation](/references/stock-location/models/StockLocation)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - many-to-one
       </Table.Cell>
       <Table.Cell>
         [Learn more](#fulfillment-module)
@@ -58,7 +58,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [StockLocation](/references/stock-location/models/StockLocation)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - many-to-many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#fulfillment-module)
@@ -66,13 +66,13 @@ Read-only links are used to query data across modules, but the relations aren't 
     </Table.Row>
     <Table.Row>
       <Table.Cell>
-        [Inventory](/references/inventory/models/Inventory) in [Inventory Module](../../inventory/page.mdx)
+        [InventoryLevel](/references/inventory/models/InventoryLevel) in [Inventory Module](../../inventory/page.mdx)
       </Table.Cell>
       <Table.Cell>
         [StockLocation](/references/stock-location/models/StockLocation)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Read-only - has many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#inventory-module)
@@ -86,7 +86,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [StockLocation](/references/stock-location/models/StockLocation)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - many-to-many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#sales-channel-module)
@@ -130,7 +130,7 @@ const { data: stockLocations } = await query.graph({
   ],
 })
 
-// stockLocations.fulfillment_sets
+// stockLocations[0].fulfillment_sets
 ```
 
   </CodeTab>
@@ -148,7 +148,7 @@ const { data: stockLocations } = useQueryGraphStep({
   ],
 })
 
-// stockLocations.fulfillment_sets
+// stockLocations[0].fulfillment_sets
 ```
 
   </CodeTab>
@@ -219,7 +219,7 @@ const { data: inventoryLevels } = await query.graph({
   ],
 })
 
-// inventoryLevels.stock_locations
+// inventoryLevels[0].stock_locations
 ```
 
   </CodeTab>
@@ -237,7 +237,7 @@ const { data: inventoryLevels } = useQueryGraphStep({
   ],
 })
 
-// inventoryLevels.stock_locations
+// inventoryLevels[0].stock_locations
 ```
 
   </CodeTab>
@@ -268,7 +268,7 @@ const { data: stockLocations } = await query.graph({
   ],
 })
 
-// stockLocations.sales_channels
+// stockLocations[0].sales_channels
 ```
 
   </CodeTab>
@@ -286,7 +286,7 @@ const { data: stockLocations } = useQueryGraphStep({
   ],
 })
 
-// stockLocations.sales_channels
+// stockLocations[0].sales_channels
 ```
 
   </CodeTab>

@@ -5,10 +5,24 @@ import { IOrderModuleService } from "@medusajs/types"
 export const removeDraftOrderShippingMethodAdjustmentsStepId =
   "remove-draft-order-shipping-method-adjustments"
 
-interface RemoveDraftOrderShippingMethodAdjustmentsStepInput {
+/**
+ * The details of the shipping method adjustments to remove.
+ */
+export interface RemoveDraftOrderShippingMethodAdjustmentsStepInput {
+  /**
+   * The IDs of the shipping method adjustments to remove.
+   */
   shippingMethodAdjustmentIdsToRemove: string[]
 }
 
+/**
+ * This step removes shipping method adjustments from a draft order.
+ * 
+ * @example
+ * const data = removeDraftOrderShippingMethodAdjustmentsStep({
+ *   shippingMethodAdjustmentIdsToRemove: ["adj_123", "adj_456"],
+ * })
+ */
 export const removeDraftOrderShippingMethodAdjustmentsStep = createStep(
   removeDraftOrderShippingMethodAdjustmentsStepId,
   async function (

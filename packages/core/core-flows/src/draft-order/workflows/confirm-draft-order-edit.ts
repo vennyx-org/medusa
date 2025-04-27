@@ -33,6 +33,26 @@ export interface ConfirmDraftOrderEditWorkflowInput {
   confirmed_by: string
 }
 
+/**
+ * This workflow confirms a draft order edit. It's used by the
+ * [Confirm Draft Order Edit Admin API Route](https://docs.medusajs.com/api/admin#draft-orders_postdraftordersideditconfirm).
+ * 
+ * You can use this workflow within your customizations or your own custom workflows, allowing you to wrap custom logic around
+ * confirming a draft order edit.
+ * 
+ * @example
+ * const { result } = await confirmDraftOrderEditWorkflow(container)
+ * .run({
+ *   input: {
+ *     order_id: "order_123",
+ *     confirmed_by: "user_123",
+ *   }
+ * })
+ * 
+ * @summary
+ * 
+ * Confirm a draft order edit.
+ */
 export const confirmDraftOrderEditWorkflow = createWorkflow(
   confirmDraftOrderEditWorkflowId,
   function (input: ConfirmDraftOrderEditWorkflowInput) {

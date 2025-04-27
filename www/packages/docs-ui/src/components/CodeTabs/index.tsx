@@ -23,7 +23,6 @@ type CodeTabProps = {
   children: React.ReactNode
   className?: string
   group?: string
-  title?: string
   blockStyle?: CodeBlockStyle
 }
 
@@ -108,9 +107,11 @@ export const CodeTabs = ({
       }
 
       let codeBlockProps = codeBlock.props as CodeBlockProps
+      const showBadge = !codeBlockProps.title
+      const originalBadgeLabel = codeBlockProps.badgeLabel
 
       const commonProps = {
-        badgeLabel: undefined,
+        badgeLabel: showBadge ? undefined : originalBadgeLabel,
         hasTabs: true,
         className: clsx("!my-0", codeBlockProps.className),
       }
@@ -136,7 +137,10 @@ export const CodeTabs = ({
       tempTabs.push({
         label: typedChildProps.label,
         value: typedChildProps.value,
-        codeProps: modifiedProps,
+        codeProps: {
+          ...modifiedProps,
+          badgeLabel: !showBadge ? undefined : originalBadgeLabel,
+        },
         codeBlock: {
           ...codeBlock,
           props: {
@@ -259,39 +263,44 @@ export const CodeTabs = ({
           )}
           ref={codeTabSelectorRef}
         ></span>
-        <ul
-          className={clsx(
-            "!list-none flex gap-docs_0.75 items-center",
-            "p-0 mb-0"
+        <div className="flex gap-docs_1 items-center">
+          {selectedTab?.codeProps.badgeLabel && (
+            <Badge
+              variant={selectedTab?.codeProps.badgeColor || "code"}
+              className="!font-base"
+            >
+              {selectedTab.codeProps.badgeLabel}
+            </Badge>
           )}
-        >
-          {Children.map(children, (child, index) => {
-            if (!React.isValidElement(child)) {
-              return <></>
-            }
+          <ul
+            className={clsx(
+              "!list-none flex gap-docs_0.75 items-center",
+              "p-0 mb-0"
+            )}
+          >
+            {Children.map(children, (child, index) => {
+              if (!React.isValidElement(child)) {
+                return <></>
+              }
 
-            return (
-              <child.type
-                {...(typeof child.props === "object" ? child.props : {})}
-                changeSelectedTab={changeSelectedTab}
-                pushRef={(tabButton: HTMLButtonElement | null) =>
-                  tabRefs.push(tabButton)
-                }
-                blockStyle={blockStyle}
-                isSelected={
-                  !selectedTab
-                    ? index === 0
-                    : selectedTab.value === (child.props as CodeTab).value
-                }
-              />
-            )
-          })}
-        </ul>
-        {selectedTab?.codeProps.badgeLabel && (
-          <Badge variant={selectedTab?.codeProps.badgeColor || "code"}>
-            {selectedTab.codeProps.badgeLabel}
-          </Badge>
-        )}
+              return (
+                <child.type
+                  {...(typeof child.props === "object" ? child.props : {})}
+                  changeSelectedTab={changeSelectedTab}
+                  pushRef={(tabButton: HTMLButtonElement | null) =>
+                    tabRefs.push(tabButton)
+                  }
+                  blockStyle={blockStyle}
+                  isSelected={
+                    !selectedTab
+                      ? index === 0
+                      : selectedTab.value === (child.props as CodeTab).value
+                  }
+                />
+              )
+            })}
+          </ul>
+        </div>
         {actionsProps && <CodeBlockActions {...actionsProps} />}
       </CodeBlockHeaderWrapper>
       {selectedTab?.codeBlock}

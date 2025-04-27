@@ -1,10 +1,10 @@
 post:
   operationId: PostDraftOrdersIdEditItemsAction_id
-  summary: Update Item Changes in Draft Order
-  x-sidebar-summary: Update Item Changes
+  summary: Update New Item in Draft Order Edit
+  x-sidebar-summary: Update New Item
   description: >
-    Update changes made on an item (addition or update) in the draft order by
-    the ID of the item's `ITEM_ADD` or `ITEM_UPDATE` action.
+    Update a new item that was added to a draft order edit by the ID of the
+    item's `ITEM_ADD` action.
 
 
     Every item has an `actions` property, whose value is an array of actions.
@@ -20,7 +20,7 @@ post:
         type: string
     - name: action_id
       in: path
-      description: The ID of the item's `ITEM_ADD` or `ITEM_UPDATE` action.
+      description: The ID of the item's `ITEM_ADD` action.
       required: true
       schema:
         type: string
@@ -64,11 +64,11 @@ post:
   x-workflow: updateDraftOrderActionItemWorkflow
 delete:
   operationId: DeleteDraftOrdersIdEditItemsAction_id
-  summary: Remove Item from Draft Order
+  summary: Remove Item from Draft Order Edit
   x-sidebar-summary: Remove Item
   description: >
-    Remove an order item from a draft order by the ID of the item's
-    `ITEM_REMOVE` action.
+    Remove an order item from a draft order edit by the ID of the item's
+    `ITEM_ADD` or `ITEM_UPDATE` action.
 
 
     Every item has an `actions` property, whose value is an array of actions.
@@ -84,7 +84,7 @@ delete:
         type: string
     - name: action_id
       in: path
-      description: The ID of the order item's `ITEM_REMOVE` action.
+      description: The ID of the order item's `ITEM_ADD` or `ITEM_UPDATE` action.
       required: true
       schema:
         type: string

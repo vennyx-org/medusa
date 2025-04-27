@@ -33,7 +33,11 @@
  *   province_code:
  *     type: string
  *     title: province_code
- *     description: The geo zone's province code.
+ *     description: The geo zone's lower-case ISO 3166-2 province code.
+ *     example: "us-ca"
+ *     externalDocs:
+ *       url: https://en.wikipedia.org/wiki/ISO_3166-2
+ *       description: Learn more about ISO 3166-2
  *   city:
  *     type: string
  *     title: city

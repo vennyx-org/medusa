@@ -1,9 +1,9 @@
 /**
  * @oas [delete] /admin/draft-orders/{id}/edit/promotions
  * operationId: DeleteDraftOrdersIdEditPromotions
- * summary: Remove Promotions from Draft Order
+ * summary: Remove Promotions from Draft Order Edit
  * x-sidebar-summary: Remove Promotions
- * description: Remove specified promotions from a draft order.
+ * description: Remove specified promotions from a draft order edit.
  * x-authenticated: true
  * parameters:
  *   - name: id

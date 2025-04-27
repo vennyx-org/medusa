@@ -38,7 +38,7 @@ export type CreateFulfillmentAddressWorkflowDTO = {
   country_code?: string | null
 
   /**
-   * The province of the fulfillment address.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province of the fulfillment address.
    */
   province?: string | null
 

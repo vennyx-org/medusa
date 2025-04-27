@@ -115,8 +115,10 @@ export class MedusaAppLoader {
       ),
     }
 
-    const driverOptions = { ...(configManager.config.projectConfig.databaseDriverOptions ?? {}) }
-    const pool = driverOptions.pool ?? {}
+    const driverOptions = {
+      ...(configManager.config.projectConfig.databaseDriverOptions ?? {}),
+    }
+    const pool = (driverOptions.pool as Record<string, unknown>) ?? {}
     delete driverOptions.pool
 
     const sharedResourcesConfig: ModuleServiceInitializeOptions = {

@@ -20,6 +20,10 @@ export const promotion = [
     "path": "https://docs.medusajs.com/resources/commerce-modules/promotion/extend"
   },
   {
+    "title": "Implement Loyalty Points",
+    "path": "https://docs.medusajs.com/resources/how-to-tutorials/tutorials/loyalty-points"
+  },
+  {
     "title": "getActionsToComputeFromPromotionsStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/getActionsToComputeFromPromotionsStep"
   },

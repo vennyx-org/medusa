@@ -42,7 +42,7 @@
  * 
  *       sdk.admin.taxRegion.create({
  *         country_code: "us",
- *         province_code: "ca",
+ *         province_code: "us-ca",
  *         default_tax_rate: {
  *           code: "VAT",
  *           name: "VAT",
@@ -61,7 +61,7 @@
  *       -H 'Content-Type: application/json' \
  *       --data-raw '{
  *         "country_code": "{value}",
- *         "province_code": "{value}",
+ *         "province_code": "us-ca",
  *         "parent_id": "{value}",
  *         "metadata": {}
  *       }'

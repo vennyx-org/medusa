@@ -1,8 +1,8 @@
 post:
   operationId: PostDraftOrdersIdEditShippingMethods
-  summary: Add Shipping Method to Draft Order
+  summary: Add Shipping Method to Draft Order Edit
   x-sidebar-summary: Add Shipping Method
-  description: Add a shipping method to a draft order.
+  description: Add a shipping method to a draft order edit.
   x-authenticated: true
   parameters:
     - name: id

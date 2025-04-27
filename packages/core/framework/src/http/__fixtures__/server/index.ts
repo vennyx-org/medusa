@@ -11,7 +11,7 @@ import supertest from "supertest"
 
 import { config } from "../mocks"
 import { MedusaContainer } from "@medusajs/types"
-import { configManager, ConfigModule } from "../../../config"
+import { configManager } from "../../../config"
 import { container } from "../../../container"
 import { featureFlagsLoader } from "../../../feature-flags"
 import { logger } from "../../../logger"
@@ -44,7 +44,7 @@ export const createServer = async (rootDir) => {
   })
 
   configManager.loadConfig({
-    projectConfig: config as ConfigModule,
+    projectConfig: config,
     baseDir: rootDir,
   })
 

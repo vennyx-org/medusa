@@ -24,6 +24,10 @@ export const eventBus = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateCartWorkflow"
   },
   {
+    "title": "updateLineItemInCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateLineItemInCartWorkflow"
+  },
+  {
     "title": "emitEventStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/emitEventStep"
   },
@@ -46,6 +50,10 @@ export const eventBus = [
   {
     "title": "updateCustomersWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateCustomersWorkflow"
+  },
+  {
+    "title": "updateDraftOrderWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateDraftOrderWorkflow"
   },
   {
     "title": "acceptInviteWorkflow",

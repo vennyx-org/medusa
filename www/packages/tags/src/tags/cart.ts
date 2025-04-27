@@ -16,6 +16,10 @@ export const cart = [
     "path": "https://docs.medusajs.com/resources/how-to-tutorials/tutorials/abandoned-cart"
   },
   {
+    "title": "Implement Loyalty Points",
+    "path": "https://docs.medusajs.com/resources/how-to-tutorials/tutorials/loyalty-points"
+  },
+  {
     "title": "Create Cart Context in Storefront",
     "path": "https://docs.medusajs.com/resources/storefront-development/cart/context"
   },

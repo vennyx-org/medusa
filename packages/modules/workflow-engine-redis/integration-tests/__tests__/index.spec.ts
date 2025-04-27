@@ -19,6 +19,12 @@ import {
   TransactionHandlerType,
   TransactionStepState,
 } from "@medusajs/framework/utils"
+import {
+  createStep,
+  createWorkflow,
+  StepResponse,
+  WorkflowResponse,
+} from "@medusajs/framework/workflows-sdk"
 import { moduleIntegrationTestRunner } from "@medusajs/test-utils"
 import { asValue } from "awilix"
 import { setTimeout as setTimeoutSync } from "timers"
@@ -27,12 +33,6 @@ import { WorkflowsModuleService } from "../../src/services"
 import "../__fixtures__"
 import { createScheduled } from "../__fixtures__/workflow_scheduled"
 import { TestDatabase } from "../utils"
-import {
-  createStep,
-  createWorkflow,
-  StepResponse,
-  WorkflowResponse,
-} from "@medusajs/framework/workflows-sdk"
 
 jest.setTimeout(300000)
 
@@ -66,7 +66,7 @@ function times(num) {
       new Promise((_, reject) => {
         setTimeoutSync(
           () => reject("times has not been resolved after 10 seconds."),
-          1000
+          10000
         )
       }),
     ]),
@@ -736,27 +736,39 @@ moduleIntegrationTestRunner<IWorkflowEngineService>({
           WorkflowManager["workflows"].delete("remove-scheduled")
 
           await setTimeout(1100)
+          0
           expect(spy).toHaveBeenCalledTimes(1)
           expect(logSpy).toHaveBeenCalledWith(
             "Tried to execute a scheduled workflow with ID remove-scheduled that does not exist, removing it from the scheduler."
           )
         })
 
-        it.skip("the scheduled workflow should have access to the shared container", async () => {
-          const wait = times(1)
-          sharedContainer_.register("test-value", asValue("test"))
-
-          const spy = await createScheduled("shared-container-job", wait.next, {
-            interval: 1000,
+        // TODO: investigate why sometimes flow doesn't have access to the new key registered
+        describe.skip("Scheduled workflows", () => {
+          beforeEach(() => {
+            sharedContainer_.register("test-value", asValue("test"))
           })
-          await wait.promise
 
-          expect(spy).toHaveBeenCalledTimes(1)
+          it("the scheduled workflow should have access to the shared container", async () => {
+            const wait = times(1)
 
-          expect(spy).toHaveReturnedWith(
-            expect.objectContaining({ output: { testValue: "test" } })
-          )
-          WorkflowManager.unregister("shared-container-job")
+            const spy = await createScheduled(
+              "shared-container-job",
+              wait.next,
+              {
+                interval: 1000,
+              }
+            )
+            await wait.promise
+
+            expect(spy).toHaveBeenCalledTimes(1)
+
+            console.log(spy.mock.results)
+            expect(spy).toHaveReturnedWith(
+              expect.objectContaining({ output: { testValue: "test" } })
+            )
+            WorkflowManager.unregister("shared-container-job")
+          })
         })
       })
     })

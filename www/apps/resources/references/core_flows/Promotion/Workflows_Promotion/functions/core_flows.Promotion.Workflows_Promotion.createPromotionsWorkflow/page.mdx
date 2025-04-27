@@ -20,7 +20,7 @@ allows you to create custom data models linked to the promotions.
 
 You can also use this workflow within your customizations or your own custom workflows, allowing you to wrap custom logic around creating promotions.
 
-<SourceCodeLink link="https://github.com/medusajs/medusa/blob/b9edc066c8486e8ec52e4f505968db1c558bc7b8/packages/core/core-flows/src/promotion/workflows/create-promotions.ts#L58" />
+<SourceCodeLink link="https://github.com/medusajs/medusa/blob/876a14eb98aed54360312b9b215599aa46faccd8/packages/core/core-flows/src/promotion/workflows/create-promotions.ts#L59" />
 
 ## Examples
 
@@ -44,6 +44,7 @@ export async function POST(
         promotionsData: [{
           code: "10OFF",
           type: "standard",
+          status: "active",
           application_method: {
             type: "percentage",
             target_type: "items",
@@ -82,6 +83,7 @@ export default async function handleOrderPlaced({
         promotionsData: [{
           code: "10OFF",
           type: "standard",
+          status: "active",
           application_method: {
             type: "percentage",
             target_type: "items",
@@ -120,6 +122,7 @@ export default async function myCustomJob(
         promotionsData: [{
           code: "10OFF",
           type: "standard",
+          status: "active",
           application_method: {
             type: "percentage",
             target_type: "items",
@@ -159,6 +162,7 @@ const myWorkflow = createWorkflow(
           promotionsData: [{
             code: "10OFF",
             type: "standard",
+            status: "active",
             application_method: {
               type: "percentage",
               target_type: "items",
@@ -201,4 +205,4 @@ Learn more about [Hooks](https://docs.medusajs.com/learn/fundamentals/workflows/
 
 Handlers consuming this hook accept the following input.
 
-<TypeList types={[{"name":"invoke","type":"[InvokeFn](../../../../../workflows/types/workflows.InvokeFn/page.mdx)&#60;object, TOutput, TCompensateInput&#62;","description":"The type of invocation function passed to a step.","optional":false,"defaultValue":"","expandable":false,"children":[]},{"name":"compensate","type":"[CompensateFn](../../../../../workflows/types/workflows.CompensateFn/page.mdx)&#60;TCompensateInput&#62;","description":"The type of compensation function passed to a step.","optional":true,"defaultValue":"","expandable":false,"children":[]}]} expandUrl="https://docs.medusajs.com/learn/fundamentals/data-models/manage-relationships#retrieve-records-of-relation" openedLevel={1} sectionTitle="promotionsCreated"/>
+<TypeList types={[{"name":"input","type":"`object`","description":"","optional":false,"defaultValue":"","expandable":false,"children":[{"name":"promotions","type":"[PromotionDTO](../../../../../promotion/interfaces/promotion.PromotionDTO/page.mdx)[]","description":"","optional":false,"defaultValue":"","expandable":false,"children":[{"name":"id","type":"`string`","description":"The ID of the promotion.","optional":false,"defaultValue":"","expandable":false,"children":[]},{"name":"code","type":"`string`","description":"The code of the promotion.","optional":true,"defaultValue":"","expandable":false,"children":[]},{"name":"type","type":"[PromotionTypeValues](../../../../../promotion/types/promotion.PromotionTypeValues/page.mdx)","description":"The type of the promotion:\n\n- `standard` indicates that a promotion is a standard one applied with conditions.\n- `buyget` indicates that a promotion is a \"Buy X get Y\" promotion.","optional":true,"defaultValue":"","expandable":false,"children":[]},{"name":"status","type":"[PromotionStatusValues](../../../../../promotion/types/promotion.PromotionStatusValues/page.mdx)","description":"The status of the promotion:\n\n- `active` promotion is available for user to consume\n- `inactive` promotion is no longer available to the user\n- `draft` promotion is currently being prepared","optional":true,"defaultValue":"","expandable":false,"children":[]},{"name":"is_automatic","type":"`boolean`","description":"Whether the promotion is applied automatically.","optional":true,"defaultValue":"","expandable":false,"children":[]},{"name":"application_method","type":"[ApplicationMethodDTO](../../../../../promotion/interfaces/promotion.ApplicationMethodDTO/page.mdx)","description":"The associated application method.","optional":true,"defaultValue":"","expandable":false,"children":[]},{"name":"rules","type":"[PromotionRuleDTO](../../../../../promotion/interfaces/promotion.PromotionRuleDTO/page.mdx)[]","description":"The rules of the promotion.","optional":true,"defaultValue":"","expandable":false,"children":[]},{"name":"campaign_id","type":"`null` \\| `string`","description":"The associated campaign.","optional":true,"defaultValue":"","expandable":false,"children":[]},{"name":"campaign","type":"[CampaignDTO](../../../../../promotion/interfaces/promotion.CampaignDTO/page.mdx)","description":"The associated campaign.","optional":true,"defaultValue":"","expandable":false,"children":[]}]},{"name":"additional_data","type":"`Record<string, unknown> | undefined`","description":"Additional data that can be passed through the `additional_data` property in HTTP requests.\nLearn more in [this documentation](https://docs.medusajs.com/learn/fundamentals/api-routes/additional-data).","optional":false,"defaultValue":"","expandable":false,"children":[]}]}]} expandUrl="https://docs.medusajs.com/learn/fundamentals/data-models/manage-relationships#retrieve-records-of-relation" openedLevel={1} sectionTitle="promotionsCreated"/>

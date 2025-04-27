@@ -40,7 +40,7 @@ export const metadata = {
 
 In this guide, you'll learn how to add line items with custom prices to a cart in Medusa.
 
-When you install a Medusa application, you get a fully-fledged commerce platform with a framework for customization. The Medusa application's commerce features are built around [commerce modules](../../../commerce-modules/page.mdx) which are available out-of-the-box. These features include managing carts and adding line items to them.
+When you install a Medusa application, you get a fully-fledged commerce platform with a Framework for customization. The Medusa application's commerce features are built around [Commerce Modules](../../../commerce-modules/page.mdx) which are available out-of-the-box. These features include managing carts and adding line items to them.
 
 By default, you can add product variants to the cart, where the price of its associated line item is based on the product variant's price. However, you can build customizations to add line items with custom prices to the cart. This is useful when integrating an Enterprise Resource Planning (ERP), Product Information Management (PIM), or other third-party services that provide real-time prices for your products.
 
@@ -179,7 +179,7 @@ The service's constructor receives the module's options as a second parameter. Y
 
 <Note title="What is the first parameter in the constructor?">
 
-A module has a container of Medusa framework tools and local resources in the module that you can access in the service constructor's first parameter. Learn more in [this documentation](!docs!/learn/fundamentals/modules/container).
+A module has a container of Medusa Framework tools and local resources in the module that you can access in the service constructor's first parameter. Learn more in [this documentation](!docs!/learn/fundamentals/modules/container).
 
 </Note>
 
@@ -445,7 +445,7 @@ You create a step with `createStep` from the Workflows SDK. It accepts two param
 1. The step's unique name, which is `get-variant-metal-prices`.
 2. An async function that receives two parameters:
     - An input object with the variant, currency code, and quantity. The variant has a `calculated_price` property that holds the variant's fixed price in the Medusa application. This is useful when you want to add a fixed price to the real-time custom price, such as handling fees.
-    - The [Medusa container](!docs!/learn/fundamentals/medusa-container), which is a registry of framework and commerce tools that you can access in the step.
+    - The [Medusa container](!docs!/learn/fundamentals/medusa-container), which is a registry of Framework and commerce tools that you can access in the step.
 
 In the step function, so far you only resolve the Metal Prices Module's service from the Medusa container.
 

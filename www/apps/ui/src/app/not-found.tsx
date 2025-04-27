@@ -20,7 +20,7 @@ export default function NotFound() {
   return (
     <div>
       {/* @ts-expect-error React v19 doesn't recognize these as elements. */}
-      <H1>Page Not Found</H1>
+      <H1 hideLlmDropdown>Page Not Found</H1>
       {/* @ts-expect-error React v19 doesn't recognize these as elements. */}
       <P>The page you were looking for isn&apos;t available.</P>
       {/* @ts-expect-error React v19 doesn't recognize these as elements. */}

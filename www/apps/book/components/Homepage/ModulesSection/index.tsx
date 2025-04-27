@@ -156,7 +156,7 @@ const HomepageModulesSection = () => {
             All commerce features are provided as extendable modules in Medusa.
           </h2>
           <span className="text-medusa-fg-subtle text-small-plus">
-            Click on any of the commerce modules below to learn more about their
+            Click on any of the Commerce Modules below to learn more about their
             commerce features, and how to extend and use them for your custom
             use-case.
           </span>

@@ -152,7 +152,7 @@ The uploaded files are stored in the `req.files` property as an array of Multer 
 
 ### Uploading Files using File Module Provider
 
-The recommended way to upload the files to storage using the configured [File Module Provider](!resources!/architectural-modules/file) is to use the [uploadFilesWorkflow](!resources!/references/medusa-workflows/uploadFilesWorkflow):
+The recommended way to upload the files to storage using the configured [File Module Provider](!resources!/infrastructure-modules/file) is to use the [uploadFilesWorkflow](!resources!/references/medusa-workflows/uploadFilesWorkflow):
 
 ```ts title="src/api/custom/route.ts"
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"

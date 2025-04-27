@@ -34,7 +34,7 @@ Businesses often rely on an ERP system to centralize their data and custom busin
 
 When integrating the ERP system with other ecommerce platforms, you'll face complications maintaining data consistency across systems and customizing the platform's existing flows to accommodate the ERP system's data and operations. For example, the ecommerce platform may not support purchasing products with custom pricing or restricting certain products from purchase under certain conditions.
 
-Medusa's framework for customization solves these challenges by giving you a durable execution engine to orchestrate operations through custom flows, and the flexibility to customize the platform's existing flows. You can wrap existing flows with custom logic, inject custom features into existing flows, and create new flows that interact with the ERP system and sync data between the two systems.
+The Medusa Framework solves these challenges by giving you a durable execution engine to orchestrate operations through custom flows, and the flexibility to customize the platform's existing flows. You can wrap existing flows with custom logic, inject custom features into existing flows, and create new flows that interact with the ERP system and sync data between the two systems.
 
 ![ERP Integration Illustration](https://res.cloudinary.com/dza7lstvk/image/upload/v1740470820/Medusa%20Resources/erp-medusa-integration_pxjpcx.jpg)
 
@@ -203,7 +203,7 @@ export const syncFromErpWorkflow = createWorkflow(
 )
 ```
 
-In the above file, you first create a `getProductsFromErpStep` that resolves the ERP Module's service from the [Medusa container](!docs!/learn/fundamentals/medusa-container), which is a registry of framework and commerce tools, including your modules, that you can access in your customizations. You can then call the `getProducts` method in the ERP Module's service to fetch the products from the ERP and return them.
+In the above file, you first create a `getProductsFromErpStep` that resolves the ERP Module's service from the [Medusa container](!docs!/learn/fundamentals/medusa-container), which is a registry of Framework and commerce tools, including your modules, that you can access in your customizations. You can then call the `getProducts` method in the ERP Module's service to fetch the products from the ERP and return them.
 
 Then, you create a `syncFromErpWorkflow` that executes the `getProductsFromErpStep` to get the products from the ERP, then prepare the products to be created in Medusa. For example, you can set the product's title, and specify its ID in the ERP using the `external_id` field. Also, assuming the ERP products have variants, you can map the variants to Medusa's format, setting the variant's title and its ERP ID in the metadata.
 

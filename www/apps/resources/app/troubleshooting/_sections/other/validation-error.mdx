@@ -1,0 +1,110 @@
+If you get the following error when retrieving data either from an API route, using Query, or using a module's service:
+
+```bash
+ValidationError: Entity X does not have property Y
+```
+
+## Why this Error Occurred
+
+There are different reasons why this error may occur. This troubleshooting guide will help you identify the cause of the error.
+
+### Incorrect Property Name
+
+The most common reason for this error is that the property name you're using is incorrect. Make sure the property name is spelled correctly and matches the property name in the entity.
+
+For example, a common mistake is retrieving `variant.option` instead of `variant.options`.
+
+If you're retrieving a property from a Commerce Module, check out the data model references in the [Commerce Modules](../../../commerce-modules/page.mdx) documentation to ensure you're using the correct property name.
+
+### Referencing Linked Model with Module's Service
+
+Another common mistake is passing a linked data model's name to a module's service, which isn't allowed.
+
+For example, retrieving the customer of an order using the Order Module's service is not allowed:
+
+```ts
+// Don't do this
+const { data } = await orderService.retrieveOrder("order_123", {
+  relations: ["customer"],
+})
+```
+
+This isn't allowed because the Order Module's service retrieves data only within the module's scope.
+
+To retrieve a linked data model like `customer`, use Query instead:
+
+```ts
+// use req.scope instead of container in API routes
+const query = container.resolve("query")
+
+const { data } = await query.graph({
+  entity: "order",
+  fields: ["customer.*"],
+  filters: {
+    id: "order_123",
+  },
+})
+```
+
+### Referencing Non-Existent Relation
+
+To expand a relation of a data model, the data model must have a [relationship property](!docs!/learn/fundamentals/data-models/relationships) in its definition.
+
+For example, consider you have the following data model:
+
+```ts
+import { model } from "@medusajs/framework/utils"
+
+const Post = model.define("post", {
+  id: model.id().primaryKey(),
+  title: model.text(),
+  author_id: model.text(),
+})
+
+export default Post
+```
+
+Even if you have an `Author` data model, it's not possible to retrieve the post's author using the `author`:
+
+```ts
+// Don't do this
+const post = await postService.retrievePost("post_123", {
+  relations: ["author"],
+})
+```
+
+This will throw the `ValidationError` because the `Post` data model doesn't have a relationship property with the `Author` data model.
+
+Instead, add the author as a relationship property to the `Post` data model:
+
+```ts
+import { model } from "@medusajs/framework/utils"
+import Author from "./author"
+
+const Post = model.define("post", {
+  id: model.id().primaryKey(),
+  title: model.text(),
+  author: model.belongsTo(() => Author, {
+    mappedBy: "posts",
+  }),
+})
+
+export default Post
+```
+
+Now you can retrieve the post's author using the `author`:
+
+```ts
+// You can do this now
+const post = await postService.retrievePost("post_123", {
+  relations: ["author"],
+})
+```
+
+---
+
+## Additional Resources
+
+- [Data Model Relationships](!docs!/learn/fundamentals/data-models/relationships)
+- [Module Links](!docs!/learn/fundamentals/module-links)
+- [Query](!docs!/learn/fundamentals/module-links/query)

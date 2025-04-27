@@ -200,6 +200,7 @@ const customOptions: Record<string, Partial<TypeDocOptions>> = {
     entryPointPath: "packages/core/workflows-sdk/src/utils/composer/index.ts",
     tsConfigName: "workflows.json",
     name: "workflows",
+    enableInternalResolve: true,
   }),
 }
 

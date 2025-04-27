@@ -48,4 +48,24 @@ export default class FileProviderService {
   ): Promise<string> {
     return this.fileProvider_.getPresignedDownloadUrl(fileData)
   }
+
+  getPresignedUploadUrl(
+    fileData: FileTypes.ProviderGetPresignedUploadUrlDTO
+  ): Promise<FileTypes.ProviderFileResultDTO> {
+    if (!this.fileProvider_.getPresignedUploadUrl) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "Provider does not support presigned upload URLs"
+      )
+    }
+
+    if (!fileData.filename) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "File name is required to get a presigned upload URL"
+      )
+    }
+
+    return this.fileProvider_.getPresignedUploadUrl(fileData)
+  }
 }

@@ -31,7 +31,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     return notFound()
   }
 
-  const filePath = path.join(path.resolve("..", "..", ".."), filePathFromMap)
+  const filePath = path.join(process.cwd(), "..", "..", "..", filePathFromMap)
 
   if (!existsSync(filePath)) {
     return notFound()
@@ -74,6 +74,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     headers: {
       "Content-Type": "text/markdown",
     },
+    status: 200,
   })
 }
 

@@ -31,7 +31,7 @@ export const metadata = {
 
 In this guide, you'll learn how to integrate Medusa with Resend.
 
-When you install a Medusa application, you get a fully-fledged commerce platform with a framework for customization. Medusa's architecture supports integrating third-party services, such as an email service, that allow you to build your unique requirements around core commerce flows.
+When you install a Medusa application, you get a fully-fledged commerce platform with a Framework for customization. Medusa's architecture supports integrating third-party services, such as an email service, that allow you to build your unique requirements around core commerce flows.
 
 [Resend](https://resend.com/docs/introduction) is an email service with an intuitive developer experience to send emails from any application type, including Node.js servers. By integrating Resend with Medusa, you can build flows to send an email when a commerce operation is performed, such as when an order is placed.
 
@@ -248,7 +248,7 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
 
 A module's service accepts two parameters:
 
-1. Dependencies resolved from the [Module's container](!docs!/learn/fundamentals/modules/container), which is the module's local registry that the Medusa application adds framework tools to. In this service, you resolve the [Logger utility](!docs!/learn/debugging-and-testing/logging) from the module's container.
+1. Dependencies resolved from the [Module's container](!docs!/learn/fundamentals/modules/container), which is the module's local registry that the Medusa application adds Framework tools to. In this service, you resolve the [Logger utility](!docs!/learn/debugging-and-testing/logging) from the module's container.
 2. The module's options that are passed to the module in Medusa's configuration as you'll see in a later section.
 
 Using the API key passed in the module's options, you initialize the Resend client. You also set the `options` and `logger` properties.
@@ -364,9 +364,9 @@ export const serviceHighlights3 = [
   ["25", "from", "The email address to send the email from."],
   ["26", "to", "The email address to send the email to"],
   ["27", "getTemplateSubject", "Get the email subject for the template type."],
-  ["32", "html", "Set the template as an HTML template if its type is `string`."],
-  ["34", "react", "Set the template as a React template."],
-  ["38", "send", "Send the email using the Resend client."]
+  ["34", "html", "Set the template as an HTML template if its type is `string`."],
+  ["39", "react", "Set the template as a React template."],
+  ["43", "send", "Send the email using the Resend client."]
 ]
 
 ```ts title="src/modules/resend/service.ts" highlights={serviceHighlights3}
@@ -393,24 +393,33 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
       return {}
     }
 
-    const emailOptions: CreateEmailOptions = {
+    const commonOptions = {
       from: this.options.from,
       to: [notification.to],
       subject: this.getTemplateSubject(notification.template as Templates),
-      html: "",
     }
 
+    let emailOptions: CreateEmailOptions
     if (typeof template === "string") {
-      emailOptions.html = template
+      emailOptions = {
+        ...commonOptions,
+        html: template,
+      }
     } else {
-      emailOptions.react = template(notification.data)
-      delete emailOptions.html
+      emailOptions = {
+        ...commonOptions,
+        react: template(notification.data),
+      }
     }
 
     const { data, error } = await this.resendClient.emails.send(emailOptions)
 
-    if (error) {
-      this.logger.error(`Failed to send email`, error)
+    if (error || !data) {
+      if (error) {
+        this.logger.error("Failed to send email", error)
+      } else {
+        this.logger.error("Failed to send email: unknown error")
+      }
       return {}
     }
 
@@ -425,7 +434,9 @@ The `send` method receives the notification details object as a parameter. Some 
 - `template`: The template type of the notification.
 - `data`: The data useful for the email type. For example, when sending an order-confirmation email, `data` would hold the order's details.
 
-In the method, you retrieve the template and subject of the email using the methods you defined earlier. Then, you put together the data to pass to Resend, such as the email address to send the notification to and the email address to send from. Also, if the email's template is a string, it's passed as an HTML template. Otherwise, it's passed as a React template.
+In the method, you retrieve the template and subject of the email using the methods you defined earlier. Then, you put together the data to pass to Resend, such as the email address to send the notification to and the email address to send from.
+
+Also, if the email's template is a string, it's passed as an HTML template. Otherwise, it's passed as a React template.
 
 Finally, you use the `emails.send` method of the Resend client to send the email. If an error occurs you log it in the terminal. Otherwise, you return the ID of the send email as received from Resend. Medusa uses this ID when creating the notification in its database.
 
@@ -526,19 +537,42 @@ In this step, you'll add a React template for order confirmation emails. You'll 
 Create the directory `src/modules/resend/emails` that will hold the email templates. Then, to add the template for order confirmation, create the file `src/modules/resend/emails/order-placed.tsx` with the following content:
 
 export const templateHighlights = [
-  ["8", "OrderPlacedEmailComponent", "The template React component for order confirmation emails."],
-  ["63", "orderPlacedEmail", "A function that returns the JSX `OrderPlacedEmailComponent`."]
+  ["29", "OrderPlacedEmailComponent", "The template React component for order confirmation emails."],
+  ["193", "orderPlacedEmail", "A function that returns the JSX `OrderPlacedEmailComponent`."]
 ]
 
-```tsx title="src/modules/resend/emails/order-placed.tsx" highlights={templateHighlights}
-import { Text, Column, Container, Heading, Html, Img, Row, Section } from "@react-email/components"
-import { BigNumberValue, OrderDTO } from "@medusajs/framework/types"
+```tsx title="src/modules/resend/emails/order-placed.tsx" highlights={templateHighlights} collapsibleLines="1-17" expandMoreLabel="Show Imports"
+import { 
+  Text, 
+  Column, 
+  Container, 
+  Heading, 
+  Html, 
+  Img, 
+  Row, 
+  Section, 
+  Tailwind, 
+  Head, 
+  Preview, 
+  Body, 
+  Link, 
+} from "@react-email/components"
+import { BigNumberValue, CustomerDTO, OrderDTO } from "@medusajs/framework/types"
 
 type OrderPlacedEmailProps = {
-  order: OrderDTO
+  order: OrderDTO & {
+    customer: CustomerDTO
+  }
+  email_banner?: {
+    body: string
+    title: string
+    url: string
+  }
 }
 
-function OrderPlacedEmailComponent({ order }: OrderPlacedEmailProps) {
+function OrderPlacedEmailComponent({ order, email_banner }: OrderPlacedEmailProps) {
+  const shouldDisplayBanner = email_banner && "title" in email_banner
+
   const formatter = new Intl.NumberFormat([], {
     style: "currency",
     currencyDisplay: "narrowSymbol",
@@ -558,38 +592,145 @@ function OrderPlacedEmailComponent({ order }: OrderPlacedEmailProps) {
   }
 
   return (
-    <Html>
-      <Heading>Thank you for your order</Heading>
-      {order.email}'s Items
-      <Container>
-        {order.items.map((item) => {
-          return (
-            <Section
-              key={item.id}
-              style={{ paddingTop: "40px", paddingBottom: "40px" }}
+    <Tailwind>
+      <Html className="font-sans bg-gray-100">
+        <Head />
+        <Preview>Thank you for your order from Medusa</Preview>
+        <Body className="bg-white my-10 mx-auto w-full max-w-2xl">
+          {/* Header */}
+          <Section className="bg-[#27272a] text-white px-6 py-4">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.2447 3.92183L12.1688 1.57686C10.8352 0.807712 9.20112 0.807712 7.86753 1.57686L3.77285 3.92183C2.45804 4.69098 1.63159 6.11673 1.63159 7.63627V12.345C1.63159 13.8833 2.45804 15.2903 3.77285 16.0594L7.84875 18.4231C9.18234 19.1923 10.8165 19.1923 12.15 18.4231L16.2259 16.0594C17.5595 15.2903 18.3672 13.8833 18.3672 12.345V7.63627C18.4048 6.11673 17.5783 4.69098 16.2447 3.92183ZM10.0088 14.1834C7.69849 14.1834 5.82019 12.3075 5.82019 10C5.82019 7.69255 7.69849 5.81657 10.0088 5.81657C12.3191 5.81657 14.2162 7.69255 14.2162 10C14.2162 12.3075 12.3379 14.1834 10.0088 14.1834Z" fill="currentColor"></path></svg>
+          </Section>
+
+          {/* Thank You Message */}
+          <Container className="p-6">
+            <Heading className="text-2xl font-bold text-center text-gray-800">
+              Thank you for your order, {order.customer?.first_name || order.shipping_address?.first_name}
+            </Heading>
+            <Text className="text-center text-gray-600 mt-2">
+              We're processing your order and will notify you when it ships.
+            </Text>
+          </Container>
+
+          {/* Promotional Banner */}
+          {shouldDisplayBanner && (
+            <Container
+              className="mb-4 rounded-lg p-7"
+              style={{
+                background: "linear-gradient(to right, #3b82f6, #4f46e5)",
+              }}
             >
-              <Row>
-                <Column>
-                  <Img
-                    src={item.thumbnail}
-                    alt={item.product_title}
-                    style={{ float: "left" }}
-                    width="260px"
-                  />
+              <Section>
+                <Row>
+                  <Column align="left">
+                    <Heading className="text-white text-xl font-semibold">
+                      {email_banner.title}
+                    </Heading>
+                    <Text className="text-white mt-2">{email_banner.body}</Text>
+                  </Column>
+                  <Column align="right">
+                    <Link href={email_banner.url} className="font-semibold px-2 text-white underline">
+                      Shop Now
+                    </Link>
+                  </Column>
+                </Row>
+              </Section>
+            </Container>
+          )}
+
+          {/* Order Items */}
+          <Container className="px-6">
+            <Heading className="text-xl font-semibold text-gray-800 mb-4">
+              Your Items
+            </Heading>
+            <Row>
+              <Column>
+                <Text className="text-sm m-0 my-2 text-gray-500">Order ID: #{order.display_id}</Text>
+              </Column>
+            </Row>
+            {order.items?.map((item) => (
+              <Section key={item.id} className="border-b border-gray-200 py-4">
+                <Row>
+                  <Column className="w-1/3">
+                    <Img
+                      src={item.thumbnail ?? ""}
+                      alt={item.product_title ?? ""}
+                      className="rounded-lg"
+                      width="100%"
+                    />
+                  </Column>
+                  <Column className="w-2/3 pl-4">
+                    <Text className="text-lg font-semibold text-gray-800">
+                      {item.product_title}
+                    </Text>
+                    <Text className="text-gray-600">{item.variant_title}</Text>
+                    <Text className="text-gray-800 mt-2 font-bold">
+                      {formatPrice(item.total)}
+                    </Text>
+                  </Column>
+                </Row>
+              </Section>
+            ))}
+
+            {/* Order Summary */}
+            <Section className="mt-8">
+              <Heading className="text-xl font-semibold text-gray-800 mb-4">
+                Order Summary
+              </Heading>
+              <Row className="text-gray-600">
+                <Column className="w-1/2">
+                  <Text className="m-0">Subtotal</Text>
                 </Column>
-                <Column style={{ verticalAlign: "top", paddingLeft: "12px" }}>
-                  <Text style={{ fontWeight: "500" }}>
-                    {item.product_title}
+                <Column className="w-1/2 text-right">
+                  <Text className="m-0">
+                    {formatPrice(order.item_total)}
                   </Text>
-                  <Text>{item.variant_title}</Text>
-                  <Text>{formatPrice(item.total)}</Text>
+                </Column>
+              </Row>
+              {order.shipping_methods?.map((method) => (
+                <Row className="text-gray-600" key={method.id}>
+                  <Column className="w-1/2">
+                    <Text className="m-0">{method.name}</Text>
+                  </Column>
+                  <Column className="w-1/2 text-right">
+                    <Text className="m-0">{formatPrice(method.total)}</Text>
+                  </Column>
+                </Row>
+              ))}
+              <Row className="text-gray-600">
+                <Column className="w-1/2">
+                  <Text className="m-0">Tax</Text>
+                </Column>
+                <Column className="w-1/2 text-right">
+                  <Text className="m-0">{formatPrice(order.tax_total || 0)}</Text>
+                </Column>
+              </Row>
+              <Row className="border-t border-gray-200 mt-4 text-gray-800 font-bold">
+                <Column className="w-1/2">
+                  <Text>Total</Text>
+                </Column>
+                <Column className="w-1/2 text-right">
+                  <Text>{formatPrice(order.total)}</Text>
                 </Column>
               </Row>
             </Section>
-          )
-        })}
-      </Container>
-    </Html>
+          </Container>
+
+          {/* Footer */}
+          <Section className="bg-gray-50 p-6 mt-10">
+            <Text className="text-center text-gray-500 text-sm">
+              If you have any questions, reply to this email or contact our support team at support@medusajs.com.
+            </Text>
+            <Text className="text-center text-gray-500 text-sm">
+              Order Token: {order.id}
+            </Text>
+            <Text className="text-center text-gray-400 text-xs mt-4">
+              © {new Date().getFullYear()} Medusajs, Inc. All rights reserved.
+            </Text>
+          </Section>
+        </Body>
+      </Html>
+    </Tailwind >
   )
 }
 
@@ -614,6 +755,371 @@ const templates: {[key in Templates]?: (props: unknown) => React.ReactNode} = {
 ```
 
 The `ResendNotificationProviderService` will now use the `OrderPlacedEmailComponent` as the template of order confirmation emails.
+
+### Test Email Out
+
+You'll later test out sending the email when an order is placed. However, you can also test out how the email looks like using [React Email's CLI tool](https://react.email/docs/cli).
+
+First, install the CLI tool in your Medusa application:
+
+```bash npm2yarn
+npm install -D react-email
+```
+
+Then, in `src/modules/resend/emails/order-placed.tsx`, add the following at the end of the file:
+
+```tsx title="src/modules/resend/emails/order-placed.tsx"
+const mockOrder = {
+  "order": {
+    "id": "order_01JSNXDH9BPJWWKVW03B9E9KW8",
+    "display_id": 1,
+    "email": "afsaf@gmail.com",
+    "currency_code": "eur",
+    "total": 20,
+    "subtotal": 20,
+    "discount_total": 0,
+    "shipping_total": 10,
+    "tax_total": 0,
+    "item_subtotal": 10,
+    "item_total": 10,
+    "item_tax_total": 0,
+    "customer_id": "cus_01JSNXD6VQC1YH56E4TGC81NWX",
+    "items": [
+      {
+        "id": "ordli_01JSNXDH9C47KZ43WQ3TBFXZA9",
+        "title": "L",
+        "subtitle": "Medusa Sweatshirt",
+        "thumbnail": "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatshirt-vintage-front.png",
+        "variant_id": "variant_01JSNXAQCZ5X81A3NRSVFJ3ZHQ",
+        "product_id": "prod_01JSNXAQBQ6MFV5VHKN420NXQW",
+        "product_title": "Medusa Sweatshirt",
+        "product_description": "Reimagine the feeling of a classic sweatshirt. With our cotton sweatshirt, everyday essentials no longer have to be ordinary.",
+        "product_subtitle": null,
+        "product_type": null,
+        "product_type_id": null,
+        "product_collection": null,
+        "product_handle": "sweatshirt",
+        "variant_sku": "SWEATSHIRT-L",
+        "variant_barcode": null,
+        "variant_title": "L",
+        "variant_option_values": null,
+        "requires_shipping": true,
+        "is_giftcard": false,
+        "is_discountable": true,
+        "is_tax_inclusive": false,
+        "is_custom_price": false,
+        "metadata": {},
+        "raw_compare_at_unit_price": null,
+        "raw_unit_price": {
+          "value": "10",
+          "precision": 20,
+        },
+        "created_at": new Date(),
+        "updated_at": new Date(),
+        "deleted_at": null,
+        "tax_lines": [],
+        "adjustments": [],
+        "compare_at_unit_price": null,
+        "unit_price": 10,
+        "quantity": 1,
+        "raw_quantity": {
+          "value": "1",
+          "precision": 20,
+        },
+        "detail": {
+          "id": "orditem_01JSNXDH9DK1XMESEZPADYFWKY",
+          "version": 1,
+          "metadata": null,
+          "order_id": "order_01JSNXDH9BPJWWKVW03B9E9KW8",
+          "raw_unit_price": null,
+          "raw_compare_at_unit_price": null,
+          "raw_quantity": {
+            "value": "1",
+            "precision": 20,
+          },
+          "raw_fulfilled_quantity": {
+            "value": "0",
+            "precision": 20,
+          },
+          "raw_delivered_quantity": {
+            "value": "0",
+            "precision": 20,
+          },
+          "raw_shipped_quantity": {
+            "value": "0",
+            "precision": 20,
+          },
+          "raw_return_requested_quantity": {
+            "value": "0",
+            "precision": 20,
+          },
+          "raw_return_received_quantity": {
+            "value": "0",
+            "precision": 20,
+          },
+          "raw_return_dismissed_quantity": {
+            "value": "0",
+            "precision": 20,
+          },
+          "raw_written_off_quantity": {
+            "value": "0",
+            "precision": 20,
+          },
+          "created_at": new Date(),
+          "updated_at": new Date(),
+          "deleted_at": null,
+          "item_id": "ordli_01JSNXDH9C47KZ43WQ3TBFXZA9",
+          "unit_price": null,
+          "compare_at_unit_price": null,
+          "quantity": 1,
+          "fulfilled_quantity": 0,
+          "delivered_quantity": 0,
+          "shipped_quantity": 0,
+          "return_requested_quantity": 0,
+          "return_received_quantity": 0,
+          "return_dismissed_quantity": 0,
+          "written_off_quantity": 0,
+        },
+        "subtotal": 10,
+        "total": 10,
+        "original_total": 10,
+        "discount_total": 0,
+        "discount_subtotal": 0,
+        "discount_tax_total": 0,
+        "tax_total": 0,
+        "original_tax_total": 0,
+        "refundable_total_per_unit": 10,
+        "refundable_total": 10,
+        "fulfilled_total": 0,
+        "shipped_total": 0,
+        "return_requested_total": 0,
+        "return_received_total": 0,
+        "return_dismissed_total": 0,
+        "write_off_total": 0,
+        "raw_subtotal": {
+          "value": "10",
+          "precision": 20,
+        },
+        "raw_total": {
+          "value": "10",
+          "precision": 20,
+        },
+        "raw_original_total": {
+          "value": "10",
+          "precision": 20,
+        },
+        "raw_discount_total": {
+          "value": "0",
+          "precision": 20,
+        },
+        "raw_discount_subtotal": {
+          "value": "0",
+          "precision": 20,
+        },
+        "raw_discount_tax_total": {
+          "value": "0",
+          "precision": 20,
+        },
+        "raw_tax_total": {
+          "value": "0",
+          "precision": 20,
+        },
+        "raw_original_tax_total": {
+          "value": "0",
+          "precision": 20,
+        },
+        "raw_refundable_total_per_unit": {
+          "value": "10",
+          "precision": 20,
+        },
+        "raw_refundable_total": {
+          "value": "10",
+          "precision": 20,
+        },
+        "raw_fulfilled_total": {
+          "value": "0",
+          "precision": 20,
+        },
+        "raw_shipped_total": {
+          "value": "0",
+          "precision": 20,
+        },
+        "raw_return_requested_total": {
+          "value": "0",
+          "precision": 20,
+        },
+        "raw_return_received_total": {
+          "value": "0",
+          "precision": 20,
+        },
+        "raw_return_dismissed_total": {
+          "value": "0",
+          "precision": 20,
+        },
+        "raw_write_off_total": {
+          "value": "0",
+          "precision": 20,
+        },
+      },
+    ],
+    "shipping_address": {
+      "id": "caaddr_01JSNXD6W0TGPH2JQD18K97B25",
+      "customer_id": null,
+      "company": "",
+      "first_name": "safasf",
+      "last_name": "asfaf",
+      "address_1": "asfasf",
+      "address_2": "",
+      "city": "asfasf",
+      "country_code": "dk",
+      "province": "",
+      "postal_code": "asfasf",
+      "phone": "",
+      "metadata": null,
+      "created_at": "2025-04-25T07:25:48.801Z",
+      "updated_at": "2025-04-25T07:25:48.801Z",
+      "deleted_at": null,
+    },
+    "billing_address": {
+      "id": "caaddr_01JSNXD6W0V7RNZH63CPG26K5W",
+      "customer_id": null,
+      "company": "",
+      "first_name": "safasf",
+      "last_name": "asfaf",
+      "address_1": "asfasf",
+      "address_2": "",
+      "city": "asfasf",
+      "country_code": "dk",
+      "province": "",
+      "postal_code": "asfasf",
+      "phone": "",
+      "metadata": null,
+      "created_at": "2025-04-25T07:25:48.801Z",
+      "updated_at": "2025-04-25T07:25:48.801Z",
+      "deleted_at": null,
+    },
+    "shipping_methods": [
+      {
+        "id": "ordsm_01JSNXDH9B9DDRQXJT5J5AE5V1",
+        "name": "Standard Shipping",
+        "description": null,
+        "is_tax_inclusive": false,
+        "is_custom_amount": false,
+        "shipping_option_id": "so_01JSNXAQA64APG6BNHGCMCTN6V",
+        "data": {},
+        "metadata": null,
+        "raw_amount": {
+          "value": "10",
+          "precision": 20,
+        },
+        "created_at": new Date(),
+        "updated_at": new Date(),
+        "deleted_at": null,
+        "tax_lines": [],
+        "adjustments": [],
+        "amount": 10,
+        "order_id": "order_01JSNXDH9BPJWWKVW03B9E9KW8",
+        "detail": {
+          "id": "ordspmv_01JSNXDH9B5RAF4FH3M1HH3TEA",
+          "version": 1,
+          "order_id": "order_01JSNXDH9BPJWWKVW03B9E9KW8",
+          "return_id": null,
+          "exchange_id": null,
+          "claim_id": null,
+          "created_at": new Date(),
+          "updated_at": new Date(),
+          "deleted_at": null,
+          "shipping_method_id": "ordsm_01JSNXDH9B9DDRQXJT5J5AE5V1",
+        },
+        "subtotal": 10,
+        "total": 10,
+        "original_total": 10,
+        "discount_total": 0,
+        "discount_subtotal": 0,
+        "discount_tax_total": 0,
+        "tax_total": 0,
+        "original_tax_total": 0,
+        "raw_subtotal": {
+          "value": "10",
+          "precision": 20,
+        },
+        "raw_total": {
+          "value": "10",
+          "precision": 20,
+        },
+        "raw_original_total": {
+          "value": "10",
+          "precision": 20,
+        },
+        "raw_discount_total": {
+          "value": "0",
+          "precision": 20,
+        },
+        "raw_discount_subtotal": {
+          "value": "0",
+          "precision": 20,
+        },
+        "raw_discount_tax_total": {
+          "value": "0",
+          "precision": 20,
+        },
+        "raw_tax_total": {
+          "value": "0",
+          "precision": 20,
+        },
+        "raw_original_tax_total": {
+          "value": "0",
+          "precision": 20,
+        },
+      },
+    ],
+    "customer": {
+      "id": "cus_01JSNXD6VQC1YH56E4TGC81NWX",
+      "company_name": null,
+      "first_name": null,
+      "last_name": null,
+      "email": "afsaf@gmail.com",
+      "phone": null,
+      "has_account": false,
+      "metadata": null,
+      "created_by": null,
+      "created_at": "2025-04-25T07:25:48.791Z",
+      "updated_at": "2025-04-25T07:25:48.791Z",
+      "deleted_at": null,
+    },
+  },
+}
+// @ts-ignore
+export default () => <OrderPlacedEmailComponent {...mockOrder} />
+```
+
+You create a mock order object that contains the order's details. Then, you export a default function that returns the `OrderPlacedEmailComponent` passing it the mock order.
+
+The React Email CLI tool will use the function to render the email template.
+
+Finally, add the following script to `package.json`:
+
+```json
+{
+  "scripts": {
+    "dev:email": "email dev --dir ./src/modules/resend/emails"
+  }
+}
+```
+
+This script will run the React Email CLI tool, passing it the directory where the email templates are located.
+
+You can now test out the email template by running the following command:
+
+```bash npm2yarn
+npm run dev:email
+```
+
+This will start a development server at `http://localhost:3000`. If you open this URL, you can view your email templates in the browser.
+
+You can make changes to the email template, and the server will automatically reload the changes.
+
+![The email template rendered in the browser](https://res.cloudinary.com/dza7lstvk/image/upload/v1745568201/Medusa%20Resources/Screenshot_2025-04-25_at_10.41.26_AM_u86abc.png)
 
 ---
 
@@ -669,11 +1175,11 @@ You define the `sendNotificationStep` using the `createStep` function that accep
 - A string indicating the step's unique name.
 - The step's function definition as a second parameter. It accepts the step's input as a first parameter, and an object of options as a second.
 
-The `container` property in the second parameter is an instance of the [Medusa container](!docs!/learn/fundamentals/medusa-container), which is a registry of framework and commerce tools, such a module's service, that you can resolve to utilize their functionalities.
+The `container` property in the second parameter is an instance of the [Medusa container](!docs!/learn/fundamentals/medusa-container), which is a registry of Framework and commerce tools, such as a module's service, that you can resolve to utilize their functionalities.
 
 <Note title="Tip">
 
-The Medusa container is accessible by all customizations, such as workflows and subscribers, except for modules. Each module has its own container with framework tools like the Logger utility.
+The Medusa container is accessible by all customizations, such as workflows and subscribers, except for modules. Each module has its own container with Framework tools like the Logger utility.
 
 </Note>
 
@@ -690,7 +1196,7 @@ Create the file `src/workflows/send-order-confirmation.ts` with the following co
 export const workflowHighlights = [
   ["12", "sendOrderConfirmationWorkflow", "Create the workflow that sends an order confirmation email."],
   ["16", "useQueryGraphStep", "Retrieve the order's details."],
-  ["30", "sendNotificationStep", "Send the order confirmation email."]
+  ["44", "sendNotificationStep", "Send the order confirmation email."]
 ]
 
 ```ts title="src/workflows/send-order-confirmation.ts" highlights={workflowHighlights}
@@ -713,10 +1219,23 @@ export const sendOrderConfirmationWorkflow = createWorkflow(
       entity: "order",
       fields: [
         "id",
+        "display_id",
         "email",
         "currency_code",
         "total",
         "items.*",
+        "shipping_address.*",
+        "billing_address.*",
+        "shipping_methods.*",
+        "customer.*",
+        "total",
+        "subtotal",
+        "discount_total",
+        "shipping_total",
+        "tax_total",
+        "item_subtotal",
+        "item_total",
+        "item_tax_total",
       ],
       filters: {
         id,
@@ -812,7 +1331,7 @@ This subscriber now runs whenever an order is placed. You'll see this in action 
 
 ## Test it Out: Place an Order
 
-To test out the Resend integration, you'll place an order using the [Next.js storefront](!docs!/learn/storefront-development/nextjs-starter) that you installed as part of installing Medusa.
+To test out the Resend integration, you'll place an order using the [Next.js storefront](../../../nextjs-starter/page.mdx) that you installed as part of installing Medusa.
 
 Start your Medusa application first:
 

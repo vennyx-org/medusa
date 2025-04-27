@@ -31,7 +31,7 @@ export const metadata = {
 
 In this guide, you'll learn how to integrate Medusa with Sanity.
 
-When you install a Medusa application, you get a fully-fledged commerce platform with support for customizations. While Medusa allows you to manage basic content, such as product description and images, you might need rich content-management features, such as localized content. Medusa's framework supports you in integrating a CMS with these features.
+When you install a Medusa application, you get a fully-fledged commerce platform with support for customizations. While Medusa allows you to manage basic content, such as product description and images, you might need rich content-management features, such as localized content. The Medusa Framework supports you in integrating a CMS with these features.
 
 Sanity is a CMS that simplifies managing content from third-party sources into a single interface. By integrating it with Medusa, you can manage your storefront and commerce-related content, such as product details, from a single interface. You also benefit from advanced content-management features, such as live-preview editing.
 
@@ -1684,9 +1684,9 @@ Earlier in this guide when introducing workflows, you learned that you can track
 
 ### Retrieve Sync Executions API Route
 
-Medusa has a [workflow engine](../../../architectural-modules/workflow-engine/page.mdx) that manages workflow executions, roll-backs, and other functionalities under the hood.
+Medusa has a [workflow engine](../../../infrastructure-modules/workflow-engine/page.mdx) that manages workflow executions, roll-backs, and other functionalities under the hood.
 
-The workflow engine is an [architectural module](!docs!/learn/fundamentals/modules/architectural-modules), which can be replaced with a [Redis Workflow Engine](../../../architectural-modules/workflow-engine/redis/page.mdx), or a custom one of your choice, allowing you to take ownership of your application's tooling.
+The workflow engine is an [Infrastructure Module](!docs!/learn/fundamentals/modules/infrastructure-modules), which can be replaced with a [Redis Workflow Engine](../../../infrastructure-modules/workflow-engine/redis/page.mdx), or a custom one of your choice, allowing you to take ownership of your application's tooling.
 
 In your customizations, you can resolve the workflow engine from the container and manage executions of a workflow, such as retrieve them and check their progress.
 

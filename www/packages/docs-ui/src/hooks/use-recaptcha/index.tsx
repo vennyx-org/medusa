@@ -121,6 +121,17 @@ export const useRecaptcha = ({ siteKey }: UseRecaptchaProps) => {
     }
   }, [isScriptLoaded])
 
+  useEffect(() => {
+    if (!isExecuteReady) {
+      return
+    }
+
+    const recaptchaElm = document.querySelector(".grecaptcha-badge")
+    if (recaptchaElm?.parentElement) {
+      recaptchaElm.parentElement.classList.add("absolute")
+    }
+  }, [isExecuteReady])
+
   const execute = useCallback(
     async (actionName: RecaptchaAction): Promise<string> => {
       if (!isExecuteReady) {

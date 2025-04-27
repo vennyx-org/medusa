@@ -64,8 +64,8 @@ const redirects = async () => {
       permanent: true,
     },
     {
-      source: "/learn/advanced-development/architecture/architectural-modules",
-      destination: "/learn/fundamentals/modules/architectural-modules",
+      source: "/learn/advanced-development/architecture/infrastructure-modules",
+      destination: "/learn/fundamentals/modules/infrastructure-modules",
       permanent: true,
     },
     {
@@ -156,6 +156,217 @@ const redirects = async () => {
     {
       source: "/starters/nextjs-medusa-starter",
       destination: "/resources/nextjs-starter",
+      permanent: true,
+    },
+    {
+      source: "/learn/fundamentals/modules/infrastructure-modules",
+      destination: "/learn/fundamentals/modules/infrastructure-modules",
+      permanent: true,
+    },
+    {
+      source: "/v1/admin/quickstart",
+      destination: "/learn/fundamentals/admin",
+      permanent: true,
+    },
+    {
+      source: "/v1/development/entities/migrations/overview",
+      destination: "/learn/fundamentals/data-models/write-migration",
+      permanent: true,
+    },
+    {
+      source: "/v1/plugins/payment/stripe",
+      destination:
+        "/resources/commerce-modules/payment/payment-provider/stripe",
+      permanent: true,
+    },
+    {
+      source: "/v1/plugins/notifications/sendgrid",
+      destination: "/resources/infrastructure-modules/notification/sendgrid",
+      permanent: true,
+    },
+    {
+      source: "/v1/plugins/file-service/local",
+      destination: "/resources/infrastructure-modules/file/local",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/users/admin/manage-users",
+      destination: "/resources/commerce-modules/user/user-creation-flows",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/products/admin/import-products",
+      destination: "/user-guide/products/import",
+      permanent: true,
+    },
+    {
+      source: "/v1/deployments/server/general-guide",
+      destination: "/learn/deployment/general",
+      permanent: true,
+    },
+    {
+      source: "/v1/user-guide/products/manage",
+      destination: "/user-guide/products/edit",
+      permanent: true,
+    },
+    {
+      source: "/v1/plugins/payment",
+      destination: "/resources/integrations",
+      permanent: true,
+    },
+    {
+      source: "/v1/development/cache/modules/redis",
+      destination: "/resources/infrastructure-modules/cache/redis",
+      permanent: true,
+    },
+    {
+      source: "/v1/development/plugins/create",
+      destination: "/learn/fundamentals/plugins/create",
+      permanent: true,
+    },
+    {
+      source: "/v1/cli/reference",
+      destination: "/resources/medusa-cli",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/discounts",
+      destination: "/resources/commerce-modules/promotion",
+      permanent: true,
+    },
+    {
+      source: "/v1/deployments/server/deploying-on-digital-ocean",
+      destination: "/resources/deployment",
+      permanent: true,
+    },
+    {
+      source: "/v1/upgrade-guides",
+      destination: "/learn/update",
+      permanent: true,
+    },
+    {
+      source: "/v1/starters/nextjs-medusa-starter",
+      destination: "/resources/nextjs-starter",
+      permanent: true,
+    },
+    {
+      source: "/v1/development/entities/extend-entity",
+      destination: "/learn/customization/extend-features",
+      permanent: true,
+    },
+    {
+      source: "/v1/development/fundamentals/architecture-overview",
+      destination: "/learn/introduction/architecture",
+      permanent: true,
+    },
+    {
+      source: "/v1/development/fundamentals/local-development",
+      destination: "/learn/installation",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/products/admin/manage-products",
+      destination: "/user-guides/products/edit",
+      permanent: true,
+    },
+    {
+      source: "/v1/plugins/overview",
+      destination: "/learn/integrations",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/carts-and-checkout/shipping",
+      destination: "/resources/commerce-modules/fulfillment",
+      permanent: true,
+    },
+    {
+      source: "/v1/development/events/events-list",
+      destination: "/resources/events-reference",
+      permanent: true,
+    },
+    {
+      source: "/v1/development/feature-flags/overview",
+      destination: "/learn/configurations/medusa-config",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/orders/overview",
+      destination: "/resources/commerce-modules/order",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/orders",
+      destination: "/resources/commerce-modules/order",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/customers/overview",
+      destination: "/resources/commerce-modules/customer",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/sales-channels",
+      destination: "/resources/commerce-modules/sales-channel",
+      permanent: true,
+    },
+    {
+      source: "/v1/plugins/search/algolia",
+      destination: "/resources/integrations/guides/algolia",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/customers/admin/manage-customers",
+      destination: "/user-guide/customers/manage",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/users/admin/manage-profile",
+      destination: "/user-guides/settings/profile",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/customers/customer-groups",
+      destination: "/commerce-modules/customer",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/taxes/admin/manage-tax-rates",
+      destination: "/user-guide/settings/tax-regions",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/users/admin/manage-invites",
+      destination: "/user-guide/settings/users/invites",
+      permanent: true,
+    },
+    {
+      source: "/v1/user-guide/orders/fulfillments",
+      destination: "/user-guide/orders/fulfillments",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/multiwarehouse/admin/manage-inventory-items",
+      destination: "/user-guide/inventory/inventory",
+      permanent: true,
+    },
+    {
+      source: "/v1/user-guide/settings/publishable-api-keys",
+      destination: "/user-guide/settings/developer/publishable-api-keys",
+      permanent: true,
+    },
+    {
+      source: "/v1/modules/multiwarehouse/admin/manage-reservations",
+      destination: "/user-guide/inventory/reservations",
+      permanent: true,
+    },
+    {
+      source: "/v1/user-guide/multiwarehouse/locations",
+      destination: "/user-guide/settings/locations-and-shipping/locations",
+      permanent: true,
+    },
+    {
+      source: "/learn/fundamentals/workflows/access-workflow-errors",
+      destination: "/learn/fundamentals/workflows/errors",
       permanent: true,
     },
   ]

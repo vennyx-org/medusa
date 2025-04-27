@@ -10,7 +10,7 @@ export type DeleteFilesStepInput = string[]
 export const deleteFilesStepId = "delete-files"
 /**
  * This step deletes one or more files using the installed
- * [File Module Provider](https://docs.medusajs.com/resources/architectural-modules/file). The files
+ * [File Module Provider](https://docs.medusajs.com/resources/infrastructure-modules/file). The files
  * will be removed from the database and the storage.
  * 
  * @example

@@ -6,7 +6,7 @@ export const metadata = {
 
 # {metadata.title}
 
-This document showcases the module links defined between the Inventory Module and other commerce modules.
+This document showcases the module links defined between the Inventory Module and other Commerce Modules.
 
 ## Summary
 
@@ -44,7 +44,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [InventoryItem](/references/inventory/models/InventoryItem)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - many-to-many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#product-module)
@@ -58,7 +58,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [StockLocation](/references/stock-location/models/StockLocation) in [Stock Location Module](../../stock-location/page.mdx)
       </Table.Cell>
       <Table.Cell>
-        Read-only
+        Read-only - has many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#stock-location-module)
@@ -98,7 +98,7 @@ const { data: inventoryItems } = await query.graph({
   ],
 })
 
-// inventoryItems.variants
+// inventoryItems[0].variants
 ```
 
   </CodeTab>
@@ -116,7 +116,7 @@ const { data: inventoryItems } = useQueryGraphStep({
   ],
 })
 
-// inventoryItems.variants
+// inventoryItems[0].variants
 ```
 
   </CodeTab>
@@ -187,7 +187,7 @@ const { data: inventoryLevels } = await query.graph({
   ],
 })
 
-// inventoryLevels.stock_locations
+// inventoryLevels[0].stock_locations
 ```
 
   </CodeTab>
@@ -205,7 +205,7 @@ const { data: inventoryLevels } = useQueryGraphStep({
   ],
 })
 
-// inventoryLevels.stock_locations
+// inventoryLevels[0].stock_locations
 ```
 
   </CodeTab>

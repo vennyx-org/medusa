@@ -237,11 +237,21 @@ export const generatedSidebars = [
             "loaded": true,
             "isPathHref": true,
             "type": "link",
+            "path": "/learn/fundamentals/framework",
+            "title": "Overview",
+            "children": [],
+            "chapterTitle": "3.1. Overview",
+            "number": "3.1."
+          },
+          {
+            "loaded": true,
+            "isPathHref": true,
+            "type": "link",
             "path": "/learn/fundamentals/medusa-container",
             "title": "Medusa Container",
             "children": [],
-            "chapterTitle": "3.1. Medusa Container",
-            "number": "3.1."
+            "chapterTitle": "3.2. Medusa Container",
+            "number": "3.2."
           },
           {
             "loaded": true,
@@ -257,8 +267,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/modules/modules-directory-structure",
                 "title": "Directory Structure",
                 "children": [],
-                "chapterTitle": "3.2.1. Directory Structure",
-                "number": "3.2.1."
+                "chapterTitle": "3.3.1. Directory Structure",
+                "number": "3.3.1."
               },
               {
                 "loaded": true,
@@ -267,8 +277,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/modules/loaders",
                 "title": "Loaders",
                 "children": [],
-                "chapterTitle": "3.2.2. Loaders",
-                "number": "3.2.2."
+                "chapterTitle": "3.3.2. Loaders",
+                "number": "3.3.2."
               },
               {
                 "loaded": true,
@@ -277,8 +287,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/modules/isolation",
                 "title": "Module Isolation",
                 "children": [],
-                "chapterTitle": "3.2.3. Module Isolation",
-                "number": "3.2.3."
+                "chapterTitle": "3.3.3. Module Isolation",
+                "number": "3.3.3."
               },
               {
                 "loaded": true,
@@ -287,8 +297,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/modules/container",
                 "title": "Module Container",
                 "children": [],
-                "chapterTitle": "3.2.4. Module Container",
-                "number": "3.2.4."
+                "chapterTitle": "3.3.4. Module Container",
+                "number": "3.3.4."
               },
               {
                 "loaded": true,
@@ -297,8 +307,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/modules/options",
                 "title": "Module Options",
                 "children": [],
-                "chapterTitle": "3.2.5. Module Options",
-                "number": "3.2.5."
+                "chapterTitle": "3.3.5. Module Options",
+                "number": "3.3.5."
               },
               {
                 "loaded": true,
@@ -307,8 +317,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/modules/service-factory",
                 "title": "Service Factory",
                 "children": [],
-                "chapterTitle": "3.2.6. Service Factory",
-                "number": "3.2.6."
+                "chapterTitle": "3.3.6. Service Factory",
+                "number": "3.3.6."
               },
               {
                 "loaded": true,
@@ -317,8 +327,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/modules/service-constraints",
                 "title": "Service Constraints",
                 "children": [],
-                "chapterTitle": "3.2.7. Service Constraints",
-                "number": "3.2.7."
+                "chapterTitle": "3.3.7. Service Constraints",
+                "number": "3.3.7."
               },
               {
                 "loaded": true,
@@ -327,8 +337,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/modules/db-operations",
                 "title": "Database Operations",
                 "children": [],
-                "chapterTitle": "3.2.8. Database Operations",
-                "number": "3.2.8."
+                "chapterTitle": "3.3.8. Database Operations",
+                "number": "3.3.8."
               },
               {
                 "loaded": true,
@@ -337,8 +347,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/modules/multiple-services",
                 "title": "Multiple Services",
                 "children": [],
-                "chapterTitle": "3.2.9. Multiple Services",
-                "number": "3.2.9."
+                "chapterTitle": "3.3.9. Multiple Services",
+                "number": "3.3.9."
               },
               {
                 "loaded": true,
@@ -347,22 +357,22 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/modules/commerce-modules",
                 "title": "Commerce Modules",
                 "children": [],
-                "chapterTitle": "3.2.10. Commerce Modules",
-                "number": "3.2.10."
+                "chapterTitle": "3.3.10. Commerce Modules",
+                "number": "3.3.10."
               },
               {
                 "loaded": true,
                 "isPathHref": true,
                 "type": "link",
-                "path": "/learn/fundamentals/modules/architectural-modules",
-                "title": "Architectural Modules",
+                "path": "/learn/fundamentals/modules/infrastructure-modules",
+                "title": "Infrastructure Modules",
                 "children": [],
-                "chapterTitle": "3.2.11. Architectural Modules",
-                "number": "3.2.11."
+                "chapterTitle": "3.3.11. Infrastructure Modules",
+                "number": "3.3.11."
               }
             ],
-            "chapterTitle": "3.2. Modules",
-            "number": "3.2."
+            "chapterTitle": "3.3. Modules",
+            "number": "3.3."
           },
           {
             "loaded": true,
@@ -378,8 +388,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/module-links/directions",
                 "title": "Module Link Direction",
                 "children": [],
-                "chapterTitle": "3.3.1. Module Link Direction",
-                "number": "3.3.1."
+                "chapterTitle": "3.4.1. Module Link Direction",
+                "number": "3.4.1."
               },
               {
                 "loaded": true,
@@ -388,8 +398,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/module-links/link",
                 "title": "Link",
                 "children": [],
-                "chapterTitle": "3.3.2. Link",
-                "number": "3.3.2."
+                "chapterTitle": "3.4.2. Link",
+                "number": "3.4.2."
               },
               {
                 "loaded": true,
@@ -398,8 +408,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/module-links/query",
                 "title": "Query",
                 "children": [],
-                "chapterTitle": "3.3.3. Query",
-                "number": "3.3.3."
+                "chapterTitle": "3.4.3. Query",
+                "number": "3.4.3."
               },
               {
                 "loaded": true,
@@ -408,8 +418,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/module-links/custom-columns",
                 "title": "Add Custom Columns",
                 "children": [],
-                "chapterTitle": "3.3.4. Add Custom Columns",
-                "number": "3.3.4."
+                "chapterTitle": "3.4.4. Add Custom Columns",
+                "number": "3.4.4."
               },
               {
                 "loaded": true,
@@ -418,8 +428,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/module-links/read-only",
                 "title": "Read-Only Links",
                 "children": [],
-                "chapterTitle": "3.3.5. Read-Only Links",
-                "number": "3.3.5."
+                "chapterTitle": "3.4.5. Read-Only Links",
+                "number": "3.4.5."
               },
               {
                 "loaded": true,
@@ -428,12 +438,12 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/module-links/query-context",
                 "title": "Query Context",
                 "children": [],
-                "chapterTitle": "3.3.6. Query Context",
-                "number": "3.3.6."
+                "chapterTitle": "3.4.6. Query Context",
+                "number": "3.4.6."
               }
             ],
-            "chapterTitle": "3.3. Module Links",
-            "number": "3.3."
+            "chapterTitle": "3.4. Module Links",
+            "number": "3.4."
           },
           {
             "loaded": true,
@@ -449,8 +459,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/data-models/infer-type",
                 "title": "Infer Type",
                 "children": [],
-                "chapterTitle": "3.4.1. Infer Type",
-                "number": "3.4.1."
+                "chapterTitle": "3.5.1. Infer Type",
+                "number": "3.5.1."
               },
               {
                 "loaded": true,
@@ -459,8 +469,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/data-models/properties",
                 "title": "Properties",
                 "children": [],
-                "chapterTitle": "3.4.2. Properties",
-                "number": "3.4.2."
+                "chapterTitle": "3.5.2. Properties",
+                "number": "3.5.2."
               },
               {
                 "loaded": true,
@@ -469,8 +479,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/data-models/relationships",
                 "title": "Relationships",
                 "children": [],
-                "chapterTitle": "3.4.3. Relationships",
-                "number": "3.4.3."
+                "chapterTitle": "3.5.3. Relationships",
+                "number": "3.5.3."
               },
               {
                 "loaded": true,
@@ -479,8 +489,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/data-models/manage-relationships",
                 "title": "Manage Relationships",
                 "children": [],
-                "chapterTitle": "3.4.4. Manage Relationships",
-                "number": "3.4.4."
+                "chapterTitle": "3.5.4. Manage Relationships",
+                "number": "3.5.4."
               },
               {
                 "loaded": true,
@@ -489,8 +499,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/data-models/index",
                 "title": "Define Index",
                 "children": [],
-                "chapterTitle": "3.4.5. Define Index",
-                "number": "3.4.5."
+                "chapterTitle": "3.5.5. Define Index",
+                "number": "3.5.5."
               },
               {
                 "loaded": true,
@@ -499,8 +509,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/data-models/check-constraints",
                 "title": "Check Constraints",
                 "children": [],
-                "chapterTitle": "3.4.6. Check Constraints",
-                "number": "3.4.6."
+                "chapterTitle": "3.5.6. Check Constraints",
+                "number": "3.5.6."
               },
               {
                 "loaded": true,
@@ -509,12 +519,12 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/data-models/write-migration",
                 "title": "Migrations",
                 "children": [],
-                "chapterTitle": "3.4.7. Migrations",
-                "number": "3.4.7."
+                "chapterTitle": "3.5.7. Migrations",
+                "number": "3.5.7."
               }
             ],
-            "chapterTitle": "3.4. Data Models",
-            "number": "3.4."
+            "chapterTitle": "3.5. Data Models",
+            "number": "3.5."
           },
           {
             "loaded": true,
@@ -530,8 +540,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/api-routes/http-methods",
                 "title": "HTTP Methods",
                 "children": [],
-                "chapterTitle": "3.5.1. HTTP Methods",
-                "number": "3.5.1."
+                "chapterTitle": "3.6.1. HTTP Methods",
+                "number": "3.6.1."
               },
               {
                 "loaded": true,
@@ -540,8 +550,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/api-routes/parameters",
                 "title": "Parameters",
                 "children": [],
-                "chapterTitle": "3.5.2. Parameters",
-                "number": "3.5.2."
+                "chapterTitle": "3.6.2. Parameters",
+                "number": "3.6.2."
               },
               {
                 "loaded": true,
@@ -550,8 +560,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/api-routes/responses",
                 "title": "Response",
                 "children": [],
-                "chapterTitle": "3.5.3. Response",
-                "number": "3.5.3."
+                "chapterTitle": "3.6.3. Response",
+                "number": "3.6.3."
               },
               {
                 "loaded": true,
@@ -560,8 +570,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/api-routes/middlewares",
                 "title": "Middlewares",
                 "children": [],
-                "chapterTitle": "3.5.4. Middlewares",
-                "number": "3.5.4."
+                "chapterTitle": "3.6.4. Middlewares",
+                "number": "3.6.4."
               },
               {
                 "loaded": true,
@@ -570,8 +580,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/api-routes/parse-body",
                 "title": "Body Parsing",
                 "children": [],
-                "chapterTitle": "3.5.5. Body Parsing",
-                "number": "3.5.5."
+                "chapterTitle": "3.6.5. Body Parsing",
+                "number": "3.6.5."
               },
               {
                 "loaded": true,
@@ -580,8 +590,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/api-routes/validation",
                 "title": "Validation",
                 "children": [],
-                "chapterTitle": "3.5.6. Validation",
-                "number": "3.5.6."
+                "chapterTitle": "3.6.6. Validation",
+                "number": "3.6.6."
               },
               {
                 "loaded": true,
@@ -590,8 +600,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/api-routes/protected-routes",
                 "title": "Protected Routes",
                 "children": [],
-                "chapterTitle": "3.5.7. Protected Routes",
-                "number": "3.5.7."
+                "chapterTitle": "3.6.7. Protected Routes",
+                "number": "3.6.7."
               },
               {
                 "loaded": true,
@@ -600,8 +610,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/api-routes/errors",
                 "title": "Errors",
                 "children": [],
-                "chapterTitle": "3.5.8. Errors",
-                "number": "3.5.8."
+                "chapterTitle": "3.6.8. Errors",
+                "number": "3.6.8."
               },
               {
                 "loaded": true,
@@ -610,22 +620,32 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/api-routes/cors",
                 "title": "Handling CORS",
                 "children": [],
-                "chapterTitle": "3.5.9. Handling CORS",
-                "number": "3.5.9."
+                "chapterTitle": "3.6.9. Handling CORS",
+                "number": "3.6.9."
               },
               {
                 "loaded": true,
                 "isPathHref": true,
                 "type": "link",
                 "path": "/learn/fundamentals/api-routes/additional-data",
-                "title": "Additional Data",
+                "title": "Pass Additional Data",
                 "children": [],
-                "chapterTitle": "3.5.10. Additional Data",
-                "number": "3.5.10."
+                "chapterTitle": "3.6.10. Pass Additional Data",
+                "number": "3.6.10."
+              },
+              {
+                "loaded": true,
+                "isPathHref": true,
+                "type": "link",
+                "path": "/learn/fundamentals/api-routes/retrieve-custom-links",
+                "title": "Retrieve Custom Links",
+                "children": [],
+                "chapterTitle": "3.6.11. Retrieve Custom Links",
+                "number": "3.6.11."
               }
             ],
-            "chapterTitle": "3.5. API Routes",
-            "number": "3.5."
+            "chapterTitle": "3.6. API Routes",
+            "number": "3.6."
           },
           {
             "loaded": true,
@@ -641,28 +661,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/workflows/constructor-constraints",
                 "title": "Constructor Constraints",
                 "children": [],
-                "chapterTitle": "3.6.1. Constructor Constraints",
-                "number": "3.6.1."
-              },
-              {
-                "loaded": true,
-                "isPathHref": true,
-                "type": "link",
-                "path": "/learn/fundamentals/workflows/variable-manipulation",
-                "title": "Transform Variables",
-                "children": [],
-                "chapterTitle": "3.6.2. Transform Variables",
-                "number": "3.6.2."
-              },
-              {
-                "loaded": true,
-                "isPathHref": true,
-                "type": "link",
-                "path": "/learn/fundamentals/workflows/conditions",
-                "title": "When-Then Conditions",
-                "children": [],
-                "chapterTitle": "3.6.3. When-Then Conditions",
-                "number": "3.6.3."
+                "chapterTitle": "3.7.1. Constructor Constraints",
+                "number": "3.7.1."
               },
               {
                 "loaded": true,
@@ -671,8 +671,38 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/workflows/compensation-function",
                 "title": "Compensation Function",
                 "children": [],
-                "chapterTitle": "3.6.4. Compensation Function",
-                "number": "3.6.4."
+                "chapterTitle": "3.7.2. Compensation Function",
+                "number": "3.7.2."
+              },
+              {
+                "loaded": true,
+                "isPathHref": true,
+                "type": "link",
+                "path": "/learn/fundamentals/workflows/variable-manipulation",
+                "title": "Transform Data",
+                "children": [],
+                "chapterTitle": "3.7.3. Transform Data",
+                "number": "3.7.3."
+              },
+              {
+                "loaded": true,
+                "isPathHref": true,
+                "type": "link",
+                "path": "/learn/fundamentals/workflows/conditions",
+                "title": "When-Then Conditions",
+                "children": [],
+                "chapterTitle": "3.7.4. When-Then Conditions",
+                "number": "3.7.4."
+              },
+              {
+                "loaded": true,
+                "isPathHref": true,
+                "type": "link",
+                "path": "/learn/fundamentals/workflows/errors",
+                "title": "Error Handling",
+                "children": [],
+                "chapterTitle": "3.7.5. Error Handling",
+                "number": "3.7.5."
               },
               {
                 "loaded": true,
@@ -681,8 +711,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/workflows/workflow-hooks",
                 "title": "Workflow Hooks",
                 "children": [],
-                "chapterTitle": "3.6.5. Workflow Hooks",
-                "number": "3.6.5."
+                "chapterTitle": "3.7.6. Workflow Hooks",
+                "number": "3.7.6."
               },
               {
                 "loaded": true,
@@ -691,18 +721,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/workflows/add-workflow-hook",
                 "title": "Expose a Hook",
                 "children": [],
-                "chapterTitle": "3.6.6. Expose a Hook",
-                "number": "3.6.6."
-              },
-              {
-                "loaded": true,
-                "isPathHref": true,
-                "type": "link",
-                "path": "/learn/fundamentals/workflows/access-workflow-errors",
-                "title": "Access Workflow Errors",
-                "children": [],
-                "chapterTitle": "3.6.7. Access Workflow Errors",
-                "number": "3.6.7."
+                "chapterTitle": "3.7.7. Expose a Hook",
+                "number": "3.7.7."
               },
               {
                 "loaded": true,
@@ -711,8 +731,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/workflows/retry-failed-steps",
                 "title": "Retry Failed Steps",
                 "children": [],
-                "chapterTitle": "3.6.8. Retry Failed Steps",
-                "number": "3.6.8."
+                "chapterTitle": "3.7.8. Retry Failed Steps",
+                "number": "3.7.8."
               },
               {
                 "loaded": true,
@@ -721,8 +741,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/workflows/parallel-steps",
                 "title": "Run Steps in Parallel",
                 "children": [],
-                "chapterTitle": "3.6.9. Run Steps in Parallel",
-                "number": "3.6.9."
+                "chapterTitle": "3.7.9. Run Steps in Parallel",
+                "number": "3.7.9."
               },
               {
                 "loaded": true,
@@ -731,8 +751,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/workflows/workflow-timeout",
                 "title": "Workflow Timeout",
                 "children": [],
-                "chapterTitle": "3.6.10. Workflow Timeout",
-                "number": "3.6.10."
+                "chapterTitle": "3.7.10. Workflow Timeout",
+                "number": "3.7.10."
               },
               {
                 "loaded": true,
@@ -741,8 +761,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/workflows/store-executions",
                 "title": "Store Workflow Executions",
                 "children": [],
-                "chapterTitle": "3.6.11. Store Workflow Executions",
-                "number": "3.6.11."
+                "chapterTitle": "3.7.11. Store Workflow Executions",
+                "number": "3.7.11."
               },
               {
                 "loaded": true,
@@ -751,8 +771,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/workflows/long-running-workflow",
                 "title": "Long-Running Workflow",
                 "children": [],
-                "chapterTitle": "3.6.12. Long-Running Workflow",
-                "number": "3.6.12."
+                "chapterTitle": "3.7.12. Long-Running Workflow",
+                "number": "3.7.12."
               },
               {
                 "loaded": true,
@@ -761,8 +781,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/workflows/execute-another-workflow",
                 "title": "Execute Another Workflow",
                 "children": [],
-                "chapterTitle": "3.6.13. Execute Another Workflow",
-                "number": "3.6.13."
+                "chapterTitle": "3.7.13. Execute Another Workflow",
+                "number": "3.7.13."
               },
               {
                 "loaded": true,
@@ -771,12 +791,12 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/workflows/multiple-step-usage",
                 "title": "Multiple Step Usage",
                 "children": [],
-                "chapterTitle": "3.6.14. Multiple Step Usage",
-                "number": "3.6.14."
+                "chapterTitle": "3.7.14. Multiple Step Usage",
+                "number": "3.7.14."
               }
             ],
-            "chapterTitle": "3.6. Workflows",
-            "number": "3.6."
+            "chapterTitle": "3.7. Workflows",
+            "number": "3.7."
           },
           {
             "loaded": true,
@@ -792,8 +812,8 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/events-and-subscribers/data-payload",
                 "title": "Events Data Payload",
                 "children": [],
-                "chapterTitle": "3.7.1. Events Data Payload",
-                "number": "3.7.1."
+                "chapterTitle": "3.8.1. Events Data Payload",
+                "number": "3.8.1."
               },
               {
                 "loaded": true,
@@ -802,12 +822,12 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/events-and-subscribers/emit-event",
                 "title": "Emit Event",
                 "children": [],
-                "chapterTitle": "3.7.2. Emit Event",
-                "number": "3.7.2."
+                "chapterTitle": "3.8.2. Emit Event",
+                "number": "3.8.2."
               }
             ],
-            "chapterTitle": "3.7. Events and Subscribers",
-            "number": "3.7."
+            "chapterTitle": "3.8. Events and Subscribers",
+            "number": "3.8."
           },
           {
             "loaded": true,
@@ -823,12 +843,12 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/scheduled-jobs/execution-number",
                 "title": "Execution Number",
                 "children": [],
-                "chapterTitle": "3.8.1. Execution Number",
-                "number": "3.8.1."
+                "chapterTitle": "3.9.1. Execution Number",
+                "number": "3.9.1."
               }
             ],
-            "chapterTitle": "3.8. Scheduled Jobs",
-            "number": "3.8."
+            "chapterTitle": "3.9. Scheduled Jobs",
+            "number": "3.9."
           },
           {
             "loaded": true,
@@ -844,12 +864,12 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/plugins/create",
                 "title": "Create Plugin",
                 "children": [],
-                "chapterTitle": "3.9.1. Create Plugin",
-                "number": "3.9.1."
+                "chapterTitle": "3.10.1. Create Plugin",
+                "number": "3.10.1."
               }
             ],
-            "chapterTitle": "3.9. Plugins",
-            "number": "3.9."
+            "chapterTitle": "3.10. Plugins",
+            "number": "3.10."
           },
           {
             "loaded": true,
@@ -865,12 +885,12 @@ export const generatedSidebars = [
                 "path": "/learn/fundamentals/custom-cli-scripts/seed-data",
                 "title": "Seed Data",
                 "children": [],
-                "chapterTitle": "3.10.1. Seed Data",
-                "number": "3.10.1."
+                "chapterTitle": "3.11.1. Seed Data",
+                "number": "3.11.1."
               }
             ],
-            "chapterTitle": "3.10. Custom CLI Scripts",
-            "number": "3.10."
+            "chapterTitle": "3.11. Custom CLI Scripts",
+            "number": "3.11."
           }
         ],
         "chapterTitle": "3. Framework",

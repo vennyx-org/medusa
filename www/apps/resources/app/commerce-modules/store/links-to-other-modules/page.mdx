@@ -6,7 +6,7 @@ export const metadata = {
 
 # {metadata.title}
 
-This document showcases the module links defined between the Store Module and other commerce modules.
+This document showcases the module links defined between the Store Module and other Commerce Modules.
 
 ## Summary
 
@@ -38,13 +38,13 @@ Read-only links are used to query data across modules, but the relations aren't 
   <Table.Body>
     <Table.Row>
       <Table.Cell>
-        [Store](/references/store/models/Store)
+        [StoreCurrency](/references/store/models/StoreCurrency)
       </Table.Cell>
       <Table.Cell>
         [Currency](/references/currency/models/Currency) in [Currency Module](../../currency/page.mdx)
       </Table.Cell>
       <Table.Cell>
-        Read-only
+        Read-only - has many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#currency-module)
@@ -59,7 +59,7 @@ Read-only links are used to query data across modules, but the relations aren't 
 
 The Store Module has a `Currency` data model that stores the supported currencies of a store. However, these currencies don't hold all the details of a currency, such as its name or symbol.
 
-Instead, Medusa defines a read-only link between the [Currency Module](../../currency/page.mdx)'s `Currency` data model and the Store Module's `Currency` data model. This means you can retrieve the details of a store's supported currencies, but you don't manage the links in a pivot table in the database. The currencies of a store are determined by the `currency_code` of the [Currency](/references/store/models/Currency) data model in the Store Module (not in the Currency Module).
+Instead, Medusa defines a read-only link between the [Currency Module](../../currency/page.mdx)'s `Currency` data model and the Store Module's `StoreCurrency` data model. This means you can retrieve the details of a store's supported currencies, but you don't manage the links in a pivot table in the database. The currencies of a store are determined by the `currency_code` of the [Currency](/references/store/models/Currency) data model in the Store Module (not in the Currency Module).
 
 ### Retrieve with Query
 
@@ -76,7 +76,7 @@ const { data: stores } = await query.graph({
   ],
 })
 
-// stores.supported_currencies
+// stores[0].supported_currencies
 ```
 
   </CodeTab>
@@ -94,7 +94,7 @@ const { data: stores } = useQueryGraphStep({
   ],
 })
 
-// stores.supported_currencies
+// stores[0].supported_currencies
 ```
 
   </CodeTab>

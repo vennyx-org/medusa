@@ -1,6 +1,6 @@
 {
   "name": "@medusajs/core-flows",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "description": "Set of workflow definitions for Medusa",
   "main": "dist/index.js",
   "exports": {
@@ -26,7 +26,7 @@
   "author": "Medusa",
   "license": "MIT",
   "devDependencies": {
-    "@medusajs/framework": "2.7.0",
+    "@medusajs/framework": "2.7.1",
     "@mikro-orm/core": "6.4.3",
     "@mikro-orm/knex": "6.4.3",
     "@mikro-orm/migrations": "6.4.3",
@@ -44,7 +44,7 @@
     "json-2-csv": "^5.5.4"
   },
   "peerDependencies": {
-    "@medusajs/framework": "2.7.0",
+    "@medusajs/framework": "2.7.1",
     "awilix": "^8.0.1"
   },
   "scripts": {

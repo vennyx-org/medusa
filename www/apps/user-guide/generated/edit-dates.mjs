@@ -47,7 +47,7 @@ export const generatedEditDates = {
   "app/price-lists/manage/page.mdx": "2025-02-19T10:35:49.881Z",
   "app/price-lists/page.mdx": "2025-02-19T09:51:32.546Z",
   "app/settings/tax-regions/page.mdx": "2025-02-19T17:33:43.806Z",
-  "app/settings/locations-and-shipping/locations/page.mdx": "2025-02-25T15:02:02.164Z",
+  "app/settings/locations-and-shipping/locations/page.mdx": "2025-04-17T13:47:40.883Z",
   "app/settings/locations-and-shipping/page.mdx": "2025-02-19T17:23:45.824Z",
   "app/settings/locations-and-shipping/shipping-profiles/page.mdx": "2025-02-19T17:36:46.339Z",
   "app/settings/product-tags/page.mdx": "2025-02-19T17:36:25.102Z",
@@ -55,5 +55,5 @@ export const generatedEditDates = {
   "app/settings/developer/publishable-api-keys/page.mdx": "2025-02-25T16:15:29.847Z",
   "app/settings/developer/secret-api-keys/page.mdx": "2025-02-25T16:17:40.621Z",
   "app/settings/developer/workflows/page.mdx": "2025-02-25T15:52:48.349Z",
-  "app/reset-password/page.mdx": "2025-02-26T11:13:45.457Z"
+  "app/reset-password/page.mdx": "2025-04-17T08:29:28.890Z"
 }

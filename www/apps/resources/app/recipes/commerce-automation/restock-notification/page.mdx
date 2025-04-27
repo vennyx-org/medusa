@@ -31,7 +31,7 @@ export const metadata = {
 
 In this guide, you'll learn how to notify customers when a variant is restocked in Medusa.
 
-When you install a Medusa application, you get a fully-fledged commerce platform with a framework for customization. The Medusa application's commerce features are built around [commerce modules](../../../commerce-modules/page.mdx) which are available out-of-the-box. These features include managing the inventory of product variants in different stock locations and sales channels.
+When you install a Medusa application, you get a fully-fledged commerce platform with a Framework for customization. The Medusa application's commerce features are built around [Commerce Modules](../../../commerce-modules/page.mdx) which are available out-of-the-box. These features include managing the inventory of product variants in different stock locations and sales channels.
 
 Customers browsing your store may be interested in a product that is currently out of stock. To keep the customer interested in your store and encourage them to purchase the product in the future, you can build customizations around Medusa's commerce features to subscribe customers to receive a notification when the product is restocked.
 
@@ -1088,9 +1088,9 @@ The `useQueryGraphStep` is from Medusa's workflows. So, you'll only implement th
 
 ### Optional Prerequisite: Notification Module Provider
 
-Within this workflow, you'll use Medusa's [Notification Module](../../../architectural-modules/notification/page.mdx) to send an email to the customer.
+Within this workflow, you'll use Medusa's [Notification Module](../../../infrastructure-modules/notification/page.mdx) to send an email to the customer.
 
-The module delegates the email sending to a module provider, such as [SendGrid](../../../architectural-modules/notification/sendgrid/page.mdx) or [Resend](../../../integrations/guides/resend/page.mdx). You can refer to their linked guides to set up either module providers.
+The module delegates the email sending to a module provider, such as [SendGrid](../../../infrastructure-modules/notification/sendgrid/page.mdx) or [Resend](../../../integrations/guides/resend/page.mdx). You can refer to their linked guides to set up either module providers.
 
 Alternatively, for development and debugging purposes, you can use the default Notification Module Provider that only logs a message in the terminal instead of sending an email. To do that, add the following to the `modules` array in `medusa-config.ts`:
 

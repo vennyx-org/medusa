@@ -176,7 +176,7 @@ export interface CreateTaxRegionDTO {
   country_code: string
 
   /**
-   * The province code of the tax region.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province or state code of the tax region.
    */
   province_code?: string | null
 
@@ -235,7 +235,7 @@ export interface UpdateTaxRegionDTO {
   id: string
 
   /**
-   * The province code of the tax region.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province or state code of the tax region.
    */
   province_code?: string | null
 

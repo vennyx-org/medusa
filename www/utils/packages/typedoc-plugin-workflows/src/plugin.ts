@@ -198,6 +198,7 @@ class WorkflowsPlugin {
           workflow,
           stepDepth,
           workflowReflection,
+          constructorFn,
         })
         resources.push(...whenResources)
       } else {
@@ -208,6 +209,7 @@ class WorkflowsPlugin {
           workflowVarName: parentReflection.name,
           workflowReflection,
           workflowComments: parentReflection.comment?.blockTags,
+          constructorFn,
         })
 
         if (!steps.length) {
@@ -248,6 +250,7 @@ class WorkflowsPlugin {
     workflowVarName,
     workflowReflection,
     workflowComments = [],
+    constructorFn,
   }: {
     initializer: ts.CallExpression
     context: Context
@@ -255,6 +258,7 @@ class WorkflowsPlugin {
     workflowVarName: string
     workflowReflection: SignatureReflection
     workflowComments?: CommentTag[]
+    constructorFn: ts.ArrowFunction | ts.FunctionExpression
   }): ParsedStep[] {
     const steps: ParsedStep[] = []
     const initializerName = this.helper.normalizeName(
@@ -278,6 +282,8 @@ class WorkflowsPlugin {
             workflow,
             workflowVarName,
             workflowReflection,
+            workflowComments,
+            constructorFn,
           })
         )
       })
@@ -290,14 +296,21 @@ class WorkflowsPlugin {
       if (stepType === "hook" && "symbol" in initializer.arguments[1]) {
         // get the hook's name from the first argument
         stepId = this.helper.normalizeName(initializer.arguments[0].getText())
-        stepReflection = this.assembleHookReflection({
-          stepId,
-          context,
-          inputSymbol: initializer.arguments[1].symbol as ts.Symbol,
-          workflowName: workflowVarName,
-          workflowComments,
-          workflowReflection: workflowReflection.parent,
+        const hookArgumetSymbol = this.getHookArgumentSymbol({
+          argument: initializer.arguments[1],
+          constructorFn,
         })
+
+        if (hookArgumetSymbol) {
+          stepReflection = this.assembleHookReflection({
+            stepId,
+            context,
+            inputSymbol: hookArgumetSymbol,
+            workflowName: workflowVarName,
+            workflowComments,
+            workflowReflection: workflowReflection.parent,
+          })
+        }
       } else {
         const initializerReflection = findReflectionInNamespaces(
           context.project,
@@ -373,6 +386,7 @@ class WorkflowsPlugin {
     workflow,
     stepDepth,
     workflowReflection,
+    ...rest
   }: {
     initializer: ts.CallExpression
     parentReflection: DeclarationReflection
@@ -380,6 +394,7 @@ class WorkflowsPlugin {
     workflow?: WorkflowDefinition
     stepDepth: number
     workflowReflection: SignatureReflection
+    constructorFn: ts.ArrowFunction | ts.FunctionExpression
   }): {
     resources: string[]
   } {
@@ -452,6 +467,7 @@ class WorkflowsPlugin {
         workflow,
         workflowVarName: parentReflection.name,
         workflowReflection,
+        ...rest,
       }).forEach((step) => {
         this.createStepDocumentReflection({
           ...step,
@@ -817,6 +833,27 @@ class WorkflowsPlugin {
     do {
       handleForWorkflow(keys[0], this.addTagsAfterParsing[keys[0]])
     } while (keys.length > 0)
+  }
+
+  getHookArgumentSymbol({
+    argument,
+    constructorFn,
+  }: {
+    argument: ts.Node
+    constructorFn: ts.ArrowFunction | ts.FunctionExpression
+  }): ts.Symbol | undefined {
+    if ("symbol" in argument && argument.symbol) {
+      return argument.symbol as ts.Symbol
+    }
+
+    if (!("locals" in constructorFn) || !constructorFn.locals) {
+      return undefined
+    }
+
+    // try to retrieve from the locals in the constructor function
+    return (constructorFn.locals as Map<string, ts.Symbol>).get(
+      argument.getText()
+    )
   }
 }
 

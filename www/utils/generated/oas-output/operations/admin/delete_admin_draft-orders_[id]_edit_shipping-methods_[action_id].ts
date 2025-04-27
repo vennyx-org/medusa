@@ -1,10 +1,10 @@
 /**
  * @oas [delete] /admin/draft-orders/{id}/edit/shipping-methods/{action_id}
  * operationId: DeleteDraftOrdersIdEditShippingMethodsAction_id
- * summary: Remove Shipping Method from Draft Order
- * x-sidebar-summary: Remove Shipping Method
+ * summary: Remove New Shipping Method from Draft Order
+ * x-sidebar-summary: Remove New Shipping Method
  * description: |
- *   Remove the shipping method in a draft order using the `ID` of the method's `SHIPPING_ADD` action.
+ *   Remove a shipping method that was added to a draft order edit using the `ID` of the method's `SHIPPING_ADD` action.
  * 
  *   Every shipping method has an `actions` property, whose value is an array of actions. You can check the action's name using its `action` property, and use the value of the `id` property.
  * x-authenticated: true

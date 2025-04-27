@@ -8,6 +8,7 @@ import path from "path"
 import { logger } from "../logger"
 import { configManager } from "../config"
 import { MedusaRequest, MedusaResponse } from "./types"
+import { dynamicImport } from "@medusajs/utils"
 
 const NOISY_ENDPOINTS_CHUNKS = ["@fs", "@id", "@vite", "@react", "node_modules"]
 
@@ -37,7 +38,7 @@ export async function expressLoader({ app }: { app: Express }): Promise<{
     name: sessionOptions?.name ?? "connect.sid",
     resave: sessionOptions?.resave ?? true,
     rolling: sessionOptions?.rolling ?? false,
-    saveUninitialized: sessionOptions?.saveUninitialized ?? true,
+    saveUninitialized: sessionOptions?.saveUninitialized ?? false,
     proxy: true,
     secret: sessionOptions?.secret ?? http?.cookieSecret,
     cookie: {
@@ -50,7 +51,17 @@ export async function expressLoader({ app }: { app: Express }): Promise<{
 
   let redisClient: Redis
 
-  if (configModule?.projectConfig?.redisUrl) {
+  if (configModule?.projectConfig.sessionOptions?.dynamodbOptions) {
+    const storeFactory = await dynamicImport("connect-dynamodb")
+    const client = await dynamicImport("@aws-sdk/client-dynamodb")
+    const DynamoDBStore = storeFactory({ session })
+    sessionOpts.store = new DynamoDBStore({
+      ...configModule.projectConfig.sessionOptions.dynamodbOptions,
+      client: new client.DynamoDBClient(
+        configModule.projectConfig.sessionOptions.dynamodbOptions.clientOptions
+      ),
+    })
+  } else if (configModule?.projectConfig?.redisUrl) {
     const RedisStore = createStore(session)
     redisClient = new Redis(
       configModule.projectConfig.redisUrl,

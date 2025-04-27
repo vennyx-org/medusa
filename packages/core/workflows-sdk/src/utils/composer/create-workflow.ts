@@ -3,10 +3,15 @@ import {
   WorkflowHandler,
   WorkflowManager,
 } from "@medusajs/orchestration"
-import { LoadedModule, MedusaContainer } from "@medusajs/types"
+import {
+  IWorkflowEngineService,
+  LoadedModule,
+  MedusaContainer,
+} from "@medusajs/types"
 import {
   getCallerFilePath,
   isString,
+  Modules,
   OrchestrationUtils,
 } from "@medusajs/utils"
 import { ulid } from "ulid"
@@ -188,38 +193,72 @@ export function createWorkflow<TData, TResult, THooks extends any[]>(
       async (stepInput: TData, stepContext) => {
         const { container, ...sharedContext } = stepContext
 
-        const transaction = await workflow.run({
-          input: stepInput as any,
-          container,
-          context: {
-            ...sharedContext,
-            transactionId:
-              step.__step__ + "-" + (stepContext.transactionId ?? ulid()),
-            parentStepIdempotencyKey: stepContext.idempotencyKey,
-            preventReleaseEvents: true,
-          },
-        })
+        const workflowEngine = container.resolve(Modules.WORKFLOW_ENGINE, {
+          allowUnregistered: true,
+        }) as IWorkflowEngineService
 
-        const { result } = transaction
+        const executionContext = {
+          ...(sharedContext?.context ?? {}),
+          transactionId:
+            step.__step__ + "-" + (stepContext.transactionId ?? ulid()),
+          parentStepIdempotencyKey: stepContext.idempotencyKey,
+          preventReleaseEvents: true,
+        }
+
+        let transaction
+        if (workflowEngine && context.isAsync) {
+          transaction = await workflowEngine.run(name, {
+            input: stepInput as any,
+            context: executionContext,
+          })
+        } else {
+          transaction = await workflow.run({
+            input: stepInput as any,
+            container,
+            context: executionContext,
+          })
+        }
 
         return new StepResponse(
-          result,
+          transaction.result,
           context.isAsync ? stepContext.transactionId : transaction
         )
       },
       async (transaction, stepContext) => {
+        // The step itself has failed, there is nothing to revert
+        if (!transaction) {
+          return
+        }
+
         const { container, ...sharedContext } = stepContext
 
+        const workflowEngine = container.resolve(Modules.WORKFLOW_ENGINE, {
+          allowUnregistered: true,
+        }) as IWorkflowEngineService
+
+        const executionContext = {
+          ...(sharedContext?.context ?? {}),
+          transactionId:
+            step.__step__ + "-" + (stepContext.transactionId ?? ulid()),
+          parentStepIdempotencyKey: stepContext.idempotencyKey,
+          preventReleaseEvents: true,
+        }
+
         const transactionId = step.__step__ + "-" + stepContext.transactionId
-        await workflow(container).cancel({
-          transaction: (transaction as WorkflowResult<any>)?.transaction,
-          transactionId,
-          container,
-          context: {
-            ...sharedContext,
-            parentStepIdempotencyKey: stepContext.idempotencyKey,
-          },
-        })
+
+        if (workflowEngine && context.isAsync) {
+          await workflowEngine.cancel(name, {
+            transactionId: transactionId,
+            context: executionContext,
+          })
+        } else {
+          await workflow(container).cancel({
+            transaction: (transaction as WorkflowResult<any>)?.transaction,
+            transactionId,
+            container,
+            context: executionContext,
+          })
+        }
       }
     )(input) as ReturnType<StepFunction<TData, TResult>>
 

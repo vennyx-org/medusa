@@ -1,0 +1,303 @@
+import { TypeList, Table } from "docs-ui"
+
+export const metadata = {
+  title: `${pageNumber} Error Handling in Workflows`,
+}
+
+# {metadata.title}
+
+In this chapter, you’ll learn about what happens when an error occurs in a workflow, how to disable error throwing in a workflow, and try-catch alternatives in workflow definitions.
+
+## Default Behavior of Errors in Workflows
+
+When an error occurs in a workflow, such as when a step throws an error, the workflow execution stops. Then, [the compensation function](../compensation-function/page.mdx) of every step in the workflow is called to undo the actions performed by their respective steps.
+
+The workflow's caller, such as an API route, subscriber, or scheduled job, will also fail and stop execution. Medusa then logs the error in the console. For API routes, an appropriate error is returned to the client based on the thrown error.
+
+<Note>
+
+Learn more about error handling in API routes in the [Errors chapter](../../api-routes/errors/page.mdx).
+
+</Note>
+
+This is the default behavior of errors in workflows. However, you can configure workflows to not throw errors, or you can configure a step's internal error handling mechanism to change the default behavior.
+
+---
+
+## Disable Error Throwing in Workflow
+
+When an error is thrown in the workflow, that means the caller of the workflow, such as an API route, will fail and stop execution as well.
+
+While this is the common behavior, there are certain cases where you want to handle the error differently. For example, you may want to check the errors thrown by the workflow and return a custom error response to the client.
+
+The object parameter of a workflow's `run` method accepts a `throwOnError` property. When this property is set to `false`, the workflow will stop execution if an error occurs, but the Medusa's workflow engine will catch that error and return it to the caller instead of throwing it.
+
+For example:
+
+export const highlights = [
+  ["11", "errors", "`errors` is an array of errors that occur during the workflow's execution."],
+  ["14", "throwOnError", "Specify that errors occuring during the workflow's execution should be returned, not thrown."],
+]
+
+```ts title="src/api/workflows/route.ts" highlights={highlights} collapsibleLines="1-6" expandButtonLabel="Show Imports"
+import type {
+  MedusaRequest,
+  MedusaResponse,
+} from "@medusajs/framework/http"
+import myWorkflow from "../../../workflows/hello-world"
+
+export async function GET(
+  req: MedusaRequest,
+  res: MedusaResponse
+) {
+  const { result, errors } = await myWorkflow(req.scope)
+    .run({
+      // ...
+      throwOnError: false,
+    })
+
+  if (errors.length) {
+    return res.send({
+      message: "Something unexpected happened. Please try again.",
+    })
+  }
+
+  res.send(result)
+}
+```
+
+You disable throwing errors in the workflow by setting the `throwOnError` property to `false` in the `run` method of the workflow.
+
+The object returned by the `run` method contains an `errors` property. This property is an array of errors that occured during the workflow's execution. You can check this array to see if any errors occurred and handle them accordingly.
+
+An error object has the following properties:
+
+<TypeList
+  types={[
+    {
+      type: "`string`",
+      name: "action",
+      description: "The ID of the step that threw the error.",
+    },
+    {
+      type: "`invoke` \\| `compensate`",
+      name: "handlerType",
+      description: "Where the error occurred. If the value is `invoke`, it means the error occurred in a step. Otherwise, the error occurred in the compensation function of a step.",
+    },
+    {
+      type: "[Error](https://nodejs.org/docs/latest-v20.x/api/errors.html#class-error)",
+      name: "error",
+      description: "The error object that was thrown.",
+    }
+  ]}
+  sectionTitle="Disable Error Throwing in Workflow"
+/>
+
+---
+
+## Try-Catch Alternatives in Workflow Definition
+
+<Note title="Tip">
+
+If you want to use try-catch mechanism in a workflow to undo step actions, use a [compensation function](../compensation-function/page.mdx) instead.
+
+</Note>
+
+### Why You Can't Use Try-Catch in Workflow Definitions
+
+Medusa creates an internal representation of the workflow definition you pass to `createWorkflow` to track and store its steps.
+
+At that point, variables in the workflow don't have any values. They only do when you execute the workflow.
+
+So, try-catch blocks in the workflow definition function won't have an effect, as at that time the workflow is not executed and errors are not thrown.
+
+You can still use try-catch blocks in a workflow's step functions. For cases that require granular control over error handling in a workflow's definition, you can configure the internal error handling mechanism of a step.
+
+### Skip Workflow on Step Failure
+
+A step has a `skipOnPermanentFailure` configuration that allows you to configure what happens when an error occurs in the step. Its value can be a boolean or a string.
+
+By default, `skipOnPermanentFailure` is disabled. When it's enabled, the workflow's status is set to `skipped` instead of `failed`. This means:
+
+- Compensation functions of the workflow's steps are not called.
+- The workflow's caller continues executing. You can still [access the error](#disable-error-throwing-in-workflow) that occurred during the workflow's execution as mentioned in the [Disable Error Throwing](#disable-error-throwing-in-workflow) section.
+
+This is useful when you want to perform actions if no error occurs, but you don't care about compensating the workflow's steps or you don't want to stop the caller's execution.
+
+You can think of setting the `skipOnPermanentFailure` to `true` as the equivalent of the following `try-catch` block:
+
+```ts title="Outside a Workflow"
+try {
+  actionThatThrowsError()
+
+  moreActions()
+} catch (e) {
+  // don't do anything
+}
+```
+
+You can do this in a workflow using the step's `skipOnPermanentFailure` configuration:
+
+export const skipOnPermanentFailureEnabledHighlights = [
+  ["13", "skipOnPermanentFailure", "Skip the rest of the workflow\nif an error occurs in the step."],
+]
+
+```ts title="Workflow Equivalent" highlights={skipOnPermanentFailureEnabledHighlights}
+import {
+  createWorkflow,
+} from "@medusajs/framework/workflows-sdk"
+import { 
+  actionThatThrowsError,
+  moreActions,
+} from "./steps"
+
+export const myWorkflow = createWorkflow(
+  "hello-world", 
+  function (input) {
+    actionThatThrowsError().config({
+      skipOnPermanentFailure: true,
+    })
+
+    // This action will not be executed if the previous step throws an error
+    moreActions()
+  }
+)
+```
+
+You set the configuration of a step by chaining the `config` method to the step's function call. The `config` method accepts an object similar to the one that can be passed to `createStep`.
+
+In this example, if the `actionThatThrowsError` step throws an error, the rest of the workflow will be skipped, and the `moreActions` step will not be executed.
+
+You can then access the error that occurred in that step as explained in the [Disable Error Throwing](#disable-error-throwing-in-workflow) section.
+
+### Continue Workflow Execution from a Specific Step
+
+In some cases, if an error occurs in a step, you may want to continue the workflow's execution from a specific step instead of stopping the workflow's execution or skipping the rest of the steps.
+
+The `skipOnPermanentFailure` configuration can accept a step's ID as a value. Then, the workflow will continue execution from that step if an error occurs in the step that has the `skipOnPermanentFailure` configuration.
+
+<Note>
+
+The compensation function of the step that has the `skipOnPermanentFailure` configuration will not be called when an error occurs.
+
+</Note>
+
+You can think of setting the `skipOnPermanentFailure` to a step's ID as the equivalent of the following `try-catch` block:
+
+```ts title="Outside a Workflow"
+try {
+  actionThatThrowsError()
+
+  moreActions()
+} catch (e) {
+  // do nothing
+}
+
+continueExecutionFromStep()
+```
+
+You can do this in a workflow using the step's `skipOnPermanentFailure` configuration:
+
+export const skipOnPermanentFailureStepHighlights = [
+  ["16", "skipOnPermanentFailure", "Continue the workflow's execution\nfrom a specific step if an error occurs."],
+]
+
+```ts title="Workflow Equivalent" highlights={skipOnPermanentFailureStepHighlights}
+import {
+  createWorkflow,
+} from "@medusajs/framework/workflows-sdk"
+import { 
+  actionThatThrowsError,
+  moreActions,
+  continueExecutionFromStep,
+} from "./steps"
+
+export const myWorkflow = createWorkflow(
+  "hello-world", 
+  function (input) {
+    actionThatThrowsError().config({
+      // The `continue-execution-from-step` is the ID passed as a first
+      // parameter to `createStep` of `continueExecutionFromStep`.
+      skipOnPermanentFailure: "continue-execution-from-step",
+    })
+
+    // This action will not be executed if the previous step throws an error
+    moreActions()
+
+    // This action will be executed either way
+    continueExecutionFromStep()
+  }
+)
+```
+
+In this example, you configure the `actionThatThrowsError` step to continue the workflow's execution from the `continueExecutionFromStep` step if an error occurs in the `actionThatThrowsError` step.
+
+Notice that you pass the ID of the `continueExecutionFromStep` step as it's set in the `createStep` function.
+
+So, the `moreActions` step will not be executed if the `actionThatThrowsError` step throws an error, and the `continueExecutionFromStep` will be executed anyway.
+
+You can then access the error that occurred in that step as explained in the [Disable Error Throwing](#disable-error-throwing-in-workflow) section.
+
+<Note>
+
+If the specified step ID doesn't exist in the workflow, it will be equivalent to setting the `skipOnPermanentFailure` configuration to `true`. So, the workflow will be skipped, and the rest of the steps will not be executed.
+
+</Note>
+
+### Set Step as Failed, but Continue Workflow Execution
+
+In some cases, you may want to fail a step, but continue the rest of the workflow's execution.
+
+This is useful when you don't want a step's failure to stop the workflow's execution, but you want to mark that step as failed.
+
+The `continueOnPermanentFailure` configuration allows you to do that. When enabled, the workflow's execution will continue, but the step will be marked as failed if an error occurs in that step.
+
+<Note>
+
+The compensation function of the step that has the `continueOnPermanentFailure` configuration will not be called when an error occurs.
+
+</Note>
+
+You can think of setting the `continueOnPermanentFailure` to `true` as the equivalent of the following `try-catch` block:
+
+```ts title="Outside a Workflow"
+try {
+  actionThatThrowsError()
+} catch (e) {
+  // do nothing
+}
+
+moreActions()
+```
+
+You can do this in a workflow using the step's `continueOnPermanentFailure` configuration:
+
+export const continueOnPermanentFailureHighlights = [
+  ["13", "continueOnPermanentFailure", "Continue the workflow's execution\neven if an error occurs in the step."],
+]
+
+```ts title="Workflow Equivalent" highlights={continueOnPermanentFailureHighlights}
+import {
+  createWorkflow,
+} from "@medusajs/framework/workflows-sdk"
+import { 
+  actionThatThrowsError,
+  moreActions,
+} from "./steps"
+
+export const myWorkflow = createWorkflow(
+  "hello-world", 
+  function (input) {
+    actionThatThrowsError().config({
+      continueOnPermanentFailure: true,
+    })
+
+    // This action will be executed even if the previous step throws an error
+    moreActions()
+  }
+)
+```
+
+In this example, if the `actionThatThrowsError` step throws an error, the `moreActions` step will still be executed.
+
+You can then access the error that occurred in that step as explained in the [Disable Error Throwing](#disable-error-throwing-in-workflow) section.

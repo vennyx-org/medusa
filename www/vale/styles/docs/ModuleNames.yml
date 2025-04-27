@@ -7,7 +7,6 @@ tokens:
   - the [A-Z]\w+ module
 exceptions:
   - the custom module
-  - the commerce module
   - the transpiled module
   - the main module
   - the same module

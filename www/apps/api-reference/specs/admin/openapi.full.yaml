@@ -461,7 +461,7 @@ tags:
       You can upload public files, such as product images, or private files, such as CSV files used to import products.
     externalDocs:
       description: Check out available file module providers.
-      url: https://docs.medusajs.com/resources/architectural-modules/file
+      url: https://docs.medusajs.com/resources/infrastructure-modules/file
   - name: Users
     description: |
       A user is an admin user that can authenticate and perform functionalities as an admin user.
@@ -481,7 +481,7 @@ tags:
       Depending on the workflow engine you use, executions may only be retained for a short while, or only until the Medusa application is restarted.
     externalDocs:
       description: Check out available Workflow Engine Modules
-      url: https://docs.medusajs.com/resources/architectural-modules/workflow-engine
+      url: https://docs.medusajs.com/resources/infrastructure-modules/workflow-engine
 paths:
   /admin/api-keys:
     get:
@@ -8002,12 +8002,12 @@ paths:
       parameters:
         - name: fields
           in: query
-          description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+          description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
           required: false
           schema:
             type: string
             title: fields
-            description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+            description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
         - name: offset
@@ -11404,12 +11404,12 @@ paths:
       parameters:
         - name: fields
           in: query
-          description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+          description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
           required: false
           schema:
             type: string
             title: fields
-            description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+            description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
       security:
@@ -11533,12 +11533,12 @@ paths:
             type: string
         - name: fields
           in: query
-          description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+          description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
           required: false
           schema:
             type: string
             title: fields
-            description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+            description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
       security:
@@ -11603,12 +11603,12 @@ paths:
             type: string
         - name: fields
           in: query
-          description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+          description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
           required: false
           schema:
             type: string
             title: fields
-            description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+            description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
       security:
@@ -11811,12 +11811,12 @@ paths:
             type: string
         - name: fields
           in: query
-          description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+          description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
           required: false
           schema:
             type: string
             title: fields
-            description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+            description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
         - name: offset
@@ -12037,12 +12037,12 @@ paths:
             type: string
         - name: fields
           in: query
-          description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+          description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
           required: false
           schema:
             type: string
             title: fields
-            description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+            description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
       security:
@@ -12218,12 +12218,12 @@ paths:
             type: string
         - name: fields
           in: query
-          description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+          description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
           required: false
           schema:
             type: string
             title: fields
-            description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+            description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
       security:
@@ -12295,12 +12295,12 @@ paths:
             type: string
         - name: fields
           in: query
-          description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+          description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
           required: false
           schema:
             type: string
             title: fields
-            description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+            description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
       security:
@@ -12475,12 +12475,12 @@ paths:
             type: string
         - name: fields
           in: query
-          description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+          description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
           required: false
           schema:
             type: string
             title: fields
-            description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+            description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
       security:
@@ -12572,14 +12572,15 @@ paths:
         - name: fields
           in: query
           description: |-
-            "Comma-separated fields that should be included in the returned data.
+            Comma-separated fields that should be included in the returned data.
             if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields.
-            without prefix it will replace the entire default fields. NOTE: This route doesn't allow expanding custom relations."
+            without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in 
+            the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
           required: false
           schema:
             type: string
             title: fields
-            description: 'Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+            description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
       security:
@@ -14128,7 +14129,7 @@ paths:
     post:
       operationId: PostDraftOrders
       summary: Create Draft Order
-      description: Create a draft order. This creates an order with the `is_draft_order` property enabled.
+      description: Create a draft order. This creates an order with the `is_draft_order` property enabled. You can later convert the draft order to an order.
       x-authenticated: true
       parameters:
         - name: fields
@@ -14587,7 +14588,7 @@ paths:
     post:
       operationId: PostDraftOrdersId
       summary: Update a Draft Order
-      description: Update a draft order's details.
+      description: Update a draft order's details. This doesn't include updating the draft order's items, shipping methods, or promotions. To update those, you need to create an edit that you can later request or confirm.
       x-authenticated: true
       parameters:
         - name: id
@@ -14710,9 +14711,6 @@ paths:
               },
             })
 
-            To convert a draft order to an order:
-
-            ```ts
             sdk.admin.draftOrder.convertToOrder("order_123")
             .then(({ order }) => {
               console.log(order)
@@ -14745,7 +14743,7 @@ paths:
       operationId: PostDraftOrdersIdEdit
       summary: Create a Draft Order Edit
       x-sidebar-summary: Create Edit
-      description: Create an edit on a draft order. This will allow you to make changes to the draft order's items, shipping methods, or promotions before confirming them later.
+      description: Create an edit on a draft order. This will allow you to make changes to the draft order's items, shipping methods, or promotions. Once you've made the necessar changes, you can later either request the edit (which requires a confirmation from the customer), or force-confirm the edit.
       x-authenticated: true
       parameters:
         - name: id
@@ -14919,9 +14917,9 @@ paths:
   /admin/draft-orders/{id}/edit/items:
     post:
       operationId: PostDraftOrdersIdEditItems
-      summary: Add Item to Draft Order
+      summary: Add Item to Draft Order Edit
       x-sidebar-summary: Add Item
-      description: Add an Item to a draft order.
+      description: Add an item to a draft order edit.
       x-authenticated: true
       parameters:
         - name: id
@@ -14990,9 +14988,9 @@ paths:
   /admin/draft-orders/{id}/edit/items/item/{item_id}:
     post:
       operationId: PostDraftOrdersIdEditItemsItemItem_id
-      summary: Update Item in Draft Order
+      summary: Update Existing Item in Draft Order Edit
       x-sidebar-summary: Update Item
-      description: Update an item in a draft order.
+      description: Update an existing item in a draft order edit.
       x-authenticated: true
       parameters:
         - name: id
@@ -15066,10 +15064,10 @@ paths:
   /admin/draft-orders/{id}/edit/items/{action_id}:
     post:
       operationId: PostDraftOrdersIdEditItemsAction_id
-      summary: Update Item Changes in Draft Order
-      x-sidebar-summary: Update Item Changes
+      summary: Update New Item in Draft Order Edit
+      x-sidebar-summary: Update New Item
       description: |
-        Update changes made on an item (addition or update) in the draft order by the ID of the item's `ITEM_ADD` or `ITEM_UPDATE` action.
+        Update a new item that was added to a draft order edit by the ID of the item's `ITEM_ADD` action.
 
         Every item has an `actions` property, whose value is an array of actions. You can check the action's name using its `action` property, and use the value of the `id` property.
       x-authenticated: true
@@ -15082,7 +15080,7 @@ paths:
             type: string
         - name: action_id
           in: path
-          description: The ID of the item's `ITEM_ADD` or `ITEM_UPDATE` action.
+          description: The ID of the item's `ITEM_ADD` action.
           required: true
           schema:
             type: string
@@ -15144,10 +15142,10 @@ paths:
       x-workflow: updateDraftOrderActionItemWorkflow
     delete:
       operationId: DeleteDraftOrdersIdEditItemsAction_id
-      summary: Remove Item from Draft Order
+      summary: Remove Item from Draft Order Edit
       x-sidebar-summary: Remove Item
       description: |
-        Remove an order item from a draft order by the ID of the item's `ITEM_REMOVE` action.
+        Remove an order item from a draft order edit by the ID of the item's `ITEM_ADD` or `ITEM_UPDATE` action.
 
         Every item has an `actions` property, whose value is an array of actions. You can check the action's name using its `action` property, and use the value of the `id` property.
       x-authenticated: true
@@ -15160,7 +15158,7 @@ paths:
             type: string
         - name: action_id
           in: path
-          description: The ID of the order item's `ITEM_REMOVE` action.
+          description: The ID of the order item's `ITEM_ADD` or `ITEM_UPDATE` action.
           required: true
           schema:
             type: string
@@ -15212,9 +15210,9 @@ paths:
   /admin/draft-orders/{id}/edit/promotions:
     post:
       operationId: PostDraftOrdersIdEditPromotions
-      summary: Add Promotions to Draft Order
+      summary: Add Promotions to Draft Order Edit
       x-sidebar-summary: Add Promotions
-      description: Add promotions to a draft order.
+      description: Add promotions to a draft order edit.
       x-authenticated: true
       parameters:
         - name: id
@@ -15287,9 +15285,9 @@ paths:
       x-workflow: addDraftOrderPromotionWorkflow
     delete:
       operationId: DeleteDraftOrdersIdEditPromotions
-      summary: Remove Promotions from Draft Order
+      summary: Remove Promotions from Draft Order Edit
       x-sidebar-summary: Remove Promotions
-      description: Remove specified promotions from a draft order.
+      description: Remove specified promotions from a draft order edit.
       x-authenticated: true
       parameters:
         - name: id
@@ -15413,9 +15411,9 @@ paths:
   /admin/draft-orders/{id}/edit/shipping-methods:
     post:
       operationId: PostDraftOrdersIdEditShippingMethods
-      summary: Add Shipping Method to Draft Order
+      summary: Add Shipping Method to Draft Order Edit
       x-sidebar-summary: Add Shipping Method
-      description: Add a shipping method to a draft order.
+      description: Add a shipping method to a draft order edit.
       x-authenticated: true
       parameters:
         - name: id
@@ -15483,9 +15481,9 @@ paths:
   /admin/draft-orders/{id}/edit/shipping-methods/method/{method_id}:
     post:
       operationId: PostDraftOrdersIdEditShippingMethodsMethodMethod_id
-      summary: Update Shipping Method in Draft Order
+      summary: Update Existing Shipping Method in Draft Order Edit
       x-sidebar-summary: Update Shipping Method
-      description: Update a shipping method in a draft order
+      description: Update an existing shipping method in a draft order edit.
       x-authenticated: true
       parameters:
         - name: id
@@ -15552,13 +15550,80 @@ paths:
         '500':
           $ref: '#/components/responses/500_error'
       x-workflow: updateDraftOrderShippingMethodWorkflow
+    delete:
+      operationId: DeleteDraftOrdersIdEditShippingMethodsMethodMethod_id
+      summary: Remove Shipping Method from Draft Order Edit
+      x-sidebar-summary: Remove Shipping Method
+      description: Remove an existing shipping method from a draft order edit.
+      x-authenticated: true
+      parameters:
+        - name: id
+          in: path
+          description: The draft order's ID.
+          required: true
+          schema:
+            type: string
+        - name: method_id
+          in: path
+          description: The shipping method's ID.
+          required: true
+          schema:
+            type: string
+      security:
+        - api_token: []
+        - cookie_auth: []
+        - jwt_token: []
+      x-codeSamples:
+        - lang: JavaScript
+          label: JS SDK
+          source: |-
+            import Medusa from "@medusajs/js-sdk"
+
+            export const sdk = new Medusa({
+              baseUrl: import.meta.env.VITE_BACKEND_URL || "/",
+              debug: import.meta.env.DEV,
+              auth: {
+                type: "session",
+              },
+            })
+
+            sdk.admin.draftOrder.removeShippingMethod(
+              "order_123", 
+              "shipping_method_123"
+            )
+            .then(({ draft_order_preview }) => {
+              console.log(draft_order_preview)
+            })
+        - lang: Shell
+          label: cURL
+          source: |-
+            curl -X DELETE '{backend_url}/admin/draft-orders/{id}/edit/shipping-methods/method/{method_id}' \
+            -H 'Authorization: Bearer {access_token}'
+      tags:
+        - Draft Orders
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/400_error'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found_error'
+        '409':
+          $ref: '#/components/responses/invalid_state_error'
+        '422':
+          $ref: '#/components/responses/invalid_request_error'
+        '500':
+          $ref: '#/components/responses/500_error'
+      x-workflow: removeDraftOrderShippingMethodWorkflow
   /admin/draft-orders/{id}/edit/shipping-methods/{action_id}:
     post:
       operationId: PostDraftOrdersIdEditShippingMethodsAction_id
-      summary: Update Shipping Method Changes in Draft Order
-      x-sidebar-summary: Update Shipping Method Changes
+      summary: Update New Shipping Method in Draft Order Edit
+      x-sidebar-summary: Update New Shipping Method
       description: |
-        Update changes made on a shipping method (addition or update) in a draft order using the `ID` of the method's `SHIPPING_ADD` or `SHIPPING_UPDATE` action.
+        Update a new shipping method that was added to a draft order edit using the `ID` of the method's `SHIPPING_ADD` action.
 
         Every shipping method has an `actions` property, whose value is an array of actions. You can check the action's name using its `action` property, and use the value of the `id` property.
       x-authenticated: true
@@ -15571,7 +15636,7 @@ paths:
             type: string
         - name: action_id
           in: path
-          description: The ID of the shipping method's `SHIPPING_ADD` or `SHIPPING_UPDATE` action.
+          description: The ID of the shipping method's `SHIPPING_ADD` action.
           required: true
           schema:
             type: string
@@ -15633,10 +15698,10 @@ paths:
       x-workflow: updateDraftOrderActionShippingMethodWorkflow
     delete:
       operationId: DeleteDraftOrdersIdEditShippingMethodsAction_id
-      summary: Remove Shipping Method from Draft Order
-      x-sidebar-summary: Remove Shipping Method
+      summary: Remove New Shipping Method from Draft Order
+      x-sidebar-summary: Remove New Shipping Method
       description: |
-        Remove the shipping method in a draft order using the `ID` of the method's `SHIPPING_ADD` action.
+        Remove a shipping method that was added to a draft order edit using the `ID` of the method's `SHIPPING_ADD` action.
 
         Every shipping method has an `actions` property, whose value is an array of actions. You can check the action's name using its `action` property, and use the value of the `id` property.
       x-authenticated: true
@@ -27190,12 +27255,12 @@ paths:
       parameters:
         - name: fields
           in: query
-          description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+          description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
           required: false
           schema:
             type: string
             title: fields
-            description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+            description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
         - name: offset
@@ -27767,12 +27832,12 @@ paths:
       parameters:
         - name: fields
           in: query
-          description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+          description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
           required: false
           schema:
             type: string
             title: fields
-            description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+            description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
       security:
@@ -27852,12 +27917,12 @@ paths:
             type: string
         - name: fields
           in: query
-          description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+          description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
           required: false
           schema:
             type: string
             title: fields
-            description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+            description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
         - name: include_ancestors_tree
@@ -27938,12 +28003,12 @@ paths:
             type: string
         - name: fields
           in: query
-          description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+          description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
           required: false
           schema:
             type: string
             title: fields
-            description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+            description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
       security:
@@ -28117,12 +28182,12 @@ paths:
             type: string
         - name: fields
           in: query
-          description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+          description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
           required: false
           schema:
             type: string
             title: fields
-            description: 'Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. NOTE: This route doesn''t allow expanding custom relations.'
+            description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
       security:
@@ -50279,7 +50344,7 @@ paths:
       description: |
         Generate a reset password token for an admin user. This API route doesn't reset the admin's password or send them the reset instructions in a notification.
 
-        Instead, This API route emits the `auth.password_reset` event, passing it the token as a payload. You can listen to that event in a subscriber as explained in [this guide](https://docs.medusajs.com/resources/commerce-modules/auth/reset-password), then send the user a notification. The notification is sent using a [Notification Module Provider](https://docs.medusajs.com/resources/architectural-modules/notification), and it should have the URL to reset the password in the Medusa Admin dashboard, such as `http://localhost:9000/app/reset-password?token=123`.
+        Instead, This API route emits the `auth.password_reset` event, passing it the token as a payload. You can listen to that event in a subscriber as explained in [this guide](https://docs.medusajs.com/resources/commerce-modules/auth/reset-password), then send the user a notification. The notification is sent using a [Notification Module Provider](https://docs.medusajs.com/resources/infrastructure-modules/notification), and it should have the URL to reset the password in the Medusa Admin dashboard, such as `http://localhost:9000/app/reset-password?token=123`.
 
 
          Use the generated token to update the user's password using the [Reset Password API route](https://docs.medusajs.com/api/admin#auth_postactor_typeauth_providerupdate).
@@ -63141,17 +63206,20 @@ components:
                 type: object
                 description: The state of the step's invokation function.
                 x-schemaName: WorkflowExecutionFn
+                required:
+                  - state
+                  - status
                 properties:
                   state:
                     type: string
                     description: The invokation step's state.
                     enum:
+                      - failed
                       - not_started
                       - invoking
                       - compensating
                       - done
                       - reverted
-                      - failed
                       - dormant
                       - skipped
                       - skipped_failure
@@ -63165,9 +63233,6 @@ components:
                       - waiting_response
                       - temp_failure
                       - permanent_failure
-                required:
-                  - state
-                  - status
               definition:
                 type: object
                 description: The step's definition details.
@@ -63188,7 +63253,15 @@ components:
                   continueOnPermanentFailure:
                     type: boolean
                     title: continueOnPermanentFailure
-                    description: Whether the step continues executing even if its status is changed to failed.
+                    description: Whether the workflow should continue executing even if its status is changed to failed.
+                  skipOnPermanentFailure:
+                    oneOf:
+                      - type: string
+                        title: skipOnPermanentFailure
+                        description: The ID of the step to skip to in case of a permanent failure.
+                      - type: boolean
+                        title: skipOnPermanentFailure
+                        description: Whether the workflow should skip subsequent steps in case of a permanent failure.
                   maxRetries:
                     type: number
                     title: maxRetries
@@ -63218,17 +63291,20 @@ components:
                 type: object
                 description: The state of the step's compensation function.
                 x-schemaName: WorkflowExecutionFn
+                required:
+                  - state
+                  - status
                 properties:
                   state:
                     type: string
                     description: The compensation function's state.
                     enum:
+                      - failed
                       - not_started
                       - invoking
                       - compensating
                       - done
                       - reverted
-                      - failed
                       - dormant
                       - skipped
                       - skipped_failure
@@ -63242,9 +63318,6 @@ components:
                       - waiting_response
                       - temp_failure
                       - permanent_failure
-                required:
-                  - state
-                  - status
               depth:
                 type: number
                 title: depth

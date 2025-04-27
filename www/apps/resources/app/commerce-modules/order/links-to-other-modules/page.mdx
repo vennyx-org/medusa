@@ -6,7 +6,7 @@ export const metadata = {
 
 # {metadata.title}
 
-This document showcases the module links defined between the Order Module and other commerce modules.
+This document showcases the module links defined between the Order Module and other Commerce Modules.
 
 ## Summary
 
@@ -44,7 +44,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [Customer](/references/customer/models/Customer) in [Customer Module](../../customer/page.mdx)
       </Table.Cell>
       <Table.Cell>
-        Read-only
+        Read-only - has one
       </Table.Cell>
       <Table.Cell>
         [Learn more](#customer-module)
@@ -58,7 +58,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [Cart](/references/cart/models/Cart) in [Cart Module](../../cart/page.mdx)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - one-to-one
       </Table.Cell>
       <Table.Cell>
         [Learn more](#cart-module)
@@ -72,7 +72,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [Fulfillment](/references/fulfillment/models/Fulfillment) in [Fulfillment Module](../../fulfillment/page.mdx)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - one-to-many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#fulfillment-module)
@@ -86,7 +86,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [Fulfillment](/references/fulfillment/models/Fulfillment) in [Fulfillment Module](../../fulfillment/page.mdx)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - one-to-many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#fulfillment-module)
@@ -100,7 +100,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [PaymentCollection](/references/payment/models/PaymentCollection) in [Payment Module](../../payment/page.mdx)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - one-to-many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#payment-module)
@@ -114,7 +114,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [PaymentCollection](/references/payment/models/PaymentCollection) in [Payment Module](../../payment/page.mdx)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - one-to-many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#payment-module)
@@ -128,7 +128,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [PaymentCollection](/references/payment/models/PaymentCollection) in [Payment Module](../../payment/page.mdx)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - one-to-many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#payment-module)
@@ -136,13 +136,13 @@ Read-only links are used to query data across modules, but the relations aren't 
     </Table.Row>
     <Table.Row>
       <Table.Cell>
-        [Order](/references/order/models/Order)
+        [OrderLineItem](/references/order/models/OrderLineItem)
       </Table.Cell>
       <Table.Cell>
         [Product](/references/product/models/Product) in [Product Module](../../product/page.mdx)
       </Table.Cell>
       <Table.Cell>
-        Read-only
+        Read-only - has many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#product-module)
@@ -156,7 +156,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [Promotion](/references/promotion/models/Promotion) in [Promotion Module](../../promotion/page.mdx)
       </Table.Cell>
       <Table.Cell>
-        Stored
+        Stored - many-to-many
       </Table.Cell>
       <Table.Cell>
         [Learn more](#promotion-module)
@@ -170,7 +170,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [Region](/references/region/models/Region) in [Region Module](../../region/page.mdx)
       </Table.Cell>
       <Table.Cell>
-        Read-only
+        Read-only - has one
       </Table.Cell>
       <Table.Cell>
         [Learn more](#region-module)
@@ -184,7 +184,7 @@ Read-only links are used to query data across modules, but the relations aren't 
         [SalesChannel](/references/sales-channel/models/SalesChannel) in [Sales Channel Module](../../sales-channel/page.mdx)
       </Table.Cell>
       <Table.Cell>
-        Read-only
+        Read-only - has one
       </Table.Cell>
       <Table.Cell>
         [Learn more](#sales-channel-module)
@@ -214,7 +214,7 @@ const { data: orders } = await query.graph({
   ],
 })
 
-// orders.customer
+// orders[0].customer
 ```
 
   </CodeTab>
@@ -232,7 +232,7 @@ const { data: orders } = useQueryGraphStep({
   ],
 })
 
-// orders.customer
+// orders[0].customer
 ```
 
   </CodeTab>
@@ -263,7 +263,7 @@ const { data: orders } = await query.graph({
   ],
 })
 
-// orders.cart
+// orders[0].cart
 ```
 
   </CodeTab>
@@ -281,7 +281,7 @@ const { data: orders } = useQueryGraphStep({
   ],
 })
 
-// orders.cart
+// orders[0].cart
 ```
 
   </CodeTab>
@@ -364,7 +364,7 @@ const { data: orders } = await query.graph({
   ],
 })
 
-// orders.fulfillments
+// orders[0].fulfillments
 ```
 
   </CodeTab>
@@ -382,7 +382,7 @@ const { data: orders } = useQueryGraphStep({
   ],
 })
 
-// orders.fulfillments
+// orders[0].fulfillments
 ```
 
   </CodeTab>
@@ -457,7 +457,7 @@ const { data: orders } = await query.graph({
   ],
 })
 
-// orders.payment_collections
+// orders[0].payment_collections
 ```
 
   </CodeTab>
@@ -475,7 +475,7 @@ const { data: orders } = useQueryGraphStep({
   ],
 })
 
-// orders.payment_collections
+// orders[0].payment_collections
 ```
 
   </CodeTab>
@@ -602,7 +602,7 @@ const { data: orders } = await query.graph({
   ],
 })
 
-// orders.promotion
+// orders[0].promotion
 ```
 
   </CodeTab>
@@ -620,7 +620,7 @@ const { data: orders } = useQueryGraphStep({
   ],
 })
 
-// orders.promotion
+// orders[0].promotion
 ```
 
   </CodeTab>
@@ -691,7 +691,7 @@ const { data: orders } = await query.graph({
   ],
 })
 
-// orders.region
+// orders[0].region
 ```
 
   </CodeTab>
@@ -709,7 +709,7 @@ const { data: orders } = useQueryGraphStep({
   ],
 })
 
-// orders.region
+// orders[0].region
 ```
 
   </CodeTab>
@@ -736,7 +736,7 @@ const { data: orders } = await query.graph({
   ],
 })
 
-// orders.sales_channel
+// orders[0].sales_channel
 ```
 
   </CodeTab>
@@ -754,7 +754,7 @@ const { data: orders } = useQueryGraphStep({
   ],
 })
 
-// orders.sales_channel
+// orders[0].sales_channel
 ```
 
   </CodeTab>

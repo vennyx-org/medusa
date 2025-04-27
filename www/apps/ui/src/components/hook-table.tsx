@@ -67,6 +67,7 @@ const Row = ({ value, type, description }: HookData) => {
           <Tooltip
             tooltipChildren={<pre>{type.shape}</pre>}
             className="font-mono max-w-[500px]"
+            tooltipClassName="!text-left"
           >
             <div className="flex items-center gap-x-1">
               <span>{type.name}</span>

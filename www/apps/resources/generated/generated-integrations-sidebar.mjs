@@ -83,8 +83,8 @@ const generatedgeneratedIntegrationsSidebarSidebar = {
           "loaded": true,
           "isPathHref": true,
           "type": "ref",
-          "path": "/architectural-modules/file/s3",
-          "title": "AWS",
+          "path": "/infrastructure-modules/file/s3",
+          "title": "S3 (and Compatible APIs)",
           "children": []
         }
       ]
@@ -142,7 +142,7 @@ const generatedgeneratedIntegrationsSidebarSidebar = {
           "loaded": true,
           "isPathHref": true,
           "type": "ref",
-          "path": "/architectural-modules/notification/sendgrid",
+          "path": "/infrastructure-modules/notification/sendgrid",
           "title": "SendGrid",
           "children": []
         }

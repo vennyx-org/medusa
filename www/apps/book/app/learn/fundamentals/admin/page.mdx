@@ -4,14 +4,42 @@ export const metadata = {
 
 # {metadata.title}
 
-In the next chapters, you'll learn more about possible admin customizations.
+In this chapter, you'll learn about th Medusa Admin dashboard and the possible ways to customize it.
 
-You can customize the admin dashboard by:
+## What is the Medusa Admin?
 
-- Adding new sections to existing pages using Widgets.
-- Adding new pages using UI Routes.
+The Medusa Admin is an intuitive dashboard that allows merchants to manage their ecommerce store. It provides management featuers related to products, orders, customers, and more.
 
-However, you can't customize the admin dashboard's layout, design, or the content of the existing pages (aside from injecting widgets).
+<Note title="Tip">
+
+To explore more what you can do with the Medusa Admin, check out the [User Guide](!user-guide!). These user guides are designed for merchants and provide the steps to perform any task within the Medusa Admin.
+
+</Note>
+
+The Medusa Admin is built with [Vite](https://vite.dev/). When you [install the Medusa application](../../installation/page.mdx), you also install the Medusa Admin. Then, when you start the Medusa application, you can access the Medusa Admin at `http://localhost:9000/app`.
+
+<Note title="Tip">
+
+If you don't have an admin user, use the [Medusa CLI](!resources!/medusa-cli/commands/user) to create one.
+
+</Note>
+
+---
+
+## How to Customize the Medusa Admin?
+
+You can customize the Medusa Admin dashboard by:
+
+- Adding new sections to existing pages using [Widgets](./widgets/page.mdx).
+- Adding new pages using [UI Routes](./ui-routes/page.mdx).
+
+The next chapters will cover these two topics in detail.
+
+### What You Can't Customize in the Medusa Admin
+
+You can't customize the admin dashboard's layout, design, or the content of the existing pages (aside from injecting widgets).
+
+If your use case requires heavy customization of the admin dashboard, you can build a custom admin dashboard using Medusa's [Admin API routes](!api!/admin).
 
 ---
 

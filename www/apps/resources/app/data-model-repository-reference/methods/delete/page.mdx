@@ -1,0 +1,138 @@
+---
+sidebar_label: "delete"
+---
+
+import { TypeList } from "docs-ui"
+
+export const metadata = {
+  title: `delete Method - Data Model Repository Reference`,
+}
+
+# {metadata.title}
+
+The `delete` method of a data model repository deletes one or more records of the data model.
+
+<Note>
+
+This reference assumes you've already resolved the data model repository, as explained in the [Data Model Repository Reference](../../page.mdx) documentation.
+
+</Note>
+
+## `delete` Parameters
+
+<TypeList
+  types={[
+    {
+      type: "`object`",
+      name: "filters",
+      description: "The filters to select the records to delete. The keys are the property names of the data model, and the values are the values to filter by.",
+      required: true,
+    }
+  ]}
+  sectionTitle="delete Parameters"
+/>
+---
+
+## Delete Record by ID
+
+```ts
+import { 
+  InjectTransactionManager,
+  MedusaContext,
+  MedusaService,
+} from "@medusajs/framework/utils"
+import { Context, InferTypeOf, DAL } from "@medusajs/framework/types"
+import { EntityManager } from "@mikro-orm/knex"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  // ...
+  @InjectTransactionManager()
+  protected async doSomething_(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    const deletedIds = await this.postRepository_.delete({
+      id,
+    })
+
+    return deletedIds
+  }
+
+  @InjectManager()
+  async doSomething(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    return await this.doSomething_(id, sharedContext)
+  }
+}
+```
+
+### Parameters
+
+The `delete` method accepts an object of filters to select the records to delete.
+
+In the example above, you pass an object with the `id` property to delete a record by its ID.
+
+### Returns
+
+The method returns an array of strings, each representing the ID of a deleted record.
+
+---
+
+## Delete Records by Filters
+
+```ts
+import { 
+  InjectTransactionManager,
+  MedusaContext,
+  MedusaService,
+} from "@medusajs/framework/utils"
+import { Context, InferTypeOf, DAL } from "@medusajs/framework/types"
+import { EntityManager } from "@mikro-orm/knex"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  // ...
+  @InjectTransactionManager()
+  protected async doSomething_(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    const deletedIds = await this.postRepository_.delete({
+      title: "My Post",
+    })
+
+    return deletedIds
+  }
+
+  @InjectManager()
+  async doSomething(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    return await this.doSomething_(id, sharedContext)
+  }
+}
+```
+
+### Parameters
+
+Since the `delete` method accepts an object of filters, you can pass any property of the data model as a filter.
+
+In the example above, you pass an object with the `title` property to delete all records with that title.
+
+<Note>
+
+Find examples of different filters in the [Filter Records](../../tips/filtering/page.mdx) documentation.
+
+</Note>
+
+### Returns
+
+The method returns an array of strings, each representing the ID of a deleted record.

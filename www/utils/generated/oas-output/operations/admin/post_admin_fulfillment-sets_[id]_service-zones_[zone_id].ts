@@ -96,7 +96,11 @@
  *                     province_code:
  *                       type: string
  *                       title: province_code
- *                       description: The geo zone's province code.
+ *                       description: The geo zone's ISO 3166-2 province code. Must be lower-case.
+ *                       example: "us-ca"
+ *                       externalDocs:
+ *                         url: https://en.wikipedia.org/wiki/ISO_3166-2
+ *                         description: Learn more about ISO 3166-2
  *                     id:
  *                       type: string
  *                       title: id
@@ -129,7 +133,11 @@
  *                     province_code:
  *                       type: string
  *                       title: province_code
- *                       description: The geo zone's province code.
+ *                       description: The geo zone's ISO 3166-2 province code. Must be lower-case.
+ *                       example: "us-ca"
+ *                       externalDocs:
+ *                         url: https://en.wikipedia.org/wiki/ISO_3166-2
+ *                         description: Learn more about ISO 3166-2
  *                     id:
  *                       type: string
  *                       title: id
@@ -163,7 +171,11 @@
  *                     province_code:
  *                       type: string
  *                       title: province_code
- *                       description: The geo zone's province code.
+ *                       description: The geo zone's ISO 3166-2 province code. Must be lower-case.
+ *                       example: "us-ca"
+ *                       externalDocs:
+ *                         url: https://en.wikipedia.org/wiki/ISO_3166-2
+ *                         description: Learn more about ISO 3166-2
  *                     postal_expression:
  *                       type: object
  *                       description: The geo zone's postal expression or ZIP code.

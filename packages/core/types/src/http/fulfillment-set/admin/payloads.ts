@@ -25,7 +25,7 @@ interface AdminUpsertFulfillmentSetServiceZoneProvince
   extends AdminUpsertGeoZone {
   type: "province"
   /**
-   * The geo zone's province code.
+   * The geo zone's lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code.
    */
   province_code: string
 }
@@ -33,7 +33,7 @@ interface AdminUpsertFulfillmentSetServiceZoneProvince
 interface AdminUpsertFulfillmentSetServiceZoneCity extends AdminUpsertGeoZone {
   type: "city"
   /**
-   * The geo zone's province code.
+   * The geo zone's lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code.
    */
   province_code: string
   /**
@@ -45,7 +45,7 @@ interface AdminUpsertFulfillmentSetServiceZoneCity extends AdminUpsertGeoZone {
 interface AdminUpsertFulfillmentSetServiceZoneZip extends AdminUpsertGeoZone {
   type: "zip"
   /**
-   * The geo zone's province code.
+   * The geo zone's lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code.
    */
   province_code: string
   /**
@@ -92,7 +92,7 @@ interface AdminUpdateFulfillmentSetServiceZoneProvince
   extends AdminUpdateGeoZone {
   type: "province"
   /**
-   * The geo zone's province code.
+   * The geo zone's lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code.
    */
   province_code: string
 }
@@ -100,7 +100,7 @@ interface AdminUpdateFulfillmentSetServiceZoneProvince
 interface AdminUpdateFulfillmentSetServiceZoneCity extends AdminUpdateGeoZone {
   type: "city"
   /**
-   * The geo zone's province code.
+   * The geo zone's lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code.
    */
   province_code: string
   /**
@@ -112,7 +112,7 @@ interface AdminUpdateFulfillmentSetServiceZoneCity extends AdminUpdateGeoZone {
 interface AdminUpdateFulfillmentSetServiceZoneZip extends AdminUpdateGeoZone {
   type: "zip"
   /**
-   * The geo zone's province code.
+   * The geo zone's lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code.
    */
   province_code: string
   /**

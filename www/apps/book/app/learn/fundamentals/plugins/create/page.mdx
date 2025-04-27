@@ -67,6 +67,12 @@ For example:
 
 Medusa scrapes NPM for a list of plugins that integrate third-party services, to later showcase them on the Medusa website. If you want your plugin to appear in that listing, make sure to add the `medusa-v2` and `medusa-plugin-integration` keywords to the `keywords` field in `package.json`.
 
+<Note title="Important">
+
+Only plugins that integrate third-party services are listed in the Medusa integrations page. If your plugin doesn't integrate a third-party service, you can skip this step.
+
+</Note>
+
 ```json title="package.json"
 {
   "keywords": [
@@ -173,35 +179,13 @@ In addition, make sure to use one of the following keywords based on your integr
     </Table.Row>
     <Table.Row>
       <Table.Cell>
-        `medusa-plugin-storage`
-      </Table.Cell>
-      <Table.Cell>
-        Storage or File service integration
-      </Table.Cell>
-      <Table.Cell>
-        Cloudinary
-      </Table.Cell>
-    </Table.Row>
-    <Table.Row>
-      <Table.Cell>
-        `medusa-plugin-source`
-      </Table.Cell>
-      <Table.Cell>
-        Data migration integration
-      </Table.Cell>
-      <Table.Cell>
-        Shopify
-      </Table.Cell>
-    </Table.Row>
-    <Table.Row>
-      <Table.Cell>
         `medusa-plugin-other`
       </Table.Cell>
       <Table.Cell>
-        Other service integrations
+        Other third-party integrations
       </Table.Cell>
       <Table.Cell>
-        Custom API Integration
+        Sentry
       </Table.Cell>
     </Table.Row>
   </Table.Body>
@@ -322,7 +306,7 @@ Make sure to replace `~/path/to/medusa-app` with the path to your Medusa applica
 
 Then, if your project was created before v2.3.1 of Medusa, make sure to install `yalc` as a development dependency:
 
-```bash npm2yarn title="Medusa application"
+```bash npm2yarn badgeLabel="Medusa Application" badgeColor="green"
 npm install --save-dev yalc
 ```
 
@@ -403,7 +387,7 @@ This command will:
 
 You can start your Medusa application's development server to test out your plugin:
 
-```bash npm2yarn title="Medusa application"
+```bash npm2yarn badgeLabel="Medusa Application" badgeColor="green"
 npm run dev
 ```
 
@@ -518,9 +502,9 @@ import BlogType from "@myorg/plugin-name/types/blog"
 
 ### Create Module Providers
 
-The [exported resources](#package-exports) also allow you to import module providers in your plugin and register them in the Medusa application's configuration. A module provider is a module that provides the underlying logic or integration related to a commerce or architectural module.
+The [exported resources](#package-exports) also allow you to import module providers in your plugin and register them in the Medusa application's configuration. A module provider is a module that provides the underlying logic or integration related to a commerce or Infrastructure Module.
 
-For example, assuming your plugin has a [Notification Module Provider](!resources!/architectural-modules/notification) called `my-notification`, you can register it in your Medusa application's configuration like this:
+For example, assuming your plugin has a [Notification Module Provider](!resources!/infrastructure-modules/notification) called `my-notification`, you can register it in your Medusa application's configuration like this:
 
 <Note title="Tip">
 

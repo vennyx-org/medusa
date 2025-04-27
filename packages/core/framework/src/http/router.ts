@@ -12,6 +12,7 @@ import type {
   MiddlewareDescriptor,
   BodyParserConfigRoute,
   RouteHandler,
+  AdditionalDataValidatorRoute,
 } from "./types"
 
 import { RoutesLoader } from "./routes-loader"
@@ -92,6 +93,8 @@ export class ApiLoader {
         | ErrorRequestHandler
         | undefined,
       bodyParserConfigRoutes: middlewareLoader.getBodyParserConfigRoutes(),
+      additionalDataValidatorRoutes:
+        middlewareLoader.getAdditionalDataValidatorRoutes(),
     }
   }
 
@@ -282,6 +285,46 @@ export class ApiLoader {
   }
 
   /**
+   * Applies the route middleware on a route. Encapsulates the logic
+   * needed to pass the middleware via the trace calls
+   */
+  #assignAdditionalDataValidator(
+    namespace: string,
+    routesFinder: RoutesFinder<AdditionalDataValidatorRoute>
+  ) {
+    logger.debug(
+      `Registering assignAdditionalDataValidator middleware for prefix ${namespace}`
+    )
+
+    const additionalDataValidator = function additionalDataValidator(
+      req: MedusaRequest,
+      _: MedusaResponse,
+      next: MedusaNextFunction
+    ) {
+      const matchingRoute = routesFinder.find(
+        req.path,
+        req.method as MiddlewareVerb
+      )
+      if (matchingRoute && matchingRoute.validator) {
+        logger.debug(
+          `Using validator to validate additional data on ${req.method} ${req.path}`
+        )
+        req.additionalDataValidator = matchingRoute.validator
+      }
+      return next()
+    }
+
+    this.#app.use(
+      namespace,
+      ApiLoader.traceMiddleware
+        ? (ApiLoader.traceMiddleware(additionalDataValidator, {
+            route: namespace,
+          }) as RequestHandler)
+        : (additionalDataValidator as RequestHandler)
+    )
+  }
+
+  /**
    * Applies the middleware to authenticate the headers to contain
    * a `x-publishable-key` header
    */
@@ -305,6 +348,7 @@ export class ApiLoader {
       routes,
       routesFinder,
       bodyParserConfigRoutes,
+      additionalDataValidatorRoutes,
     } = await this.#loadHttpResources()
 
     /**
@@ -321,6 +365,27 @@ export class ApiLoader {
       ])
     )
     this.#applyBodyParserMiddleware("/", bodyParserRoutesFinder)
+
+    /**
+     * Use the routes finder to pick the additional data validator
+     * to be applied on the current request
+     */
+    if (additionalDataValidatorRoutes.length) {
+      const additionalDataValidatorRoutesFinder =
+        new RoutesFinder<AdditionalDataValidatorRoute>(
+          new RoutesSorter(additionalDataValidatorRoutes).sort([
+            "static",
+            "params",
+            "regex",
+            "wildcard",
+            "global",
+          ])
+        )
+      this.#assignAdditionalDataValidator(
+        "/",
+        additionalDataValidatorRoutesFinder
+      )
+    }
 
     /**
      * CORS and Auth setup for admin routes

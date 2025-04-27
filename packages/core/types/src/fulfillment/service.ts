@@ -863,7 +863,7 @@ export interface IFulfillmentModuleService extends IModuleService {
    *     {
    *       type: "city",
    *       service_zone_id: "serzo_321",
-   *       province_code: "VT",
+   *       province_code: "us-vt",
    *       city: "Vermont",
    *       country_code: "us",
    *     },
@@ -912,7 +912,7 @@ export interface IFulfillmentModuleService extends IModuleService {
    *     {
    *       id: "fgz_321",
    *       type: "city",
-   *       province_code: "VT",
+   *       province_code: "us-vt",
    *     },
    *   ])
    */

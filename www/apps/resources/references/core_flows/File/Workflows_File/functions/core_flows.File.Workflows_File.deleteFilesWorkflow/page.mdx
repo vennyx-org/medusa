@@ -16,13 +16,13 @@ This documentation provides a reference to the `deleteFilesWorkflow`. It belongs
 This workflow deletes one or more files. It's used by the
 [Delete File Upload Admin API Route](https://docs.medusajs.com/api/admin#uploads\_deleteuploadsid).
 
-The [File Module Provider](https://docs.medusajs.com/resources/architectural-modules/file) installed
+The [File Module Provider](https://docs.medusajs.com/resources/infrastructure-modules/file) installed
 in your application will be used to delete the file from storage.
 
 You can use this workflow within your customizations or your own custom workflows, allowing you to
 delete files within your custom flows.
 
-<SourceCodeLink link="https://github.com/medusajs/medusa/blob/b9edc066c8486e8ec52e4f505968db1c558bc7b8/packages/core/core-flows/src/file/workflows/delete-files.ts#L29" />
+<SourceCodeLink link="https://github.com/medusajs/medusa/blob/876a14eb98aed54360312b9b215599aa46faccd8/packages/core/core-flows/src/file/workflows/delete-files.ts#L29" />
 
 ## Examples
 
@@ -131,7 +131,7 @@ const myWorkflow = createWorkflow(
 
 ## Steps
 
-<WorkflowDiagram workflow={{"name":"deleteFilesWorkflow","steps":[{"type":"step","name":"deleteFilesStep","description":"This step deletes one or more files using the installed\n[File Module Provider](https://docs.medusajs.com/resources/architectural-modules/file). The files\nwill be removed from the database and the storage.","link":"../../../Steps_File/functions/core_flows.File.Steps_File.deleteFilesStep/page.mdx","depth":1}]}} />
+<WorkflowDiagram workflow={{"name":"deleteFilesWorkflow","steps":[{"type":"step","name":"deleteFilesStep","description":"This step deletes one or more files using the installed\n[File Module Provider](https://docs.medusajs.com/resources/infrastructure-modules/file). The files\nwill be removed from the database and the storage.","link":"../../../Steps_File/functions/core_flows.File.Steps_File.deleteFilesStep/page.mdx","depth":1}]}} />
 
 ## Input
 

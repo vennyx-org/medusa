@@ -735,6 +735,11 @@ export const ExampleRegistry: ExampleRegistryType = {
     ),
     file: "src/examples/code-block-no-header.tsx",
   },
+  "code-block-no-copy": {
+    name: "code-block-no-copy",
+    component: React.lazy(async () => import("@/examples/code-block-no-copy")),
+    file: "src/examples/code-block-no-copy.tsx",
+  },
   "container-layout": {
     name: "container-layout",
     component: React.lazy(async () => import("@/examples/container-layout")),

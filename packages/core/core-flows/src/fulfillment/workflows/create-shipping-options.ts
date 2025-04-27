@@ -31,6 +31,13 @@ export const createShippingOptionsWorkflowId =
  * @example
  * To calculate a shipping option with flat rate prices:
  * 
+ * :::note
+ * 
+ * Learn more about adding rules to the shipping option's prices in the Pricing Module's 
+ * [Price Rules](https://docs.medusajs.com/resources/commerce-modules/pricing/price-rules) documentation.
+ * 
+ * :::note
+ * 
  * ```ts
  * const { result } = await createShippingOptionsWorkflow(container)
  * .run({

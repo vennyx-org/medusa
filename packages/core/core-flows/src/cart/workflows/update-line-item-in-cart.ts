@@ -2,7 +2,7 @@ import {
   AdditionalData,
   UpdateLineItemInCartWorkflowInputDTO,
 } from "@medusajs/framework/types"
-import { isDefined, MedusaError } from "@medusajs/framework/utils"
+import { CartWorkflowEvents, isDefined, MedusaError } from "@medusajs/framework/utils"
 import {
   createHook,
   createWorkflow,
@@ -12,6 +12,7 @@ import {
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk"
 import { useQueryGraphStep } from "../../common"
+import { emitEventStep } from "../../common/steps/emit-event"
 import { useRemoteQueryStep } from "../../common/steps/use-remote-query"
 import { updateLineItemsStepWithSelector } from "../../line-item/steps"
 import { validateCartStep } from "../steps/validate-cart"
@@ -213,6 +214,11 @@ export const updateLineItemInCartWorkflow = createWorkflow(
 
     refreshCartItemsWorkflow.runAsStep({
       input: { cart_id: input.cart_id },
+    })
+
+    emitEventStep({
+      eventName: CartWorkflowEvents.UPDATED,
+      data: { id: input.cart_id },
     })
 
     return new WorkflowResponse(void 0, {

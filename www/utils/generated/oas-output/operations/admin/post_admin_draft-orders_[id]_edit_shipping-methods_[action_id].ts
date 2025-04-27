@@ -1,10 +1,10 @@
 /**
  * @oas [post] /admin/draft-orders/{id}/edit/shipping-methods/{action_id}
  * operationId: PostDraftOrdersIdEditShippingMethodsAction_id
- * summary: Update Shipping Method Changes in Draft Order
- * x-sidebar-summary: Update Shipping Method Changes
+ * summary: Update New Shipping Method in Draft Order Edit
+ * x-sidebar-summary: Update New Shipping Method
  * description: |
- *   Update changes made on a shipping method (addition or update) in a draft order using the `ID` of the method's `SHIPPING_ADD` or `SHIPPING_UPDATE` action.
+ *   Update a new shipping method that was added to a draft order edit using the `ID` of the method's `SHIPPING_ADD` action.
  * 
  *   Every shipping method has an `actions` property, whose value is an array of actions. You can check the action's name using its `action` property, and use the value of the `id` property.
  * x-authenticated: true
@@ -17,7 +17,7 @@
  *       type: string
  *   - name: action_id
  *     in: path
- *     description: The ID of the shipping method's `SHIPPING_ADD` or `SHIPPING_UPDATE` action.
+ *     description: The ID of the shipping method's `SHIPPING_ADD` action.
  *     required: true
  *     schema:
  *       type: string

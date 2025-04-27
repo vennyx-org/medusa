@@ -886,6 +886,71 @@ export const parseColors: ComponentParser<{
   })
 }
 
+export const parseSplitList: ComponentParser = (
+  node: UnistNodeWithData,
+  index: number,
+  parent: UnistTree
+): VisitorResult => {
+  const items = node.attributes?.find((attr) => attr.name === "items")
+
+  if (!items || typeof items.value === "string" || !items.value.data?.estree) {
+    return
+  }
+
+  const itemsJsVar = estreeToJs(items.value.data.estree)
+
+  if (!itemsJsVar || !Array.isArray(itemsJsVar)) {
+    return
+  }
+
+  const listItems = itemsJsVar
+    .map((item) => {
+      if (
+        !isExpressionJsVarObj(item) ||
+        !("title" in item) ||
+        !("link" in item) ||
+        !isExpressionJsVarLiteral(item.title) ||
+        !isExpressionJsVarLiteral(item.link)
+      ) {
+        return null
+      }
+      const description = isExpressionJsVarLiteral(item.description)
+        ? (item.description.data as string)
+        : ""
+      return {
+        type: "listItem",
+        children: [
+          {
+            type: "paragraph",
+            children: [
+              {
+                type: "link",
+                url: `${item.link.data}`,
+                children: [
+                  {
+                    type: "text",
+                    value: `${item.title.data}${description ? `: ${description}` : ""}`,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }
+    })
+    .filter(Boolean) as UnistNode[]
+  if (!listItems.length) {
+    return
+  }
+  parent?.children.splice(index, 1, {
+    type: "list",
+    ordered: false,
+    spread: false,
+    children: listItems,
+  })
+  return [SKIP, index]
+}
+
 /**
  * Helpers
  */

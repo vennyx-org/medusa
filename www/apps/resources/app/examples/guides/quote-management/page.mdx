@@ -40,7 +40,7 @@ export const metadata = {
 
 In this guide, you'll learn how to implement quote management in Medusa.
 
-When you install a Medusa application, you get a fully-fledged commerce platform with a framework for customization. The Medusa application's commerce features are built around [commerce modules](../../../commerce-modules/page.mdx) which are available out-of-the-box.
+When you install a Medusa application, you get a fully-fledged commerce platform with a Framework for customization. The Medusa application's commerce features are built around [Commerce Modules](../../../commerce-modules/page.mdx) which are available out-of-the-box.
 
 By default, the Medusa application provides standard commerce features for orders and carts. However, Medusa's customization capabilities facilitate extending existing features to implement quote-management features.
 
@@ -583,7 +583,7 @@ You create a step with `createStep` from the Workflows SDK. It accepts two param
 1. The step's unique name, which is `create-quotes`.
 2. An async function that receives two parameters:
     - The step's input, which is in this case an array of quotes to create.
-    - An object that has properties including the [Medusa container](!docs!/learn/fundamentals/medusa-container), which is a registry of framework and commerce tools that you can access in the step.
+    - An object that has properties including the [Medusa container](!docs!/learn/fundamentals/medusa-container), which is a registry of Framework and commerce tools that you can access in the step.
 
 In the step function, you resolve the Quote Module's service from the Medusa container using the `resolve` method of the container, passing it the module's name as a parameter.
 

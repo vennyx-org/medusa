@@ -32,7 +32,7 @@ export const customerSidebar = [
       {
         type: "category",
         title: "Server Guides",
-        autogenerate_tags: "server+customer",
+        autogenerate_tags: "customer+server",
         autogenerate_as_ref: true,
         sort_sidebar: "alphabetize",
         description:

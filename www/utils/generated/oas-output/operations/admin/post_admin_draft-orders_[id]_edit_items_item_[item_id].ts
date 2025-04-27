@@ -1,9 +1,9 @@
 /**
  * @oas [post] /admin/draft-orders/{id}/edit/items/item/{item_id}
  * operationId: PostDraftOrdersIdEditItemsItemItem_id
- * summary: Update Item in Draft Order
+ * summary: Update Existing Item in Draft Order Edit
  * x-sidebar-summary: Update Item
- * description: Update an item in a draft order.
+ * description: Update an existing item in a draft order edit.
  * x-authenticated: true
  * parameters:
  *   - name: id

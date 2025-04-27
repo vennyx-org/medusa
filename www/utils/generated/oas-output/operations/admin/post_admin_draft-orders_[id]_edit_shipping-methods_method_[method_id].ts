@@ -1,9 +1,9 @@
 /**
  * @oas [post] /admin/draft-orders/{id}/edit/shipping-methods/method/{method_id}
  * operationId: PostDraftOrdersIdEditShippingMethodsMethodMethod_id
- * summary: Update Shipping Method in Draft Order
+ * summary: Update Existing Shipping Method in Draft Order Edit
  * x-sidebar-summary: Update Shipping Method
- * description: Update a shipping method in a draft order
+ * description: Update an existing shipping method in a draft order edit.
  * x-authenticated: true
  * parameters:
  *   - name: id

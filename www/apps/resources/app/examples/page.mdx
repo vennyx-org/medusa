@@ -1694,7 +1694,7 @@ A module link forms an association between two data models of different modules,
 
 ### Define a Link
 
-To define a link between your custom module and a commerce module, such as the Product Module:
+To define a link between your custom module and a Commerce Module, such as the Product Module:
 
 1. Create the file `src/links/blog-product.ts` with the following content:
 
@@ -2533,7 +2533,7 @@ const { transaction } = await myLongRunningWorkflow(req.scope)
   .run()
 ```
 
-2. In an API route, workflow, or other resource, change a step's status to successful using the [Worfklow Engine Module](../architectural-modules/workflow-engine/page.mdx):
+2. In an API route, workflow, or other resource, change a step's status to successful using the [Worfklow Engine Module](../infrastructure-modules/workflow-engine/page.mdx):
 
 export const stepSuccessHighlights = [
   ["5", "setStepSuccess", "Change a step's status to success"],
@@ -2561,7 +2561,7 @@ await workflowEngineService.setStepSuccess({
 })
 ```
 
-3. In an API route, workflow, or other resource, change a step's status to failure using the [Worfklow Engine Module](../architectural-modules/workflow-engine/page.mdx):
+3. In an API route, workflow, or other resource, change a step's status to failure using the [Worfklow Engine Module](../infrastructure-modules/workflow-engine/page.mdx):
 
 export const stepFailureHighlights = [
   ["5", "setStepFailure", "Change a step's status to failure"],
@@ -3341,7 +3341,7 @@ npm run test:modules
 
 ## Commerce Modules
 
-Medusa provides all its commerce features as separate commerce modules, such as the Product or Order modules.
+Medusa provides all its commerce features as separate Commerce Modules, such as the Product or Order modules.
 
 <Note>
 

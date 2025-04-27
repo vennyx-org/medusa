@@ -27,6 +27,15 @@ export class FileProviderServiceFixtures extends AbstractFileProviderService {
 
     return ""
   }
+
+  async getPresignedUploadUrl(
+    fileData: FileTypes.ProviderGetPresignedUploadUrlDTO
+  ): Promise<FileTypes.ProviderFileResultDTO> {
+    return {
+      url: "presigned-url/" + fileData.filename,
+      key: fileData.filename,
+    }
+  }
 }
 
 export const services = [FileProviderServiceFixtures]

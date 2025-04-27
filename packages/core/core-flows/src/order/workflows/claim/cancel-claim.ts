@@ -2,6 +2,7 @@ import {
   FulfillmentDTO,
   OrderClaimDTO,
   OrderWorkflow,
+  ReturnDTO,
 } from "@medusajs/framework/types"
 import { MedusaError } from "@medusajs/framework/utils"
 import {
@@ -27,6 +28,10 @@ export type CancelClaimValidateOrderStepInput = {
    */
   orderClaim: OrderClaimDTO
   /**
+   * The order claim's return details.
+   */
+  orderReturn: ReturnDTO & { fulfillments: FulfillmentDTO[] }
+  /**
    * The cancelation details.
    */
   input: OrderWorkflow.CancelOrderClaimWorkflowInput
@@ -35,14 +40,14 @@ export type CancelClaimValidateOrderStepInput = {
 /**
  * This step validates that a confirmed claim can be canceled. If the claim is canceled,
  * or the claim's fulfillments are not canceled, the step will throw an error.
- * 
+ *
  * :::note
- * 
+ *
  * You can retrieve an order claim's details using [Query](https://docs.medusajs.com/learn/fundamentals/module-links/query),
  * or [useQueryGraphStep](https://docs.medusajs.com/resources/references/medusa-workflows/steps/useQueryGraphStep).
- * 
+ *
  * :::
- * 
+ *
  * @example
  * const data = cancelClaimValidateOrderStep({
  *   orderClaim: {
@@ -56,10 +61,8 @@ export type CancelClaimValidateOrderStepInput = {
  */
 export const cancelClaimValidateOrderStep = createStep(
   "validate-claim",
-  ({
-    orderClaim,
-  }: CancelClaimValidateOrderStepInput) => {
-    const orderClaim_ = orderClaim as OrderClaimDTO & {
+  ({ orderClaim, orderReturn }: CancelClaimValidateOrderStepInput) => {
+    const orderReturn_ = orderReturn as ReturnDTO & {
       fulfillments: FulfillmentDTO[]
     }
 
@@ -78,7 +81,7 @@ export const cancelClaimValidateOrderStep = createStep(
     const notCanceled = (o) => !o.canceled_at
 
     throwErrorIf(
-      orderClaim_.fulfillments,
+      orderReturn_.fulfillments,
       notCanceled,
       "All fulfillments must be canceled before canceling a claim"
     )
@@ -89,10 +92,10 @@ export const cancelOrderClaimWorkflowId = "cancel-claim"
 /**
  * This workflow cancels a confirmed order claim. It's used by the
  * [Cancel Claim API Route](https://docs.medusajs.com/api/admin#claims_postclaimsidcancel).
- * 
+ *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to cancel a claim
  * for an order in your custom flows.
- * 
+ *
  * @example
  * const { result } = await cancelOrderClaimWorkflow(container)
  * .run({
@@ -100,9 +103,9 @@ export const cancelOrderClaimWorkflowId = "cancel-claim"
  *     claim_id: "claim_123",
  *   }
  * })
- * 
+ *
  * @summary
- * 
+ *
  * Cancel a confirmed order claim.
  */
 export const cancelOrderClaimWorkflow = createWorkflow(
@@ -110,23 +113,29 @@ export const cancelOrderClaimWorkflow = createWorkflow(
   (
     input: WorkflowData<OrderWorkflow.CancelOrderClaimWorkflowInput>
   ): WorkflowData<void> => {
-    const orderClaim: OrderClaimDTO & { fulfillments: FulfillmentDTO[] } =
-      useRemoteQueryStep({
-        entry_point: "order_claim",
-        fields: [
-          "id",
-          "order_id",
-          "return_id",
-          "canceled_at",
-          "fulfillments.canceled_at",
-          "additional_items.item_id",
-        ],
-        variables: { id: input.claim_id },
-        list: false,
-        throw_if_key_not_found: true,
-      })
+    const orderClaim: OrderClaimDTO = useRemoteQueryStep({
+      entry_point: "order_claim",
+      fields: [
+        "id",
+        "order_id",
+        "return_id",
+        "canceled_at",
+        "additional_items.item_id",
+      ],
+      variables: { id: input.claim_id },
+      list: false,
+      throw_if_key_not_found: true,
+    }).config({ name: "claim-query" })
 
-    cancelClaimValidateOrderStep({ orderClaim, input })
+    const orderReturn: ReturnDTO & { fulfillments: FulfillmentDTO[] } =
+      useRemoteQueryStep({
+        entry_point: "return",
+        fields: ["id", "fulfillments.canceled_at"],
+        variables: { id: orderClaim.return_id },
+        list: false,
+      }).config({ name: "return-query" })
+
+    cancelClaimValidateOrderStep({ orderClaim, orderReturn, input })
 
     const lineItemIds = transform({ orderClaim }, ({ orderClaim }) => {
       return orderClaim.additional_items?.map((i) => i.item_id)

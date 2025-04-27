@@ -1,0 +1,495 @@
+---
+sidebar_label: "findAndCount"
+---
+
+import { TypeList } from "docs-ui"
+
+export const metadata = {
+  title: `findAndCount Method - Data Model Repository Reference`,
+}
+
+# {metadata.title}
+
+The `findAndCount` method of a data model repository retrieves a list of records and the total count of records that match the query.
+
+<Note>
+
+This reference assumes you've already resolved the data model repository, as explained in the [Data Model Repository Reference](../../page.mdx) documentation.
+
+</Note>
+
+## `findAndCount` Parameters
+
+<TypeList
+  types={[
+    {
+      type: "`object`",
+      name: "data",
+      description: "Options to filter and configure the query to retrieve the records.",
+      required: false,
+      children: [
+        {
+          type: "`object`",
+          name: "where",
+          description: "Filters to apply to the query. The keys are the property names of the data model, and the values are the values to filter by.",
+          required: false,
+        },
+        {
+          type: "`object`",
+          name: "options",
+          description: "Options to configure the query.",
+          required: false,
+          children: [
+            {
+              type: "`string[]`",
+              name: "populate",
+              description: "An array of relation names to retrieve.",
+              required: false,
+            },
+            {
+              type: "`string[]`",
+              name: "fields",
+              description: "An array of property names to retrieve.",
+              required: false,
+            },
+            {
+              type: "`number`",
+              name: "limit",
+              description: "The number of records to retrieve.",
+              required: false,
+              defaultValue: "`15`",
+            },
+            {
+              type: "`number`",
+              name: "offset",
+              description: "The number of records to skip before the retrieved records.",
+              required: false,
+              defaultValue: "`0`",
+            },
+            {
+              type: "`object`",
+              name: "orderBy",
+              description: "An object whose keys are the property names of the data model, and values are the sorting order.",
+              required: false,
+            },
+            {
+              type: "`string | string[]`",
+              name: "groupBy",
+              description: "Group the records by one or more properties.",
+              required: false,
+            },
+            {
+              type: "`select-in` \\| `joined`",
+              name: "strategy",
+              description: "The strategy to use to retrieve the records. Learn more in the [MikroORM documentation](https://mikro-orm.io/docs/loading-strategies). If you don't specify a strategy and you specify the `limit` or `offset` options, the default strategy is `select-in`. Otherwise, the default strategy is `joined`.",
+              required: false,
+            }
+          ]
+        }
+      ]
+    }
+  ]}
+  sectionTitle="findAndCount Parameters"
+  openedLevel={1}
+/>
+
+---
+
+## Retrieve List of Records
+
+To retrieve a list of records matching a set of filters, use the `findAndCount` method of the data model repository:
+
+```ts title="src/modules/blog/service.ts"
+import { 
+  InjectTransactionManager,
+  MedusaContext,
+  MedusaService,
+} from "@medusajs/framework/utils"
+import { Context, InferTypeOf, DAL } from "@medusajs/framework/types"
+import { EntityManager } from "@mikro-orm/knex"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  // ...
+  @InjectTransactionManager()
+  protected async doSomething_(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    const [posts, count] = await this.postRepository_.findAndCount()
+
+    return {
+      posts,
+      count,
+    }
+  }
+
+  @InjectManager()
+  async doSomething(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    return await this.doSomething_(id, sharedContext)
+  }
+}
+```
+
+### Returns
+
+The method returns a tuple of two elements:
+
+- An array of the first `15` records of the data model.
+- The total count of records that match the query.
+
+---
+
+## Filter Records
+
+You can filter the retrieved records by passing filters as a first parameter of the `findAndCount` method:
+
+```ts title="src/modules/blog/service.ts"
+import { 
+  InjectTransactionManager,
+  MedusaContext,
+  MedusaService,
+} from "@medusajs/framework/utils"
+import { Context, InferTypeOf, DAL } from "@medusajs/framework/types"
+import { EntityManager } from "@mikro-orm/knex"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  // ...
+  @InjectTransactionManager()
+  protected async doSomething_(
+    id: string[],
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    const [posts, count] = await this.postRepository_.findAndCount({
+      where: {
+        id,
+      },
+    })
+
+    return {
+      posts,
+      count,
+    }
+  }
+
+  @InjectManager()
+  async doSomething(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    return await this.doSomething_(id, sharedContext)
+  }
+}
+```
+
+### Parameters
+
+The first object parameter is an object that has a `where` property used to apply filters. `where`'s value is an object whose keys are the property names of the data model, and values are the values to filter by.
+
+In the example above, you filter the retrieved posts by their `id` property.
+
+<Note>
+
+Refer to the [Filtering](../../tips/filtering/page.mdx) reference for more information on how to filter records.
+
+</Note>
+
+### Returns
+
+The method returns a tuple of two elements:
+
+- An array of the first `15` records matching the filters.
+- The total count of records that match the query.
+
+---
+
+## Retrieve Relations
+
+<Note>
+
+This applies to relations between data models of the same module. To retrieve linked records of different modules, use [Query](!docs!/learn/fundamentals/module-links/query).
+
+</Note>
+
+```ts title="src/modules/blog/service.ts"
+import { 
+  InjectTransactionManager,
+  MedusaContext,
+  MedusaService,
+} from "@medusajs/framework/utils"
+import { Context, InferTypeOf, DAL } from "@medusajs/framework/types"
+import { EntityManager } from "@mikro-orm/knex"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  // ...
+  @InjectTransactionManager()
+  protected async doSomething_(
+    id: string[],
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    const [posts, count] = await this.postRepository_.findAndCount({
+      where: {
+        id,
+      },
+      options: {
+        populate: ["author"],
+      },
+    })
+
+    return {
+      posts,
+      count,
+    }
+  }
+
+  @InjectManager()
+  async doSomething(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    return await this.doSomething_(id, sharedContext)
+  }
+}
+```
+
+### Parameters
+
+The first object parameter of `findAndCount` accepts an `options` property, whose value is an object of retrieval options.
+
+It accepts a `populate` property, whose value is an array of relation names to retrieve.
+
+In the example above, you retrieve the `author` relation of the posts.
+
+### Returns
+
+The method returns a tuple of two elements:
+
+- An array of the first `15` records.
+- The total count of records that match the query.
+
+Each record in the array will have the specified relations populated:
+
+```json title="Example"
+[
+  {
+    "id": "1",
+    "author": {
+      "id": "1",
+      "name": "John Doe",
+      // ...
+    },
+    // ...
+  }
+]
+```
+  
+
+---
+
+## Select Properties
+
+```ts title="src/modules/blog/service.ts"
+import { 
+  InjectTransactionManager,
+  MedusaContext,
+  MedusaService,
+} from "@medusajs/framework/utils"
+import { Context, InferTypeOf, DAL } from "@medusajs/framework/types"
+import { EntityManager } from "@mikro-orm/knex"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  // ...
+  @InjectTransactionManager()
+  protected async doSomething_(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    const [posts, count] = await this.postRepository_.findAndCount({
+      where: {
+        id,
+      },
+      options: {
+        fields: ["title"],
+      },
+    })
+
+    return {
+      posts,
+      count,
+    }
+  }
+
+  @InjectManager()
+  async doSomething(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    return await this.doSomething_(id, sharedContext)
+  }
+}
+```
+
+### Parameters
+
+By default, retrieved records have all their properties. The first object parameter of `findAndCount` accepts in its `options` property a `fields` property, whose value is an array of property names to retrieve.
+
+In the example above, you retrieve only the `title` property of the posts.
+
+### Returns
+
+The method returns a tuple of two elements:
+
+- An array of the first `15` records.
+- The total count of records that match the query.
+
+Each record in the array will have only the specified properties:
+
+```json title="Example"
+[
+  {
+    "id": "1",
+    "title": "My first post"
+  }
+]
+```
+
+---
+
+## Paginate Relations
+
+```ts title="src/modules/blog/service.ts"
+import { 
+  InjectTransactionManager,
+  MedusaContext,
+  MedusaService,
+} from "@medusajs/framework/utils"
+import { Context, InferTypeOf, DAL } from "@medusajs/framework/types"
+import { EntityManager } from "@mikro-orm/knex"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  // ...
+  @InjectTransactionManager()
+  protected async doSomething_(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    const [posts, count] = await this.postRepository_.findAndCount({
+      where: {
+        id,
+      },
+      options: {
+        limit: 10,
+        offset: 10,
+      },
+    })
+
+    return posts
+  }
+
+  @InjectManager()
+  async doSomething(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    return await this.doSomething_(id, sharedContext)
+  }
+}
+```
+
+### Parameters
+
+By default, the `find` method retrieves the first `15` records.
+
+To change pagination configurations, you can pass to the first object parameter the `options` property, whose value is an object that accepts the following properties for pagination:
+
+- `limit`: a number indicating how many records to retrieve. By default, it's `15`.
+- `offset`: a number indicating how many records to skip before the retrieved records. By default, it's `0`.
+
+In the example above, you retrieve `10` records, skipping the first `10` records.
+
+### Returns
+
+The method returns an array of records. The number of records is less than or equal to `limit`'s value.
+
+---
+
+## Sort Records
+
+```ts title="src/modules/blog/service.ts"
+import { 
+  InjectTransactionManager,
+  MedusaContext,
+  MedusaService,
+} from "@medusajs/framework/utils"
+import { Context, InferTypeOf, DAL } from "@medusajs/framework/types"
+import { EntityManager } from "@mikro-orm/knex"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  // ...
+  @InjectTransactionManager()
+  protected async doSomething_(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    const [posts, count] = await this.postRepository_.findAndCount({
+      where: {
+        id,
+      },
+      options: {
+        orderBy: {
+          title: "ASC",
+        },
+      },
+    })
+
+    return {
+      posts,
+      count,
+    }
+  }
+
+  @InjectManager()
+  async doSomething(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    return await this.doSomething_(id, sharedContext)
+  }
+}
+```
+
+### Parameters
+
+To sort records by one or more properties, the first object parameter of `findAndCount` accepts in its `options` property an `orderBy` property. Its value is an object whose keys are the property names of the data model, and values are the sorting order.
+
+The sorting order can be one of the following:
+
+- `ASC` to sort by this property in the ascending order.
+- `DESC` to sort by this property in the descending order.
+
+### Returns
+
+The method returns a tuple of two elements:
+
+- An array of the first `15` records.
+- The total count of records that match the query.

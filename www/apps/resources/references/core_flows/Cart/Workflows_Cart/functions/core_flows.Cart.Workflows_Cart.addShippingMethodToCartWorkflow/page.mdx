@@ -27,7 +27,7 @@ This workflow adds a shipping method to a cart. It's executed by the
 
 You can use this workflow within your own customizations or custom workflows, allowing you to wrap custom logic around adding a shipping method to the cart.
 
-<SourceCodeLink link="https://github.com/medusajs/medusa/blob/b9edc066c8486e8ec52e4f505968db1c558bc7b8/packages/core/core-flows/src/cart/workflows/add-shipping-method-to-cart.ts#L81" />
+<SourceCodeLink link="https://github.com/medusajs/medusa/blob/876a14eb98aed54360312b9b215599aa46faccd8/packages/core/core-flows/src/cart/workflows/add-shipping-method-to-cart.ts#L81" />
 
 ## Examples
 
@@ -192,4 +192,4 @@ Learn more about [Hooks](https://docs.medusajs.com/learn/fundamentals/workflows/
 
 Handlers consuming this hook accept the following input.
 
-<TypeList types={[{"name":"invoke","type":"[InvokeFn](../../../../../workflows/types/workflows.InvokeFn/page.mdx)&#60;object, TOutput, TCompensateInput&#62;","description":"The type of invocation function passed to a step.","optional":false,"defaultValue":"","expandable":false,"children":[]},{"name":"compensate","type":"[CompensateFn](../../../../../workflows/types/workflows.CompensateFn/page.mdx)&#60;TCompensateInput&#62;","description":"The type of compensation function passed to a step.","optional":true,"defaultValue":"","expandable":false,"children":[]}]} expandUrl="https://docs.medusajs.com/learn/fundamentals/data-models/manage-relationships#retrieve-records-of-relation" openedLevel={1} sectionTitle="validate"/>
+<TypeList types={[{"name":"input","type":"`object`","description":"","optional":false,"defaultValue":"","expandable":false,"children":[{"name":"input","type":"[AddShippingMethodToCartWorkflowInput](../../../../interfaces/core_flows.AddShippingMethodToCartWorkflowInput/page.mdx)","description":"The data to add a shipping method to a cart.","optional":false,"defaultValue":"","expandable":false,"children":[{"name":"cart_id","type":"`string`","description":"The ID of the cart to add the shipping method to.","optional":false,"defaultValue":"","expandable":false,"children":[]},{"name":"options","type":"`object`[]","description":"The shipping options to create the shipping methods from and add to the cart.","optional":false,"defaultValue":"","expandable":false,"children":[]}]},{"name":"cart","type":"`any`","description":"","optional":false,"defaultValue":"","expandable":false,"children":[]}]}]} expandUrl="https://docs.medusajs.com/learn/fundamentals/data-models/manage-relationships#retrieve-records-of-relation" openedLevel={1} sectionTitle="validate"/>

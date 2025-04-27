@@ -25,7 +25,7 @@ export interface GeoZoneDTO {
   country_code: string
 
   /**
-   * The province code of the geo zone.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code of the geo zone.
    */
   province_code: string | null
 
@@ -81,7 +81,7 @@ export interface FilterableGeoZoneProps
   country_code?: string | string[]
 
   /**
-   * Filter the geo zones by their province code.
+   * Filter the geo zones by their lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province code.
    */
   province_code?: string | string[]
 

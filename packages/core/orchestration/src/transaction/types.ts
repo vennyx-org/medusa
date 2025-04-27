@@ -25,9 +25,16 @@ export type TransactionStepsDefinition = {
 
   /**
    * Indicates whether the workflow should continue even if there is a permanent failure in this step.
-   * In case it is set to true, the children steps of this step will not be executed and their status will be marked as TransactionStepState.SKIPPED_FAILURE.
+   * In case it is set to true, the the current step will be marked as TransactionStepState.PERMANENT_FAILURE and the next steps will be executed.
    */
   continueOnPermanentFailure?: boolean
+
+  /**
+   * Indicates whether the workflow should skip all subsequent steps in case of a permanent failure in this step.
+   * In case it is set to true, the next steps of the workflow will not be executed and their status will be marked as TransactionStepState.SKIPPED_FAILURE.
+   * In case it is a string, the next steps until the step name provided will be skipped and the workflow will be resumed from the step provided.
+   */
+  skipOnPermanentFailure?: boolean | string
 
   /**
    * If true, no compensation action will be triggered for this step in case of a failure.
@@ -258,6 +265,8 @@ export type TransactionFlow = {
     eventGroupId?: string
     parentIdempotencyKey?: string
     sourcePath?: string
+    preventReleaseEvents?: boolean
+    parentStepIdempotencyKey?: string
     [key: string]: unknown
   }
   hasAsyncSteps: boolean

@@ -73,10 +73,26 @@ const generatedgeneratedTroubleshootingSidebarSidebar = {
         {
           "loaded": true,
           "isPathHref": true,
-          "type": "link",
-          "path": "/troubleshooting/eaddrinuse",
-          "title": "EADDRINUSE Error",
-          "children": []
+          "type": "sub-category",
+          "title": "API Routes",
+          "children": [
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "link",
+              "title": "Unrecognized Additional Data",
+              "path": "/troubleshooting/api-routes/additional-data-error",
+              "children": []
+            },
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "link",
+              "title": "Middleware Registration",
+              "path": "/troubleshooting/api-routes/middleware-registration",
+              "children": []
+            }
+          ]
         },
         {
           "loaded": true,
@@ -84,6 +100,14 @@ const generatedgeneratedTroubleshootingSidebarSidebar = {
           "type": "link",
           "path": "/troubleshooting/database-errors",
           "title": "Database Errors",
+          "children": []
+        },
+        {
+          "loaded": true,
+          "isPathHref": true,
+          "type": "link",
+          "path": "/troubleshooting/eaddrinuse",
+          "title": "EADDRINUSE Error",
           "children": []
         },
         {
@@ -104,11 +128,35 @@ const generatedgeneratedTroubleshootingSidebarSidebar = {
               "loaded": true,
               "isPathHref": true,
               "type": "link",
+              "path": "/troubleshooting/query/expression-type-error",
+              "title": "Expression Type Error",
+              "children": []
+            },
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "link",
               "path": "/troubleshooting/query/filter-linked",
               "title": "Not Exising Property",
               "children": []
+            },
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "link",
+              "path": "/troubleshooting/query/service-list",
+              "title": "service.list Error",
+              "children": []
             }
           ]
+        },
+        {
+          "loaded": true,
+          "isPathHref": true,
+          "type": "link",
+          "path": "/troubleshooting/test-errors",
+          "title": "Test Errors",
+          "children": []
         },
         {
           "loaded": true,
@@ -138,8 +186,8 @@ const generatedgeneratedTroubleshootingSidebarSidebar = {
           "loaded": true,
           "isPathHref": true,
           "type": "link",
-          "path": "/troubleshooting/test-errors",
-          "title": "Test Errors",
+          "title": "ValidationError",
+          "link": "/troubleshooting/validation-error",
           "children": []
         }
       ]

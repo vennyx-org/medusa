@@ -10,6 +10,8 @@ type StringInfo = {
 
 type NoteLayoutProps = NoteProps
 
+const PUNCTIONATIONS = [".", ":", ";", ",", "!", "?"]
+
 export const NoteLayout = ({
   type,
   title,
@@ -84,6 +86,12 @@ export const NoteLayout = ({
     }
   }, [children, forceMultiline])
 
+  const showColon = useMemo(() => {
+    const lastChar = title?.charAt(title.length - 1) || ""
+
+    return !PUNCTIONATIONS.includes(lastChar)
+  }, [title])
+
   return (
     <div
       className={clsx(
@@ -107,7 +115,8 @@ export const NoteLayout = ({
       <div className="flex-1">
         <div className="text-small text-medusa-fg-subtle [&_ol]:!mb-0 [&_ul]:!mb-0">
           <span className={clsx("text-small-plus text-medusa-fg-base")}>
-            {title}:&nbsp;
+            {title}
+            {showColon ? ":" : ""}&nbsp;
           </span>
           {allStringChildren && (
             <MarkdownContent

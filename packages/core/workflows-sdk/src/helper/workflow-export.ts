@@ -102,6 +102,7 @@ function createContextualWorkflowRunner<
       eventGroupId,
       parentStepIdempotencyKey,
       sourcePath: options?.sourcePath,
+      preventReleaseEvents,
     }
 
     const args = [

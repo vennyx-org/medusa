@@ -21,7 +21,7 @@ Then, add a new `resolve:aliases` script to your `package.json` and update the `
   "scripts": {
     // other scripts...
     "resolve:aliases": "tsc --showConfig -p tsconfig.json > tsconfig.resolved.json && tsc-alias -p tsconfig.resolved.json && rimraf tsconfig.resolved.json",
-    "build": "npm run resolve:aliases && medusa build"
+    "build": "medusa build && npm run resolve:aliases"
   }
 }
 ```

@@ -48,6 +48,26 @@ export type RequestDraftOrderEditWorkflowInput = {
   requested_by?: string
 }
 
+/**
+ * This workflow requests a draft order edit. It's used by the
+ * [Request Draft Order Edit Admin API Route](https://docs.medusajs.com/api/admin#draft-orders_postdraftordersideditrequest).
+ * 
+ * You can use this workflow within your customizations or your own custom workflows, allowing you to wrap custom logic around
+ * requesting a draft order edit.
+ * 
+ * @example
+ * const { result } = await requestDraftOrderEditWorkflow(container)
+ * .run({
+ *   input: {
+ *     order_id: "order_123",
+ *     requested_by: "user_123",
+ *   }
+ * })
+ * 
+ * @summary
+ * 
+ * Request a draft order edit.
+ */
 export const requestDraftOrderEditWorkflow = createWorkflow(
   requestDraftOrderEditId,
   function (input: RequestDraftOrderEditWorkflowInput) {

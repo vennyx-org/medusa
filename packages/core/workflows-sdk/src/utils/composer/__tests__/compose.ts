@@ -12,6 +12,7 @@ import {
   promiseAll,
 } from "@medusajs/utils"
 import { asValue } from "awilix"
+import { setTimeout } from "timers/promises"
 import {
   createStep,
   createWorkflow,
@@ -24,7 +25,6 @@ import {
 } from ".."
 import { MedusaWorkflow } from "../../../medusa-workflow"
 import { createHook } from "../create-hook"
-import { setTimeout } from "timers/promises"
 
 jest.setTimeout(30000)
 
@@ -852,7 +852,7 @@ describe("Workflow composer", function () {
       )
       const step4 = createStep(
         "step4",
-        mockStep4Fn as unknown as StepFunction<never, never>,
+        mockStep4Fn as unknown as StepFunction<never, StepResponse<void>>,
         step4CompensationFn
       )
 
@@ -923,7 +923,7 @@ describe("Workflow composer", function () {
       )
       const step4 = createStep(
         "step4",
-        mockStep4Fn as unknown as StepFunction<never, never>,
+        mockStep4Fn as unknown as StepFunction<never, StepResponse<void>>,
         step4CompensationFn
       )
 
@@ -1295,6 +1295,69 @@ describe("Workflow composer", function () {
         ],
         obj: "return from 3",
       })
+    })
+
+    it("should skip all steps in case of permanent failure", async () => {
+      const logStepFn = jest.fn(async ({ input }: { input: object }) => {
+        return new StepResponse("done")
+      })
+
+      const errorStep = createStep("perma-fail-step", async () => {
+        return StepResponse.permanentFailure("FAIL")
+      })
+
+      const logStep = createStep("log-step", logStepFn)
+
+      const fakeStepWorkflow = createWorkflow("fake-workflow", () => {
+        const result = errorStep().config({
+          skipOnPermanentFailure: true,
+        })
+        logStep({ input: { A: "123" } })
+        logStep({ input: { A: "123 a" } }).config({ name: "other" })
+        logStep({ input: { A: "123 b" } }).config({ name: "other_2" })
+        logStep({ input: { A: "123 c" } }).config({ name: "other_3" })
+        return new WorkflowResponse(result)
+      })
+
+      const { transaction } = await fakeStepWorkflow().run({
+        input: 1,
+      })
+
+      expect(transaction.getState()).toEqual("done")
+      expect(logStepFn).toHaveBeenCalledTimes(0)
+    })
+
+    it("should skip steps until the named step in case of permanent failure", async () => {
+      const logStepFn = jest.fn(async ({ input }: { input: object }) => {
+        return new StepResponse("done and returned")
+      })
+
+      const errorStep = createStep("perma-fail-step", async () => {
+        return StepResponse.permanentFailure("FAIL")
+      })
+
+      const logStep = createStep("log-step", logStepFn)
+
+      const fakeStepWorkflow = createWorkflow("fake-workflow", () => {
+        errorStep().config({
+          skipOnPermanentFailure: "other_2",
+        })
+        logStep({ input: { A: "123" } })
+        logStep({ input: { A: "123 a" } }).config({ name: "other" })
+        logStep({ input: { A: "123 b" } }).config({ name: "other_2" })
+        const ret = logStep({ input: { A: "123 c" } }).config({
+          name: "other_3",
+        })
+        return new WorkflowResponse(ret)
+      })
+
+      const { result, transaction } = await fakeStepWorkflow().run({
+        input: 1,
+      })
+
+      expect(transaction.getState()).toEqual("done")
+      expect(result).toEqual("done and returned")
+      expect(logStepFn).toHaveBeenCalledTimes(2)
     })
 
     it("should compose a new workflow and skip steps depending on the input", async () => {
@@ -1939,14 +2002,10 @@ describe("Workflow composer", function () {
         mockStep3Fn as unknown as StepFunction<never, StepResponse<string>>,
         step3CompensationFn
       )
-      const step4 = createStep(
-        "step4",
-        mockStep4Fn as unknown as StepFunction<never, never>,
-        step4CompensationFn
-      )
+      const step4 = createStep("step4", mockStep4Fn, step4CompensationFn)
 
       const workflow = createWorkflow("workflow1", function (input) {
-        const [step1Res] = parallelize(step1(), step2(), step3(), step4())
+        const [step1Res] = parallelize(step1(), step2(), step3(), step4({}))
         return new WorkflowResponse(step1Res)
       })
 
@@ -1995,33 +2054,17 @@ describe("Workflow composer", function () {
         throw new Error("An error occured in step 4.")
       })
 
-      const step1 = createStep(
-        "step1",
-        mockStep1Fn as unknown as StepFunction<never, StepResponse<string>>,
-        step1CompensationFn
-      )
-      const step2 = createStep(
-        "step2",
-        mockStep2Fn as unknown as StepFunction<never, StepResponse<string>>,
-        step2CompensationFn
-      )
-      const step3 = createStep(
-        "step3",
-        mockStep3Fn as unknown as StepFunction<never, StepResponse<string>>,
-        step3CompensationFn
-      )
-      const step4 = createStep(
-        "step4",
-        mockStep4Fn as unknown as StepFunction<never, never>,
-        step4CompensationFn
-      )
+      const step1 = createStep("step1", mockStep1Fn, step1CompensationFn)
+      const step2 = createStep("step2", mockStep2Fn, step2CompensationFn)
+      const step3 = createStep("step3", mockStep3Fn, step3CompensationFn)
+      const step4 = createStep("step4", mockStep4Fn, step4CompensationFn)
 
       const workflow = createWorkflow("workflow1", function (input) {
         const [step1Res] = parallelize(
-          step1().config({ name: "newStep1Name" }),
-          step2(),
-          step3(),
-          step4()
+          step1({}).config({ name: "newStep1Name" }),
+          step2({}),
+          step3({}),
+          step4({})
         )
         return new WorkflowResponse(step1Res)
       })
@@ -2700,5 +2743,99 @@ describe("Workflow composer", function () {
     })
 
     expect(workflowResult).toEqual("return from 1")
+  })
+
+  it("should compose a new workflow that skips steps on permanent failure [1]", async () => {
+    const mockStep1Fn = jest.fn().mockImplementation(async () => {
+      throw new Error("failed")
+    }) as any
+    const mockStep2Fn = jest.fn().mockImplementation(() => {
+      return new StepResponse(true)
+    }) as any
+    const mockStep3Fn = jest.fn().mockImplementation(() => {
+      return new StepResponse(true)
+    }) as any
+    const mockStep4Fn = jest.fn().mockImplementation(() => {
+      return new StepResponse(true)
+    }) as any
+
+    const step1 = createStep(
+      {
+        name: "step1",
+        skipOnPermanentFailure: "step3",
+      },
+      mockStep1Fn
+    )
+    const step2 = createStep("step2", mockStep2Fn)
+    const step3 = createStep("step3", mockStep3Fn)
+    const step4 = createStep("step4", mockStep4Fn)
+
+    const workflow = createWorkflow("workflow1", function (input) {
+      const ret1 = step1()
+      const [ret2, ret3] = parallelize(step2(), step3())
+      const ret4 = step4()
+      return new WorkflowResponse({ ret1, ret2, ret3, ret4 })
+    })
+
+    const { result: workflowResult } = await workflow().run()
+
+    expect(mockStep1Fn).toHaveBeenCalledTimes(1)
+    expect(mockStep2Fn).toHaveBeenCalledTimes(0)
+    expect(mockStep3Fn).toHaveBeenCalledTimes(1)
+    expect(mockStep4Fn).toHaveBeenCalledTimes(1)
+
+    expect(workflowResult).toEqual({
+      ret1: undefined,
+      ret2: undefined,
+      ret3: true,
+      ret4: true,
+    })
+  })
+
+  it("should compose a new workflow that skips steps on permanent failure [2]", async () => {
+    const mockStep1Fn = jest.fn().mockImplementation(async () => {
+      throw new Error("failed")
+    }) as any
+    const mockStep2Fn = jest.fn().mockImplementation(() => {
+      return new StepResponse(true)
+    }) as any
+    const mockStep3Fn = jest.fn().mockImplementation(() => {
+      return new StepResponse(true)
+    }) as any
+    const mockStep4Fn = jest.fn().mockImplementation(() => {
+      return new StepResponse(true)
+    }) as any
+
+    const step1 = createStep(
+      {
+        name: "step1",
+        skipOnPermanentFailure: "step4",
+      },
+      mockStep1Fn
+    )
+    const step2 = createStep("step2", mockStep2Fn)
+    const step3 = createStep("step3", mockStep3Fn)
+    const step4 = createStep("step4", mockStep4Fn)
+
+    const workflow = createWorkflow("workflow1", function (input) {
+      const ret1 = step1()
+      const [ret2, ret3] = parallelize(step2(), step3())
+      const ret4 = step4()
+      return new WorkflowResponse({ ret1, ret2, ret3, ret4 })
+    })
+
+    const { result: workflowResult } = await workflow().run()
+
+    expect(mockStep1Fn).toHaveBeenCalledTimes(1)
+    expect(mockStep2Fn).toHaveBeenCalledTimes(0)
+    expect(mockStep3Fn).toHaveBeenCalledTimes(0)
+    expect(mockStep4Fn).toHaveBeenCalledTimes(1)
+
+    expect(workflowResult).toEqual({
+      ret1: undefined,
+      ret2: undefined,
+      ret3: undefined,
+      ret4: true,
+    })
   })
 })

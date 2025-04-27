@@ -1,11 +1,11 @@
 export const auth = [
   {
-    "title": "Reset Password",
-    "path": "https://docs.medusajs.com/user-guide/reset-password"
-  },
-  {
     "title": "Create Actor Type",
     "path": "https://docs.medusajs.com/resources/commerce-modules/auth/create-actor-type"
+  },
+  {
+    "title": "Reset Password",
+    "path": "https://docs.medusajs.com/user-guide/reset-password"
   },
   {
     "title": "Log-out Customer in Storefront",

@@ -855,8 +855,8 @@ export interface IOrderModuleService extends IModuleService {
    *     last_name: "Doe",
    *     address_1: "123 Main St",
    *     city: "Anytown",
-   *     country_code: "US",
-   *     province: "AnyState",
+   *     country_code: "us",
+   *     province: "us-ca",
    *     postal_code: "12345"
    *   }
    * ])
@@ -882,8 +882,8 @@ export interface IOrderModuleService extends IModuleService {
    *   last_name: "Doe",
    *   address_1: "123 Main St",
    *   city: "Anytown",
-   *   country_code: "US",
-   *   province: "AnyState",
+   *   country_code: "us",
+   *   province: "us-ca",
    *   postal_code: "12345"
    * })
    * ```

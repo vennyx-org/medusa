@@ -66,7 +66,7 @@ export default CmsModuleService
 
 You create a `CmsModuleService` that will hold the methods to connect to the third-party CMS. A service's constructor accepts two parameters:
 
-1. The module's container. Since a module is [isolated](../../../fundamentals/modules/isolation/page.mdx), it has a [local container](../../../fundamentals/modules/container/page.mdx) different than the Medusa container you use in other customizations. This container holds framework tools like the [Logger utility](../../../debugging-and-testing/logging/page.mdx) and resources within the module.
+1. The module's container. Since a module is [isolated](../../../fundamentals/modules/isolation/page.mdx), it has a [local container](../../../fundamentals/modules/container/page.mdx) different than the Medusa container you use in other customizations. This container holds Framework tools like the [Logger utility](../../../debugging-and-testing/logging/page.mdx) and resources within the module.
 2. Options passed to the module when it's later added in Medusa's configurations. These options are useful to pass secret keys or configurations that ensure your module is re-usable across applications. For the CMS Module, you accept the API key to connect to the dummy CMS as an option.
 
 When integrating a third-party system that has a Node.js SDK or client, you can initialize that client in the constructor to be used in the service's methods.

@@ -1,0 +1,334 @@
+---
+sidebar_label: "softDelete"
+---
+
+import { TypeList } from "docs-ui"
+
+export const metadata = {
+  title: `softDelete Method - Data Model Repository Reference`,
+}
+
+# {metadata.title}
+
+The `softDelete` method of a data model repository soft-deletes one or more records of the data model.
+
+This means that the records are still available in the database, but they are marked as deleted by setting their `deleted_at` property to the deletion date.
+
+You can later restore the records using the [restore](../restore/page.mdx) method.
+
+<Note>
+
+This reference assumes you've already resolved the data model repository, as explained in the [Data Model Repository Reference](../../page.mdx) documentation.
+
+</Note>
+
+## `softDelete` Parameters
+
+<TypeList
+  types={[
+    {
+      type: "`string` \\| `string[]` \\| `object`",
+      name: "filters",
+      description: "Can be either the ID of a record to soft-delete, an array of records IDs to soft-delete, or an object of filters to select the records to soft-delete.",
+      required: true,
+    }
+  ]}
+  sectionTitle="softDelete Parameters"
+/>
+---
+
+## Soft-Delete Record by ID
+
+```ts
+import { 
+  InjectTransactionManager,
+  MedusaContext,
+  MedusaService,
+} from "@medusajs/framework/utils"
+import { Context, InferTypeOf, DAL } from "@medusajs/framework/types"
+import { EntityManager } from "@mikro-orm/knex"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  // ...
+  @InjectTransactionManager()
+  protected async doSomething_(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    const [
+      deletedPosts, 
+      deletedEntities,
+    ] = await this.postRepository_.softDelete(id)
+
+    return deletedPosts
+  }
+
+  @InjectManager()
+  async doSomething(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    return await this.doSomething_(id, sharedContext)
+  }
+}
+```
+
+### Parameters
+
+The `softDelete` method can accept the ID of a record to soft-delete as a string.
+
+### Returns
+
+The method returns a tuple with two elements:
+
+- The first element is an array of the soft-deleted records.
+- The second element is an object whose keys are the names of deleted data models, and values an array of deleted record objects.
+    - This is useful if records from other data models are soft-deleted due to cascading soft-deletes.
+
+For example:
+
+```json title="Example"
+[
+  [
+    {
+      "id": "01JSHAW6Z7KW4X6E8MFPGNEKHC",
+      "title": "My first post",
+      "content": "This is my first post",
+      "metadata": null,
+      "product_id": null,
+      "product_ids": [
+        "prod_01JP4M5T5K55P2JN1F17EY7B2T"
+      ],
+      "author_id": "01JSHAW6YZNKR65TJ242GCMD2S",
+      "author": "01JSHAW6YZNKR65TJ242GCMD2S",
+      "created_at": "2025-04-23T12:44:59.751Z",
+      "updated_at": "2025-04-23T12:44:59.751Z",
+      "deleted_at": "2025-04-23T12:45:08.750Z"
+    }
+  ],
+  {
+    "Post": [
+      {
+        "id": "01JSHAW6Z7KW4X6E8MFPGNEKHC",
+        "title": "My first post",
+        "content": "This is my first post",
+        "metadata": null,
+        "product_id": null,
+        "product_ids": [
+          "prod_01JP4M5T5K55P2JN1F17EY7B2T"
+        ],
+        "author_id": "01JSHAW6YZNKR65TJ242GCMD2S",
+        "author": "01JSHAW6YZNKR65TJ242GCMD2S",
+        "created_at": "2025-04-23T12:44:59.751Z",
+        "updated_at": "2025-04-23T12:44:59.751Z",
+        "deleted_at": "2025-04-23T12:45:08.750Z"
+      }
+    ]
+  }
+]
+```
+
+---
+
+## Soft-Delete Multiple Records By IDs
+
+```ts
+import { 
+  InjectTransactionManager,
+  MedusaContext,
+  MedusaService,
+} from "@medusajs/framework/utils"
+import { Context, InferTypeOf, DAL } from "@medusajs/framework/types"
+import { EntityManager } from "@mikro-orm/knex"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  // ...
+  @InjectTransactionManager()
+  protected async doSomething_(
+    ids: string[],
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    const [
+      deletedPosts, 
+      deletedEntities,
+    ] = await this.postRepository_.softDelete(ids)
+
+    return deletedPosts
+  }
+
+  @InjectManager()
+  async doSomething(
+    ids: string[],
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    return await this.doSomething_(ids, sharedContext)
+  }
+}
+```
+
+### Parameters
+
+The `softDelete` method can accept an array of record IDs to soft-delete.
+
+### Returns
+
+The method returns a tuple with two elements:
+
+- The first element is an array of the soft-deleted records.
+- The second element is an object whose keys are the names of deleted data models, and values an array of deleted record objects.
+    - This is useful if records from other data models are soft-deleted due to cascading soft-deletes.
+
+For example:
+
+```json title="Example"
+[
+  [
+    {
+      "id": "01JSHAW6Z7KW4X6E8MFPGNEKHC",
+      "title": "My first post",
+      "content": "This is my first post",
+      "metadata": null,
+      "product_id": null,
+      "product_ids": [
+        "prod_01JP4M5T5K55P2JN1F17EY7B2T"
+      ],
+      "author_id": "01JSHAW6YZNKR65TJ242GCMD2S",
+      "author": "01JSHAW6YZNKR65TJ242GCMD2S",
+      "created_at": "2025-04-23T12:44:59.751Z",
+      "updated_at": "2025-04-23T12:44:59.751Z",
+      "deleted_at": "2025-04-23T12:45:08.750Z"
+    }
+  ],
+  {
+    "Post": [
+      {
+        "id": "01JSHAW6Z7KW4X6E8MFPGNEKHC",
+        "title": "My first post",
+        "content": "This is my first post",
+        "metadata": null,
+        "product_id": null,
+        "product_ids": [
+          "prod_01JP4M5T5K55P2JN1F17EY7B2T"
+        ],
+        "author_id": "01JSHAW6YZNKR65TJ242GCMD2S",
+        "author": "01JSHAW6YZNKR65TJ242GCMD2S",
+        "created_at": "2025-04-23T12:44:59.751Z",
+        "updated_at": "2025-04-23T12:44:59.751Z",
+        "deleted_at": "2025-04-23T12:45:08.750Z"
+      }
+    ]
+  }
+]
+```
+
+---
+
+## Soft-Delete Records by Filters
+
+```ts
+import { 
+  InjectTransactionManager,
+  MedusaContext,
+  MedusaService,
+} from "@medusajs/framework/utils"
+import { Context, InferTypeOf, DAL } from "@medusajs/framework/types"
+import { EntityManager } from "@mikro-orm/knex"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}){
+  // ...
+  @InjectTransactionManager()
+  protected async doSomething_(
+    id: string,
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    const [
+      deletedPosts, 
+      deletedEntities,
+    ] = await this.postRepository_.softDelete({
+      title: "My Post",
+    })
+
+    return deletedPosts
+  }
+
+  @InjectManager()
+  async doSomething(
+    ids: string[],
+    @MedusaContext() sharedContext?: Context<EntityManager>
+  ): Promise<any> {
+    return await this.doSomething_(ids, sharedContext)
+  }
+}
+```
+
+### Parameters
+
+The `softDelete` method can accept an object of filters to select the records to soft-delete.
+
+In the example above, you pass an object with the `title` property to soft-delete all records with that title.
+
+<Note>
+
+Find examples of different filters in the [Filter Records](../../tips/filtering/page.mdx) documentation.
+
+</Note>
+
+### Returns
+
+The method returns a tuple with two elements:
+
+- The first element is an array of the soft-deleted records.
+- The second element is an object whose keys are the names of deleted data models, and values an array of deleted record objects.
+    - This is useful if records from other data models are soft-deleted due to cascading soft-deletes.
+
+For example:
+
+```json title="Example"
+[
+  [
+    {
+      "id": "01JSHAW6Z7KW4X6E8MFPGNEKHC",
+      "title": "My first post",
+      "content": "This is my first post",
+      "metadata": null,
+      "product_id": null,
+      "product_ids": [
+        "prod_01JP4M5T5K55P2JN1F17EY7B2T"
+      ],
+      "author_id": "01JSHAW6YZNKR65TJ242GCMD2S",
+      "author": "01JSHAW6YZNKR65TJ242GCMD2S",
+      "created_at": "2025-04-23T12:44:59.751Z",
+      "updated_at": "2025-04-23T12:44:59.751Z",
+      "deleted_at": "2025-04-23T12:45:08.750Z"
+    }
+  ],
+  {
+    "Post": [
+      {
+        "id": "01JSHAW6Z7KW4X6E8MFPGNEKHC",
+        "title": "My first post",
+        "content": "This is my first post",
+        "metadata": null,
+        "product_id": null,
+        "product_ids": [
+          "prod_01JP4M5T5K55P2JN1F17EY7B2T"
+        ],
+        "author_id": "01JSHAW6YZNKR65TJ242GCMD2S",
+        "author": "01JSHAW6YZNKR65TJ242GCMD2S",
+        "created_at": "2025-04-23T12:44:59.751Z",
+        "updated_at": "2025-04-23T12:44:59.751Z",
+        "deleted_at": "2025-04-23T12:45:08.750Z"
+      }
+    ]
+  }
+]
+```

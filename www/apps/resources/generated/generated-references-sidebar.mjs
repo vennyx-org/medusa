@@ -1186,6 +1186,210 @@ const generatedgeneratedReferencesSidebarSidebar = {
           "loaded": true,
           "isPathHref": true,
           "type": "category",
+          "title": "Draft Order",
+          "children": [
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "sub-category",
+              "title": "Workflows",
+              "children": [
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/addDraftOrderItemsWorkflow",
+                  "title": "addDraftOrderItemsWorkflow",
+                  "description": "Add items to a draft order.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/addDraftOrderPromotionWorkflow",
+                  "title": "addDraftOrderPromotionWorkflow",
+                  "description": "Add promotions to a draft order.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/addDraftOrderShippingMethodsWorkflow",
+                  "title": "addDraftOrderShippingMethodsWorkflow",
+                  "description": "Add shipping methods to a draft order.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/beginDraftOrderEditWorkflow",
+                  "title": "beginDraftOrderEditWorkflow",
+                  "description": "Create a draft order edit request.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/cancelDraftOrderEditWorkflow",
+                  "title": "cancelDraftOrderEditWorkflow",
+                  "description": "Cancel a draft order edit.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/confirmDraftOrderEditWorkflow",
+                  "title": "confirmDraftOrderEditWorkflow",
+                  "description": "Confirm a draft order edit.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/convertDraftOrderWorkflow",
+                  "title": "convertDraftOrderWorkflow",
+                  "description": "Convert a draft order to a pending order.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/removeDraftOrderActionItemWorkflow",
+                  "title": "removeDraftOrderActionItemWorkflow",
+                  "description": "Remove an item from a draft order edit.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/removeDraftOrderActionShippingMethodWorkflow",
+                  "title": "removeDraftOrderActionShippingMethodWorkflow",
+                  "description": "Remove a shipping method from an edited draft order.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/removeDraftOrderPromotionsWorkflow",
+                  "title": "removeDraftOrderPromotionsWorkflow",
+                  "description": "Remove promotions from a draft order edit.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/removeDraftOrderShippingMethodWorkflow",
+                  "title": "removeDraftOrderShippingMethodWorkflow",
+                  "description": "Remove an existing shipping method from a draft order edit.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/requestDraftOrderEditWorkflow",
+                  "title": "requestDraftOrderEditWorkflow",
+                  "description": "Request a draft order edit.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/updateDraftOrderActionItemWorkflow",
+                  "title": "updateDraftOrderActionItemWorkflow",
+                  "description": "Update a new item in a draft order edit.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/updateDraftOrderActionShippingMethodWorkflow",
+                  "title": "updateDraftOrderActionShippingMethodWorkflow",
+                  "description": "Update a new shipping method in a draft order edit.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/updateDraftOrderItemWorkflow",
+                  "title": "updateDraftOrderItemWorkflow",
+                  "description": "Update an item in a draft order edit.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/updateDraftOrderShippingMethodWorkflow",
+                  "title": "updateDraftOrderShippingMethodWorkflow",
+                  "description": "Update an existing shipping method in a draft order edit.",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/updateDraftOrderWorkflow",
+                  "title": "updateDraftOrderWorkflow",
+                  "description": "Update a draft order's details.",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "sub-category",
+              "title": "Steps",
+              "children": [
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/steps/validateDraftOrderStep",
+                  "title": "validateDraftOrderStep",
+                  "description": "",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/convertDraftOrderStep",
+                  "title": "convertDraftOrderStep",
+                  "description": "",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/updateDraftOrderStep",
+                  "title": "updateDraftOrderStep",
+                  "description": "",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "loaded": true,
+          "isPathHref": true,
+          "type": "category",
           "title": "File",
           "children": [
             {
@@ -2324,6 +2528,15 @@ const generatedgeneratedReferencesSidebarSidebar = {
                   "loaded": true,
                   "isPathHref": true,
                   "type": "link",
+                  "path": "/references/medusa-workflows/createOrderCreditLinesWorkflow",
+                  "title": "createOrderCreditLinesWorkflow",
+                  "description": "",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
                   "path": "/references/medusa-workflows/createOrderEditShippingMethodWorkflow",
                   "title": "createOrderEditShippingMethodWorkflow",
                   "description": "Create a shipping method for an order edit.",
@@ -3061,6 +3274,15 @@ const generatedgeneratedReferencesSidebarSidebar = {
                   "loaded": true,
                   "isPathHref": true,
                   "type": "link",
+                  "path": "/references/medusa-workflows/steps/registerOrderDeliveryStep",
+                  "title": "registerOrderDeliveryStep",
+                  "description": "",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
                   "path": "/references/medusa-workflows/steps/registerOrderFulfillmentStep",
                   "title": "registerOrderFulfillmentStep",
                   "description": "",
@@ -3774,6 +3996,15 @@ const generatedgeneratedReferencesSidebarSidebar = {
                   "type": "link",
                   "path": "/references/medusa-workflows/updateReturnValidationStep",
                   "title": "updateReturnValidationStep",
+                  "description": "",
+                  "children": []
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "link",
+                  "path": "/references/medusa-workflows/validateOrderCreditLinesStep",
+                  "title": "validateOrderCreditLinesStep",
                   "description": "",
                   "children": []
                 }
@@ -6360,6 +6591,137 @@ const generatedgeneratedReferencesSidebarSidebar = {
               "type": "link",
               "path": "/references/data-model/property-configuration/unique",
               "title": "unique",
+              "description": "",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "loaded": true,
+      "isPathHref": true,
+      "type": "sidebar",
+      "sidebar_id": "data-model-repository-reference",
+      "title": "Data Model Repository",
+      "description": "List of methods in your service extending the data model repository.",
+      "children": [
+        {
+          "loaded": true,
+          "isPathHref": true,
+          "type": "link",
+          "path": "/data-model-repository-reference",
+          "title": "Overview",
+          "children": []
+        },
+        {
+          "type": "separator"
+        },
+        {
+          "loaded": true,
+          "isPathHref": true,
+          "type": "category",
+          "title": "Methods",
+          "initialOpen": true,
+          "autogenerate_path": "/data-model-repository-reference/methods",
+          "children": [
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "link",
+              "path": "/data-model-repository-reference/methods/create",
+              "title": "create",
+              "description": "",
+              "children": []
+            },
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "link",
+              "path": "/data-model-repository-reference/methods/delete",
+              "title": "delete",
+              "description": "",
+              "children": []
+            },
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "link",
+              "path": "/data-model-repository-reference/methods/find",
+              "title": "find",
+              "description": "",
+              "children": []
+            },
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "link",
+              "path": "/data-model-repository-reference/methods/findAndCount",
+              "title": "findAndCount",
+              "description": "",
+              "children": []
+            },
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "link",
+              "path": "/data-model-repository-reference/methods/restore",
+              "title": "restore",
+              "description": "",
+              "children": []
+            },
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "link",
+              "path": "/data-model-repository-reference/methods/softDelete",
+              "title": "softDelete",
+              "description": "",
+              "children": []
+            },
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "link",
+              "path": "/data-model-repository-reference/methods/update",
+              "title": "update",
+              "description": "",
+              "children": []
+            },
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "link",
+              "path": "/data-model-repository-reference/methods/upsert",
+              "title": "upsert",
+              "description": "",
+              "children": []
+            },
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "link",
+              "path": "/data-model-repository-reference/methods/upsertWithReplace",
+              "title": "upsertWithReplace",
+              "description": "",
+              "children": []
+            }
+          ]
+        },
+        {
+          "loaded": true,
+          "isPathHref": true,
+          "type": "category",
+          "title": "Tips",
+          "initialOpen": true,
+          "autogenerate_path": "/data-model-repository-reference/tips",
+          "children": [
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "link",
+              "path": "/data-model-repository-reference/tips/filtering",
+              "title": "Filtering",
               "description": "",
               "children": []
             }

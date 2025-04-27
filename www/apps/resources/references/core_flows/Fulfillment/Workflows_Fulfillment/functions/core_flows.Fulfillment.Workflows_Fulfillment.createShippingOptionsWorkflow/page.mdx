@@ -21,11 +21,18 @@ This workflow creates one or more shipping options. It's used by the
 You can use this workflow within your own customizations or custom workflows, allowing you to
 create shipping options within your custom flows.
 
-<SourceCodeLink link="https://github.com/medusajs/medusa/blob/b9edc066c8486e8ec52e4f505968db1c558bc7b8/packages/core/core-flows/src/fulfillment/workflows/create-shipping-options.ts#L92" />
+<SourceCodeLink link="https://github.com/medusajs/medusa/blob/876a14eb98aed54360312b9b215599aa46faccd8/packages/core/core-flows/src/fulfillment/workflows/create-shipping-options.ts#L99" />
 
 ## Examples
 
 To calculate a shipping option with flat rate prices:
+
+:::note
+
+Learn more about adding rules to the shipping option's prices in the Pricing Module's 
+[Price Rules](https://docs.medusajs.com/resources/commerce-modules/pricing/price-rules) documentation.
+
+:::note
 
 <CodeTabs group="workflow-exection">
     <CodeTab label="API Route" value="api-route">
@@ -182,256 +189,7 @@ const myWorkflow = createWorkflow(
     </CodeTab>
   </CodeTabs>
 
-To calculate shipping option with calculated prices, set 
-<CodeTabs group="workflow-exection">
-    <CodeTab label="API Route" value="api-route">
-    
-```ts title="src/api/workflow/route.ts"
-import type {
-  MedusaRequest,
-  MedusaResponse,
-} from "@medusajs/framework/http"
-import { createShippingOptionsWorkflow } from "@medusajs/medusa/core-flows"
-
-export async function POST(
-  req: MedusaRequest,
-  res: MedusaResponse
-) {
-  `price_type`
-
-  res.send(result)
-}
-```
-
-    </CodeTab>
-    <CodeTab label="Subscriber" value="subscriber">
-    
-```ts title="src/subscribers/order-placed.ts"
-import {
-  type SubscriberConfig,
-  type SubscriberArgs,
-} from "@medusajs/framework"
-import { createShippingOptionsWorkflow } from "@medusajs/medusa/core-flows"
-
-export default async function handleOrderPlaced({
-  event: { data },
-  container,
-}: SubscriberArgs < { id: string } > ) {
-  `price_type`
-
-  console.log(result)
-}
-
-export const config: SubscriberConfig = {
-  event: "order.placed",
-}
-```
-
-    </CodeTab>
-    <CodeTab label="Scheduled Job" value="scheduled-job">
-    
-```ts title="src/jobs/message-daily.ts"
-import { MedusaContainer } from "@medusajs/framework/types"
-import { createShippingOptionsWorkflow } from "@medusajs/medusa/core-flows"
-
-export default async function myCustomJob(
-  container: MedusaContainer
-) {
-  `price_type`
-
-  console.log(result)
-}
-
-export const config = {
-  name: "run-once-a-day",
-  schedule: "0 0 * * *",
-}
-```
-
-    </CodeTab>
-    <CodeTab label="Another Workflow" value="another-workflow">
-    
-```ts title="src/workflows/my-workflow.ts"
-import { createWorkflow } from "@medusajs/framework/workflows-sdk"
-import { createShippingOptionsWorkflow } from "@medusajs/medusa/core-flows"
-
-const myWorkflow = createWorkflow(
-  "my-workflow",
-  () => {
-    `price_type`
-  }
-)
-```
-
-    </CodeTab>
-  </CodeTabs>
- to 
-<CodeTabs group="workflow-exection">
-    <CodeTab label="API Route" value="api-route">
-    
-```ts title="src/api/workflow/route.ts"
-import type {
-  MedusaRequest,
-  MedusaResponse,
-} from "@medusajs/framework/http"
-import { createShippingOptionsWorkflow } from "@medusajs/medusa/core-flows"
-
-export async function POST(
-  req: MedusaRequest,
-  res: MedusaResponse
-) {
-  `calculated`
-
-  res.send(result)
-}
-```
-
-    </CodeTab>
-    <CodeTab label="Subscriber" value="subscriber">
-    
-```ts title="src/subscribers/order-placed.ts"
-import {
-  type SubscriberConfig,
-  type SubscriberArgs,
-} from "@medusajs/framework"
-import { createShippingOptionsWorkflow } from "@medusajs/medusa/core-flows"
-
-export default async function handleOrderPlaced({
-  event: { data },
-  container,
-}: SubscriberArgs < { id: string } > ) {
-  `calculated`
-
-  console.log(result)
-}
-
-export const config: SubscriberConfig = {
-  event: "order.placed",
-}
-```
-
-    </CodeTab>
-    <CodeTab label="Scheduled Job" value="scheduled-job">
-    
-```ts title="src/jobs/message-daily.ts"
-import { MedusaContainer } from "@medusajs/framework/types"
-import { createShippingOptionsWorkflow } from "@medusajs/medusa/core-flows"
-
-export default async function myCustomJob(
-  container: MedusaContainer
-) {
-  `calculated`
-
-  console.log(result)
-}
-
-export const config = {
-  name: "run-once-a-day",
-  schedule: "0 0 * * *",
-}
-```
-
-    </CodeTab>
-    <CodeTab label="Another Workflow" value="another-workflow">
-    
-```ts title="src/workflows/my-workflow.ts"
-import { createWorkflow } from "@medusajs/framework/workflows-sdk"
-import { createShippingOptionsWorkflow } from "@medusajs/medusa/core-flows"
-
-const myWorkflow = createWorkflow(
-  "my-workflow",
-  () => {
-    `calculated`
-  }
-)
-```
-
-    </CodeTab>
-  </CodeTabs>
- and don't pass a 
-<CodeTabs group="workflow-exection">
-    <CodeTab label="API Route" value="api-route">
-    
-```ts title="src/api/workflow/route.ts"
-import type {
-  MedusaRequest,
-  MedusaResponse,
-} from "@medusajs/framework/http"
-import { createShippingOptionsWorkflow } from "@medusajs/medusa/core-flows"
-
-export async function POST(
-  req: MedusaRequest,
-  res: MedusaResponse
-) {
-  `prices`
-
-  res.send(result)
-}
-```
-
-    </CodeTab>
-    <CodeTab label="Subscriber" value="subscriber">
-    
-```ts title="src/subscribers/order-placed.ts"
-import {
-  type SubscriberConfig,
-  type SubscriberArgs,
-} from "@medusajs/framework"
-import { createShippingOptionsWorkflow } from "@medusajs/medusa/core-flows"
-
-export default async function handleOrderPlaced({
-  event: { data },
-  container,
-}: SubscriberArgs < { id: string } > ) {
-  `prices`
-
-  console.log(result)
-}
-
-export const config: SubscriberConfig = {
-  event: "order.placed",
-}
-```
-
-    </CodeTab>
-    <CodeTab label="Scheduled Job" value="scheduled-job">
-    
-```ts title="src/jobs/message-daily.ts"
-import { MedusaContainer } from "@medusajs/framework/types"
-import { createShippingOptionsWorkflow } from "@medusajs/medusa/core-flows"
-
-export default async function myCustomJob(
-  container: MedusaContainer
-) {
-  `prices`
-
-  console.log(result)
-}
-
-export const config = {
-  name: "run-once-a-day",
-  schedule: "0 0 * * *",
-}
-```
-
-    </CodeTab>
-    <CodeTab label="Another Workflow" value="another-workflow">
-    
-```ts title="src/workflows/my-workflow.ts"
-import { createWorkflow } from "@medusajs/framework/workflows-sdk"
-import { createShippingOptionsWorkflow } from "@medusajs/medusa/core-flows"
-
-const myWorkflow = createWorkflow(
-  "my-workflow",
-  () => {
-    `prices`
-  }
-)
-```
-
-    </CodeTab>
-  </CodeTabs>
- array:
+To calculate shipping option with calculated prices, set `price_type` to `calculated` and don't pass a `prices` array:
 
 :::note
 
@@ -580,7 +338,7 @@ const myWorkflow = createWorkflow(
 
 ## Steps
 
-<WorkflowDiagram workflow={{"name":"createShippingOptionsWorkflow","steps":[{"type":"step","name":"validateShippingOptionPricesStep","description":"This step validates that shipping options can be created based on provided price configuration.\n\nFor flat rate prices, it validates that regions exist for the shipping option prices.\nFor calculated prices, it validates with the fulfillment provider if the price can be calculated.\n\nIf not valid, the step throws an error.","link":"../../../Steps_Fulfillment/functions/core_flows.Fulfillment.Steps_Fulfillment.validateShippingOptionPricesStep/page.mdx","depth":1},{"type":"step","name":"upsertShippingOptionsStep","description":"This step creates or updates shipping options.","link":"../../../Steps_Fulfillment/functions/core_flows.Fulfillment.Steps_Fulfillment.upsertShippingOptionsStep/page.mdx","depth":2},{"type":"step","name":"createShippingOptionsPriceSetsStep","description":"This step creates price sets for one or more shipping options.","link":"../../../Steps_Fulfillment/functions/core_flows.Fulfillment.Steps_Fulfillment.createShippingOptionsPriceSetsStep/page.mdx","depth":3}]}} />
+<WorkflowDiagram workflow={{"name":"createShippingOptionsWorkflow","steps":[{"type":"step","name":"validateShippingOptionPricesStep","description":"This step validates that shipping options can be created based on provided price configuration.\n\nFor flat rate prices, it validates that regions exist for the shipping option prices.\nFor calculated prices, it validates with the fulfillment provider if the price can be calculated.\n\nIf not valid, the step throws an error.","link":"../../../Steps_Fulfillment/functions/core_flows.Fulfillment.Steps_Fulfillment.validateShippingOptionPricesStep/page.mdx","depth":1},{"type":"step","name":"upsertShippingOptionsStep","description":"This step creates or updates shipping options.","link":"../../../Steps_Fulfillment/functions/core_flows.Fulfillment.Steps_Fulfillment.upsertShippingOptionsStep/page.mdx","depth":2},{"type":"step","name":"createShippingOptionsPriceSetsStep","description":"This step creates price sets for one or more shipping options.\n\n:::note\n\nLearn more about adding rules to the shipping option's prices in the Pricing Module's \n[Price Rules](https://docs.medusajs.com/resources/commerce-modules/pricing/price-rules) documentation.\n\n:::note","link":"../../../Steps_Fulfillment/functions/core_flows.Fulfillment.Steps_Fulfillment.createShippingOptionsPriceSetsStep/page.mdx","depth":3}]}} />
 
 ## Input
 

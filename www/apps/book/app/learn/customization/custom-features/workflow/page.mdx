@@ -67,7 +67,7 @@ You create a `createBrandStep` using the `createStep` function. It accepts the s
 
 The step function receives two parameters: input passed to the step when it's invoked, and an object of general context and configurations. This object has a `container` property, which is the Medusa container.
 
-The [Medusa container](../../../fundamentals/medusa-container/page.mdx) is a registry of framework and commerce tools accessible in your customizations, such as a workflow's step. The Medusa application registers the services of core and custom modules in the container, allowing you to resolve and use them.
+The [Medusa container](../../../fundamentals/medusa-container/page.mdx) is a registry of Framework and commerce tools accessible in your customizations, such as a workflow's step. The Medusa application registers the services of core and custom modules in the container, allowing you to resolve and use them.
 
 So, In the step function, you use the Medusa container to resolve the Brand Module's service and use its generated `createBrands` method, which accepts an object of brands to create.
 

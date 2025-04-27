@@ -16,7 +16,7 @@ export const productSidebar = [
       {
         type: "category",
         title: "Concepts",
-        autogenerate_tags: "concept+product",
+        autogenerate_tags: "product+concept",
         autogenerate_as_ref: true,
         children: [
           {
@@ -59,6 +59,11 @@ export const productSidebar = [
             type: "link",
             path: "/commerce-modules/product/guides/price-with-taxes",
             title: "Get Variant Price with Taxes",
+          },
+          {
+            type: "link",
+            path: "/commerce-modules/product/guides/variant-inventory",
+            title: "Get Variant Inventory",
           },
         ],
       },

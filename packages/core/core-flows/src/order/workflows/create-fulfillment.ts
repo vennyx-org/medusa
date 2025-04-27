@@ -38,12 +38,12 @@ import {
   updateReservationsStep,
 } from "../../reservation"
 import { registerOrderFulfillmentStep } from "../steps"
+import { buildReservationsMap } from "../utils/build-reservations-map"
 import {
   throwIfItemsAreNotGroupedByShippingRequirement,
   throwIfItemsDoesNotExistsInOrder,
   throwIfOrderIsCancelled,
 } from "../utils/order-validation"
-import { buildReservationsMap } from "../utils/build-reservations-map"
 
 type OrderItemWithVariantDTO = OrderLineItemDTO & {
   variant?: ProductVariantDTO & {
@@ -396,8 +396,14 @@ export const createOrderFulfillmentWorkflow = createWorkflow(
       entry_point: "orders",
       fields: [
         "id",
+        "display_id",
         "status",
+        "customer_id",
+        "customer.*",
+        "sales_channel_id",
+        "sales_channel.*",
         "region_id",
+        "region.*",
         "currency_code",
         "items.*",
         "items.variant.manage_inventory",
@@ -410,6 +416,23 @@ export const createOrderFulfillmentWorkflow = createWorkflow(
         "items.variant.width",
         "items.variant.material",
         "items.variant_title",
+        "items.variant.upc",
+        "items.variant.sku",
+        "items.variant.barcode",
+        "items.variant.hs_code",
+        "items.variant.origin_country",
+        "items.variant.product.origin_country",
+        "items.variant.product.hs_code",
+        "items.variant.product.mid_code",
+        "items.variant.product.material",
+        "items.tax_lines.rate",
+        "subtotal",
+        "discount_total",
+        "tax_total",
+        "item_total",
+        "shipping_total",
+        "total",
+        "created_at",
         "items.variant.inventory_items.required_quantity",
         "items.variant.inventory_items.inventory.id",
         "items.variant.inventory_items.inventory.title",

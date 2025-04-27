@@ -8,7 +8,7 @@ export const metadata = {
 
 In this guide, you will learn how to implement the integration layer between Odoo and Medusa.
 
-When you install a Medusa application, you get a fully-fledged commerce platform that supports customizations. However, your business might already be using other systems such as an ERP to centralize data and processes. Medusa's framework facilitates integrating the ERP system and using its data to enrich your commerce platform.
+When you install a Medusa application, you get a fully-fledged commerce platform that supports customizations. However, your business might already be using other systems such as an ERP to centralize data and processes. The Medusa Framework facilitates integrating the ERP system and using its data to enrich your commerce platform.
 
 Odoo is a suite of open-source business apps that covers all your business needs, including an ERP system. You can use Odoo to store products and their prices, manage orders, and more.
 
@@ -572,7 +572,7 @@ You create a step using `createStep` from the Workflows SDK. It accepts two para
 1. The step's name, which is `get-products-from-erp`.
 2. An async function that executes the step's logic. The function receives two parameters:
    - The input data for the step, which are the pagination fields `offset` and `limit`.
-   - An object holding the workflow's context, including the [Medusa Container](!docs!learn/fundamentals/medusa-container) that allows you to resolve framework and commerce tools.
+   - An object holding the workflow's context, including the [Medusa Container](!docs!learn/fundamentals/medusa-container) that allows you to resolve Framework and commerce tools.
 
 In this step, you resolve the Odoo Module's service from the container and use its `listProducts` method to fetch products from Odoo. You pass the pagination options from the input data to the method.
 

@@ -1,0 +1,238 @@
+---
+sidebar_label: "Get Variant Inventory"
+tags:
+  - product
+  - inventory
+  - sales channel
+  - server
+  - how to
+---
+
+import { TypeList } from "docs-ui"
+
+export const metadata = {
+  title: `Get Product Variant Inventory Quantity`,
+}
+
+# {metadata.title}
+
+In this guide, you'll learn how to retrieve the available inventory quantity of a product variant in your Medusa application customizations. That includes API routes, workflows, subscribers, scheduled jobs, and any resource that can access the [Medusa container](!docs!/learn/fundamentals/medusa-container).
+
+<Note title="Looking for storefront guide?">
+
+Refer to the [Retrieve Product Variant Inventory](../../../../storefront-development/products/inventory/page.mdx) storefront guide.
+
+</Note>
+
+## Understanding Product Variant Inventory Availability
+
+Product variants have a `manage_inventory` boolean field that indicates whether the Medusa application manages the inventory of the product variant. 
+
+When `manage_inventory` is disabled, the Medusa application always considers the product variant to be in stock. So, you can't retrieve the inventory quantity for those products.
+
+When `manage_inventory` is enabled, the Medusa application tracks the inventory of the product variant using the [Inventory Module](../../../inventory/page.mdx). For example, when a customer purchases a product variant, the Medusa application decrements the stocked quantity of the product variant.
+
+This guide explains how to retrieve the inventory quantity of a product variant when `manage_inventory` is enabled.
+
+---
+
+## Retrieve Product Variant Inventory
+
+To retrieve the inventory quantity of a product variant, use the `getVariantAvailability` utility function imported from `@medusajs/framework/utils`. It returns the available quantity of the product variant.
+
+For example:
+
+export const variantAvailabilityHighlights = [
+  ["6", "query", "Resolve Query from the Medusa container."],
+  ["8", "query", "Pass Query as a parameter."],
+  ["9", "variant_ids", "The IDs of the variants to retrieve their inventory availability."],
+  ["10", "sales_channel_id", "The ID of the sales channel to retrieve the variant availability in."],
+]
+
+```ts highlights={variantAvailabilityHighlights}
+import { getVariantAvailability } from "@medusajs/framework/utils"
+
+// ...
+
+// use req.scope instead of container in API routes
+const query = container.resolve("query")
+
+const availability = await getVariantAvailability(query, {
+  variant_ids: ["variant_123"],
+  sales_channel_id: "sc_123",
+})
+```
+
+A product variant's inventory quantity is set per [stock location](../../../stock-location/page.mdx). This stock location is linked to a [sales channel](../../../sales-channel/page.mdx).
+
+So, to retrieve the inventory quantity of a product variant using `getVariantAvailability`, you need to also provide the ID of the sales channel to retrieve the inventory quantity in.
+
+<Note>
+
+Refer to the [Retrieve Sales Channel to Use](#retrieve-sales-channel-to-use) section to learn how to retrieve the sales channel ID to use in the `getVariantAvailability` function.
+
+</Note>
+
+### Parameters
+
+The `getVariantAvailability` function accepts the following parameters:
+
+<TypeList
+  types={[
+    {
+      type: "Query",
+      name: "query",
+      description: "Instance of Query to retrieve the necessary data.",
+      required: true,
+    },
+    {
+      type: "`object`",
+      name: "options",
+      description: "The options to retrieve the variant availability.",
+      required: true,
+      children: [
+        {
+          type: "`string[]`",
+          name: "variant_ids",
+          description: "The IDs of the product variants to retrieve their inventory availability.",
+          required: true,
+        },
+        {
+          type: "`string`",
+          name: "sales_channel_id",
+          description: "The ID of the sales channel to retrieve the variant availability in.",
+          required: true,
+        },
+      ],
+      }
+    ]
+  }
+  openedLevel={1}
+  sectionTitle="Parameters"
+/>
+
+### Returns
+
+The `getVariantAvailability` function resolves to an object whose keys are the IDs of each product variant passed in the `variant_ids` parameter.
+
+The value of each key is an object with the following properties:
+
+<TypeList
+  types={[
+    {
+      type: "`number`",
+      name: "availability",
+      description: "The available quantity of the product variant in the stock location linked to the sales channel. If `manage_inventory` is disabled, this value is `0`.",
+      required: true,
+    },
+    {
+      type: "`string`",
+      name: "sales_channel_id",
+      description: "The ID of the sales channel that the availability is scoped to.",
+      required: true,
+    }
+  ]}
+  sectionTitle="Returns"
+/>
+
+For example, the object may look like this:
+
+```json title="Example result"
+{
+  "variant_123": {
+    "availability": 10,
+    "sales_channel_id": "sc_123"
+  }
+}
+```
+
+---
+
+## Retrieve Sales Channel to Use
+
+To retrieve the sales channel ID to use in the `getVariantAvailability` function, you can either:
+
+- Use the sales channel of the request's scope.
+- Use the sales channel that the variant's product is available in.
+
+### Method 1: Use Sales Channel Scope in Store Routes
+
+Requests sent to API routes starting with `/store` must include a [publishable API key in the request header](../../../sales-channel/publishable-api-keys/page.mdx). This scopes the request to one or more sales channels associated with the publishable API key.
+
+So, if you're retrieving the variant inventory availability in an API route starting with `/store`, you can access the sales channel using the `publishable_key_context.sales_channel_ids` property of the request object:
+
+export const salesChannelScopeHighlights = [
+  ["9", "sales_channel_ids", "Retrieve the sales channel IDs from the request's publishable key context."],
+  ["13", "sales_channel_ids[0]", "Pass the first sales channel ID to retrieve availability in."]
+]
+
+```ts highlights={salesChannelScopeHighlights}
+import { MedusaStoreRequest, MedusaResponse } from "@medusajs/framework/http"
+import { getVariantAvailability } from "@medusajs/framework/utils"
+
+export async function GET(
+  req: MedusaStoreRequest,
+  res: MedusaResponse
+) {
+  const query = req.scope.resolve("query")
+  const sales_channel_ids = req.publishable_key_context.sales_channel_ids
+
+  const availability = await getVariantAvailability(query, {
+    variant_ids: ["variant_123"],
+    sales_channel_id: sales_channel_ids[0],
+  })
+
+  res.json({
+    availability,
+  })
+}
+```
+
+In this example, you retrieve the scope's sales channel IDs using `req.publishable_key_context.sales_channel_ids`, whose value is an array of IDs.
+
+Then, you pass the first sales channel ID to the `getVariantAvailability` function to retrieve the inventory availability of the product variant in that sales channel.
+
+<Note title="Tip">
+
+Notice that the request object's type is `MedusaStoreRequest` instead of `MedusaRequest` to ensure the availability of the `publishable_key_context` property.
+
+</Note>
+
+### Method 2: Use Product's Sales Channel
+
+A product is linked to the sales channels it's available in. So, you can retrieve the details of the variant's product, including its sales channels.
+
+For example:
+
+export const productSalesChannelHighlights = [
+  ["10", `"product.sales_channels.*"`, "Retrieve the sales channels of the variant's product."],
+  ["18", "sales_channel_id", "Pass the first sales channel ID to retrieve availability in."]
+]
+
+```ts highlights={productSalesChannelHighlights}
+import { getVariantAvailability } from "@medusajs/framework/utils"
+
+// ...
+
+// use req.scope instead of container in API routes
+const query = container.resolve("query")
+
+const { data: variants } = await query.graph({
+  entity: "variant",
+  fields: ["id", "product.sales_channels.*"],
+  filters: {
+    id: "variant_123",
+  },
+})
+
+const availability = await getVariantAvailability(query, {
+  variant_ids: ["variant_123"],
+  sales_channel_id: variants[0].product!.sales_channels![0]!.id,
+})
+```
+
+In this example, you retrieve the sales channels of the variant's product using [Query](!docs!/learn/fundamentals/module-links/query).
+
+You pass the ID of the variant as a filter, and you specify `product.sales_channels.*` as the fields to retrieve. This retrieves the sales channels linked to the variant's product.
+
+Then, you pass the first sales channel ID to the `getVariantAvailability` function to retrieve the inventory availability of the product variant in that sales channel.

@@ -13,10 +13,10 @@ export interface AdminTaxRegion {
    */
   country_code: string | null
   /**
-   * The tax region's province or state code.
+   * The tax region's lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province or state code.
    * 
    * @example
-   * "ca"
+   * "us-ca"
    */
   province_code: string | null
   /**

@@ -64,7 +64,6 @@ type OrderSummarySectionProps = {
 
 export const OrderSummarySection = ({ order }: OrderSummarySectionProps) => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const prompt = usePrompt()
 
   const { reservations } = useReservationItems(

@@ -1714,7 +1714,7 @@ export function getRouteMap({
                 },
               ],
             },
-            ...settingsRoutes,
+            ...(settingsRoutes?.[0]?.children || []),
           ],
         },
       ],

@@ -47,7 +47,11 @@
  *       province:
  *         type: string
  *         title: province
- *         description: The address's province.
+ *         description: The address's ISO 3166-2 province code. Must be lower-case.
+ *         example: "us-ca"
+ *         externalDocs:
+ *           url: https://en.wikipedia.org/wiki/ISO_3166-2
+ *           description: Learn more about ISO 3166-2
  *   address_id:
  *     type: string
  *     title: address_id

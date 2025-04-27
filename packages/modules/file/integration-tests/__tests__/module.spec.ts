@@ -63,6 +63,31 @@ moduleIntegrationTestRunner<IFileModuleService>({
         const downloadUrl = await service.retrieveFile("test.jpg")
         expect(await new Response(downloadUrl.url).text()).toEqual("test")
       })
+
+      it("generates a presigned upload URL", async () => {
+        const res = await service.getUploadFileUrls({
+          filename: "test.jpg",
+          mimeType: "image/jpeg",
+        })
+
+        expect(res).toEqual({
+          url: "presigned-url/test.jpg",
+          key: "test.jpg",
+        })
+      })
+
+      it("fails to get a presigned upload URL if a filename isn't provided", async () => {
+        const err = await service
+          .getUploadFileUrls({
+            filename: "",
+            mimeType: "image/jpeg",
+          })
+          .catch((err) => err)
+
+        expect(err.message).toEqual(
+          "File name is required to get a presigned upload URL"
+        )
+      })
     })
   },
 })

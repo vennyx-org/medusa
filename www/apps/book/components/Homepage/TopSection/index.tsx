@@ -1,5 +1,5 @@
 import clsx from "clsx"
-import { Card, IconHeadline, WindowPaintbrushIcon } from "docs-ui"
+import { Card, IconHeadline, Link, WindowPaintbrushIcon } from "docs-ui"
 import { Book } from "@medusajs/icons"
 import { basePathUrl } from "../../../utils/base-path-url"
 import HomepageCodeTabs from "../CodeTabs"
@@ -63,10 +63,17 @@ const HomepageTopSection = () => {
             customizations.
           </h2>
           <span className="text-small-plus text-medusa-fg-subtle">
-            Unlike other platforms, Medusa allows you to easily customize and
-            extend the behavior of your commerce platform to always fit your
-            business needs.
+            Unlike other platforms, the Medusa Framework allows you to easily
+            customize and extend the behavior of your commerce platform to
+            always fit your business needs.
           </span>
+          <Link
+            href={"/learn/fundamentals/framework"}
+            className="text-compact-small-plus"
+            withIcon
+          >
+            <span>Learn about the Framework</span>
+          </Link>
         </div>
       </div>
     </div>

@@ -1,5 +1,7 @@
 # @medusajs/admin-shared
 
+## 2.7.1
+
 ## 2.7.0
 
 ### Patch Changes

@@ -79,7 +79,7 @@
  *           "address_2": "{value}",
  *           "city": "{value}",
  *           "country_code": "{value}",
- *           "province": "{value}",
+ *           "province": "us-ca",
  *           "postal_code": "{value}",
  *           "metadata": {}
  *         },

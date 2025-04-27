@@ -196,7 +196,7 @@ export interface BaseOrderAddress {
    */
   country_code?: string
   /**
-   * The address's province.
+   * The address's lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province.
    */
   province?: string
   /**

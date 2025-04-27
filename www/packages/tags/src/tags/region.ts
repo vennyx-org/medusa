@@ -28,6 +28,10 @@ export const region = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createCartWorkflow"
   },
   {
+    "title": "addDraftOrderItemsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addDraftOrderItemsWorkflow"
+  },
+  {
     "title": "validateShippingOptionPricesStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/validateShippingOptionPricesStep"
   },

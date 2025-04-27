@@ -15,6 +15,7 @@ medusaIntegrationTestRunner({
     let salesChannel: HttpTypes.AdminSalesChannel
     let stockLocation: HttpTypes.AdminStockLocation
     let testDraftOrder: HttpTypes.AdminDraftOrder
+    let shippingOption: HttpTypes.AdminShippingOption
 
     beforeEach(async () => {
       const container = getContainer()
@@ -46,11 +47,68 @@ medusaIntegrationTestRunner({
         )
       ).data.stock_location
 
+      const shippingProfile = (
+        await api.post(
+          `/admin/shipping-profiles`,
+          { name: "test shipping profile", type: "default" },
+          adminHeaders
+        )
+      ).data.shipping_profile
+
+      const fulfillmentSets = (
+        await api.post(
+          `/admin/stock-locations/${stockLocation.id}/fulfillment-sets?fields=*fulfillment_sets`,
+          {
+            name: `Test-${shippingProfile.id}`,
+            type: "test-type",
+          },
+          adminHeaders
+        )
+      ).data.stock_location.fulfillment_sets
+
+      const fulfillmentSet = (
+        await api.post(
+          `/admin/fulfillment-sets/${fulfillmentSets[0].id}/service-zones`,
+          {
+            name: `Test-${shippingProfile.id}`,
+            geo_zones: [{ type: "country", country_code: "us" }],
+          },
+          adminHeaders
+        )
+      ).data.fulfillment_set
+
+      await api.post(
+        `/admin/stock-locations/${stockLocation.id}/fulfillment-providers`,
+        { add: ["manual_test-provider"] },
+        adminHeaders
+      )
+
       await api.post(
         `/admin/stock-locations/${stockLocation.id}/sales-channels`,
         { add: [salesChannel.id] },
         adminHeaders
       )
+
+      shippingOption = (
+        await api.post(
+          `/admin/shipping-options`,
+          {
+            name: `Test shipping option ${fulfillmentSet.id}`,
+            service_zone_id: fulfillmentSet.service_zones[0].id,
+            shipping_profile_id: shippingProfile.id,
+            provider_id: "manual_test-provider",
+            price_type: "flat",
+            type: {
+              label: "Test type",
+              description: "Test description",
+              code: "test-code",
+            },
+            prices: [{ currency_code: "usd", amount: 1000 }],
+            rules: [],
+          },
+          adminHeaders
+        )
+      ).data.shipping_option
 
       testDraftOrder = (
         await api.post(
@@ -284,6 +342,142 @@ medusaIntegrationTestRunner({
             }),
           ])
         )
+      })
+    })
+
+    describe("DELETE /draft-orders/:id/shipping-options/methods/:method_id", () => {
+      let product
+      let edit
+
+      beforeEach(async () => {
+        const inventoryItem = (
+          await api.post(
+            `/admin/inventory-items`,
+            { sku: "shirt" },
+            adminHeaders
+          )
+        ).data.inventory_item
+
+        await api.post(
+          `/admin/inventory-items/${inventoryItem.id}/location-levels`,
+          {
+            location_id: stockLocation.id,
+            stocked_quantity: 10,
+          },
+          adminHeaders
+        )
+
+        product = (
+          await api.post(
+            "/admin/products",
+            {
+              title: "Shirt",
+              options: [{ title: "size", values: ["large", "small"] }],
+              variants: [
+                {
+                  title: "L shirt",
+                  options: { size: "large" },
+                  inventory_items: [
+                    {
+                      inventory_item_id: inventoryItem.id,
+                      required_quantity: 1,
+                    },
+                  ],
+                  prices: [
+                    {
+                      currency_code: "usd",
+                      amount: 10,
+                    },
+                  ],
+                },
+                {
+                  title: "S shirt",
+                  options: { size: "small" },
+                  inventory_items: [
+                    {
+                      inventory_item_id: inventoryItem.id,
+                      required_quantity: 1,
+                    },
+                  ],
+                  prices: [
+                    {
+                      currency_code: "usd",
+                      amount: 10,
+                    },
+                  ],
+                },
+              ],
+            },
+            adminHeaders
+          )
+        ).data.product
+
+        edit = (
+          await api.post(
+            `/admin/draft-orders/${testDraftOrder.id}/edit`,
+            {},
+            adminHeaders
+          )
+        ).data.draft_order_preview
+
+        await api.post(
+          `/admin/draft-orders/${testDraftOrder.id}/edit/items`,
+          {
+            items: [{ variant_id: product.variants[0].id, quantity: 1 }],
+          },
+          adminHeaders
+        )
+
+        await api.post(
+          `/admin/draft-orders/${testDraftOrder.id}/edit/shipping-methods`,
+          {
+            shipping_option_id: shippingOption.id,
+          },
+          adminHeaders
+        )
+
+        edit = (
+          await api.post(
+            `/admin/draft-orders/${testDraftOrder.id}/edit/confirm`,
+            {},
+            adminHeaders
+          )
+        ).data.draft_order_preview
+      })
+
+      it("should delete a shipping method from the draft order", async () => {
+        edit = (
+          await api.post(
+            `/admin/draft-orders/${testDraftOrder.id}/edit`,
+            {},
+            adminHeaders
+          )
+        ).data.draft_order_preview
+
+        const response = await api.delete(
+          `/admin/draft-orders/${testDraftOrder.id}/edit/shipping-methods/method/${edit.shipping_methods[0].id}`,
+          adminHeaders
+        )
+
+        expect(response.status).toBe(200)
+        expect(response.data.draft_order_preview.shipping_methods.length).toBe(
+          0
+        )
+
+        await api.post(
+          `/admin/draft-orders/${testDraftOrder.id}/edit/confirm`,
+          {},
+          adminHeaders
+        )
+
+        const order = (
+          await api.get(
+            `/admin/draft-orders/${testDraftOrder.id}`,
+            adminHeaders
+          )
+        ).data.draft_order
+
+        expect(order.shipping_methods.length).toBe(0)
       })
     })
   },

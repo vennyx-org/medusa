@@ -1,7 +1,7 @@
 export const cache = [
   {
     "title": "Create Cache Module",
-    "path": "https://docs.medusajs.com/resources/architectural-modules/cache/create"
+    "path": "https://docs.medusajs.com/resources/infrastructure-modules/cache/create"
   },
   {
     "title": "Use Cache Module",

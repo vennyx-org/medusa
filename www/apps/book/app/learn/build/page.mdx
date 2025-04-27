@@ -25,7 +25,12 @@ npx medusa build
 
 ## Build Output
 
-The `build` command outputs the production build in the `.medusa/server` directory, and the admin dashboard build in the `.medusa/server/public/admin`.
+The `build` command creates a `.medusa` directory in the root of your project that contains your build assets. Don't commit this directory to your repository.
+
+The `.medusa` directory contains the following directories:
+
+- `.medusa/server`: Contains the production build of your Medusa application.
+- `.medusa/server/public/admin`: Contains the production build of the admin dashboard.
 
 ### Separate Admin Build
 

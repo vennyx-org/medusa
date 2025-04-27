@@ -76,6 +76,10 @@ export const query = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/cancelOrderWorkflow"
   },
   {
+    "title": "createOrderCreditLinesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createOrderCreditLinesWorkflow"
+  },
+  {
     "title": "declineOrderTransferRequestWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/declineOrderTransferRequestWorkflow"
   },

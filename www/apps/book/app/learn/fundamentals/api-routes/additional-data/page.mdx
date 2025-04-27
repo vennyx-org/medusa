@@ -12,7 +12,7 @@ In this chapter, you'll learn how to pass additional data in requests to Medusa'
 
 Some of Medusa's API Routes accept an `additional_data` parameter whose type is an object. The API Route passes the `additional_data` to the workflow, which in turn passes it to its hooks.
 
-This is useful when you have a link from your custom module to a commerce module, and you want to perform an additional action when a request is sent to an existing API route.
+This is useful when you have a link from your custom module to a Commerce Module, and you want to perform an additional action when a request is sent to an existing API route.
 
 For example, the [Create Product API Route](!api!/admin#products_postproducts) accepts an `additional_data` parameter. If you have a data model linked to it, you consume the `productsCreated` hook to create a record of the data model using the custom data and link it to the product.
 

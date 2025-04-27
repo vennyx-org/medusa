@@ -1,3 +1,5 @@
+import { FileAccessPermission } from "./common"
+
 /**
  * The File to be created.
  */
@@ -9,7 +11,7 @@ export interface CreateFileDTO {
 
   /**
    * The mimetype of the uploaded file
-   * 
+   *
    * @example
    * image/png
    */
@@ -23,5 +25,22 @@ export interface CreateFileDTO {
   /**
    * The access level of the file. Defaults to private if not passed
    */
-  access?: "public" | "private"
+  access?: FileAccessPermission
+}
+
+export interface GetUploadFileUrlDTO {
+  /**
+   * The name of the file to be uploaded
+   */
+  filename: string
+
+  /**
+   * The mimetype of the file to be uploaded
+   */
+  mimeType?: string
+
+  /**
+   * The access level of the file to be uploaded. Defaults to private if not passed
+   */
+  access?: FileAccessPermission
 }

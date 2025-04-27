@@ -60,7 +60,7 @@ export interface CreateCustomerAddressDTO {
   country_code?: string | null
 
   /**
-   * The province.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province of the address.
    */
   province?: string | null
 
@@ -145,7 +145,7 @@ export interface UpdateCustomerAddressDTO {
   country_code?: string | null
 
   /**
-   * The province.
+   * The lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province of the address.
    */
   province?: string | null
 

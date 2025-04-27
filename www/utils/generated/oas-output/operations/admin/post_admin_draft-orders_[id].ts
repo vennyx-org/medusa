@@ -2,7 +2,7 @@
  * @oas [post] /admin/draft-orders/{id}
  * operationId: PostDraftOrdersId
  * summary: Update a Draft Order
- * description: Update a draft order's details.
+ * description: Update a draft order's details. This doesn't include updating the draft order's items, shipping methods, or promotions. To update those, you need to create an edit that you can later request or confirm.
  * x-authenticated: true
  * parameters:
  *   - name: id

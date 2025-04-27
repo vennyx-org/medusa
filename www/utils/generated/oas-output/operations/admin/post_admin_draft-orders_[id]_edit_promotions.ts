@@ -1,9 +1,9 @@
 /**
  * @oas [post] /admin/draft-orders/{id}/edit/promotions
  * operationId: PostDraftOrdersIdEditPromotions
- * summary: Add Promotions to Draft Order
+ * summary: Add Promotions to Draft Order Edit
  * x-sidebar-summary: Add Promotions
- * description: Add promotions to a draft order.
+ * description: Add promotions to a draft order edit.
  * x-authenticated: true
  * parameters:
  *   - name: id

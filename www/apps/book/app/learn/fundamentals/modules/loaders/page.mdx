@@ -100,6 +100,16 @@ This indicates that the loader in the `hello` module ran and logged this message
 
 ---
 
+## When are Loaders Executed?
+
+When you start the Medusa application, it executes the loaders of all modules in their registration order.
+
+A loader is executed before the module's main service is instantiated. So, you can use loaders to register in the module's container resources that you want to use in the module's service. For example, you can register a database connection.
+
+Loaders are also useful to only load a module if a certain condition is met. For example, if you try to connect to a database in a loader but the connection fails, you can throw an error in the loader to prevent the module from being loaded. This is useful if your module depends on an external service to work.
+
+---
+
 ## Example: Register Custom MongoDB Connection
 
 As mentioned in this chapter's introduction, loaders are most useful when you need to register a custom resource in the module's container to re-use it in other customizations in the module.

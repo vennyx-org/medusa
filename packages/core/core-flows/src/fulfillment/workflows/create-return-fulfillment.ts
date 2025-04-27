@@ -17,17 +17,17 @@ export const createReturnFulfillmentWorkflowId =
 /**
  * This workflow creates a fulfillment for a return. It's used by other return-related workflows,
  * such as {@link createAndCompleteReturnOrderWorkflow}.
- * 
+ *
  * You can use this workflow within your own customizations or custom workflows, allowing you to
  * create a fulfillment for a return within your custom flows.
- * 
+ *
  * :::note
- * 
+ *
  * You can retrieve an order's details using [Query](https://docs.medusajs.com/learn/fundamentals/module-links/query),
  * or [useQueryGraphStep](https://docs.medusajs.com/resources/references/medusa-workflows/steps/useQueryGraphStep).
- * 
+ *
  * :::
- * 
+ *
  * @example
  * const { result } = await createReturnFulfillmentWorkflow(container)
  * .run({
@@ -57,9 +57,9 @@ export const createReturnFulfillmentWorkflowId =
  *     }
  *   }
  * })
- * 
+ *
  * @summary
- * 
+ *
  * Create a fulfillment for a return.
  */
 export const createReturnFulfillmentWorkflow = createWorkflow(

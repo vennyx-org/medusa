@@ -1,0 +1,2133 @@
+---
+sidebar_label: "Loyalty Points"
+tags:
+    - name: cart
+      label: "Implement Loyalty Points"
+    - server
+    - tutorial
+    - name: order
+      label: "Implement Loyalty Points"
+    - name: customer
+      label: "Implement Loyalty Points"
+    - name: promotion
+      label: "Implement Loyalty Points"
+---
+
+import { Github, PlaySolid } from "@medusajs/icons"
+import { Prerequisites, WorkflowDiagram, CardList } from "docs-ui"
+
+export const metadata = {
+  title: `Implement Loyalty Points System in Medusa`,
+}
+
+# {metadata.title}
+
+In this tutorial, you'll learn how to implement a loyalty points system in Medusa.
+
+<Note title="Looking for a straightforward implementation?">
+
+Medusa Cloud provides a beta Store Credits feature that facilitates building a loyalty point system. [Get in touch](https://medusajs.com/contact) for early access.
+
+</Note>
+
+When you install a Medusa application, you get a fully-fledged commerce platform with a Framework for customization. The Medusa application's commerce features are built around [Commerce Modules](../../../commerce-modules/page.mdx), which are available out-of-the-box. These features include management capabilities related to carts, orders, promotions, and more.
+
+A loyalty point system allows customers to earn points for purchases, which can be redeemed for discounts or rewards. In this tutorial, you'll learn how to customize the Medusa application to implement a loyalty points system.
+
+You can follow this tutorial whether you're new to Medusa or an advanced Medusa developer.
+
+## Summary
+
+By following this tutorial, you will learn how to:
+
+- Install and set up Medusa.
+- Define models to store loyalty points and the logic to manage them.
+- Build flows that allow customers to earn and redeem points during checkout.
+    - Points are redeemed through dynamic promotions specific to the customer.
+- Customize the cart completion flow to validate applied loyalty points.
+
+![Diagram illustrating redeem loyalty points flow](https://res.cloudinary.com/dza7lstvk/image/upload/v1744126213/Medusa%20Resources/redeem-points-flow_kzgkux.jpg)
+
+<CardList items={[
+  {
+    href: "https://github.com/medusajs/examples/tree/main/loyalty-points",
+    title: "Loyalty Points Repository",
+    text: "Find the full code for this guide in this repository.",
+    icon: Github,
+  },
+  {
+    href: "https://res.cloudinary.com/dza7lstvk/raw/upload/v1744212595/OpenApi/Loyalty-Points_jwi5e9.yaml",
+    title: "OpenApi Specs for Postman",
+    text: "Import this OpenApi Specs file into tools like Postman.",
+    icon: PlaySolid,
+  },
+]} />
+
+---
+
+## Step 1: Install a Medusa Application
+
+<Prerequisites items={[
+  {
+    text: "Node.js v20+",
+    link: "https://nodejs.org/en/download"
+  },
+  {
+    text: "Git CLI tool",
+    link: "https://git-scm.com/downloads"
+  },
+  {
+    text: "PostgreSQL",
+    link: "https://www.postgresql.org/download/"
+  }
+]} />
+
+Start by installing the Medusa application on your machine with the following command:
+
+```bash
+npx create-medusa-app@latest
+```
+
+You'll first be asked for the project's name. Then, when asked whether you want to install the [Next.js Starter Storefront](../../../nextjs-starter/page.mdx), choose Yes.
+
+Afterward, the installation process will start, which will install the Medusa application in a directory with your project's name, and the Next.js Starter Storefront in a separate directory with the `{project-name}-storefront` name.
+
+<Note title="Why is the storefront installed separately">
+
+The Medusa application is composed of a headless Node.js server and an admin dashboard. The storefront is installed or custom-built separately and connects to the Medusa application through its REST endpoints, called [API routes](!docs!/learn/fundamentals/api-routes). Learn more in [Medusa's Architecture documentation](!docs!/learn/introduction/architecture).
+
+</Note>
+
+Once the installation finishes successfully, the Medusa Admin dashboard will open with a form to create a new user. Enter the user's credentials and submit the form. Afterward, you can log in with the new user and explore the dashboard.
+
+<Note title="Ran into Errors">
+
+Check out the [troubleshooting guides](../../../troubleshooting/create-medusa-app-errors/page.mdx) for help.
+
+</Note>
+
+---
+
+## Step 2: Create Loyalty Module
+
+In Medusa, you can build custom features in a [module](!docs!/learn/fundamentals/modules). A module is a reusable package with functionalities related to a single feature or domain. Medusa integrates the module into your application without implications or side effects on your setup.
+
+In the module, you define the data models necessary for a feature and the logic to manage these data models. Later, you can build commerce flows around your module.
+
+In this step, you'll build a Loyalty Module that defines the necessary data models to store and manage loyalty points for customers.
+
+<Note>
+
+Refer to the [Modules documentation](!docs!/learn/fundamentals/modules) to learn more.
+
+</Note>
+
+### Create Module Directory
+
+Modules are created under the `src/modules` directory of your Medusa application. So, create the directory `src/modules/loyalty`.
+
+### Create Data Models 
+
+A data model represents a table in the database. You create data models using Medusa's Data Model Language (DML). It simplifies defining a table's columns, relations, and indexes with straightforward methods and configurations.
+
+<Note>
+
+Refer to the [Data Models documentation](!docs!/learn/fundamentals/modules#1-create-data-model) to learn more.
+
+</Note>
+
+For the Loyalty Module, you need to define a `LoyaltyPoint` data model that represents a customer's loyalty points. So, create the file `src/modules/loyalty/models/loyalty-point.ts` with the following content:
+
+export const dmlHighlights = [
+  ["4", "id", "Unique ID for the loyalty points"],
+  ["5", "points", "Number of loyalty points a customer has"],
+  ["6", "customer_id", "ID of the customer who owns the loyalty points"],
+  ["6", "unique", "Ensure that each customer has only one record in the loyalty_point table"],
+]
+
+```ts title="src/modules/loyalty/models/loyalty-point.ts" highlights={dmlHighlights}
+import { model } from "@medusajs/framework/utils"
+
+const LoyaltyPoint = model.define("loyalty_point", {
+  id: model.id().primaryKey(),
+  points: model.number().default(0),
+  customer_id: model.text().unique("IDX_LOYALTY_CUSTOMER_ID"), 
+})
+
+export default LoyaltyPoint
+```
+
+You define the `LoyaltyPoint` data model using the `model.define` method of the DML. It accepts the data model's table name as a first parameter, and the model's schema object as a second parameter.
+
+The `LoyaltyPoint` data model has the following properties:
+
+- `id`: A unique ID for the loyalty points.
+- `points`: The number of loyalty points a customer has.
+- `customer_id`: The ID of the customer who owns the loyalty points. This property has a unique index to ensure that each customer has only one record in the `loyalty_point` table.
+
+<Note>
+
+Learn more about defining data model properties in the [Property Types documentation](!docs!/learn/fundamentals/data-models/properties).
+
+</Note>
+
+### Create Module's Service
+
+You now have the necessary data model in the Loyalty Module, but you'll need to manage its records. You do this by creating a service in the module.
+
+A service is a TypeScript or JavaScript class that the module exports. In the service's methods, you can connect to the database, allowing you to manage your data models, or connect to a third-party service, which is useful if you're integrating with external services.
+
+<Note>
+
+Refer to the [Module Service documentation](!docs!/learn/fundamentals/modules#2-create-service) to learn more.
+
+</Note>
+
+To create the Loyalty Module's service, create the file `src/modules/loyalty/service.ts` with the following content:
+
+```ts title="src/modules/loyalty/service.ts"
+import { MedusaError, MedusaService } from "@medusajs/framework/utils"
+import LoyaltyPoint from "./models/loyalty-point"
+import { InferTypeOf } from "@medusajs/framework/types"
+
+type LoyaltyPoint = InferTypeOf<typeof LoyaltyPoint>
+
+class LoyaltyModuleService extends MedusaService({
+  LoyaltyPoint,
+}) {
+  // TODO add methods
+}
+
+export default LoyaltyModuleService
+```
+
+The `LoyaltyModuleService` extends `MedusaService` from the Modules SDK which generates a class with data-management methods for your module's data models. This saves you time on implementing Create, Read, Update, and Delete (CRUD) methods.
+
+So, the `LoyaltyModuleService` class now has methods like `createLoyaltyPoints` and `retrieveLoyaltyPoint`.
+
+<Note>
+
+Find all methods generated by the `MedusaService` in [the Service Factory reference](../../../service-factory-reference/page.mdx).
+
+</Note>
+
+#### Add Methods to the Service
+
+Aside from the basic CRUD methods, you need to add methods that handle custom functionalities related to loyalty points.
+
+First, you need a method that adds loyalty points for a customer. Add the following method to the `LoyaltyModuleService`:
+
+```ts title="src/modules/loyalty/service.ts"
+class LoyaltyModuleService extends MedusaService({
+  LoyaltyPoint,
+}) {
+  async addPoints(customerId: string, points: number): Promise<LoyaltyPoint> {
+    const existingPoints = await this.listLoyaltyPoints({
+      customer_id: customerId,
+    })
+
+    if (existingPoints.length > 0) {
+      return await this.updateLoyaltyPoints({
+        id: existingPoints[0].id,
+        points: existingPoints[0].points + points,
+      })
+    }
+
+    return await this.createLoyaltyPoints({
+      customer_id: customerId,
+      points,
+    })
+  }
+}
+```
+
+You add an `addPoints` method that accepts two parameters: the ID of the customer and the points to add.
+
+In the method, you retrieve the customer's existing loyalty points using the `listLoyaltyPoints` method, which is automatically generated by the `MedusaService`. If the customer has existing points, you update them with the new points using the `updateLoyaltyPoints` method.
+
+Otherwise, if the customer doesn't have existing loyalty points, you create a new record with the `createLoyaltyPoints` method.
+
+The next method you'll add deducts points from the customer's loyalty points, which is useful when the customer redeems points. Add the following method to the `LoyaltyModuleService`:
+
+```ts title="src/modules/loyalty/service.ts"
+class LoyaltyModuleService extends MedusaService({
+  LoyaltyPoint,
+}) {
+  // ...
+  async deductPoints(customerId: string, points: number): Promise<LoyaltyPoint> {
+    const existingPoints = await this.listLoyaltyPoints({
+      customer_id: customerId,
+    })
+
+    if (existingPoints.length === 0 || existingPoints[0].points < points) {
+      throw new MedusaError(
+        MedusaError.Types.NOT_ALLOWED,
+        "Insufficient loyalty points"
+      )
+    }
+
+    return await this.updateLoyaltyPoints({
+      id: existingPoints[0].id,
+      points: existingPoints[0].points - points,
+    })
+  }
+}
+```
+
+The `deductPoints` method accepts the customer ID and the points to deduct.
+
+In the method, you retrieve the customer's existing loyalty points using the `listLoyaltyPoints` method. If the customer doesn't have existing points or if the points to deduct are greater than the existing points, you throw an error.
+
+Otherwise, you update the customer's loyalty points with the new value using the `updateLoyaltyPoints` method, which is automatically generated by `MedusaService`.
+
+Next, you'll add the method that retrieves the points of a customer. Add the following method to the `LoyaltyModuleService`:
+
+```ts title="src/modules/loyalty/service.ts"
+class LoyaltyModuleService extends MedusaService({
+  LoyaltyPoint,
+}) {
+  // ...
+  async getPoints(customerId: string): Promise<number> {
+    const points = await this.listLoyaltyPoints({
+      customer_id: customerId,
+    })
+
+    return points[0]?.points || 0
+  }
+}
+```
+
+The `getPoints` method accepts the customer ID and retrieves the customer's loyalty points using the `listLoyaltyPoints` method. If the customer has no points, it returns `0`.
+
+#### Add Method to Map Points to Discount
+
+Finally, you'll add a method that implements the logic of mapping loyalty points to a discount amount. This is useful when the customer wants to redeem their points during checkout.
+
+The mapping logic may differ for each use case. For example, you may need to use a third-party service to map the loyalty points discount amount, or use some custom calculation.
+
+To simplify the logic in this tutorial, you'll use a simple calculation that maps 1 point to 1 currency unit. For example, `100` points = `$100` discount.
+
+Add the following method to the `LoyaltyModuleService`:
+
+```ts title="src/modules/loyalty/service.ts"
+class LoyaltyModuleService extends MedusaService({
+  LoyaltyPoint,
+}) {
+  // ...
+  async calculatePointsFromAmount(amount: number): Promise<number> {
+    // Convert amount to points using a standard conversion rate
+    // For example, $1 = 1 point
+    // Round down to nearest whole point
+    const points = Math.floor(amount)
+
+    if (points < 0) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "Amount cannot be negative"
+      )
+    }
+
+    return points
+  }
+}
+```
+
+The `calculatePointsFromAmount` method accepts the amount and converts it to the nearest whole number of points. If the amount is negative, it throws an error.
+
+You'll use this method later to calculate the amount discounted when a customer redeems their loyalty points.
+
+### Export Module Definition
+
+The final piece to a module is its definition, which you export in an `index.ts` file at its root directory. This definition tells Medusa the name of the module and its service.
+
+So, create the file `src/modules/loyalty/index.ts` with the following content:
+
+```ts title="src/modules/loyalty/index.ts"
+import { Module } from "@medusajs/framework/utils"
+import LoyaltyModuleService from "./service"
+
+export const LOYALTY_MODULE = "loyalty"
+
+export default Module(LOYALTY_MODULE, {
+  service: LoyaltyModuleService,
+})
+```
+
+You use the `Module` function from the Modules SDK to create the module's definition. It accepts two parameters:
+
+1. The module's name, which is `loyalty`.
+2. An object with a required property `service` indicating the module's service.
+
+You also export the module's name as `LOYALTY_MODULE` so you can reference it later.
+
+### Add Module to Medusa's Configurations
+
+Once you finish building the module, add it to Medusa's configurations to start using it.
+
+In `medusa-config.ts`, add a `modules` property and pass an array with your custom module:
+
+```ts title="medusa-config.ts"
+module.exports = defineConfig({
+  // ...
+  modules: [
+    {
+      resolve: "./src/modules/loyalty",
+    },
+  ],
+})
+```
+
+Each object in the `modules` array has a `resolve` property, whose value is either a path to the module's directory, or an `npm` package’s name.
+
+### Generate Migrations
+
+Since data models represent tables in the database, you define how they're created in the database with migrations. A migration is a TypeScript or JavaScript file that defines database changes made by a module.
+
+<Note>
+
+Refer to the [Migrations documentation](!docs!/learn/fundamentals/modules#5-generate-migrations) to learn more.
+
+</Note>
+
+Medusa's CLI tool can generate the migrations for you. To generate a migration for the Loyalty Module, run the following command in your Medusa application's directory:
+
+```bash
+npx medusa db:generate loyalty
+```
+
+The `db:generate` command of the Medusa CLI accepts the name of the module to generate the migration for. You'll now have a `migrations` directory under `src/modules/loyalty` that holds the generated migration.
+
+Then, to reflect these migrations on the database, run the following command:
+
+```bash
+npx medusa db:migrate
+```
+
+The table for the `LoyaltyPoint` data model is now created in the database.
+
+---
+
+## Step 3: Change Loyalty Points Flow
+
+Now that you have a module that stores and manages loyalty points in the database, you'll start building flows around it that allow customers to earn and redeem points.
+
+The first flow you'll build will either add points to a customer's loyalty points or deduct them based on a purchased order. If the customer hasn't redeemed points, the points are added to their loyalty points. Otherwise, the points are deducted from their loyalty points.
+
+To build custom commerce features in Medusa, you create a [workflow](!docs!/learn/fundamentals/workflows). A workflow is a series of queries and actions, called steps, that complete a task. You construct a workflow like you construct a function, but it's a special function that allows you to track its executions' progress, define roll-back logic, and configure other advanced features. Then, you execute the workflow from other customizations, such as in an endpoint.
+
+In this section, you'll build the workflow that adds or deducts loyalty points for an order's customer. Later, you'll execute this workflow when an order is placed.
+
+<Note>
+
+Learn more about workflows in the [Workflows documentation](!docs!/learn/fundamentals/workflows).
+
+</Note>
+
+The workflow will have the following steps:
+
+<WorkflowDiagram
+  workflow={{
+    name: "handleOrderPointsWorkflow",
+    steps: [
+      {
+        type: "step",
+        name: "useQueryGraphStep",
+        description: "Retrieve the order's details.",
+        link: "/references/helper-steps/useQueryGraphStep",
+        depth: 1
+      },
+      {
+        type: "step",
+        name: "validateCustomerExistsStep",
+        description: "Validate that the customer is registered.",
+        depth: 1,
+      },
+      {
+        type: "step",
+        name: "getCartLoyaltyPromoStep",
+        description: "Retrieve the cart's loyalty promotion.",
+        depth: 1,
+      },
+      {
+        type: "when",
+        condition: "Order's cart has a loyalty promotion.",
+        steps: [
+          {
+            type: "step",
+            name: "deductPurchasePointsStep",
+            description: "Deduct points from the customer's loyalty points.",
+            depth: 2,
+          },
+          {
+            type: "step",
+            name: "updatePromotionsStep",
+            description: "Deactivate the cart's loyalty promotion.",
+            link: "/references/medusa-workflows/steps/updatePromotionsStep",
+            depth: 2,
+          }
+        ],
+        depth: 1
+      },
+      {
+        type: "when",
+        condition: "Order's cart doesn't have a loyalty promotion.",
+        steps: [
+          {
+            type: "step",
+            name: "addPurchaseAsPointsStep",
+            description: "Add points to the customer's loyalty points.",
+            depth: 2,
+          },
+        ],
+        depth: 1
+      }
+    ]
+  }}
+/>
+
+Medusa provides the `useQueryGraphStep` and `updatePromotionsStep` in its `@medusajs/medusa/core-flows` package. So, you'll only implement the other steps.
+
+### validateCustomerExistsStep
+
+In the workflow, you first need to validate that the customer is registered. Only registered customers can earn and redeem loyalty points.
+
+To do this, create the file `src/workflows/steps/validate-customer-exists.ts` with the following content:
+
+```ts title="src/workflows/steps/validate-customer-exists.ts"
+import { CustomerDTO } from "@medusajs/framework/types"
+import { createStep } from "@medusajs/framework/workflows-sdk"
+import { MedusaError } from "@medusajs/framework/utils"
+
+export type ValidateCustomerExistsStepInput = {
+  customer: CustomerDTO | null | undefined
+}
+
+export const validateCustomerExistsStep = createStep(
+  "validate-customer-exists",
+  async ({ customer }: ValidateCustomerExistsStepInput) => {
+    if (!customer) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA, 
+        "Customer not found"
+      )
+    }
+
+    if (!customer.has_account) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA, 
+        "Customer must have an account to earn or manage points"
+      )
+    }
+  }
+)
+```
+
+You create a step with `createStep` from the Workflows SDK. It accepts two parameters:
+
+1. The step's unique name, which is `validate-customer-exists`.
+2. An async function that receives two parameters:
+    - The step's input, which is in this case an object with the customer's details.
+    - An object that has properties including the [Medusa container](!docs!/learn/fundamentals/medusa-container), which is a registry of Framework and commerce tools that you can access in the step.
+
+In the step function, you validate that the customer is defined and that it's registered based on its `has_account` property. Otherwise, you throw an error.
+
+### getCartLoyaltyPromoStep
+
+Next, you'll need to retrieve the loyalty promotion applied on the cart, if there's any. This is useful to determine whether the customer has redeemed points.
+
+Before you create a step, you'll create a utility function that the step uses to retrieve the loyalty promotion of a cart. You'll create it as a separate utility function to use it later in other customizations.
+
+Create the file `src/utils/promo.ts` with the following content:
+
+```ts title="src/utils/promo.ts"
+import { PromotionDTO, CustomerDTO, CartDTO } from "@medusajs/framework/types"
+
+export type CartData = CartDTO & {
+  promotions?: PromotionDTO[]
+  customer?: CustomerDTO
+  metadata: {
+    loyalty_promo_id?: string
+  }
+}
+
+export function getCartLoyaltyPromotion(
+  cart: CartData
+): PromotionDTO | undefined {
+  if (!cart?.metadata?.loyalty_promo_id) {
+    return
+  }
+
+  return cart.promotions?.find(
+    (promotion) => promotion.id === cart.metadata.loyalty_promo_id
+  )
+}
+```
+
+You create a `getCartLoyaltyPromotion` function that accepts the cart's details as an input and returns the loyalty promotion if it exists. You retrieve the loyalty promotion if its ID is stored in the cart's `metadata.loyalty_promo_id` property.
+
+You can now create the step that uses this utility to retrieve a carts loyalty points promotion. To create the step, create the file `src/workflows/steps/get-cart-loyalty-promo.ts` with the following content:
+
+```ts title="src/workflows/steps/get-cart-loyalty-promo.ts"
+import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
+import { CartData, getCartLoyaltyPromotion } from "../../utils/promo"
+import { MedusaError } from "@medusajs/framework/utils"
+
+type GetCartLoyaltyPromoStepInput = {
+  cart: CartData,
+  throwErrorOn?: "found" | "not-found"
+}
+
+export const getCartLoyaltyPromoStep = createStep(
+  "get-cart-loyalty-promo",
+  async ({ cart, throwErrorOn }: GetCartLoyaltyPromoStepInput) => {
+    const loyaltyPromo = getCartLoyaltyPromotion(cart)
+
+    if (throwErrorOn === "found" && loyaltyPromo) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "Loyalty promotion already applied to cart"
+      )
+    } else if (throwErrorOn === "not-found" && !loyaltyPromo) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "No loyalty promotion found on cart"
+      )
+    }
+
+    return new StepResponse(loyaltyPromo)
+  }
+)
+```
+
+You create a step that accepts an object having the following properties:
+
+- `cart`: The cart's details.
+- `throwErrorOn`: An optional property that indicates whether to throw an error if the loyalty promotion is found or not found.
+
+The `throwErrorOn` property is useful to make the step reusable in different scenarios, allowing you to use it in later workflows.
+
+In the step, you call the `getCartLoyaltyPromotion` utility to retrieve the loyalty promotion. If the `throwErrorOn` property is set to `found` and the loyalty promotion is found, you throw an error.
+
+Otherwise, if the `throwErrorOn` property is set to `not-found` and the loyalty promotion is not found, you throw an error.
+
+To return data from a step, you return an instance of `StepResponse` from the Workflows SDK. It accepts as a parameter the data to return, which is the loyalty promotion in this case.
+
+### deductPurchasePointsStep
+
+If the order's cart has a loyalty promotion, you need to deduct points from the customer's loyalty points. To do this, create the file `src/workflows/steps/deduct-purchase-points.ts` with the following content:
+
+export const deductStepHighlights = [
+  ["18", "loyaltyModuleService", "Resolve the Loyalty Module's service."],
+  ["22", "calculatePointsFromAmount", "Calculate the points to deduct from the promotion's amount."],
+  ["26", "deductPoints", "Deduct the points from the customer's loyalty points."],
+  ["31", "result", "Return the loyalty points result"],
+  ["36", "", "Add a compensation function to undo the step's actions if an error occurs."],
+  ["46", "addPoints", "Restore points in case of failure."],
+]
+
+```ts title="src/workflows/steps/deduct-purchase-points.ts" highlights={deductStepHighlights} collapsibleLines="1-7" expandButtonLabel="Show Imports"
+import { 
+  createStep,
+  StepResponse, 
+} from "@medusajs/framework/workflows-sdk"
+import { LOYALTY_MODULE } from "../../modules/loyalty"
+import LoyaltyModuleService from "../../modules/loyalty/service"
+
+type DeductPurchasePointsInput = {
+  customer_id: string
+  amount: number
+}
+
+export const deductPurchasePointsStep = createStep(
+  "deduct-purchase-points",
+  async ({ 
+    customer_id, amount,
+  }: DeductPurchasePointsInput, { container }) => {
+    const loyaltyModuleService: LoyaltyModuleService = container.resolve(
+      LOYALTY_MODULE
+    )
+
+    const pointsToDeduct = await loyaltyModuleService.calculatePointsFromAmount(
+      amount
+    )
+
+    const result = await loyaltyModuleService.deductPoints(
+      customer_id,
+      pointsToDeduct
+    )
+
+    return new StepResponse(result, {
+      customer_id,
+      points: pointsToDeduct,
+    })
+  },
+  async (data, { container }) => {
+    if (!data) {
+      return
+    }
+
+    const loyaltyModuleService: LoyaltyModuleService = container.resolve(
+      LOYALTY_MODULE
+    )
+
+    // Restore points in case of failure
+    await loyaltyModuleService.addPoints(
+      data.customer_id,
+      data.points
+    )
+  }
+)
+```
+
+You create a step that accepts an object having the following properties:
+
+- `customer_id`: The ID of the customer to deduct points from.
+- `amount`: The promotion's amount, which will be used to calculate the points to deduct.
+
+In the step, you resolve the Loyalty Module's service from the Medusa container. Then, you use the `calculatePointsFromAmount` method to calculate the points to deduct from the promotion's amount.
+
+After that, you call the `deductPoints` method to deduct the points from the customer's loyalty points.
+
+Finally, you return a `StepResponse` with the result of the `deductPoints`.
+
+#### Compensation Function
+
+This step has a compensation function, which is passed as a third parameter to the `createStep` function.
+
+The compensation function undoes the actions performed in a step. Then, if an error occurs during the workflow's execution, the compensation functions of executed steps are called to roll back the changes. This mechanism ensures data consistency in your application, especially as you integrate external systems.
+
+The compensation function accepts two parameters:
+
+1. Data passed from the step function to the compensation function. The data is passed as a second parameter of the returned `StepResponse` instance.
+2. An object that has properties including the [Medusa container](!docs!/learn/fundamentals/medusa-container).
+
+In the compensation function, you resolve the Loyalty Module's service from the Medusa container. Then, you call the `addPoints` method to restore the points deducted from the customer's loyalty points if an error occurs.
+
+### addPurchaseAsPointsStep
+
+The last step you'll create adds points to the customer's loyalty points. You'll use this step if the customer didn't redeem points during checkout.
+
+To create the step, create the file `src/workflows/steps/add-purchase-as-points.ts` with the following content:
+
+export const addPointsHighlights = [
+  ["20", "calculatePointsFromAmount", "Calculate the points to add from the order's amount."],
+  ["24", "addPoints", "Add the points to the customer's loyalty points."],
+  ["29", "result", "Return the loyalty points result"],
+  ["34", "", "Add a compensation function to undo the step's actions if an error occurs."],
+  ["43", "deductPoints", "Deduct points in case of failure."],
+]
+
+```ts title="src/workflows/steps/add-purchase-as-points.ts" highlights={addPointsHighlights} collapsibleLines="1-7" expandButtonLabel="Show Imports"
+import {
+  createStep,
+  StepResponse,
+} from "@medusajs/framework/workflows-sdk"
+import { LOYALTY_MODULE } from "../../modules/loyalty"
+import LoyaltyModuleService from "../../modules/loyalty/service"
+
+type StepInput = {
+  customer_id: string
+  amount: number
+}
+
+export const addPurchaseAsPointsStep = createStep(
+  "add-purchase-as-points",
+  async (input: StepInput, { container }) => {
+    const loyaltyModuleService: LoyaltyModuleService = container.resolve(
+      LOYALTY_MODULE
+    )
+
+    const pointsToAdd = await loyaltyModuleService.calculatePointsFromAmount(
+      input.amount
+    )
+
+    const result = await loyaltyModuleService.addPoints(
+      input.customer_id,
+      pointsToAdd
+    )
+
+    return new StepResponse(result, {
+      customer_id: input.customer_id,
+      points: pointsToAdd,
+    })
+  },
+  async (data, { container }) => {
+    if (!data) {
+      return
+    }
+
+    const loyaltyModuleService: LoyaltyModuleService = container.resolve(
+      LOYALTY_MODULE
+    )
+
+    await loyaltyModuleService.deductPoints(
+      data.customer_id,
+      data.points
+    )
+  }
+)
+```
+
+You create a step that accepts an object having the following properties:
+
+- `customer_id`: The ID of the customer to add points to.
+- `amount`: The order's amount, which will be used to calculate the points to add.
+
+In the step, you resolve the Loyalty Module's service from the Medusa container. Then, you use the `calculatePointsFromAmount` method to calculate the points to add from the order's amount.
+
+After that, you call the `addPoints` method to add the points to the customer's loyalty points.
+
+Finally, you return a `StepResponse` with the result of the `addPoints`.
+
+You also pass to the compensation function the customer's ID and the points added. In the compensation function, you deduct the points if an error occurs.
+
+### Add Utility Functions
+
+Before you create the workflow, you need a utility function that checks whether an order's cart has a loyalty promotion. This is useful to determine whether the customer redeemed points during checkout, allowing you to decide which steps to execute.
+
+To add the utility function, add the following to `src/utils/promo.ts`:
+
+```ts title="src/utils/promo.ts"
+import { OrderDTO } from "@medusajs/framework/types"
+
+export type OrderData = OrderDTO & {
+  promotion?: PromotionDTO[]
+  customer?: CustomerDTO
+  cart?: CartData
+}
+
+export const CUSTOMER_ID_PROMOTION_RULE_ATTRIBUTE = "customer_id"
+
+export function orderHasLoyaltyPromotion(order: OrderData): boolean {
+  const loyaltyPromotion = getCartLoyaltyPromotion(
+    order.cart as unknown as CartData
+  )
+
+  return loyaltyPromotion?.rules?.some((rule) => {
+    return rule?.attribute === CUSTOMER_ID_PROMOTION_RULE_ATTRIBUTE && (
+      rule?.values?.some((value) => value.value === order.customer?.id) || false
+    )
+  }) || false
+}
+```
+
+You first define an `OrderData` type that extends the `OrderDTO` type. This type has the order's details, including the cart, customer, and promotions details.
+
+Then, you define a constant `CUSTOMER_ID_PROMOTION_RULE_ATTRIBUTE` that represents the attribute used in the promotion rule to check whether the customer ID is valid.
+
+Finally, you create the `orderHasLoyaltyPromotion` function that accepts an order's details and checks whether it has a loyalty promotion. It returns `true` if:
+
+- The order's cart has a loyalty promotion. You use the `getCartLoyaltyPromotion` utility to try to retrieve the loyalty promotion.
+- The promotion's rules include the `customer_id` attribute and its value matches the order's customer ID.
+    - When you create the promotion for the cart later, you'll see how to set this rule.
+
+You'll use this utility in the workflow next.
+
+### Create the Workflow
+
+Now that you have all the steps, you can create the workflow that uses them. 
+
+To create the workflow, create the file `src/workflows/handle-order-points.ts` with the following content:
+
+export const handleOrderPointsHighlights = [
+  ["18", "useQueryGraphStep", "Retrieve the order's details."],
+  ["38", "validateCustomerExistsStep", "Validate that the customer is registered."],
+  ["42", "getCartLoyaltyPromoStep", "Retrieve the cart's loyalty promotion."],
+  ["46", "when", "Check whether the order's cart has a loyalty promotion."],
+  ["51", "deductPurchasePointsStep", "Deduct points from the customer's loyalty points."],
+  ["56", "updatePromotionsStep", "Deactivate the cart's loyalty promotion."],
+  ["65", "when", "Check whether the order's cart doesn't have a loyalty promotion."],
+  ["70", "addPurchaseAsPointsStep", "Add points to the customer's loyalty points."],
+]
+
+```ts title="src/workflows/handle-order-points.ts" highlights={handleOrderPointsHighlights} collapsibleLines="1-9" expandButtonLabel="Show Imports"
+import { createWorkflow, when } from "@medusajs/framework/workflows-sdk"
+import { updatePromotionsStep, useQueryGraphStep } from "@medusajs/medusa/core-flows"
+import { validateCustomerExistsStep, ValidateCustomerExistsStepInput } from "./steps/validate-customer-exists"
+import { deductPurchasePointsStep } from "./steps/deduct-purchase-points"
+import { addPurchaseAsPointsStep } from "./steps/add-purchase-as-points"
+import { OrderData, CartData } from "../utils/promo"
+import { orderHasLoyaltyPromotion } from "../utils/promo"
+import { getCartLoyaltyPromoStep } from "./steps/get-cart-loyalty-promo"
+
+type WorkflowInput = {
+  order_id: string
+}
+
+export const handleOrderPointsWorkflow = createWorkflow(
+  "handle-order-points",
+  ({ order_id }: WorkflowInput) => {
+    // @ts-ignore
+    const { data: orders } = useQueryGraphStep({
+      entity: "order",
+      fields: [
+        "id", 
+        "customer.*", 
+        "total", 
+        "cart.*",
+        "cart.promotions.*",
+        "cart.promotions.rules.*",
+        "cart.promotions.rules.values.*",
+        "cart.promotions.application_method.*",
+      ],
+      filters: {
+        id: order_id,
+      },
+      options: {
+        throwIfKeyNotFound: true,
+      },
+    })
+
+    validateCustomerExistsStep({
+      customer: orders[0].customer,
+    } as ValidateCustomerExistsStepInput)
+
+    const loyaltyPointsPromotion = getCartLoyaltyPromoStep({
+      cart: orders[0].cart as unknown as CartData,
+    })
+
+    when(orders, (orders) => 
+      orderHasLoyaltyPromotion(orders[0] as unknown as OrderData) && 
+      loyaltyPointsPromotion !== undefined
+    )
+    .then(() => {
+      deductPurchasePointsStep({
+        customer_id: orders[0].customer!.id,
+        amount: loyaltyPointsPromotion.application_method!.value as number,
+      })
+
+      updatePromotionsStep([
+        {
+          id: loyaltyPointsPromotion.id,
+          status: "inactive",
+        },
+      ])
+    })
+
+
+    when(
+      orders, 
+      (order) => !orderHasLoyaltyPromotion(order[0] as unknown as OrderData)
+    )
+    .then(() => {
+      addPurchaseAsPointsStep({
+        customer_id: orders[0].customer!.id,
+        amount: orders[0].total,
+      })
+    })
+  }
+)
+```
+
+You create a workflow using `createWorkflow` from the Workflows SDK. It accepts the workflow's unique name as a first parameter.
+
+It accepts as a second parameter a constructor function, which is the workflow's implementation. The function can accept input, which in this case is an object with the order's ID.
+
+In the workflow's constructor function, you:
+
+- Use `useQueryGraphStep` to retrieve the order's details. You pass the order's ID as a filter to retrieve the order.
+    - This step uses [Query](!docs!/learn/fundamentals/module-links/query), which is a tool that retrieves data across modules.
+- Validate that the customer is registered using the `validateCustomerExistsStep`.
+- Retrieve the cart's loyalty promotion using the `getCartLoyaltyPromoStep`.
+- Use `when` to check whether the order's cart has a loyalty promotion.
+    - Since you can't perform data manipulation in a workflow's constructor function, `when` allows you to perform steps if a condition is satisfied.
+    - You pass as a first parameter the object to perform the condition on, which is the order in this case. In the second parameter, you pass a function that returns a boolean value, indicating whether the condition is satisfied.
+    - To specify the steps to perform if a condition is satisfied, you chain a `then` method to the `when` method. You can perform any step within the `then` method.
+    - In this case, if the order's cart has a loyalty promotion, you call the `deductPurchasePointsStep` to deduct points from the customer's loyalty points. You also call the `updatePromotionsStep` to deactivate the cart's loyalty promotion.
+- You use another `when` to check whether the order's cart doesn't have a loyalty promotion.
+    - If the condition is satisfied, you call the `addPurchaseAsPointsStep` to add points to the customer's loyalty points.
+
+You'll use this workflow next when an order is placed.
+
+<Note title="Tip">
+
+To learn more about the constraints on a workflow's constructor function, refer to the [Workflow Constraints](!docs!/learn/fundamentals/workflows/constructor-constraints) documentation. Refer to the [When-Then](!docs!/learn/fundamentals/workflows/conditions) documentation to learn more about the `when` method and how to use it in a workflow.
+
+</Note>
+
+---
+
+## Step 4: Handle Order Placed Event
+
+Now that you have the workflow that handles adding or deducting loyalty points for an order, you need to execute it when an order is placed.
+
+Medusa has an event system that allows you to listen to events emitted by the Medusa server using a [subscriber](!docs!//learn/fundamentals/events-and-subscribers). A subscriber is an asynchronous function that's executed when its associated event is emitted. In a subscriber, you can execute a workflow that performs actions in result of the event.
+
+In this step, you'll create a subscriber that listens to the `order.placed` event and executes the `handleOrderPointsWorkflow` workflow.
+
+<Note>
+
+Refer to the [Events and Subscribers](!docs!/learn/fundamentals/events-and-subscribers) documentation to learn more.
+
+</Note>
+
+Subscribers are created in a TypeScript or JavaScript file under the `src/subscribers` directory. So, to create a subscriber, create the fle `src/subscribers/order-placed.ts` with the following content:
+
+```ts title="src/subscribers/order-placed.ts"
+import type {
+  SubscriberArgs,
+  SubscriberConfig,
+} from "@medusajs/framework"
+import { handleOrderPointsWorkflow } from "../workflows/handle-order-points"
+
+export default async function orderPlacedHandler({
+  event: { data },
+  container,
+}: SubscriberArgs<{ id: string }>) {
+  await handleOrderPointsWorkflow(container).run({
+    input: {
+      order_id: data.id,
+    },
+  })
+}
+
+export const config: SubscriberConfig = {
+  event: "order.placed",
+}
+```
+
+The subscriber file must export:
+
+- An asynchronous subscriber function that's executed whenever the associated event, which is `order.placed` is triggered.
+- A configuration object with an event property whose value is the event the subscriber is listening to. You can also pass an array of event names to listen to multiple events in the same subscriber.
+
+The subscriber function accepts an object with the following properties:
+
+- `event`: An object with the event's data payload. For example, the `order.placed` event has the order's ID in its data payload.
+- `container`: The Medusa container, which you can use to resolve services and tools.
+
+In the subscriber function, you execute the `handleOrderPointsWorkflow` by invoking it, passing it the Medusa container, then using its `run` method, passing it the workflow's input.
+
+Whenever an order is placed now, the subscriber will be executed, which in turn will execute the workflow that handles the loyalty points flow.
+
+### Test it Out
+
+To test out the loyalty points flow, you'll use the [Next.js Starter Storefront](../../../nextjs-starter/page.mdx) that you installed in the first step. As mentioned in that step, the storefront will be installed in a separate directory from the Medusa application, and its name is `{project-name}-storefront`, where `{project-name}` is the name of your Medusa application's directory.
+
+So, run the following command in the Medusa application's directory to start the Medusa server:
+
+```bash npm2yarn badgeLabel="Medusa Application" badgeColor="green"
+npm run dev
+```
+
+Then, run the following command in the Next.js Starter Storefront's directory to start the Next.js server:
+
+```bash npm2yarn badgeLabel="Storefront" badgeColor="blue"
+npm run dev
+```
+
+The Next.js Starter Storefront will be running on `http://localhost:8000`, and the Medusa server will be running on `http://localhost:9000`.
+
+Open the Next.js Starter Storefront in your browser and create a new account by going to Account at the top right.
+
+Once you're logged in, add an item to the cart and go through the checkout flow.
+
+After you place the order, you'll see the following message in your Medusa application's terminal:
+
+```bash
+info:    Processing order.placed which has 1 subscribers
+```
+
+This message indicates that the `order.placed` event was emitted, and that your subscriber was executed.
+
+Since you didn't redeem any points during checkout, loyalty points will be added to your account. You'll implement an API route that allows you to retrieve the loyalty points in the next step.
+
+---
+
+## Step 5: Retrieve Loyalty Points API Route
+
+Next, you want to allow customers to view their loyalty points. You can show them on their profile page, or during checkout.
+
+To expose a feature to clients, you create an [API route](!docs!/learn/fundamentals/api-routes). An API Route is an endpoint that exposes commerce features to external applications and clients, such as storefronts.
+
+You'll create an API route at the path `/store/customers/me/loyalty-points` that returns the loyalty points of the authenticated customer.
+
+<Note>
+
+Learn more about API routes in [this documentation](!docs!/learn/fundamentals/api-routes).
+
+</Note>
+
+An API route is created in a `route.ts` file under a sub-directory of the `src/api` directory. The path of the API route is the file's path relative to `src/api`.
+
+So, to create an API route at the path `/store/customers/me/loyalty-points`, create the file `src/api/store/customers/me/loyalty-points/route.ts` with the following content:
+
+```ts title="src/api/store/customers/me/loyalty-points/route.ts"
+
+import { 
+  AuthenticatedMedusaRequest, 
+  MedusaResponse,
+} from "@medusajs/framework/http"
+import { LOYALTY_MODULE } from "../../../../../modules/loyalty"
+import LoyaltyModuleService from "../../../../../modules/loyalty/service"
+
+export async function GET(
+  req: AuthenticatedMedusaRequest,
+  res: MedusaResponse
+) {
+  const loyaltyModuleService: LoyaltyModuleService = req.scope.resolve(
+    LOYALTY_MODULE
+  )
+
+  const points = await loyaltyModuleService.getPoints(
+    req.auth_context.actor_id
+  )
+
+  res.json({
+    points,
+  })
+}
+```
+
+Since you export a `GET` route handler function, you're exposing a `GET` endpoint at `/store/customers/me/loyalty-points`.  The route handler function accepts two parameters:
+
+1. A request object with details and context on the request, such as body parameters or authenticated customer details.
+2. A response object to manipulate and send the response.
+
+In the route handler, you resolve the Loyalty Module's service from the Medusa container (which is available at `req.scope`).
+
+Then, you call the service's `getPoints` method to retrieve the authenticated customer's loyalty points. Note that routes starting with `/store/customers/me` are only accessible by authenticated customers. You can access the authenticated customer ID from the request's context, which is available at `req.auth_context.actor_id`.
+
+Finally, you return the loyalty points in the response.
+
+You'll test out this route as you customize the Next.js Starter Storefront next.
+
+---
+
+## Step 6: Show Loyalty Points During Checkout
+
+Now that you have the API route to retrieve the loyalty points, you can show them during checkout.
+
+In this step, you'll customize the Next.js Starter Storefront to show the loyalty points in the checkout page.
+
+First, you'll add a server action function that retrieves the loyalty points from the route you created earlier. In `src/lib/data/customer.ts`, add the following function:
+
+```ts title="src/lib/data/customer.ts" badgeLabel="Storefront" badgeColor="blue"
+export const getLoyaltyPoints = async () => {
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  return sdk.client.fetch<{ points: number }>(
+    `/store/customers/me/loyalty-points`,
+    {
+      method: "GET",
+      headers,
+    }
+  )
+    .then(({ points }) => points)
+    .catch(() => null)
+}
+```
+
+You add a `getLoyaltyPoints` function that retrieves the authenticated customer's loyalty points from the API route you created earlier. You pass the authentication headers using the `getAuthHeaders` function, which is a utility function defined in the Next.js Starter Storefront.
+
+If the customer isn't authenticated, the request will fail. So, you catch the error and return `null` in that case.
+
+Next, you'll create a component that shows the loyalty points in the checkout page. Create the file `src/modules/checkout/components/loyalty-points/index.tsx` with the following content:
+
+export const loyaltyPointsHighlights = [
+  ["16", "isLoyaltyPointsPromoApplied", "A boolean indicating whether the cart has a loyalty promotion applied."],
+  ["21", "loyaltyPoints", "Store the customer's loyalty points."],
+  ["26", "getLoyaltyPoints", "Retrieve the customer's loyalty points."],
+  ["33", "handleTogglePromotion", "Handle the click event to apply or remove the promotion."],
+  ["48", "Link", "Show a link to sign up if the customer isn't authenticated."],
+  ["54", "Button", "Show a button to apply or remove the promotion if the customer is authenticated."],
+]
+
+```tsx title="src/modules/checkout/components/loyalty-points/index.tsx" badgeLabel="Storefront" badgeColor="blue" highlights={loyaltyPointsHighlights}
+"use client"
+
+import { HttpTypes } from "@medusajs/types"
+import { useEffect, useMemo, useState } from "react"
+import { getLoyaltyPoints } from "../../../../lib/data/customer"
+import { Button, Heading } from "@medusajs/ui"
+import Link from "next/link"
+
+type LoyaltyPointsProps = {
+  cart: HttpTypes.StoreCart & {
+    promotions: HttpTypes.StorePromotion[]
+  }
+}
+
+const LoyaltyPoints = ({ cart }: LoyaltyPointsProps) => {
+  const isLoyaltyPointsPromoApplied = useMemo(() => {
+    return cart.promotions.find(
+      (promo) => promo.id === cart.metadata?.loyalty_promo_id
+    ) !== undefined
+  }, [cart])
+  const [loyaltyPoints, setLoyaltyPoints] = useState<
+    number | null
+  >(null)
+
+  useEffect(() => {
+    getLoyaltyPoints()
+    .then((points) => {
+      console.log(points)
+      setLoyaltyPoints(points)
+    })
+  }, [])
+
+  const handleTogglePromotion = async (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    e.preventDefault()
+    // TODO apply or remove loyalty promotion
+  }
+
+  return (
+    <>
+      <div className="h-px w-full border-b border-gray-200 my-4" />
+      <div className="flex flex-col">
+        <Heading className="txt-medium mb-2">
+          Loyalty Points
+        </Heading>
+        {loyaltyPoints === null && (
+          <Link href="/account" className="txt-medium text-ui-fg-interactive hover:text-ui-fg-interactive-hover">
+            Sign up to get and use loyalty points
+          </Link>
+        )}
+        {loyaltyPoints !== null && (
+          <div className="flex items-center justify-between my-6 gap-1">
+          <Button
+            variant="secondary"
+            className="w-1/2"
+            onClick={handleTogglePromotion}
+          >
+            {isLoyaltyPointsPromoApplied ? "Remove" : "Apply"} Loyalty Points
+          </Button>
+          <span className="txt-medium text-ui-fg-subtle">
+            You have {loyaltyPoints} loyalty points
+          </span>
+        </div>
+        )}
+      </div>
+    </>
+  )
+}
+
+export default LoyaltyPoints
+```
+
+You create a `LoyaltyPoints` component that accepts the cart's details as a prop. In the component, you:
+
+- Create a `isLoyaltyPointsPromoApplied` memoized value that checks whether the cart has a loyalty promotion applied. You use the `cart.metadata.loyalty_promo_id` property to check this.
+- Create a `loyaltyPoints` state to store the customer's loyalty points.
+- Call the `getLoyaltyPoints` function in a `useEffect` hook to retrieve the loyalty points from the API route you created earlier. You set the `loyaltyPoints` state with the retrieved points.
+- Define `handleTogglePromotion` that, when clicked, would either apply or remove the promotion. You'll implement these functionalities later.
+- Render the loyalty points in the component. If the customer isn't authenticated, you show a link to the account page to sign up. Otherwise, you show the loyalty points and a button to apply or remove the promotion.
+
+Next, you'll show this component at the end of the checkout's summary component. So, import the component in `src/modules/checkout/templates/checkout-summary/index.tsx`:
+
+```tsx title="src/modules/checkout/templates/checkout-summary/index.tsx" badgeLabel="Storefront" badgeColor="blue"
+import LoyaltyPoints from "../../components/loyalty-points"
+```
+
+Then, in the return statement of the `CheckoutSummary` component, add the following after the `div` wrapping the `DiscountCode`:
+
+```tsx title="src/modules/checkout/templates/checkout-summary/index.tsx" badgeLabel="Storefront" badgeColor="blue"
+<LoyaltyPoints cart={cart} />
+```
+
+This will show the loyalty points component at the end of the checkout summary.
+
+### Test it Out
+
+To test out the customizations to the checkout flow, make sure both the Medusa application and Next.js Starter Storefront are running.
+
+Then, as an authenticated customer, add an item to cart and proceed to checkout. You'll find a new "Loyalty Points" section at the end of the checkout summary.
+
+![Loyalty Points Section at the end of the summary section at the right](https://res.cloudinary.com/dza7lstvk/image/upload/v1744195223/Medusa%20Resources/Screenshot_2025-04-09_at_1.39.34_PM_l5oltc.png)
+
+If you made a purchase before, you can see your loyalty points. You'll also see the "Apply Loyalty Points" button, which doesn't yet do anything. You'll add the functionality next.
+
+---
+
+## Step 7: Apply Loyalty Points to Cart
+
+The next feature you'll implement allows the customer to apply their loyalty points during checkout. To implement the feature, you need:
+
+- A workflow that implements the steps of the apply loyalty points flow.
+- An API route that exposes the workflow's functionality to clients. You'll then send a request to this API route to apply the loyalty points on the customer's cart.
+- A function in the Next.js Starter Storefront that sends the request to the API route you created earlier.
+
+The workflow will have the following steps:
+
+<WorkflowDiagram
+  workflow={{
+    name: "applyLoyaltyOnCartWorkflow",
+    steps: [
+      {
+        type: "step",
+        name: "useQueryGraphStep",
+        description: "Retrieve the cart's details.",
+        link: "/references/helper-steps/useQueryGraphStep",
+        depth: 1
+      },
+      {
+        type: "step",
+        name: "validateCustomerExistsStep",
+        description: "Validate that the customer is registered.",
+        depth: 1,
+      },
+      {
+        type: "step",
+        name: "getCartLoyaltyPromoStep",
+        description: "Retrieve the cart's loyalty promotion.",
+        depth: 1,
+      },
+      {
+        type: "step",
+        name: "getCartLoyaltyPromoAmountStep",
+        description: "Get the amount to be discounted based on the loyalty points.",
+        depth: 1,
+      },
+      {
+        type: "step",
+        name: "createPromotionsStep",
+        description: "Create a new loyalty promotion for the cart.",
+        link: "/references/medusa-workflows/steps/createPromotionsStep",
+        depth: 1,
+      },
+      {
+        type: "workflow",
+        name: "updateCartPromotionsWorkflow",
+        description: "Update the cart's promotions with the new loyalty promotion.",
+        link: "/references/medusa-workflows/workflows/updateCartPromotionsWorkflow",
+        depth: 1,
+      },
+      {
+        type: "step",
+        name: "updateCartsStep",
+        description: "Update the cart to store the ID of the loyalty promotion in the metadata.",
+        link: "/references/medusa-workflows/steps/updateCartsStep",
+        depth: 1,
+      },
+      {
+        type: "step",
+        name: "useQueryGraphStep",
+        description: "Retrieve the cart's details again.",
+        link: "/references/helper-steps/useQueryGraphStep",
+        depth: 1
+      },
+    ]
+  }}
+/>
+
+Most of the workflow's steps are either provided by Medusa in the `@medusajs/medusa/core-flows` package or steps you've already implemented. You only need to implement the `getCartLoyaltyPromoAmountStep` step.
+
+### getCartLoyaltyPromoAmountStep
+
+The fourth step in the workflow is the `getCartLoyaltyPromoAmountStep`, which retrieves the amount to be discounted based on the loyalty points. This step is useful to determine how much discount to apply to the cart.
+
+To create the step, create the file `src/workflows/steps/get-cart-loyalty-promo-amount.ts` with the following content:
+
+export const getCartLoyaltyPromoAmountStepHighlights = [
+  ["23", "getPoints", "Get the customer's loyalty points."],
+  ["34", "calculatePointsFromAmount", "Calculate the amount to be discounted based on the loyalty points."],
+  ["38", "Math.min", "Ensure that the amount doesn't exceed the cart's total."],
+  ["40", "amount", "Return the amount to be discounted."],
+]
+
+```ts title="src/workflows/steps/get-cart-loyalty-promo-amount.ts" highlights={getCartLoyaltyPromoAmountStepHighlights}
+import { PromotionDTO, CustomerDTO } from "@medusajs/framework/types"
+import { MedusaError } from "@medusajs/framework/utils"
+import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
+import LoyaltyModuleService from "../../modules/loyalty/service"
+import { LOYALTY_MODULE } from "../../modules/loyalty"
+
+export type GetCartLoyaltyPromoAmountStepInput = {
+  cart: {
+    id: string
+    customer: CustomerDTO
+    promotions?: PromotionDTO[]
+    total: number
+  }
+}
+
+export const getCartLoyaltyPromoAmountStep = createStep(
+  "get-cart-loyalty-promo-amount",
+  async ({ cart }: GetCartLoyaltyPromoAmountStepInput, { container }) => {
+    // Check if customer has any loyalty points
+    const loyaltyModuleService: LoyaltyModuleService = container.resolve(
+      LOYALTY_MODULE
+    )
+    const loyaltyPoints = await loyaltyModuleService.getPoints(
+      cart.customer.id
+    )
+
+    if (loyaltyPoints <= 0) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "Customer has no loyalty points"
+      )
+    }
+    
+    const pointsAmount = await loyaltyModuleService.calculatePointsFromAmount(
+      loyaltyPoints
+    )
+
+    const amount = Math.min(pointsAmount, cart.total)
+
+    return new StepResponse(amount)
+  }
+)
+```
+
+You create a step that accepts an object having the cart's details.
+
+In the step, you resolve the Loyalty Module's service from the Medusa container. Then, you call the `getPoints` method to retrieve the customer's loyalty points. If the customer has no loyalty points, you throw an error.
+
+Next, you call the `calculatePointsFromAmount` method to calculate the amount to be discounted based on the loyalty points. You use the `Math.min` function to ensure that the amount doesn't exceed the cart's total.
+
+Finally, you return a `StepResponse` with the amount to be discounted.
+
+### Create the Workflow
+
+You can now create the workflow that applies a loyalty promotion to the cart.
+
+To create the workflow, create the file `src/workflows/apply-loyalty-on-cart.ts` with the following content:
+
+export const applyLoyaltyOnCartWorkflowHighlights = [
+  ["45", "useQueryGraphStep", "Retrieve the cart's details."],
+  ["56", "validateCustomerExistsStep", "Validate that the customer is registered."],
+  ["60", "getCartLoyaltyPromoStep", "Retrieve the cart's loyalty promotion."],
+  ["65", "getCartLoyaltyPromoAmountStep", "Get the amount to be discounted based on the loyalty points."],
+]
+
+```ts title="src/workflows/apply-loyalty-on-cart.ts" highlights={applyLoyaltyOnCartWorkflowHighlights} collapsibleLines="1-24" expandButtonLabel="Show Imports"
+import {
+  createWorkflow,
+  transform,
+  WorkflowResponse,
+} from "@medusajs/framework/workflows-sdk"
+import { 
+  createPromotionsStep, 
+  updateCartPromotionsWorkflow, 
+  updateCartsStep, 
+  useQueryGraphStep,
+} from "@medusajs/medusa/core-flows"
+import { 
+  validateCustomerExistsStep, 
+  ValidateCustomerExistsStepInput,
+} from "./steps/validate-customer-exists"
+import { 
+  getCartLoyaltyPromoAmountStep, 
+  GetCartLoyaltyPromoAmountStepInput,
+} from "./steps/get-cart-loyalty-promo-amount"
+import { CartData, CUSTOMER_ID_PROMOTION_RULE_ATTRIBUTE } from "../utils/promo"
+import { CreatePromotionDTO } from "@medusajs/framework/types"
+import { PromotionActions } from "@medusajs/framework/utils"
+import { getCartLoyaltyPromoStep } from "./steps/get-cart-loyalty-promo"
+
+type WorkflowInput = {
+  cart_id: string
+}
+
+const fields = [
+  "id",
+  "customer.*",
+  "promotions.*",
+  "promotions.application_method.*",
+  "promotions.rules.*",
+  "promotions.rules.values.*",
+  "currency_code",
+  "total",
+  "metadata",
+]
+
+export const applyLoyaltyOnCartWorkflow = createWorkflow(
+  "apply-loyalty-on-cart",
+  (input: WorkflowInput) => {
+    // @ts-ignore
+    const { data: carts } = useQueryGraphStep({
+      entity: "cart",
+      fields,
+      filters: {
+        id: input.cart_id,
+      },
+      options: {
+        throwIfKeyNotFound: true,
+      },
+    })
+
+    validateCustomerExistsStep({
+      customer: carts[0].customer,
+    } as ValidateCustomerExistsStepInput)
+
+    getCartLoyaltyPromoStep({
+      cart: carts[0] as unknown as CartData,
+      throwErrorOn: "found",
+    })
+
+    const amount = getCartLoyaltyPromoAmountStep({
+      cart: carts[0],
+    } as unknown as GetCartLoyaltyPromoAmountStepInput)
+
+    // TODO create and apply the promotion on the cart
+  }
+)
+```
+
+You create a workflow that accepts an object with the cart's ID as input.
+
+So far, you:
+
+- Use `useQueryGraphStep` to retrieve the cart's details. You pass the cart's ID as a filter to retrieve the cart.
+- Validate that the customer is registered using the `validateCustomerExistsStep`.
+- Check whether the cart has a loyalty promotion using the `getCartLoyaltyPromoStep`. You pass the `throwErrorOn` parameter with the value `found` to throw an error if a loyalty promotion is found in the cart.
+- Retrieve the amount to be discounted based on the loyalty points using the `getCartLoyaltyPromoAmountStep`.
+
+Next, you need to create a new loyalty promotion for the cart. First, you'll prepare the data of the promotion to be created.
+
+Replace the `TODO` with the following:
+
+export const prepareLoyaltyPromoDataHighlights = [
+  ["15", "value", "Set the promotion's amount to the discounted amount."],
+  ["22", "CUSTOMER_ID_PROMOTION_RULE_ATTRIBUTE", "Set the promotion's rule to be only valid for this cart's customer"],
+  ["31", "budget", "Limit the promotion's usage to 1."],
+]
+
+```ts title="src/workflows/apply-loyalty-on-cart.ts" highlights={prepareLoyaltyPromoDataHighlights}
+const promoToCreate = transform({
+  carts,
+  amount,
+}, (data) => {
+  const randomStr = Math.random().toString(36).substring(2, 8)
+  const uniqueId = (
+    "LOYALTY-" + data.carts[0].customer?.first_name + "-" + randomStr
+  ).toUpperCase()
+  return {
+    code: uniqueId,
+    type: "standard",
+    status: "active",
+    application_method: {
+      type: "fixed",
+      value: data.amount,
+      target_type: "order",
+      currency_code: data.carts[0].currency_code,
+      allocation: "across",
+    },
+    rules: [
+      {
+        attribute: CUSTOMER_ID_PROMOTION_RULE_ATTRIBUTE,
+        operator: "eq",
+        values: [data.carts[0].customer!.id],
+      },
+    ],
+    campaign: {
+      name: uniqueId,
+      description: "Loyalty points promotion for " + data.carts[0].customer!.email,
+      campaign_identifier: uniqueId,
+      budget: {
+        type: "usage",
+        limit: 1,
+      },
+    },
+  }
+})
+
+// TODO create promotion and apply it on cart
+```
+
+Since data manipulation isn't allowed in a workflow constructor, you use the [transform](!docs!/learn/fundamentals/workflows/variable-manipulation) function from the Workflows SDK. It accepts two parameters:
+
+- The data to perform manipulation on. In this case, you pass the cart's details and the amount to be discounted.
+- A function that receives the data from the first parameter, and returns the transformed data.
+
+In the transformation function, you prepare th data of the loyalty promotion to be created. Some key details include:
+
+- You set the discount amount in the application method of the promotion.
+- You add a rule to the promotion that ensures it can be used only in carts having their `customer_id` equal to this customer's ID. This prevents other customers from using this promotion.
+- You create a campaign for the promotion, and you set the campaign budget to a single usage. This prevents the customer from using the promotion again.
+
+<Note>
+
+Learn more about promotion concepts in the [Promotion Module](../../../commerce-modules/promotion/page.mdx)'s documentation.
+
+</Note>
+
+You can now use the returned data to create a promotion and apply it to the cart. Replace the new `TODO` with the following:
+
+export const createLoyaltyPromoStepHighlights = [
+  ["1", "createPromotionsStep", "Create the loyalty promotion."],
+  ["5", "transform", "Prepare the data to update the cart's promotions."],
+  ["25", "updateCartPromotionsWorkflow", "Update the cart's promotions with the new loyalty promotion."],
+  ["29", "updateCartsStep", "Update the cart to store the ID of the loyalty promotion in the metadata."],
+  ["38", "useQueryGraphStep", "Retrieve the cart's details again."],
+]
+
+```ts title="src/workflows/apply-loyalty-on-cart.ts" highlights={createLoyaltyPromoStepHighlights}
+const loyaltyPromo = createPromotionsStep([
+  promoToCreate,
+] as CreatePromotionDTO[])
+
+const { metadata, ...updatePromoData } = transform({
+  carts,
+  promoToCreate,
+  loyaltyPromo,
+}, (data) => {
+  const promos = [
+    ...(data.carts[0].promotions?.map((promo) => promo?.code).filter(Boolean) || []) as string[],
+    data.promoToCreate.code,
+  ]
+
+  return {
+    cart_id: data.carts[0].id,
+    promo_codes: promos,
+    action: PromotionActions.ADD,
+    metadata: {
+      loyalty_promo_id: data.loyaltyPromo[0].id,
+    },
+  }
+})
+
+updateCartPromotionsWorkflow.runAsStep({
+  input: updatePromoData,
+})
+
+updateCartsStep([
+  {
+    id: input.cart_id,
+    metadata,
+  },
+])
+
+// retrieve cart with updated promotions
+// @ts-ignore
+const { data: updatedCarts } = useQueryGraphStep({
+  entity: "cart",
+  fields,
+  filters: { id: input.cart_id },
+}).config({ name: "retrieve-cart" })
+
+return new WorkflowResponse(updatedCarts[0])
+```
+
+In the rest of the workflow, you:
+
+- Create the loyalty promotion using the data you prepared earlier using the `createPromotionsStep`.
+- Use the `transform` function to prepare the data to update the cart's promotions. You add the new loyalty promotion code to the cart's promotions codes, and set the `loyalty_promo_id` in the cart's metadata.
+- Update the cart's promotions with the new loyalty promotion using the `updateCartPromotionsWorkflow` workflow.
+- Update the cart's metadata with the loyalty promotion ID using the `updateCartsStep`.
+- Retrieve the cart's details again using `useQueryGraphStep` to get the updated cart with the new loyalty promotion.
+
+To return data from the workflow, you must return an instance of `WorkflowResponse`. You pass it the data to be returned, which is in this case the cart's details.
+
+### Create the API Route
+
+Next, you'll create the API route that executes this workflow.
+
+To create the API route, create the file `src/api/store/carts/[id]/loyalty-points/route.ts` with the following content:
+
+```ts title="src/api/store/carts/[id]/loyalty-points/route.ts"
+import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import { applyLoyaltyOnCartWorkflow } from "../../../../../workflows/apply-loyalty-on-cart"
+
+export async function POST(
+  req: MedusaRequest,
+  res: MedusaResponse
+) {
+  const { id: cart_id } = req.params
+
+  const { result: cart } = await applyLoyaltyOnCartWorkflow(req.scope)
+    .run({
+      input: {
+        cart_id,
+      },
+    })
+
+  res.json({ cart })
+}
+```
+
+Since you export a `POST` route handler, you expose a `POST` API route at `/store/carts/[id]/loyalty-points`.
+
+In the route handler, you execute the `applyLoyaltyOnCartWorkflow` workflow, passing it the cart ID as an input. You return the cart's details in the response.
+
+You can now use this API route in the Next.js Starter Storefront.
+
+### Apply Loyalty Points in the Storefront
+
+In the Next.js Starter Storefront, you need to add a server action function that sends a request to the API route you created earlier. Then, you'll use that function when the customer clicks the "Apply Loyalty Points" button.
+
+To add the function, add the following to `src/lib/data/cart.ts` in the Next.js Starter Storefront:
+
+```ts title="src/lib/data/cart.ts" badgeLabel="Storefront" badgeColor="blue"
+export async function applyLoyaltyPointsOnCart() {
+  const cartId = await getCartId()
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  return await sdk.client.fetch<{
+    cart: HttpTypes.StoreCart & {
+      promotions: HttpTypes.StorePromotion[]
+    }
+  }>(`/store/carts/${cartId}/loyalty-points`, {
+    method: "POST",
+    headers,
+  })
+  .then(async (result) => {
+    const cartCacheTag = await getCacheTag("carts")
+    revalidateTag(cartCacheTag)
+
+    return result
+  })
+}
+```
+
+You create an `applyLoyaltyPointsOnCart` function that sends a request to the API route you created earlier.
+
+In the function, you retrieve the cart ID stored in the cookie using the `getCartId` function, which is available in the Next.js Starter Storefront.
+
+Then, you send the request. Once the request is resolved successfully, you revalidate the cart cache tag to ensure that the cart's details are updated and refetched by other components. This ensures that the applied promotion is shown in the checkout summary without needing to refresh the page.
+
+Finally, you'll use this function in the `handleTogglePromotion` function in the `LoyaltyPoints` component you created earlier.
+
+At the top of `src/modules/checkout/components/loyalty-points/index.tsx`, import the function:
+
+```tsx title="src/modules/checkout/components/loyalty-points/index.tsx" badgeLabel="Storefront" badgeColor="blue"
+import { applyLoyaltyPointsOnCart } from "../../../../lib/data/cart"
+```
+
+Then, replace the `handleTogglePromotion` function with the following:
+
+```tsx title="src/modules/checkout/components/loyalty-points/index.tsx" badgeLabel="Storefront" badgeColor="blue"
+const handleTogglePromotion = async (
+  e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+) => {
+  e.preventDefault()
+  if (!isLoyaltyPointsPromoApplied) {
+    await applyLoyaltyPointsOnCart()
+  } else {
+    // TODO remove loyalty points
+  }
+}
+```
+
+In the `handleTogglePromotion` function, you call the `applyLoyaltyPointsOnCart` function if the cart doesn't have a loyalty promotion. This will send a request to the API route you created earlier, which will execute the workflow that applies the loyalty promotion to the cart.
+
+You'll implement removing the loyalty points promotion in a later step.
+
+### Test it Out
+
+To test out applying the loyalty points on the cart, start the Medusa application and Next.js Starter Storefront.
+
+Then, in the checkout flow as an authenticated customer, click on the "Apply Loyalty Points" button. The checkout summary will be updated with the applied promotion and the discount amount.
+
+<Note title="Tip">
+
+If you don't want the promotion to be shown in the "Promotions(s) applied" section, you can filter the promotions in `src/modules/checkout/components/discount-code/index.tsx` to not show a promotion matching `cart.metadata.loyalty_promo_id`.
+
+</Note>
+
+![Discounted amount is shown as part of the summary and the promotion is shown as part of the applied promotions](https://res.cloudinary.com/dza7lstvk/image/upload/v1744200895/Medusa%20Resources/Screenshot_2025-04-09_at_3.14.19_PM_abmtjh.png)
+
+---
+
+## Step 8: Remove Loyalty Points From Cart
+
+In this step, you'll implement the functionality to remove the loyalty points promotion from the cart. This is useful if the customer changes their mind and wants to remove the promotion.
+
+To implement this functionality, you'll need to:
+
+- Create a workflow that removes the loyalty points promotion from the cart.
+- Create an API route that executes the workflow.
+- Create a function in the Next.js Starter Storefront that sends a request to the API route you created earlier.
+- Use the function in the `handleTogglePromotion` function in the `LoyaltyPoints` component you created earlier.
+
+### Create the Workflow
+
+The workflow will have the following steps:
+
+<WorkflowDiagram
+  workflow={{
+    name: "removeLoyaltyFromCartWorkflow",
+    steps: [
+      {
+        type: "step",
+        name: "useQueryGraphStep",
+        description: "Retrieve the cart's details.",
+        link: "/references/helper-steps/useQueryGraphStep",
+        depth: 1
+      },
+      {
+        type: "step",
+        name: "getCartLoyaltyPromoStep",
+        description: "Retrieve the cart's loyalty promotion.",
+        depth: 1,
+      },
+      {
+        type: "workflow",
+        name: "updateCartPromotionsWorkflow",
+        description: "Update the cart's promotions to remove the loyalty promotion.",
+        link: "/references/medusa-workflows/workflows/updateCartPromotionsWorkflow",
+        depth: 1,
+      },
+      {
+        type: "step",
+        name: "updateCartsStep",
+        description: "Update the cart to remove the loyalty promotion ID from the metadata.",
+        link: "/references/medusa-workflows/steps/updateCartsStep",
+        depth: 1,
+      },
+      {
+        type: "step",
+        name: "updatePromotionsStep",
+        description: "Deactive the loyalty promotion.",
+        link: "/references/medusa-workflows/steps/updatePromotionsStep",
+        depth: 1,
+      },
+      {
+        type: "step",
+        name: "useQueryGraphStep",
+        description: "Retrieve the cart's details again.",
+        link: "/references/helper-steps/useQueryGraphStep",
+        depth: 1
+      }
+    ]
+  }}
+/>
+
+Since you already have all the steps, you can create the workflow.
+
+To create the workflow, create the file `src/workflows/remove-loyalty-from-cart.ts` with the following content:
+
+export const removeLoyaltyFromCartWorkflowHighlights = [
+  ["36", "useQueryGraphStep", "Retrieve the cart's details."],
+  ["44", "getCartLoyaltyPromoStep", "Retrieve the cart's loyalty promotion."],
+  ["49", "updateCartPromotionsWorkflow", "Update the cart's promotions to remove the loyalty promotion."],
+  ["57", "transform", "Prepare the new metadata to remove the loyalty promotion ID."],
+  ["68", "updateCartsStep", "Update the cart to remove the loyalty promotion ID from the metadata."],
+  ["75", "updatePromotionsStep", "Deactivate the loyalty promotion."],
+  ["84", "useQueryGraphStep", "Retrieve the cart's details again."],
+]
+
+```ts title="src/workflows/remove-loyalty-from-cart.ts" collapsibleLines="1-15" expandButtonLabel="Show Imports" highlights={removeLoyaltyFromCartWorkflowHighlights}
+import {
+  createWorkflow,
+  transform,
+  WorkflowResponse,
+} from "@medusajs/framework/workflows-sdk"
+import {
+  useQueryGraphStep,
+  updateCartPromotionsWorkflow,
+  updateCartsStep,
+  updatePromotionsStep,
+} from "@medusajs/medusa/core-flows"
+import { getCartLoyaltyPromoStep } from "./steps/get-cart-loyalty-promo"
+import { PromotionActions } from "@medusajs/framework/utils"
+import { CartData } from "../utils/promo"
+
+type WorkflowInput = {
+  cart_id: string
+}
+
+const fields = [
+  "id",
+  "customer.*",
+  "promotions.*",
+  "promotions.application_method.*",
+  "promotions.rules.*",
+  "promotions.rules.values.*",
+  "currency_code",
+  "total",
+  "metadata",
+]
+
+export const removeLoyaltyFromCartWorkflow = createWorkflow(
+  "remove-loyalty-from-cart",
+  (input: WorkflowInput) => {
+    // @ts-ignore
+    const { data: carts } = useQueryGraphStep({
+      entity: "cart",
+      fields,
+      filters: {
+        id: input.cart_id,
+      },
+    })
+
+    const loyaltyPromo = getCartLoyaltyPromoStep({
+      cart: carts[0] as unknown as CartData,
+      throwErrorOn: "not-found",
+    })
+
+    updateCartPromotionsWorkflow.runAsStep({
+      input: {
+        cart_id: input.cart_id,
+        promo_codes: [loyaltyPromo.code!],
+        action: PromotionActions.REMOVE,
+      },
+    })
+
+    const newMetadata = transform({
+      carts,
+    }, (data) => {
+      const { loyalty_promo_id, ...rest } = data.carts[0].metadata || {}
+
+      return {
+        ...rest,
+        loyalty_promo_id: null,
+      }
+    })
+
+    updateCartsStep([
+      {
+        id: input.cart_id,
+        metadata: newMetadata,
+      },
+    ])
+
+    updatePromotionsStep([
+      {
+        id: loyaltyPromo.id,
+        status: "inactive",
+      },
+    ])
+
+    // retrieve cart with updated promotions
+    // @ts-ignore
+    const { data: updatedCarts } = useQueryGraphStep({
+      entity: "cart",
+      fields,
+      filters: { id: input.cart_id },
+    }).config({ name: "retrieve-cart" })
+
+    return new WorkflowResponse(updatedCarts[0])
+  }
+)
+```
+
+You create a workflow that accepts an object with the cart's ID as input.
+
+In the workflow, you:
+
+- Use `useQueryGraphStep` to retrieve the cart's details. You pass the cart's ID as a filter to retrieve the cart.
+- Check whether the cart has a loyalty promotion using the `getCartLoyaltyPromoStep`. You pass the `throwErrorOn` parameter with the value `not-found` to throw an error if a loyalty promotion isn't found in the cart.
+- Update the cart's promotions using the `updateCartPromotionsWorkflow`, removing the loyalty promotion.
+- Use the `transform` function to prepare the new metadata of the cart. You remove the `loyalty_promo_id` from the metadata.
+- Update the cart's metadata with the new metadata using the `updateCartsStep`.
+- Deactivate the loyalty promotion using the `updatePromotionsStep`.
+- Retrieve the cart's details again using `useQueryGraphStep` to get the updated cart with the new loyalty promotion.
+- Return the cart's details in a `WorkflowResponse` instance.
+
+### Create the API Route
+
+Next, you'll create the API route that executes this workflow.
+
+To create the API route, add the following in `src/api/store/carts/[id]/loyalty-points/route.ts`:
+
+```ts title="src/api/store/carts/[id]/loyalty-points/route.ts"
+// other imports...
+import { removeLoyaltyFromCartWorkflow } from "../../../../../workflows/remove-loyalty-from-cart"
+
+// ...
+export async function DELETE(
+  req: MedusaRequest,
+  res: MedusaResponse
+) {
+  const { id: cart_id } = req.params
+
+  const { result: cart } = await removeLoyaltyFromCartWorkflow(req.scope)
+    .run({
+      input: {
+        cart_id,
+      },
+    })
+
+  res.json({ cart })
+}
+```
+
+You export a `DELETE` route handler, which exposes a `DELETE` API route at `/store/carts/[id]/loyalty-points`.
+
+In the route handler, you execute the `removeLoyaltyFromCartWorkflow` workflow, passing it the cart ID as an input. You return the cart's details in the response.
+
+You can now use this API route in the Next.js Starter Storefront.
+
+### Remove Loyalty Points in the Storefront
+
+In the Next.js Starter Storefront, you need to add a server action function that sends a request to the API route you created earlier. Then, you'll use that function when the customer clicks the "Remove Loyalty Points" button, which shows when the cart has a loyalty promotion applied.
+
+To add the function, add the following to `src/lib/data/cart.ts`:
+
+```ts title="src/lib/data/cart.ts" badgeLabel="Storefront" badgeColor="blue"
+export async function removeLoyaltyPointsOnCart() {
+  const cartId = await getCartId()
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+  const next = {
+    ...(await getCacheOptions("carts")),
+  }
+
+  return await sdk.client.fetch<{
+    cart: HttpTypes.StoreCart & {
+      promotions: HttpTypes.StorePromotion[]
+    }
+  }>(`/store/carts/${cartId}/loyalty-points`, {
+    method: "DELETE",
+    headers,
+  })
+  .then(async (result) => {
+    const cartCacheTag = await getCacheTag("carts")
+    revalidateTag(cartCacheTag)
+
+    return result
+  })
+}
+```
+
+You create a `removeLoyaltyPointsOnCart` function that sends a request to the API route you created earlier.
+
+In the function, you retrieve the cart ID stored in the cookie using the `getCartId` function, which is available in the Next.js Starter Storefront.
+
+Then, you send the request to the API route. Once the request is resolved successfully, you revalidate the cart cache tag to ensure that the cart's details are updated and refetched by other components. This ensures that the promotion is removed from the checkout summary without needing to refresh the page.
+
+Finally, you'll use this function in the `handleTogglePromotion` function in the `LoyaltyPoints` component you created earlier.
+
+At the top of `src/modules/checkout/components/loyalty-points/index.tsx`, add the following import:
+
+```tsx title="src/modules/checkout/components/loyalty-points/index.tsx" badgeLabel="Storefront" badgeColor="blue"
+import { removeLoyaltyPointsOnCart } from "../../../../lib/data/cart"
+```
+
+Then, replace the `TODO` in `handleTogglePromotion` with the following:
+
+```tsx title="src/modules/checkout/components/loyalty-points/index.tsx" badgeLabel="Storefront" badgeColor="blue"
+await removeLoyaltyPointsOnCart()
+```
+
+In the `handleTogglePromotion` function, you call the `removeLoyaltyPointsOnCart` function if the cart has a loyalty promotion. This will send a request to the API route you created earlier, which will execute the workflow that removes the loyalty promotion from the cart.
+
+### Test it Out
+
+To test out removing the loyalty points from the cart, start the Medusa application and Next.js Starter Storefront.
+
+Then, in the checkout flow as an authenticated customer, after applying the loyalty points, click on the "Remove Loyalty Points" button. The checkout summary will be updated with the removed promotion and the discount amount.
+
+![The "Remove Loyalty Points" button is shown in the "Loyalty Points" section](https://res.cloudinary.com/dza7lstvk/image/upload/v1744204436/Medusa%20Resources/Screenshot_2025-04-09_at_4.13.24_PM_xt5trh.png)
+
+---
+
+## Step 9: Validate Loyalty Points on Cart Completion
+
+After the customer applies the loyalty points to the cart and places the order, you need to validate that the customer actually has the loyalty points. This prevents edge cases where the customer may have applied the loyalty points previously but they don't have them anymore.
+
+So, in this step, you'll hook into Medusa's cart completion flow to perform the validation.
+
+Since Medusa uses workflows in its API routes, it allows you to hook into them and perform custom functionalities using [Workflow Hooks](!docs!/learn/fundamentals/workflows/workflow-hooks). A workflow hook is a point in a workflow where you can inject custom functionality as a step function, called a hook handler.
+
+Medusa uses the [completeCartWorkflow](/references/medusa-workflows/completeCartWorkflow) hook to complete the cart and place an order. This workflow has a `validate` hook that allows you to perform custom validation before the cart is completed.
+
+To consume the `validate` hook, create the file `src/workflows/hooks/complete-cart.ts` with the following content:
+
+export const completeCartWorkflowHookHighlights = [
+  ["7", "validate", "Consume the validate hook."],
+  ["14", "graph", "Retrieve the cart's details."],
+  ["32", "getCartLoyaltyPromotion", "Get the cart's loyalty promotion."],
+  ["40", "getPoints", "Get the customer's loyalty points."],
+  ["43", "requiredPoints", "Calculate the amount to be discounted based on the loyalty points."],
+  ["49", "MedusaError", "Throw an error if the customer doesn't have enough loyalty points."],
+]
+
+```ts title="src/workflows/hooks/complete-cart.ts" highlights={completeCartWorkflowHookHighlights} collapsibleLines="1-6" expandButtonLabel="Show Imports"
+import { completeCartWorkflow } from "@medusajs/medusa/core-flows"
+import LoyaltyModuleService from "../../modules/loyalty/service"
+import { LOYALTY_MODULE } from "../../modules/loyalty"
+import { CartData, getCartLoyaltyPromotion } from "../../utils/promo"
+import { MedusaError } from "@medusajs/framework/utils"
+
+completeCartWorkflow.hooks.validate(
+  async ({ cart }, { container }) => {
+    const query = container.resolve("query")
+    const loyaltyModuleService: LoyaltyModuleService = container.resolve(
+      LOYALTY_MODULE
+    )
+
+    const { data: carts } = await query.graph({
+      entity: "cart",
+      fields: [
+        "id", 
+        "promotions.*", 
+        "customer.*", 
+        "promotions.rules.*", 
+        "promotions.rules.values.*", 
+        "promotions.application_method.*", 
+        "metadata",
+      ],
+      filters: {
+        id: cart.id,
+      },
+    }, {
+      throwIfKeyNotFound: true,
+    })
+
+    const loyaltyPromo = getCartLoyaltyPromotion(
+      carts[0] as unknown as CartData
+    )
+
+    if (!loyaltyPromo) {
+      return
+    }
+    
+    const customerLoyaltyPoints = await loyaltyModuleService.getPoints(
+      carts[0].customer!.id
+    )
+    const requiredPoints = await loyaltyModuleService.calculatePointsFromAmount(
+      loyaltyPromo.application_method!.value as number
+    )
+
+    if (customerLoyaltyPoints < requiredPoints) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        `Customer does not have enough loyalty points. Required: ${
+          requiredPoints
+        }, Available: ${customerLoyaltyPoints}`
+      )
+    }
+  }
+)
+```
+
+Workflows have a special `hooks` property that includes all the hooks tht you can consume in that workflow. You consume the hook by invoking it from the workflow's `hooks` property.
+
+Since the hook is essentially a step function, it accepts the following parameters:
+
+- The hook's input passed from the workflow, which differs for each hook. The `validate` hook receives an object having the cart's details.
+- The step context object, which contains the Medusa container. You can use it to resolve services and perform actions.
+
+In the hook, you resolve Query and the Loyalty Module's service. Then, you use Query to retrieve the cart's necessary details, including its promotions, customer, and metadata.
+
+After that, you retrieve the customer's loyalty points and calculate the required points to apply the loyalty promotion.
+
+If the customer doesn't have enough loyalty points, you throw an error. This will prevent the cart from being completed if the customer doesn't have enough loyalty points.
+
+---
+
+## Test Out Cart Completion with Loyalty Points
+
+Since you now have the entire loyalty points flow implemented, you can test it out by going through the checkout flow, applying the loyalty points to the cart.
+
+When you place the order, if the customer has sufficient loyalty points, the validation hook will pass.
+
+Then, the `order.placed` event will be emitted, which will execute the subscriber that calls the `handleOrderPointsWorkflow`.
+
+In the workflow, since the order's cart has a loyalty promotion, the points equivalent to the promotion will be deducted, and the promotion becomes inactive.
+
+You can confirm that the loyalty points were deducted either by sending a request to the [retrieve loyalty points API route](#step-5-retrieve-loyalty-points-api-route), or by going through the checkout process again in the storefront.
+
+---
+
+## Next Steps
+
+You've now implement a loyalty points system in Medusa. There's still more that you can implement based on your use case:
+
+- Add loyalty points on registration or other events. Refer to the [Events Reference](../../../events-reference/page.mdx) for a full list of available events you can listen to.
+- Show the customer their loyalty point usage history. This will require adding another data model in the Loyalty Module that records the usage history. You can create records of that data model when an order that has a loyalty promotion is placed, then customize the storefront to show a new page for loyalty points history.
+- Customize the Medusa Admin to show a new page or [UI Route](!docs!/learn/fundamentals/admin/ui-routes) for loyalty points information and analytics.
+
+If you're new to Medusa, check out the [main documentation](!docs!/learn), where you'll get a more in-depth learning of all the concepts you've used in this guide and more.
+
+To learn more about the commerce features that Medusa provides, check out Medusa's [Commerce Modules](../../../commerce-modules/page.mdx).

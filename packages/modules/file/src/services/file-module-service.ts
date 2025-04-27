@@ -1,7 +1,9 @@
 import {
   Context,
   CreateFileDTO,
+  GetUploadFileUrlDTO,
   FileDTO,
+  UploadFileUrlDTO,
   FileTypes,
   FilterableFileProps,
   FindConfig,
@@ -45,6 +47,27 @@ export default class FileModuleService implements FileTypes.IFileModuleService {
       id: file.key,
       url: file.url,
     }))
+
+    return Array.isArray(data) ? result : result[0]
+  }
+
+  getUploadFileUrls(
+    data: GetUploadFileUrlDTO[],
+    sharedContext?: Context
+  ): Promise<UploadFileUrlDTO[]>
+  getUploadFileUrls(
+    data: GetUploadFileUrlDTO,
+    sharedContext?: Context
+  ): Promise<UploadFileUrlDTO>
+
+  async getUploadFileUrls(
+    data: GetUploadFileUrlDTO[] | GetUploadFileUrlDTO
+  ): Promise<UploadFileUrlDTO[] | UploadFileUrlDTO> {
+    const input = Array.isArray(data) ? data : [data]
+
+    const result = await Promise.all(
+      input.map((file) => this.fileProviderService_.getPresignedUploadUrl(file))
+    )
 
     return Array.isArray(data) ? result : result[0]
   }

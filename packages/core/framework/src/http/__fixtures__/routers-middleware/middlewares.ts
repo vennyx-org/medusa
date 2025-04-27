@@ -1,35 +1,45 @@
-import { NextFunction, raw, Request, Response } from "express"
+import { raw } from "express"
+import { MedusaRequest, MedusaResponse, MedusaNextFunction } from "../../types"
 import {
   customersCreateMiddlewareMock,
   customersGlobalMiddlewareMock,
+  customersCreateMiddlewareValidatorMock,
   storeGlobalMiddlewareMock,
 } from "../mocks"
+import z from "zod"
 import { defineMiddlewares } from "../../utils/define-middlewares"
 
 const customersGlobalMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction
+  req: MedusaRequest,
+  res: MedusaResponse,
+  next: MedusaNextFunction
 ) => {
   customersGlobalMiddlewareMock()
   next()
 }
 
 const customersCreateMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction
+  req: MedusaRequest,
+  res: MedusaResponse,
+  next: MedusaNextFunction
 ) => {
+  if (req.additionalDataValidator) {
+    customersCreateMiddlewareValidatorMock()
+  }
   customersCreateMiddlewareMock()
   next()
 }
 
-const storeGlobal = (req: Request, res: Response, next: NextFunction) => {
+const storeGlobal = (
+  req: MedusaRequest,
+  res: MedusaResponse,
+  next: MedusaNextFunction
+) => {
   storeGlobalMiddlewareMock()
   next()
 }
 
-export default defineMiddlewares([
+const middlewares = defineMiddlewares([
   {
     matcher: "/customers",
     middlewares: [customersGlobalMiddleware],
@@ -37,6 +47,9 @@ export default defineMiddlewares([
   {
     method: "POST",
     matcher: "/customers",
+    additionalDataValidator: {
+      group_id: z.string(),
+    },
     middlewares: [customersCreateMiddleware],
   },
   {
@@ -56,3 +69,5 @@ export default defineMiddlewares([
     middlewares: [raw({ type: "application/json" })],
   },
 ])
+
+export default middlewares

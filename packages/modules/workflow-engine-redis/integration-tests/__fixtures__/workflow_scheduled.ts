@@ -13,7 +13,7 @@ export const createScheduled = (
   const workflowScheduledStepInvoke = jest.fn((input, { container }) => {
     try {
       return new StepResponse({
-        testValue: "test-value",
+        testValue: container.resolve("test-value", { allowUnregistered: true }),
       })
     } finally {
       next()

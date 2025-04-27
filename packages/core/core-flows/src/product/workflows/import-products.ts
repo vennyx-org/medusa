@@ -21,7 +21,7 @@ export const importProductsWorkflowId = "import-products"
  * You can use this workflow within your custom workflows, allowing you to wrap custom logic around product import.
  * For example, you can import products from another system.
  *
- * The workflow only starts the import, but you'll have to confirm it using the [Workflow Engine](https://docs.medusajs.com/resources/architectural-modules/workflow-engine).
+ * The workflow only starts the import, but you'll have to confirm it using the [Workflow Engine](https://docs.medusajs.com/resources/infrastructure-modules/workflow-engine).
  * The below example shows how to confirm the import.
  *
  * @example
@@ -40,7 +40,7 @@ export const importProductsWorkflowId = "import-products"
  *
  * Notice that the workflow returns a `transaction.transactionId`. You'll use this ID to confirm the import afterwards.
  *
- * You confirm the import using the [Workflow Engine](https://docs.medusajs.com/resources/architectural-modules/workflow-engine).
+ * You confirm the import using the [Workflow Engine](https://docs.medusajs.com/resources/infrastructure-modules/workflow-engine).
  * For example, in an API route:
  *
  * ```ts workflow={false}

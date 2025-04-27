@@ -2,7 +2,7 @@
  * @oas [post] /admin/draft-orders
  * operationId: PostDraftOrders
  * summary: Create Draft Order
- * description: Create a draft order. This creates an order with the `is_draft_order` property enabled.
+ * description: Create a draft order. This creates an order with the `is_draft_order` property enabled. You can later convert the draft order to an order.
  * x-authenticated: true
  * parameters:
  *   - name: fields
@@ -107,7 +107,11 @@
  *                   province:
  *                     type: string
  *                     title: province
- *                     description: The billing address's province.
+ *                     description: The billing address's ISO 3166-2 province code. Must be lower-case.
+ *                     example: "us-ca"
+ *                     externalDocs:
+ *                       url: https://en.wikipedia.org/wiki/ISO_3166-2
+ *                       description: Learn more about ISO 3166-2
  *                   postal_code:
  *                     type: string
  *                     title: postal_code
@@ -166,7 +170,11 @@
  *                   province:
  *                     type: string
  *                     title: province
- *                     description: The shipping address's province.
+ *                     description: The shipping address's ISO 3166-2 province code. Must be lower-case.
+ *                     example: "us-ca"
+ *                     externalDocs:
+ *                       url: https://en.wikipedia.org/wiki/ISO_3166-2
+ *                       description: Learn more about ISO 3166-2
  *                   postal_code:
  *                     type: string
  *                     title: postal_code

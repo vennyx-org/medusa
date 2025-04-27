@@ -206,6 +206,114 @@ Refer to the [user guide](!user-guide!/settings/regions#edit-region-details) to 
 
 ---
 
+## Stripe Payment Provider IDs
+
+When you register the Stripe Module Provider, it registers different providers, such as basic Stripe payment, Bancontact, and more.
+
+Each provider is registered and referenced by a unique ID made up of the format `pp_{identifier}_{id}`, where:
+
+- `{identifier}` is the ID of the payment provider as defined in the Stripe Module Provider.
+- `{id}` is the ID of the Stripe Module Provider as set in the `medusa-config.ts` file. For example, `stripe`.
+
+Assuming you set the ID of the Stripe Module Provider to `stripe` in `medusa-config.ts`, the Medusa application will register the following payment providers:
+
+<Table>
+  <Table.Header>
+    <Table.Row>
+      <Table.HeaderCell>Provider Name</Table.HeaderCell>
+      <Table.HeaderCell>Provider ID</Table.HeaderCell>
+    </Table.Row>
+  </Table.Header>
+  <Table.Body>
+    <Table.Row>
+      <Table.Cell>
+      
+      Basic Stripe Payment
+      
+      </Table.Cell>
+      <Table.Cell>
+      
+      `pp_stripe_stripe`
+      
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell>
+      
+      Bancontact Payments
+      
+      </Table.Cell>
+      <Table.Cell>
+      
+      `pp_stripe-bancontact_stripe`
+      
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell>
+      
+      BLIK Payments
+      
+      </Table.Cell>
+      <Table.Cell>
+      
+      `pp_stripe-blik_stripe`
+      
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell>
+      
+      giropay Payments
+      
+      </Table.Cell>
+      <Table.Cell>
+      
+      `pp_stripe-giropay_stripe`
+      
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell>
+      
+      iDEAL Payments
+      
+      </Table.Cell>
+      <Table.Cell>
+      
+      `pp_stripe-ideal_stripe`
+      
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell>
+      
+      Przelewy24 Payments
+      
+      </Table.Cell>
+      <Table.Cell>
+      
+      `pp_stripe-przelewy24_stripe`
+      
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell>
+      
+      PromptPay Payments
+      
+      </Table.Cell>
+      <Table.Cell>
+      
+      `pp_stripe-promptpay_stripe`
+      
+      </Table.Cell>
+    </Table.Row>
+  </Table.Body>
+</Table>
+
+---
+
 ## Setup Stripe Webhooks
 
 For production applications, you must set up webhooks in Stripe that inform Medusa of changes and updates to payments. Refer to [Stripe's documentation](https://docs.stripe.com/webhooks#add-a-webhook-endpoint) on how to setup webhooks.
@@ -215,7 +323,7 @@ For production applications, you must set up webhooks in Stripe that inform Medu
 Medusa has a `{server_url}/hooks/payment/{provider_id}` API route that you can use to register webhooks in Stripe, where:
 
 - `{server_url}` is the URL to your deployed Medusa application in server mode.
-- `{provider_id}` is the ID of the provider, such as `stripe_stripe` for basic payments.
+- `{provider_id}` is the ID of the provider as explained in the [Stripe Payment Provider IDs](#stripe-payment-provider-ids) section, without the `pp_` prefix.
 
 The Stripe Module Provider supports the following payment types, and the webhook endpoint URL is different for each:
 

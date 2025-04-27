@@ -8,9 +8,6 @@ export const sdk = new Medusa({
   },
 })
 
-To convert a draft order to an order:
-
-```ts
 sdk.admin.draftOrder.convertToOrder("order_123")
 .then(({ order }) => {
   console.log(order)

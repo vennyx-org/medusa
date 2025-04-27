@@ -164,7 +164,9 @@ export class ConfigManager {
 
     this.#config = {
       projectConfig: normalizedProjectConfig,
-      admin: projectConfig.admin ?? {},
+      admin: projectConfig.admin ?? {
+        path: "/app",
+      },
       modules: projectConfig.modules ?? {},
       featureFlags: projectConfig.featureFlags ?? {},
       plugins: projectConfig.plugins ?? [],

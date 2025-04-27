@@ -26,6 +26,12 @@ For example, a fulfillment provider may have a shipping option that can be used 
 
 Service zones can be more restrictive, such as restricting to certain cities or province codes.
 
+<Note title="Tip">
+
+The province code is always in lower-case and in [ISO 3166-2 format](https://en.wikipedia.org/wiki/ISO_3166-2).
+
+</Note>
+
 ![A diagram showcasing the relation between shipping options, service zones, and geo zones](https://res.cloudinary.com/dza7lstvk/image/upload/v1712331186/Medusa%20Resources/shipping-option-service-zone-city_m5sxod.jpg)
 
 ---
@@ -33,6 +39,12 @@ Service zones can be more restrictive, such as restricting to certain cities or 
 ## Shipping Option Rules
 
 You can restrict shipping options by custom rules, such as the item’s weight or the customer’s group.
+
+<Note title="Tip">
+
+You can also restrict a shipping option's price based on specific conditions. For example, you can make a shipping option's price free based on the cart's total. Learn more in the Pricing Module's [Price Rules](../../pricing/price-rules/page.mdx#how-to-set-rules-on-a-price) guide.
+
+</Note>
 
 These rules are represented by the [ShippingOptionRule data model](/references/fulfillment/models/ShippingOptionRule). Its properties define the custom rule:
 

@@ -6,11 +6,32 @@ import {
 } from "@medusajs/framework/workflows-sdk"
 import { OrderDTO, OrderWorkflow } from "@medusajs/types"
 import { useRemoteQueryStep } from "../../common"
-import { createOrderChangeStep } from "../../order"
+import { createOrderChangeStep, previewOrderChangeStep } from "../../order"
 import { validateDraftOrderStep } from "../steps"
 
 export const beginDraftOrderEditWorkflowId = "begin-draft-order-edit"
 
+/**
+ * This workflow begins a draft order edit. It's used by the
+ * [Create Draft Order Edit Admin API Route](https://docs.medusajs.com/api/admin#draft-orders_postdraftordersidedit).
+ * 
+ * The draft order edit can later be requested using {@link requestDraftOrderEditWorkflow} or confirmed using {@link confirmDraftOrderEditWorkflow}.
+ * 
+ * You can use this workflow within your customizations or your own custom workflows, allowing you to wrap custom logic around 
+ * creating a draft order edit request.
+ * 
+ * @example
+ * const { result } = await beginDraftOrderEditWorkflow(container)
+ * .run({
+ *   input: {
+ *     order_id: "order_123",
+ *   }
+ * })
+ * 
+ * @summary
+ * 
+ * Create a draft order edit request.
+ */
 export const beginDraftOrderEditWorkflow = createWorkflow(
   beginDraftOrderEditWorkflowId,
   function (input: WorkflowData<OrderWorkflow.BeginorderEditWorkflowInput>) {
@@ -34,6 +55,8 @@ export const beginDraftOrderEditWorkflow = createWorkflow(
       }
     })
 
-    return new WorkflowResponse(createOrderChangeStep(orderChangeInput))
+    createOrderChangeStep(orderChangeInput)
+
+    return new WorkflowResponse(previewOrderChangeStep(input.order_id))
   }
 )
