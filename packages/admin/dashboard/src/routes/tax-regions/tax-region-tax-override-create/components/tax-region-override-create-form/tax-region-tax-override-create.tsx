@@ -10,6 +10,7 @@ import {
   clx,
   toast,
 } from "@medusajs/ui"
+import { useEffect } from "react"
 import { useFieldArray, useForm, useWatch } from "react-hook-form"
 import { z } from "zod"
 
@@ -47,6 +48,7 @@ const TaxRegionCreateTaxOverrideSchema = z.object({
     })
     .optional(),
   is_combinable: z.boolean().optional(),
+  is_compound: z.boolean().optional(),
   enabled_rules: z.object({
     product: z.boolean(),
     product_type: z.boolean(),
@@ -81,6 +83,7 @@ export const TaxRegionCreateTaxOverrideForm = ({
       name: "",
       code: "",
       is_combinable: false,
+      is_compound: false,
       rate: {
         value: "",
       },
@@ -149,6 +152,7 @@ export const TaxRegionCreateTaxOverrideForm = ({
         rate: values.rate?.float,
         code: values.code,
         is_combinable: values.is_combinable,
+        is_compound: values.is_compound,
         rules: rules,
         is_default: false,
       },
@@ -337,6 +341,18 @@ export const TaxRegionCreateTaxOverrideForm = ({
     (value) => !value
   )
 
+  const isCombinable = useWatch({
+    control: form.control,
+    name: "is_combinable",
+  })
+
+  // When is_combinable changes to false, set is_compound to false
+  useEffect(() => {
+    if (!isCombinable) {
+      form.setValue("is_compound", false)
+    }
+  }, [isCombinable, form])
+
   return (
     <RouteFocusModal.Form form={form}>
       <KeyboundForm
@@ -429,6 +445,13 @@ export const TaxRegionCreateTaxOverrideForm = ({
                 name="is_combinable"
                 label={t("taxRegions.fields.isCombinable.label")}
                 description={t("taxRegions.fields.isCombinable.hint")}
+              />
+              <SwitchBox
+                control={form.control}
+                name="is_compound"
+                label={t("taxRegions.fields.isCompound.label")}
+                description={t("taxRegions.fields.isCompound.hint")}
+                disabled={!isCombinable}
               />
               <div className="flex flex-col gap-y-3">
                 <div className="flex items-center justify-between gap-x-4">

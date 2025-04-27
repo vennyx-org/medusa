@@ -7129,6 +7129,30 @@
               ],
               "additionalProperties": false
             },
+            "isCompound": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "hint": {
+                  "type": "string"
+                },
+                "true": {
+                  "type": "string"
+                },
+                "false": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "label",
+                "hint",
+                "true",
+                "false"
+              ],
+              "additionalProperties": false
+            },
             "defaultTaxRate": {
               "type": "object",
               "properties": {

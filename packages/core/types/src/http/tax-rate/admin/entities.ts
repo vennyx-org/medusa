@@ -13,6 +13,7 @@ export interface AdminTaxRate {
   metadata: Record<string, unknown> | null
   tax_region_id: string
   is_combinable: boolean
+  is_compound: boolean
   is_default: boolean
   created_at: string
   updated_at: string

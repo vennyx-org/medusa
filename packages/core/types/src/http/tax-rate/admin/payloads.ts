@@ -11,6 +11,7 @@ export interface AdminCreateTaxRate {
   rules?: AdminCreateTaxRateRule[]
   is_default?: boolean
   is_combinable?: boolean
+  is_compound?: boolean
   metadata?: Record<string, unknown>
 }
 
@@ -21,5 +22,6 @@ export interface AdminUpdateTaxRate {
   rules?: AdminCreateTaxRateRule[]
   is_default?: boolean
   is_combinable?: boolean
+  is_compound?: boolean
   metadata?: Record<string, unknown>
 }

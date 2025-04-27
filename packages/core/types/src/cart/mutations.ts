@@ -81,7 +81,7 @@ export interface UpdateAddressDTO extends UpsertAddressDTO {
 /**
  * The address to be created.
  */
-export interface CreateAddressDTO extends UpsertAddressDTO {}
+export interface CreateAddressDTO extends UpsertAddressDTO { }
 
 /** ADDRESS END */
 
@@ -417,6 +417,11 @@ export interface UpdateTaxLineDTO {
   rate?: number
 
   /**
+   * Whether the tax line is compound.
+   */
+  is_compound?: boolean
+
+  /**
    * The associated provider's ID.
    */
   provider_id?: string
@@ -430,22 +435,22 @@ export interface UpdateTaxLineDTO {
 /**
  * The shipping method tax line to be created.
  */
-export interface CreateShippingMethodTaxLineDTO extends CreateTaxLineDTO {}
+export interface CreateShippingMethodTaxLineDTO extends CreateTaxLineDTO { }
 
 /**
  * The attributes to update in the shipping method tax line.
  */
-export interface UpdateShippingMethodTaxLineDTO extends UpdateTaxLineDTO {}
+export interface UpdateShippingMethodTaxLineDTO extends UpdateTaxLineDTO { }
 
 /**
  * The line item tax line to be created.
  */
-export interface CreateLineItemTaxLineDTO extends CreateTaxLineDTO {}
+export interface CreateLineItemTaxLineDTO extends CreateTaxLineDTO { }
 
 /**
  * The attributes to update in the line item tax line.
  */
-export interface UpdateLineItemTaxLineDTO extends UpdateTaxLineDTO {}
+export interface UpdateLineItemTaxLineDTO extends UpdateTaxLineDTO { }
 
 /** TAX LINES END */
 
