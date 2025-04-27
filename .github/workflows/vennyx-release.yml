@@ -57,6 +57,10 @@ jobs:
           yarn
           yarn build
 
+      - name: Define common timestamp
+        run: |
+          echo "COMMON_TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+
       - name: List and prepare publishable packages
         run: |
           echo "Creating directory for publishable packages..."
@@ -115,7 +119,7 @@ jobs:
             jq --arg name "$NEW_NAME" \
                --arg url "https://github.com/vennyx-org/medusa.git" \
                --arg dir "$PKG_DIR" \
-               --arg buildnum "$(date +%s)" \
+               --arg buildnum "$COMMON_TIMESTAMP" \
                '.name = $name | .version = .version + "-" + $buildnum | .repository = {type: "git", url: $url, directory: $dir} | .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"}' \
                "$TARGET_DIR/package.json" > "$TARGET_DIR/package.json.new" && \
                 mv "$TARGET_DIR/package.json.new" "$TARGET_DIR/package.json"
