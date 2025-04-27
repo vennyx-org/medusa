@@ -10,6 +10,7 @@ const TaxRate = model
     name: model.text().searchable(),
     is_default: model.boolean().default(false),
     is_combinable: model.boolean().default(false),
+    is_compound: model.boolean().default(false),
     tax_region: model.belongsTo(() => TaxRegion, {
       mappedBy: "tax_rates",
     }),

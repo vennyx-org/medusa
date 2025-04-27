@@ -53,6 +53,11 @@ export interface TaxRateDTO {
   is_default: boolean
 
   /**
+   * Whether the tax rate is compound.
+   */
+  is_compound: boolean
+
+  /**
    * The creation date of the tax rate.
    */
   created_at: string | Date
@@ -514,6 +519,26 @@ interface TaxLineDTO {
    * The ID of the tax provider used to calculate and retrieve the tax line.
    */
   provider_id: string
+
+  /**
+   * Whether the tax line is compound.
+   */
+  is_compound?: boolean
+
+  /**
+   * Holds custom data in key-value pairs.
+   */
+  metadata?: Record<string, unknown> | null
+
+  /**
+   * The creation date of the tax line.
+   */
+  created_at?: Date
+
+  /**
+   * The update date of the tax line.
+   */
+  updated_at?: Date
 }
 
 /**
