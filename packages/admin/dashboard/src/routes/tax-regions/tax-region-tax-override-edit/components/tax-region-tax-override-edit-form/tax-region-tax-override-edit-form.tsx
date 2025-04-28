@@ -12,7 +12,6 @@ import {
   clx,
   toast,
 } from "@medusajs/ui"
-import { useEffect } from "react"
 import { useFieldArray, useForm, useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod"
@@ -312,17 +311,6 @@ export const TaxRegionTaxOverrideEditForm = ({
     name: "enabled_rules",
   })
 
-  const watchedIsCombinable = useWatch({
-    control: form.control,
-    name: "is_combinable",
-  })
-
-  useEffect(() => {
-    if (!watchedIsCombinable || form.getValues("is_compound") === undefined) {
-      form.setValue("is_compound", false)
-    }
-  }, [watchedIsCombinable, form])
-
   const addRule = () => {
     const firstDisabledRule = Object.keys(watchedEnabledRules).find(
       (key) => !watchedEnabledRules[key as TaxRateRuleReferenceType]
@@ -425,17 +413,12 @@ export const TaxRegionTaxOverrideEditForm = ({
               description={t("taxRegions.fields.isCombinable.hint")}
             />
           )}
-          {isCombinable && (
-            <div className="w-full">
-              <SwitchBox
-                control={form.control}
-                name="is_compound"
-                label={t("taxRegions.fields.isCompound.label")}
-                description={t("taxRegions.fields.isCompound.hint")}
-                disabled={!watchedIsCombinable}
-              />
-            </div>
-          )}
+          <SwitchBox
+            control={form.control}
+            name="is_compound"
+            label={t("taxRegions.fields.isCompound.label")}
+            description={t("taxRegions.fields.isCompound.hint")}
+          />
           <div className="flex flex-col gap-y-3">
             <div className="flex items-center justify-between gap-x-4">
               <div className="flex flex-col">
