@@ -103,6 +103,7 @@ export const TaxRegionTaxOverrideEditForm = ({
       // customer_groups: initialValues.customer_group,
     },
     resolver: zodResolver(TaxRegionTaxRateEditSchema),
+    shouldUnregister: false,
   })
 
   const { mutateAsync, isPending } = useUpdateTaxRate(taxRate.id)
@@ -342,6 +343,11 @@ export const TaxRegionTaxOverrideEditForm = ({
     (value) => !value
   )
 
+  const watchedIsCombinable = useWatch({
+    control: form.control,
+    name: "is_combinable",
+  })
+
   return (
     <RouteDrawer.Form form={form}>
       <KeyboundForm
@@ -418,6 +424,7 @@ export const TaxRegionTaxOverrideEditForm = ({
             name="is_compound"
             label={t("taxRegions.fields.isCompound.label")}
             description={t("taxRegions.fields.isCompound.hint")}
+            disabled={!watchedIsCombinable}
           />
           <div className="flex flex-col gap-y-3">
             <div className="flex items-center justify-between gap-x-4">
