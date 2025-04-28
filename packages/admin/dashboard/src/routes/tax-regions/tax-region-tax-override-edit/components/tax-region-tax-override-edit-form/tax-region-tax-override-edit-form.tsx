@@ -318,7 +318,7 @@ export const TaxRegionTaxOverrideEditForm = ({
   })
 
   useEffect(() => {
-    if (!watchedIsCombinable) {
+    if (!watchedIsCombinable || form.getValues("is_compound") === undefined) {
       form.setValue("is_compound", false)
     }
   }, [watchedIsCombinable, form])
@@ -426,13 +426,15 @@ export const TaxRegionTaxOverrideEditForm = ({
             />
           )}
           {isCombinable && (
-            <SwitchBox
-              control={form.control}
-              name="is_compound"
-              label={t("taxRegions.fields.isCompound.label")}
-              description={t("taxRegions.fields.isCompound.hint")}
-              disabled={!watchedIsCombinable}
-            />
+            <div className="w-full">
+              <SwitchBox
+                control={form.control}
+                name="is_compound"
+                label={t("taxRegions.fields.isCompound.label")}
+                description={t("taxRegions.fields.isCompound.hint")}
+                disabled={!watchedIsCombinable}
+              />
+            </div>
           )}
           <div className="flex flex-col gap-y-3">
             <div className="flex items-center justify-between gap-x-4">
