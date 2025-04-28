@@ -416,6 +416,13 @@ export const TaxRegionTaxOverrideEditForm = ({
               name="is_combinable"
               label={t("taxRegions.fields.isCombinable.label")}
               description={t("taxRegions.fields.isCombinable.hint")}
+              onCheckedChange={(value) => {
+                if (!value) {
+                  form.setValue("is_compound", false, {
+                    shouldDirty: true,
+                  })
+                }
+              }}
             />
           )}
           <SwitchBox
