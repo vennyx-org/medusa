@@ -55,6 +55,7 @@ const TaxRegionTaxRateEditSchema = z.object({
     value: z.string().optional(),
   }),
   is_combinable: z.boolean().optional(),
+  is_compound: z.boolean().optional(),
   enabled_rules: z.object({
     product: z.boolean(),
     product_type: z.boolean(),
@@ -86,6 +87,7 @@ export const TaxRegionTaxOverrideEditForm = ({
         value: taxRate.rate?.toString() || "",
       },
       is_combinable: taxRate.is_combinable,
+      is_compound: taxRate.is_compound,
       enabled_rules: {
         product: initialValues.product.length > 0,
         product_type: initialValues.product_type.length > 0,
@@ -148,9 +150,11 @@ export const TaxRegionTaxOverrideEditForm = ({
     await mutateAsync(
       {
         name: values.name,
+        // @ts-expect-error
         code: values.code || null,
         rate: values.rate?.float,
         is_combinable: values.is_combinable,
+        is_compound: values.is_compound,
         rules,
       },
       {
@@ -339,6 +343,11 @@ export const TaxRegionTaxOverrideEditForm = ({
     (value) => !value
   )
 
+  const watchedIsCombinable = useWatch({
+    control: form.control,
+    name: "is_combinable",
+  })
+
   return (
     <RouteDrawer.Form form={form}>
       <KeyboundForm
@@ -408,8 +417,21 @@ export const TaxRegionTaxOverrideEditForm = ({
               name="is_combinable"
               label={t("taxRegions.fields.isCombinable.label")}
               description={t("taxRegions.fields.isCombinable.hint")}
+              onCheckedChange={(value) => {
+                if (!value) {
+                  form.setValue("is_compound", false, {
+                    shouldDirty: true,
+                  })
+                }
+              }}
             />
           )}
+          <SwitchBox
+            control={form.control}
+            name="is_compound"
+            label={t("taxRegions.fields.isCompound.label")}
+            description={t("taxRegions.fields.isCompound.hint")}
+          />
           <div className="flex flex-col gap-y-3">
             <div className="flex items-center justify-between gap-x-4">
               <div className="flex flex-col">

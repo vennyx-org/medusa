@@ -47,6 +47,13 @@ export interface CreateTaxRateDTO {
    * Holds custom data in key-value pairs.
    */
   metadata?: MetadataType
+
+  /**
+   * Whether the tax is compound. When true, this tax will be calculated on top of the 
+   * price including previous taxes, instead of just the base price.
+   * Used for taxes like VAT that should apply to the price after other taxes (like SCT in Turkey).
+   */
+  is_compound?: boolean
 }
 
 /**
@@ -92,6 +99,13 @@ export interface UpsertTaxRateDTO {
    * Holds custom data in key-value pairs.
    */
   metadata?: MetadataType
+
+  /**
+   * Whether the tax is compound. When true, this tax will be calculated on top of the 
+   * price including previous taxes, instead of just the base price.
+   * Used for taxes like VAT that should apply to the price after other taxes (like SCT in Turkey).
+   */
+  is_compound?: boolean
 }
 
 /**
@@ -132,6 +146,11 @@ export interface UpdateTaxRateDTO {
    * Learn more [here](https://docs.medusajs.com/resources/commerce-modules/tax/tax-rates-and-rules#combinable-tax-rates).
    */
   is_combinable?: boolean
+
+  /**
+   * Whether the tax rate is compound. When true, this tax will be calculated on top of the 
+   */
+  is_compound?: boolean
 
   /**
    * @ignore

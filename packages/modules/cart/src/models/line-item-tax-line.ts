@@ -12,6 +12,7 @@ const LineItemTaxLine = model
       description: model.text().nullable(),
       code: model.text(),
       rate: model.float(),
+      is_compound: model.boolean().default(false),
       provider_id: model.text().nullable(),
       metadata: model.json().nullable(),
       tax_rate_id: model.text().nullable(),

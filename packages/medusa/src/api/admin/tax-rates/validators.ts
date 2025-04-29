@@ -42,6 +42,7 @@ export const AdminCreateTaxRate = z.object({
   name: z.string(),
   is_default: z.boolean().optional(),
   is_combinable: z.boolean().optional(),
+  is_compound: z.boolean().optional(),
   tax_region_id: z.string(),
   metadata: z.record(z.unknown()).nullish(),
 })
@@ -54,5 +55,6 @@ export const AdminUpdateTaxRate = z.object({
   name: z.string().optional(),
   is_default: z.boolean().optional(),
   is_combinable: z.boolean().optional(),
+  is_compound: z.boolean().optional(),
   metadata: z.record(z.unknown()).nullish(),
 })

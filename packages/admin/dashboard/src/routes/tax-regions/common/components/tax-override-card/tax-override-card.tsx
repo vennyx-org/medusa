@@ -1,8 +1,8 @@
 import {
-    ArrowDownRightMini,
-    PencilSquare,
-    Trash,
-    TriangleRightMini,
+  ArrowDownRightMini,
+  PencilSquare,
+  Trash,
+  TriangleRightMini,
 } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { Badge, IconButton, StatusBadge, Text, Tooltip } from "@medusajs/ui"
@@ -85,6 +85,11 @@ export const TaxOverrideCard = ({ taxRate }: TaxOverrideCardProps) => {
             {taxRate.is_combinable
               ? t("taxRegions.fields.isCombinable.true")
               : t("taxRegions.fields.isCombinable.false")}
+          </StatusBadge>
+          <StatusBadge color={taxRate.is_compound ? "green" : "grey"}>
+            {taxRate.is_compound
+              ? t("taxRegions.fields.isCompound.true")
+              : t("taxRegions.fields.isCompound.false")}
           </StatusBadge>
           <ActionMenu
             groups={[

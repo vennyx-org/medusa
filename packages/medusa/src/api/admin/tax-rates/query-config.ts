@@ -6,6 +6,7 @@ export const defaults = [
   "tax_region_id",
   "is_default",
   "is_combinable",
+  "is_compound",
   "created_by",
   "created_at",
   "updated_at",

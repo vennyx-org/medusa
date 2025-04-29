@@ -1715,6 +1715,12 @@
         "true": "Combinable",
         "false": "Not combinable"
       },
+      "isCompound": {
+        "label": "Compound",
+        "hint": "Whether this tax rate is compound, which means it will be applied on top of the previous combinable tax rates.",
+        "true": "Compound",
+        "false": "Not compound"
+      },
       "defaultTaxRate": {
         "label": "Default tax rate",
         "tooltip": "The default tax rate for this region. An example is the standard VAT rate for a country or region.",
@@ -2490,7 +2496,10 @@
         "placeholder": "wrong_size",
         "tooltip": "The value should be a unique identifier for the return reason."
       },
-      "label": { "label": "Label", "placeholder": "Wrong size" },
+      "label": {
+        "label": "Label",
+        "placeholder": "Wrong size"
+      },
       "description": {
         "label": "Description",
         "placeholder": "Customer received the wrong size"
