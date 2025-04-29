@@ -36,12 +36,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-          scope: "@vennyx"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@vennyx-org"
 
       - name: Create GitHub .npmrc
         run: |
           cat << EOF > .npmrc
-          //registry.npmjs.org/:_authToken=${{ secrets.NPMJS_TOKEN }}
+          @vennyx-org:registry=https://npm.pkg.github.com
+          //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
           EOF
 
       - name: Install jq
