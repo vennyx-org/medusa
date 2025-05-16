@@ -87,7 +87,7 @@ export const updateLineItemInCartWorkflow = createWorkflow(
           ? true
           : item.is_custom_price,
         is_tax_inclusive:
-          item.is_tax_inclusive ||
+          item.is_tax_inclusive ??
           variant?.calculated_price?.is_calculated_price_tax_inclusive,
       }
 

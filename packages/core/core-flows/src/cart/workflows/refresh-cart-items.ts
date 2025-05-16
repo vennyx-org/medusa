@@ -85,8 +85,10 @@ export const refreshCartItemsWorkflow = createWorkflow(
 
         if (variant && !item.is_custom_price) {
           input.unitPrice = variant.calculated_price?.calculated_amount
-          input.isTaxInclusive =
-            variant.calculated_price?.is_calculated_price_tax_inclusive
+
+          input.isTaxInclusive = isDefined(item.is_tax_inclusive)
+            ? item.is_tax_inclusive
+            : variant.calculated_price?.is_calculated_price_tax_inclusive
         }
 
         const preparedItem = prepareLineItemData(input)
