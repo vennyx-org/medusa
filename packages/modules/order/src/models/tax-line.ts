@@ -25,6 +25,9 @@ export default abstract class TaxLine {
   @MikroOrmBigNumberProperty()
   rate: BigNumber | number
 
+  @Property({ columnType: "boolean", nullable: true })
+  is_compound?: boolean | null = null
+
   @Property({ columnType: "jsonb" })
   raw_rate: BigNumberRawValue
 

@@ -244,6 +244,11 @@ export interface OrderTaxLineDTO {
   rate: number
 
   /**
+   * Whether the tax line is compound.
+   */
+  is_compound?: boolean
+
+  /**
    * The ID of the associated provider.
    */
   provider_id?: string
@@ -298,11 +303,6 @@ export interface OrderShippingMethodTaxLineDTO extends OrderTaxLineDTO {
    * @ignore
    */
   raw_subtotal: BigNumberRawValue
-
-  /**
-   * Whether the tax line is compound.
-   */
-  is_compound?: boolean
 }
 
 /**
@@ -344,11 +344,6 @@ export interface OrderLineItemTaxLineDTO extends OrderTaxLineDTO {
    * @ignore
    */
   raw_subtotal: BigNumberRawValue
-
-  /**
-   * Whether the tax line is compound.
-   */
-  is_compound?: boolean
 }
 
 /**

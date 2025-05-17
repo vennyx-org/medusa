@@ -279,6 +279,11 @@ export interface CreateOrderAdjustmentDTO {
    * The associated provider's ID.
    */
   provider_id?: string
+
+  /**
+   * Whether the adjustment is compound.
+   */
+  is_compound?: boolean
 }
 
 /**
@@ -376,6 +381,11 @@ export interface UpsertOrderLineItemAdjustmentDTO {
    * The associated provider's ID.
    */
   provider_id?: string
+
+  /**
+   * Whether the adjustment is compound.
+   */
+  is_compound?: boolean
 }
 
 /** ADJUSTMENTS END */
@@ -813,6 +823,11 @@ export interface CreateOrderShippingMethodAdjustmentDTO {
    * The associated provider's ID.
    */
   provider_id?: string
+
+  /**
+   * Whether the adjustment is compound.
+   */
+  is_compound?: boolean
 }
 
 /**
@@ -848,6 +863,11 @@ export interface UpdateOrderShippingMethodAdjustmentDTO {
    * The associated provider's ID.
    */
   provider_id?: string
+
+  /**
+   * Whether the adjustment is compound.
+   */
+  is_compound?: boolean
 }
 
 /** SHIPPING METHODS END */
