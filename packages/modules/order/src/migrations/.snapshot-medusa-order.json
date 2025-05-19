@@ -1495,6 +1495,15 @@
           "nullable": false,
           "mappedType": "decimal"
         },
+        "is_compound": {
+          "name": "is_compound",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "boolean"
+        },
         "raw_rate": {
           "name": "raw_rate",
           "type": "jsonb",
@@ -1951,6 +1960,15 @@
           "primary": false,
           "nullable": false,
           "mappedType": "decimal"
+        },
+        "is_compound": {
+          "name": "is_compound",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "boolean"
         },
         "raw_rate": {
           "name": "raw_rate",
