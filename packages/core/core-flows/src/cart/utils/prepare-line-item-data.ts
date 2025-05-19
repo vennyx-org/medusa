@@ -110,8 +110,8 @@ export function prepareLineItemData(data: PrepareLineItemDataInput) {
   // unless explicitly set to not require shipping by the item in the request
   const someInventoryRequiresShipping = variant?.inventory_items?.length
     ? variant.inventory_items.some(
-        (inventoryItem) => !!inventoryItem.inventory.requires_shipping
-      )
+      (inventoryItem) => !!inventoryItem.inventory.requires_shipping
+    )
     : true
 
   const requiresShipping = isDefined(item?.requires_shipping)
@@ -178,6 +178,7 @@ export function prepareTaxLinesData(data: CreateOrderLineItemTaxLineDTO[]) {
     code: d.code,
     rate: d.rate,
     provider_id: d.provider_id,
+    is_compound: d.is_compound,
   }))
 }
 
@@ -188,5 +189,6 @@ export function prepareAdjustmentsData(data: CreateOrderAdjustmentDTO[]) {
     description: d.description,
     promotion_id: d.promotion_id,
     provider_id: d.promotion_id,
+    is_compound: d.is_compound,
   }))
 }
