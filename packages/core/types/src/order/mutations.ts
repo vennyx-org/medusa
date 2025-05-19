@@ -279,11 +279,6 @@ export interface CreateOrderAdjustmentDTO {
    * The associated provider's ID.
    */
   provider_id?: string
-
-  /**
-   * Whether the adjustment is compound.
-   */
-  is_compound?: boolean
 }
 
 /**
@@ -381,11 +376,6 @@ export interface UpsertOrderLineItemAdjustmentDTO {
    * The associated provider's ID.
    */
   provider_id?: string
-
-  /**
-   * Whether the adjustment is compound.
-   */
-  is_compound?: boolean
 }
 
 /** ADJUSTMENTS END */

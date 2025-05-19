@@ -188,7 +188,6 @@ export function prepareAdjustmentsData(data: CreateOrderAdjustmentDTO[]) {
     amount: d.amount,
     description: d.description,
     promotion_id: d.promotion_id,
-    provider_id: d.promotion_id,
-    is_compound: d.is_compound,
+    provider_id: d.promotion_id
   }))
 }
