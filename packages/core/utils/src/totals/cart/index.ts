@@ -21,6 +21,7 @@ export interface DecorateCartLikeInputDTO {
     adjustments?: { amount: BigNumberInput }[]
     tax_lines?: {
       rate: BigNumberInput
+      is_compound?: boolean
     }[]
   }[]
   shipping_methods?: {
@@ -30,6 +31,7 @@ export interface DecorateCartLikeInputDTO {
     adjustments?: { amount: BigNumberInput }[]
     tax_lines?: {
       rate: BigNumberInput
+      is_compound?: boolean
     }[]
   }[]
   region?: {

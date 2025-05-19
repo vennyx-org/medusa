@@ -44,8 +44,7 @@ export default class TaxModuleService
     TaxRateRule: { dto: TaxTypes.TaxRateRuleDTO }
     TaxProvider: { dto: TaxTypes.TaxProviderDTO }
   }>(generateForModels)
-  implements ITaxModuleService
-{
+  implements ITaxModuleService {
   protected readonly container_: InjectedDependencies
   protected baseRepository_: DAL.RepositoryService
   protected taxRateService_: ModulesSdkTypes.IMedusaInternalService<
@@ -599,15 +598,15 @@ export default class TaxModuleService
           ratesToReturn.push(parentRate)
         }
       }
-      
+
       // Include any other applicable rates from the same region that have is_combinable=true
       // This allows multiple tax rates to apply in a single region without parent-child relationship
-      const otherCombinableRates = prioritizedRates.filter(r => 
-        r.id !== rate.id && 
-        r.is_combinable && 
+      const otherCombinableRates = prioritizedRates.filter(r =>
+        r.id !== rate.id &&
+        r.is_combinable &&
         r.tax_region.id === rate.tax_region.id
       )
-      
+
       ratesToReturn.push(...otherCombinableRates)
     }
 
@@ -621,21 +620,21 @@ export default class TaxModuleService
     const isShipping = "shipping_option_id" in item
     let ruleQuery = isShipping
       ? [
-          {
-            reference: "shipping_option",
-            reference_id: item.shipping_option_id,
-          },
-        ]
+        {
+          reference: "shipping_option",
+          reference_id: item.shipping_option_id,
+        },
+      ]
       : [
-          {
-            reference: "product",
-            reference_id: item.product_id,
-          },
-          {
-            reference: "product_type",
-            reference_id: item.product_type_id,
-          },
-        ]
+        {
+          reference: "product",
+          reference_id: item.product_id,
+        },
+        {
+          reference: "product_type",
+          reference_id: item.product_type_id,
+        },
+      ]
 
     return {
       $and: [
@@ -654,7 +653,6 @@ export default class TaxModuleService
         isProductMatch: false,
         isProductTypeMatch: false,
         isShippingMatch: false,
-        isPriceThresholdMatch: false,
       }
     }
 

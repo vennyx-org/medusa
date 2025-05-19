@@ -133,6 +133,12 @@ export interface BaseOrderTaxLine {
    * The rate charged.
    */
   rate: number
+
+  /**
+   * Whether the tax line is compound.
+   */
+  is_compound?: boolean
+
   /**
    * The ID of the tax provider used.
    */
@@ -917,7 +923,7 @@ export interface BaseOrder {
 
 export interface BaseOrderFilters
   extends FindParams,
-    BaseFilterable<BaseOrderFilters> {
+  BaseFilterable<BaseOrderFilters> {
   /**
    * Filter by order ID(s).
    */
@@ -926,9 +932,9 @@ export interface BaseOrderFilters
    * Filter by status(es).
    */
   status?:
-    | OrderStatus[]
-    | OrderStatus
-    | OperatorMap<OrderStatus | OrderStatus[]>
+  | OrderStatus[]
+  | OrderStatus
+  | OperatorMap<OrderStatus | OrderStatus[]>
 }
 
 export interface BaseOrderChangesFilters
@@ -962,12 +968,12 @@ export interface BaseOrderChange {
    * The type of the order change
    */
   change_type?:
-    | "return"
-    | "exchange"
-    | "claim"
-    | "edit"
-    | "return_request"
-    | "transfer"
+  | "return"
+  | "exchange"
+  | "claim"
+  | "edit"
+  | "return_request"
+  | "transfer"
 
   /**
    * The ID of the associated order
