@@ -1,5 +1,6 @@
 import { BigNumberInput, ItemTaxLineDTO } from "@medusajs/types"
 import { BigNumber } from "../big-number"
+import { BigNumber as BigNumberJS } from "bignumber.js"
 import { MathBN } from "../math"
 
 export function calculateTaxTotal({
@@ -25,10 +26,10 @@ export function calculateTaxTotal({
   // Calculate regular taxes
   for (const taxLine of standardTaxLines) {
     const rate = MathBN.div(taxLine.rate, 100)
-    let taxAmount = MathBN.mult(taxableAmount, rate)
+    let taxAmount = MathBN.mult(taxableAmount, rate).decimalPlaces(2, BigNumberJS.ROUND_HALF_UP)
 
     if (setTotalField) {
-      ;(taxLine as any)[setTotalField] = new BigNumber(taxAmount)
+      ;(taxLine as any)[setTotalField] = new BigNumber(taxAmount);
     }
 
     taxTotal = MathBN.add(taxTotal, taxAmount)
@@ -39,10 +40,10 @@ export function calculateTaxTotal({
   for (const taxLine of compoundTaxLines) {
     const rate = MathBN.div(taxLine.rate, 100)
     // Apply to price INCLUDING other taxes
-    let taxAmount = MathBN.mult(baseWithTax, rate)
+    let taxAmount = MathBN.mult(baseWithTax, rate).decimalPlaces(2, BigNumberJS.ROUND_HALF_UP)
 
     if (setTotalField) {
-      ;(taxLine as any)[setTotalField] = new BigNumber(taxAmount)
+      ;(taxLine as any)[setTotalField] = new BigNumber(taxAmount);
     }
 
     taxTotal = MathBN.add(taxTotal, taxAmount)
