@@ -7,12 +7,10 @@ export function calculateTaxTotal({
   taxLines,
   taxableAmount,
   setTotalField,
-  roundHalfUp = false,
 }: {
   taxLines: any[]
   taxableAmount: BigNumberInput
   setTotalField?: string
-  roundHalfUp?: boolean
 }) {
   if (MathBN.lte(taxableAmount, 0)) {
     return MathBN.convert(0)
@@ -24,11 +22,12 @@ export function calculateTaxTotal({
   // First process all non-compound taxes (like SCT)
   const standardTaxLines = taxLines.filter(taxLine => !taxLine.is_compound);
   const compoundTaxLines = taxLines.filter(taxLine => taxLine.is_compound);
+  const hasCompoundTaxes = compoundTaxLines != null && compoundTaxLines.length > 0;
 
   // Calculate regular taxes
   for (const taxLine of standardTaxLines) {
     const rate = MathBN.div(taxLine.rate, 100)
-    let taxAmount = roundHalfUp ? MathBN.mult(taxableAmount, rate).decimalPlaces(2, BigNumberJS.ROUND_HALF_UP) : MathBN.mult(taxableAmount, rate)
+    let taxAmount = hasCompoundTaxes ? MathBN.mult(taxableAmount, rate).decimalPlaces(2, BigNumberJS.ROUND_HALF_UP) : MathBN.mult(taxableAmount, rate)
 
     if (setTotalField) {
       ;(taxLine as any)[setTotalField] = new BigNumber(taxAmount);
@@ -42,7 +41,7 @@ export function calculateTaxTotal({
   for (const taxLine of compoundTaxLines) {
     const rate = MathBN.div(taxLine.rate, 100)
     // Apply to price INCLUDING other taxes
-    let taxAmount = roundHalfUp ? MathBN.mult(baseWithTax, rate).decimalPlaces(2, BigNumberJS.ROUND_HALF_UP) : MathBN.mult(baseWithTax, rate)
+    let taxAmount = hasCompoundTaxes ? MathBN.mult(baseWithTax, rate).decimalPlaces(2, BigNumberJS.ROUND_HALF_UP) : MathBN.mult(baseWithTax, rate)
 
     if (setTotalField) {
       ;(taxLine as any)[setTotalField] = new BigNumber(taxAmount);
