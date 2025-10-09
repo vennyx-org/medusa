@@ -49,7 +49,7 @@ export function calculateTaxTotal({
     taxTotal = MathBN.add(taxTotal, taxAmount)
   }
 
-  return taxTotal
+  return taxTotal.decimalPlaces(2, BigNumberJS.ROUND_HALF_UP)
 }
 
 export function calculateAmountsWithTax({
@@ -93,8 +93,8 @@ export function calculateAmountsWithTax({
     })
     
     return {
-      priceWithTax: new BigNumberJS(amount).decimalPlaces(2).toNumber(),
-      priceWithoutTax: MathBN.sub(amount, tax).decimalPlaces(2).toNumber(),
+      priceWithTax: amount,
+      priceWithoutTax: MathBN.sub(amount, tax).toNumber(),
     }
   } else {
     // Tax exclusive pricing is easier - we just calculate tax normally
@@ -106,8 +106,8 @@ export function calculateAmountsWithTax({
     })
     
     return {
-      priceWithTax: MathBN.add(amount, tax).decimalPlaces(2).toNumber(),
+      priceWithTax: MathBN.add(amount, tax).toNumber(),
       priceWithoutTax: amount,
     }
-  }
+  } 
 }
