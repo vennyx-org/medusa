@@ -104,8 +104,6 @@ export function calculateAmountsWithTax({
     const tax = calculateTaxTotal({
       taxLines,
       taxableAmount,
-      setTotalField: undefined,
-      roundHalfUp: true,
     })
     
     return {
