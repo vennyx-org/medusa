@@ -7,10 +7,12 @@ export function calculateTaxTotal({
   taxLines,
   taxableAmount,
   setTotalField,
+  roundHalfUp = false,
 }: {
   taxLines: any[]
   taxableAmount: BigNumberInput
   setTotalField?: string
+  roundHalfUp?: boolean
 }) {
   if (MathBN.lte(taxableAmount, 0)) {
     return MathBN.convert(0)
@@ -26,7 +28,7 @@ export function calculateTaxTotal({
   // Calculate regular taxes
   for (const taxLine of standardTaxLines) {
     const rate = MathBN.div(taxLine.rate, 100)
-    let taxAmount = MathBN.mult(taxableAmount, rate).decimalPlaces(2, BigNumberJS.ROUND_HALF_UP)
+    let taxAmount = roundHalfUp ? MathBN.mult(taxableAmount, rate).decimalPlaces(2, BigNumberJS.ROUND_HALF_UP) : MathBN.mult(taxableAmount, rate)
 
     if (setTotalField) {
       ;(taxLine as any)[setTotalField] = new BigNumber(taxAmount);
@@ -40,7 +42,7 @@ export function calculateTaxTotal({
   for (const taxLine of compoundTaxLines) {
     const rate = MathBN.div(taxLine.rate, 100)
     // Apply to price INCLUDING other taxes
-    let taxAmount = MathBN.mult(baseWithTax, rate).decimalPlaces(2, BigNumberJS.ROUND_HALF_UP)
+    let taxAmount = roundHalfUp ? MathBN.mult(baseWithTax, rate).decimalPlaces(2, BigNumberJS.ROUND_HALF_UP) : MathBN.mult(baseWithTax, rate)
 
     if (setTotalField) {
       ;(taxLine as any)[setTotalField] = new BigNumber(taxAmount);
@@ -49,7 +51,7 @@ export function calculateTaxTotal({
     taxTotal = MathBN.add(taxTotal, taxAmount)
   }
 
-  return taxTotal.decimalPlaces(2, BigNumberJS.ROUND_HALF_UP)
+  return taxTotal
 }
 
 export function calculateAmountsWithTax({
@@ -103,6 +105,7 @@ export function calculateAmountsWithTax({
     const tax = calculateTaxTotal({
       taxLines,
       taxableAmount,
+      roundHalfUp: true,
     })
     
     return {
