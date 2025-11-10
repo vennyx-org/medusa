@@ -2243,6 +2243,15 @@
           "nullable": false,
           "mappedType": "decimal"
         },
+        "is_compound": {
+          "name": "is_compound",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "boolean"
+        },
         "provider_id": {
           "name": "provider_id",
           "type": "text",
@@ -2721,6 +2730,15 @@
           "primary": false,
           "nullable": false,
           "mappedType": "decimal"
+        },
+        "is_compound": {
+          "name": "is_compound",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "boolean"
         },
         "provider_id": {
           "name": "provider_id",

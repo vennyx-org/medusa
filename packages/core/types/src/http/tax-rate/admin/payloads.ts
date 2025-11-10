@@ -1,14 +1,14 @@
 export interface AdminCreateTaxRateRule {
   /**
    * The name of the table that the rule references.
-   * 
+   *
    * @example
    * "product_type"
    */
   reference: string
   /**
    * The ID of the record in the table that the rule references.
-   * 
+   *
    * @example
    * "protyp_123"
    */
@@ -45,6 +45,10 @@ export interface AdminCreateTaxRate {
    */
   is_combinable?: boolean
   /**
+   * Is compound
+   */
+  is_compound?: boolean
+  /**
    * Custom key-value pairs that can be added to the tax rate.
    */
   metadata?: Record<string, unknown>
@@ -75,6 +79,10 @@ export interface AdminUpdateTaxRate {
    * Whether the tax rate is combinable with other tax rates.
    */
   is_combinable?: boolean
+  /**
+   * Is compound
+   */
+  is_compound?: boolean
   /**
    * Custom key-value pairs that can be added to the tax rate.
    */

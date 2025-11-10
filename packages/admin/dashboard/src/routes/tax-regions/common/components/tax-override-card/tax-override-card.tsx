@@ -94,6 +94,11 @@ export const TaxOverrideCard = ({ taxRate }: TaxOverrideCardProps) => {
               ? t("taxRegions.fields.isCombinable.true")
               : t("taxRegions.fields.isCombinable.false")}
           </StatusBadge>
+          <StatusBadge color={taxRate.is_compound ? "green" : "grey"}>
+            {taxRate.is_compound
+              ? t("taxRegions.fields.isCompound.true")
+              : t("taxRegions.fields.isCompound.false")}
+          </StatusBadge>
           <ActionMenu
             groups={[
               {
@@ -246,9 +251,7 @@ const ReferenceValues = ({
     <Tooltip
       content={
         <ul>
-          {labels?.map((label: string, index) => (
-            <li key={index}>{label}</li>
-          ))}
+          {labels?.map((label: string, index) => <li key={index}>{label}</li>)}
           {additional > 0 && (
             <li>
               {t("taxRegions.fields.targets.additionalValues", {

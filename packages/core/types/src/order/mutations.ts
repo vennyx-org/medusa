@@ -100,7 +100,7 @@ export interface UpdateOrderAddressDTO extends UpsertOrderAddressDTO {
 /**
  * The address to be created.
  */
-export interface CreateOrderAddressDTO extends UpsertOrderAddressDTO {}
+export interface CreateOrderAddressDTO extends UpsertOrderAddressDTO { }
 
 /** ADDRESS END */
 /** ORDER START */
@@ -430,6 +430,11 @@ export interface CreateOrderTaxLineDTO {
    * The associated provider's ID.
    */
   provider_id?: string
+
+  /**
+   * Whether the tax line is compound.
+   */
+  is_compound?: boolean
 }
 
 /**
@@ -465,29 +470,34 @@ export interface UpdateOrderTaxLineDTO {
    * The associated provider's ID.
    */
   provider_id?: string
+
+  /**
+   * Whether the tax line is compound.
+   */
+  is_compound?: boolean
 }
 
 /**
  * The shipping method tax line to be created.
  */
 export interface CreateOrderShippingMethodTaxLineDTO
-  extends CreateOrderTaxLineDTO {}
+  extends CreateOrderTaxLineDTO { }
 
 /**
  * The attributes to update in the shipping method tax line.
  */
 export interface UpdateOrderShippingMethodTaxLineDTO
-  extends UpdateOrderTaxLineDTO {}
+  extends UpdateOrderTaxLineDTO { }
 
 /**
  * The line item tax line to be created.
  */
-export interface CreateOrderLineItemTaxLineDTO extends CreateOrderTaxLineDTO {}
+export interface CreateOrderLineItemTaxLineDTO extends CreateOrderTaxLineDTO { }
 
 /**
  * The attributes to update in the line item tax line.
  */
-export interface UpdateOrderLineItemTaxLineDTO extends UpdateOrderTaxLineDTO {}
+export interface UpdateOrderLineItemTaxLineDTO extends UpdateOrderTaxLineDTO { }
 
 /** TAX LINES END */
 /** LINE ITEMS START */
@@ -825,6 +835,11 @@ export interface CreateOrderShippingMethodAdjustmentDTO {
    * The associated provider's ID.
    */
   provider_id?: string
+
+  /**
+   * Whether the adjustment is compound.
+   */
+  is_compound?: boolean
 }
 
 /**
@@ -860,6 +875,11 @@ export interface UpdateOrderShippingMethodAdjustmentDTO {
    * The associated provider's ID.
    */
   provider_id?: string
+
+  /**
+   * Whether the adjustment is compound.
+   */
+  is_compound?: boolean
 }
 
 /** SHIPPING METHODS END */

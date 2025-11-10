@@ -70,6 +70,7 @@ type OrderShippingMethodTaxLine {
   tax_rate_id: String
   code: String!
   rate: Float
+  is_compound: Boolean
   provider_id: String
   created_at: DateTime
   updated_at: DateTime
@@ -87,6 +88,7 @@ type OrderLineItemTaxLine {
   tax_rate_id: String
   code: String!
   rate: Float
+  is_compound: Boolean
   provider_id: String
   created_at: DateTime
   updated_at: DateTime

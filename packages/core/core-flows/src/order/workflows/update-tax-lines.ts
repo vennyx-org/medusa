@@ -37,6 +37,7 @@ const completeOrderFields = [
   "items.tax_lines.description",
   "items.tax_lines.code",
   "items.tax_lines.rate",
+  "items.tax_lines.is_compound",
   "items.tax_lines.provider_id",
   "shipping_methods.id",
   "shipping_methods.is_tax_inclusive",
@@ -46,6 +47,7 @@ const completeOrderFields = [
   "shipping_methods.tax_lines.description",
   "shipping_methods.tax_lines.code",
   "shipping_methods.tax_lines.rate",
+  "shipping_methods.tax_lines.is_compound",
   "shipping_methods.tax_lines.provider_id",
   "customer.id",
   "customer.email",
@@ -70,6 +72,7 @@ const orderFields = [
   "shipping_methods.tax_lines.description",
   "shipping_methods.tax_lines.code",
   "shipping_methods.tax_lines.rate",
+  "shipping_methods.tax_lines.is_compound",
   "shipping_methods.tax_lines.provider_id",
   "shipping_methods.shipping_option_id",
   "shipping_methods.amount",
@@ -96,6 +99,7 @@ const shippingMethodFields = [
   "tax_lines.code",
   "tax_lines.rate",
   "tax_lines.provider_id",
+  "tax_lines.is_compound",
 ]
 
 const lineItemFields = [
@@ -122,6 +126,7 @@ const lineItemFields = [
   "tax_lines.code",
   "tax_lines.rate",
   "tax_lines.provider_id",
+  "tax_lines.is_compound",
 ]
 /**
  * The data to update the order's tax lines.

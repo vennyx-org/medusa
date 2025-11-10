@@ -45,8 +45,7 @@ export default class TaxModuleService
     TaxRateRule: { dto: TaxTypes.TaxRateRuleDTO }
     TaxProvider: { dto: TaxTypes.TaxProviderDTO }
   }>(generateForModels)
-  implements ITaxModuleService
-{
+  implements ITaxModuleService {
   protected readonly container_: InjectedDependencies
   protected baseRepository_: DAL.RepositoryService
   protected taxRateService_: ModulesSdkTypes.IMedusaInternalService<
@@ -647,20 +646,27 @@ export default class TaxModuleService
 
     const ratesToReturn = [rate]
 
-    // If the rate can be combined we need to find the rate's
-    // parent region and add that rate too. If not we can return now.
-    if (!(rate.is_combinable && rate.tax_region.parent_id)) {
-      return ratesToReturn
-    }
+    // Modified to support combinable rates without parent regions
+    if (rate.is_combinable) {
+      // If there's a parent region, add its rate (original behavior)
+      if (rate.tax_region.parent_id) {
+        const parentRate = prioritizedRates.find(
+          (r) => r.tax_region.id === rate.tax_region.parent_id
+        )
+        if (parentRate) {
+          ratesToReturn.push(parentRate)
+        }
+      }
 
-    // First parent region rate in prioritized rates
-    // will be the most granular rate.
-    const parentRate = prioritizedRates.find(
-      (r) => r.tax_region.id === rate.tax_region.parent_id
-    )
+      // Include any other applicable rates from the same region that have is_combinable=true
+      // This allows multiple tax rates to apply in a single region without parent-child relationship
+      const otherCombinableRates = prioritizedRates.filter(r =>
+        r.id !== rate.id &&
+        r.is_combinable &&
+        r.tax_region.id === rate.tax_region.id
+      )
 
-    if (parentRate) {
-      ratesToReturn.push(parentRate)
+      ratesToReturn.push(...otherCombinableRates)
     }
 
     return ratesToReturn
@@ -683,21 +689,21 @@ export default class TaxModuleService
     const isShipping = "shipping_option_id" in item
     let ruleQuery = isShipping
       ? [
-          {
-            reference: "shipping_option",
-            reference_id: item.shipping_option_id,
-          },
-        ]
+        {
+          reference: "shipping_option",
+          reference_id: item.shipping_option_id,
+        },
+      ]
       : [
-          {
-            reference: "product",
-            reference_id: item.product_id,
-          },
-          {
-            reference: "product_type",
-            reference_id: item.product_type_id,
-          },
-        ]
+        {
+          reference: "product",
+          reference_id: item.product_id,
+        },
+        {
+          reference: "product_type",
+          reference_id: item.product_type_id,
+        },
+      ]
 
     return {
       $and: [

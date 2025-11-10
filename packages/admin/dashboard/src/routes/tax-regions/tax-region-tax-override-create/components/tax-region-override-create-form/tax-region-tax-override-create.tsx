@@ -48,6 +48,7 @@ const TaxRegionCreateTaxOverrideSchema = z.object({
     })
     .optional(),
   is_combinable: z.boolean().optional(),
+  is_compound: z.boolean().optional(),
   enabled_rules: z.object({
     product: z.boolean(),
     product_type: z.boolean(),
@@ -84,6 +85,7 @@ export const TaxRegionCreateTaxOverrideForm = ({
       name: "",
       code: "",
       is_combinable: false,
+      is_compound: false,
       rate: {
         value: "",
       },
@@ -160,6 +162,7 @@ export const TaxRegionCreateTaxOverrideForm = ({
         rate: values.rate?.float,
         code: values.code,
         is_combinable: values.is_combinable,
+        is_compound: values.is_compound,
         rules: rules,
         is_default: false,
       },
@@ -455,6 +458,19 @@ export const TaxRegionCreateTaxOverrideForm = ({
                 name="is_combinable"
                 label={t("taxRegions.fields.isCombinable.label")}
                 description={t("taxRegions.fields.isCombinable.hint")}
+                onCheckedChange={(value) => {
+                  if (!value) {
+                    form.setValue("is_compound", false, {
+                      shouldDirty: true,
+                    })
+                  }
+                }}
+              />
+              <SwitchBox
+                control={form.control}
+                name="is_compound"
+                label={t("taxRegions.fields.isCompound.label")}
+                description={t("taxRegions.fields.isCompound.hint")}
               />
               <div className="flex flex-col gap-y-3">
                 <div className="flex items-center justify-between gap-x-4">
