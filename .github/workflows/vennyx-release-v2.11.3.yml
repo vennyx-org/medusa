@@ -1,0 +1,167 @@
+name: Vennyx Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: choice
+        default: "latest"
+        description: "Which tag to use for publishing"
+        required: true
+        options:
+          - latest
+          - beta
+          - alpha
+          - next
+  push:
+    branches:
+      - vennyx-2.11.3
+    paths-ignore:
+      - "docs/**"
+      - "www/**"
+      - ".github/**"
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  build-and-publish:
+    name: Build and Publish to Vennyx Organization
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@vennyx-org"
+
+      - name: Create GitHub .npmrc
+        run: |
+          cat << EOF > .npmrc
+          @vennyx-org:registry=https://npm.pkg.github.com
+          //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
+          EOF
+
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Build original packages
+        run: |
+          # Build packages with original names first
+          yarn
+          yarn build
+
+      - name: Define common timestamp
+        run: |
+          echo "COMMON_TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+
+      - name: List and prepare publishable packages
+        run: |
+          echo "Creating directory for publishable packages..."
+          mkdir -p ./publishable-packages
+
+          # Find all non-private packages and prepare them for publishing
+          find packages -name "package.json" -not -path "*/node_modules/*" -type f | while read -r pkg_file; do
+            # Skip private packages
+            if grep -q "\"private\":\s*true" "$pkg_file"; then
+              continue
+            fi
+            
+            PKG_DIR=$(dirname "$pkg_file")
+            PKG_NAME=$(jq -r '.name' "$pkg_file")
+            PKG_VERSION=$(jq -r '.version' "$pkg_file")
+            
+            if [ -z "$PKG_NAME" ] || [ "$PKG_NAME" = "null" ]; then
+              echo "Warning: Invalid package name in $pkg_file, skipping"
+              continue
+            fi
+            
+            echo "Preparing package: $PKG_NAME@$PKG_VERSION"
+            
+            # Create a clean directory for each package
+            TARGET_DIR="./publishable-packages/$(basename "$PKG_DIR")"
+            mkdir -p "$TARGET_DIR"
+            
+            # Copy the built files (lib, dist, etc.)
+            if [ -d "$PKG_DIR/lib" ]; then
+              cp -r "$PKG_DIR/lib" "$TARGET_DIR/"
+            fi
+            if [ -d "$PKG_DIR/dist" ]; then
+              cp -r "$PKG_DIR/dist" "$TARGET_DIR/"
+            fi
+            
+            # Copy essential files
+            cp "$pkg_file" "$TARGET_DIR/package.json"
+            if [ -f "$PKG_DIR/README.md" ]; then
+              cp "$PKG_DIR/README.md" "$TARGET_DIR/"
+            fi
+            if [ -f "$PKG_DIR/LICENSE" ]; then
+              cp "$PKG_DIR/LICENSE" "$TARGET_DIR/"
+            fi
+            
+            # Update package.json with vennyx-org scope
+            if [[ "$PKG_NAME" == @* ]]; then
+              # For scoped packages like @medusajs/utils -> @vennyx-org/utils
+              PACKAGE_NAME_WITHOUT_SCOPE=$(echo "$PKG_NAME" | sed 's/^@[^\/]*\///')
+              NEW_NAME="@vennyx-org/$PACKAGE_NAME_WITHOUT_SCOPE"
+            else
+              # For regular packages
+              NEW_NAME="@vennyx-org/$PKG_NAME"
+            fi
+            
+            # Update package.json
+            jq --arg name "$NEW_NAME" \
+               --arg url "https://github.com/vennyx-org/medusa.git" \
+               --arg dir "$PKG_DIR" \
+               --arg buildnum "$COMMON_TIMESTAMP" \
+               '.name = $name | .version = .version + "-" + $buildnum | .repository = {type: "git", url: $url, directory: $dir} | .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"}' \
+               "$TARGET_DIR/package.json" > "$TARGET_DIR/package.json.new" && \
+                mv "$TARGET_DIR/package.json.new" "$TARGET_DIR/package.json"
+            
+            echo "Prepared $NEW_NAME (original: $PKG_NAME) in $TARGET_DIR"
+          done
+
+          echo "Package preparation complete."
+
+      - name: Publish prepared packages
+        run: |
+          echo "Publishing prepared packages..."
+
+          export SUCCESS_COUNT=0
+          export FAIL_COUNT=0
+
+          find ./publishable-packages -type d -maxdepth 1 -mindepth 1 | while read -r pkg_dir; do
+            if [ -f "$pkg_dir/package.json" ]; then
+              PKG_NAME=$(jq -r '.name' "$pkg_dir/package.json")
+              PKG_VERSION=$(jq -r '.version' "$pkg_dir/package.json")
+              
+              echo "Publishing $PKG_NAME@$PKG_VERSION from $pkg_dir"
+              
+              pushd "$pkg_dir" > /dev/null
+              
+              if npm publish --access restricted --tag ${{ github.event.inputs.version || 'latest' }}; then
+                echo "✅ Successfully published $PKG_NAME@$PKG_VERSION"
+                export SUCCESS_COUNT=$((SUCCESS_COUNT+1))
+              else
+                echo "❌ Failed to publish $PKG_NAME"
+                export FAIL_COUNT=$((FAIL_COUNT+1))
+              fi
+              
+              popd > /dev/null
+            fi
+          done
+
+          echo "Publishing complete: $SUCCESS_COUNT packages published successfully, $FAIL_COUNT failed"
+
+          if [ "$FAIL_COUNT" -gt 0 ]; then
+            echo "::warning::$FAIL_COUNT packages failed to publish"
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
