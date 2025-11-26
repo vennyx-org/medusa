@@ -88,12 +88,15 @@ jobs:
             TARGET_DIR="./publishable-packages/$(basename "$PKG_DIR")"
             mkdir -p "$TARGET_DIR"
             
-            # Copy the built files (lib, dist, etc.)
+            # Copy the built files (lib, dist, .medusa, etc.)
             if [ -d "$PKG_DIR/lib" ]; then
               cp -r "$PKG_DIR/lib" "$TARGET_DIR/"
             fi
             if [ -d "$PKG_DIR/dist" ]; then
               cp -r "$PKG_DIR/dist" "$TARGET_DIR/"
+            fi
+            if [ -d "$PKG_DIR/.medusa" ]; then
+              cp -r "$PKG_DIR/.medusa" "$TARGET_DIR/"
             fi
             
             # Copy essential files
