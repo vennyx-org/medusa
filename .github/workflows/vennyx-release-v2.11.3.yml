@@ -116,12 +116,16 @@ jobs:
               NEW_NAME="@vennyx-org/$PKG_NAME"
             fi
             
-            # Update package.json
+            # Update package.json (remove prepare script since build is already done)
             jq --arg name "$NEW_NAME" \
                --arg url "https://github.com/vennyx-org/medusa.git" \
                --arg dir "$PKG_DIR" \
                --arg buildnum "$COMMON_TIMESTAMP" \
-               '.name = $name | .version = .version + "-" + $buildnum | .repository = {type: "git", url: $url, directory: $dir} | .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"}' \
+               '.name = $name |
+                .version = .version + "-" + $buildnum |
+                .repository = {type: "git", url: $url, directory: $dir} |
+                .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"} |
+                del(.scripts.prepare)' \
                "$TARGET_DIR/package.json" > "$TARGET_DIR/package.json.new" && \
                 mv "$TARGET_DIR/package.json.new" "$TARGET_DIR/package.json"
             
@@ -134,34 +138,128 @@ jobs:
         run: |
           echo "Publishing prepared packages..."
 
-          export SUCCESS_COUNT=0
-          export FAIL_COUNT=0
+          SUCCESS_COUNT=0
+          FAIL_COUNT=0
+          SUCCESS_PACKAGES=()
+          FAILED_PACKAGES=()
 
-          find ./publishable-packages -type d -maxdepth 1 -mindepth 1 | while read -r pkg_dir; do
+          while IFS= read -r pkg_dir; do
             if [ -f "$pkg_dir/package.json" ]; then
               PKG_NAME=$(jq -r '.name' "$pkg_dir/package.json")
               PKG_VERSION=$(jq -r '.version' "$pkg_dir/package.json")
-              
+
               echo "Publishing $PKG_NAME@$PKG_VERSION from $pkg_dir"
-              
+
               pushd "$pkg_dir" > /dev/null
-              
-              if npm publish --access restricted --tag ${{ github.event.inputs.version || 'latest' }}; then
+
+              if npm publish --ignore-scripts --access restricted --tag ${{ github.event.inputs.version || 'latest' }}; then
                 echo "✅ Successfully published $PKG_NAME@$PKG_VERSION"
-                export SUCCESS_COUNT=$((SUCCESS_COUNT+1))
+                ((SUCCESS_COUNT++))
+                SUCCESS_PACKAGES+=("$PKG_NAME@$PKG_VERSION")
               else
                 echo "❌ Failed to publish $PKG_NAME"
-                export FAIL_COUNT=$((FAIL_COUNT+1))
+                ((FAIL_COUNT++))
+                FAILED_PACKAGES+=("$PKG_NAME@$PKG_VERSION")
               fi
-              
+
               popd > /dev/null
             fi
-          done
+          done < <(find ./publishable-packages -type d -maxdepth 1 -mindepth 1)
 
-          echo "Publishing complete: $SUCCESS_COUNT packages published successfully, $FAIL_COUNT failed"
+          # Save results to files for next step
+          mkdir -p .github-outputs
+          printf "%s\n" "${SUCCESS_PACKAGES[@]}" > .github-outputs/success-packages.txt
+          printf "%s\n" "${FAILED_PACKAGES[@]}" > .github-outputs/failed-packages.txt
+          echo "$SUCCESS_COUNT" > .github-outputs/success-count.txt
+          echo "$FAIL_COUNT" > .github-outputs/fail-count.txt
+
+          echo ""
+          echo "========================================="
+          echo "Publishing Summary:"
+          echo "  ✅ Success: $SUCCESS_COUNT packages"
+          echo "  ❌ Failed: $FAIL_COUNT packages"
+          echo "========================================="
 
           if [ "$FAIL_COUNT" -gt 0 ]; then
-            echo "::warning::$FAIL_COUNT packages failed to publish"
+            echo ""
+            echo "Failed packages:"
+            for pkg in "${FAILED_PACKAGES[@]}"; do
+              echo "  - $pkg"
+            done
+            echo "::error::$FAIL_COUNT packages failed to publish"
+            exit 1
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📊 Publish Summary Report
+        if: always()
+        run: |
+          echo "========================================"
+          echo "📦 VENNYX PACKAGE PUBLISHING REPORT"
+          echo "========================================"
+          echo ""
+
+          SUCCESS_COUNT=$(cat .github-outputs/success-count.txt 2>/dev/null || echo "0")
+          FAIL_COUNT=$(cat .github-outputs/fail-count.txt 2>/dev/null || echo "0")
+          TOTAL=$((SUCCESS_COUNT + FAIL_COUNT))
+
+          echo "📈 Statistics:"
+          echo "  Total Packages: $TOTAL"
+          echo "  ✅ Successful: $SUCCESS_COUNT"
+          echo "  ❌ Failed: $FAIL_COUNT"
+
+          if [ "$SUCCESS_COUNT" -gt 0 ]; then
+            SUCCESS_RATE=$(awk "BEGIN {printf \"%.1f\", ($SUCCESS_COUNT/$TOTAL)*100}")
+            echo "  📊 Success Rate: ${SUCCESS_RATE}%"
+          fi
+
+          echo ""
+
+          if [ "$SUCCESS_COUNT" -gt 0 ]; then
+            echo "✅ Successfully Published Packages ($SUCCESS_COUNT):"
+            echo "────────────────────────────────────────"
+            cat .github-outputs/success-packages.txt | while read pkg; do
+              echo "  ✓ $pkg"
+            done
+            echo ""
+          fi
+
+          if [ "$FAIL_COUNT" -gt 0 ]; then
+            echo "❌ Failed Packages ($FAIL_COUNT):"
+            echo "────────────────────────────────────────"
+            cat .github-outputs/failed-packages.txt | while read pkg; do
+              echo "  ✗ $pkg"
+            done
+            echo ""
+          fi
+
+          echo "========================================"
+
+          # Create job summary for GitHub UI
+          {
+            echo "## 📦 Vennyx Package Publishing Report"
+            echo ""
+            echo "### 📈 Statistics"
+            echo "| Metric | Count |"
+            echo "|--------|-------|"
+            echo "| Total Packages | $TOTAL |"
+            echo "| ✅ Successful | $SUCCESS_COUNT |"
+            echo "| ❌ Failed | $FAIL_COUNT |"
+
+            if [ "$SUCCESS_COUNT" -gt 0 ]; then
+              echo ""
+              echo "### ✅ Successfully Published Packages"
+              cat .github-outputs/success-packages.txt | while read pkg; do
+                echo "- \`$pkg\`"
+              done
+            fi
+
+            if [ "$FAIL_COUNT" -gt 0 ]; then
+              echo ""
+              echo "### ❌ Failed Packages"
+              cat .github-outputs/failed-packages.txt | while read pkg; do
+                echo "- \`$pkg\`"
+              done
+            fi
+          } >> $GITHUB_STEP_SUMMARY
