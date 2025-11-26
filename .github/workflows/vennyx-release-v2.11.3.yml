@@ -135,6 +135,7 @@ jobs:
 
       - name: Publish prepared packages
         run: |
+          set +e  # Don't exit on error - we want to try all packages
           echo "Publishing prepared packages..."
 
           SUCCESS_COUNT=0
