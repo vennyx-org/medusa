@@ -143,26 +143,41 @@ jobs:
           FAILED_PACKAGES=()
 
           while IFS= read -r pkg_dir; do
-            if [ -f "$pkg_dir/package.json" ]; then
-              PKG_NAME=$(jq -r '.name' "$pkg_dir/package.json")
-              PKG_VERSION=$(jq -r '.version' "$pkg_dir/package.json")
+            echo "→ Processing directory: $pkg_dir"
 
-              echo "Publishing $PKG_NAME@$PKG_VERSION from $pkg_dir"
-
-              pushd "$pkg_dir" > /dev/null
-
-              if npm publish --ignore-scripts --access restricted --tag ${{ github.event.inputs.version || 'latest' }}; then
-                echo "✅ Successfully published $PKG_NAME@$PKG_VERSION"
-                ((SUCCESS_COUNT++))
-                SUCCESS_PACKAGES+=("$PKG_NAME@$PKG_VERSION")
-              else
-                echo "❌ Failed to publish $PKG_NAME"
-                ((FAIL_COUNT++))
-                FAILED_PACKAGES+=("$PKG_NAME@$PKG_VERSION")
-              fi
-
-              popd > /dev/null
+            if [ ! -f "$pkg_dir/package.json" ]; then
+              echo "⚠️  No package.json found in $pkg_dir, skipping..."
+              continue
             fi
+
+            PKG_NAME=$(jq -r '.name' "$pkg_dir/package.json" || echo "ERROR")
+            PKG_VERSION=$(jq -r '.version' "$pkg_dir/package.json" || echo "ERROR")
+
+            if [ "$PKG_NAME" = "ERROR" ] || [ "$PKG_VERSION" = "ERROR" ]; then
+              echo "❌ Failed to read package.json in $pkg_dir"
+              continue
+            fi
+
+            echo "📦 Publishing $PKG_NAME@$PKG_VERSION from $pkg_dir"
+
+            if ! pushd "$pkg_dir" > /dev/null 2>&1; then
+              echo "❌ Failed to enter directory $pkg_dir"
+              ((FAIL_COUNT++))
+              FAILED_PACKAGES+=("$PKG_NAME@$PKG_VERSION (pushd failed)")
+              continue
+            fi
+
+            if npm publish --ignore-scripts --access restricted --tag ${{ github.event.inputs.version || 'latest' }}; then
+              echo "✅ Successfully published $PKG_NAME@$PKG_VERSION"
+              ((SUCCESS_COUNT++))
+              SUCCESS_PACKAGES+=("$PKG_NAME@$PKG_VERSION")
+            else
+              echo "❌ Failed to publish $PKG_NAME"
+              ((FAIL_COUNT++))
+              FAILED_PACKAGES+=("$PKG_NAME@$PKG_VERSION")
+            fi
+
+            popd > /dev/null 2>&1 || true
           done < <(find ./publishable-packages -type d -maxdepth 1 -mindepth 1)
 
           # Save results to files for next step
