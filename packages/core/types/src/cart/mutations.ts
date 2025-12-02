@@ -383,6 +383,11 @@ export interface CreateTaxLineDTO {
   rate: number
 
   /**
+   * Whether the tax line is compound.
+   */
+  is_compound?: boolean
+
+  /**
    * The associated provider's ID.
    */
   provider_id?: string
@@ -420,6 +425,11 @@ export interface UpdateTaxLineDTO {
    * The rate of the tax line.
    */
   rate?: number
+
+  /**
+   * Whether the tax line is compound.
+   */
+  is_compound?: boolean
 
   /**
    * The associated provider's ID.

@@ -100,6 +100,12 @@ export interface BaseOrderTaxLine {
    * The rate charged.
    */
   rate: number
+
+  /**
+   * Whether the tax line is compound.
+   */
+  is_compound?: boolean
+
   /**
    * The ID of the tax provider used.
    */

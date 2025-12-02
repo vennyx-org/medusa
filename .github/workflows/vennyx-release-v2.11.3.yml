@@ -1,0 +1,263 @@
+name: Vennyx Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: choice
+        default: "latest"
+        description: "Which tag to use for publishing"
+        required: true
+        options:
+          - latest
+          - beta
+          - alpha
+          - next
+  push:
+    branches:
+      - vennyx-2.11.3
+    paths-ignore:
+      - "docs/**"
+      - "www/**"
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  build-and-publish:
+    name: Build and Publish to Vennyx Organization
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@vennyx-org"
+
+      - name: Create GitHub .npmrc
+        run: |
+          cat << EOF > .npmrc
+          @vennyx-org:registry=https://npm.pkg.github.com
+          //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
+          EOF
+
+      - name: Build original packages
+        run: |
+          yarn
+          yarn build
+
+      - name: Define common timestamp
+        run: |
+          echo "COMMON_TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Publish packages
+        run: |
+          set +e
+
+          # Clean up previous run artifacts
+          rm -f /tmp/success-packages.txt /tmp/failed-packages.txt
+          touch /tmp/success-packages.txt /tmp/failed-packages.txt
+
+          # Store original directory
+          ORIGINAL_DIR=$(pwd)
+
+          # Find all non-private packages and process them
+          while IFS= read -r pkg_file; do
+            # Skip private packages (use -E for extended regex)
+            if grep -qE '"private":\s*true' "$pkg_file"; then
+              continue
+            fi
+
+            PKG_DIR=$(dirname "$pkg_file")
+            # Single jq call to get both name and version
+            read -r PKG_NAME PKG_VERSION < <(jq -r '[.name // "", .version // ""] | @tsv' "$pkg_file")
+
+            if [ -z "$PKG_NAME" ] || [ "$PKG_NAME" = "null" ]; then
+              echo "Warning: Invalid package name in $pkg_file, skipping"
+              continue
+            fi
+
+            # Determine new package name
+            if [[ "$PKG_NAME" == @* ]]; then
+              PACKAGE_NAME_WITHOUT_SCOPE=$(echo "$PKG_NAME" | sed 's/^@[^\/]*\///')
+              NEW_NAME="@vennyx-org/$PACKAGE_NAME_WITHOUT_SCOPE"
+            else
+              NEW_NAME="@vennyx-org/$PKG_NAME"
+            fi
+
+            NEW_VERSION="${PKG_VERSION}-${COMMON_TIMESTAMP}"
+
+            echo "========================================"
+            echo "Publishing $NEW_NAME@$NEW_VERSION"
+            echo "  Source: $PKG_NAME"
+            echo "  Directory: $PKG_DIR"
+            echo "========================================"
+
+            # Update package.json in place
+            # Updates ALL @medusajs/* dependencies to exact versioned format with timestamp
+            # This ensures semver compatibility (prerelease versions need exact match)
+            if ! jq --arg name "$NEW_NAME" \
+               --arg url "https://github.com/vennyx-org/medusa.git" \
+               --arg dir "$PKG_DIR" \
+               --arg buildnum "$COMMON_TIMESTAMP" \
+               --arg base_version "2.11.3" \
+               '
+               # Function to update ALL @medusajs/* deps to exact version with timestamp
+               def update_medusa_deps:
+                 if . then
+                   with_entries(
+                     if (.key | startswith("@medusajs/")) then
+                       .value = $base_version + "-" + $buildnum
+                     else
+                       .
+                     end
+                   )
+                 else
+                   .
+                 end;
+
+               .name = $name |
+               .version = .version + "-" + $buildnum |
+               .repository = {type: "git", url: $url, directory: $dir} |
+               .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"} |
+               del(.scripts.prepare, .scripts.postinstall) |
+               .dependencies |= update_medusa_deps |
+               .devDependencies |= update_medusa_deps |
+               .peerDependencies |= update_medusa_deps
+               ' \
+               "$pkg_file" > "$pkg_file.tmp"; then
+              echo "Failed to update package.json for $PKG_NAME"
+              echo "$NEW_NAME@$NEW_VERSION (jq failed)" >> /tmp/failed-packages.txt
+              continue
+            fi
+            mv "$pkg_file.tmp" "$pkg_file"
+
+            # Publish from original directory (npm will use files[] automatically)
+            cd "$PKG_DIR" || {
+              echo "Failed to enter directory $PKG_DIR"
+              echo "$NEW_NAME@$NEW_VERSION (cd failed)" >> /tmp/failed-packages.txt
+              continue
+            }
+
+            if npm publish --ignore-scripts --access restricted --tag ${{ github.event.inputs.version || 'latest' }}; then
+              echo "Successfully published $NEW_NAME@$NEW_VERSION"
+              echo "$NEW_NAME@$NEW_VERSION" >> /tmp/success-packages.txt
+            else
+              echo "Failed to publish $NEW_NAME"
+              echo "$NEW_NAME@$NEW_VERSION" >> /tmp/failed-packages.txt
+            fi
+
+            # Return to original directory
+            cd "$ORIGINAL_DIR" || exit 1
+
+          done < <(find packages -name "package.json" -not -path "*/node_modules/*" -type f)
+
+          # Count results (trim whitespace)
+          SUCCESS_COUNT=$(wc -l < /tmp/success-packages.txt | tr -d '[:space:]')
+          FAIL_COUNT=$(wc -l < /tmp/failed-packages.txt | tr -d '[:space:]')
+
+          # Save for summary step
+          mkdir -p .github-outputs
+          cp /tmp/success-packages.txt .github-outputs/
+          cp /tmp/failed-packages.txt .github-outputs/
+          echo "$SUCCESS_COUNT" > .github-outputs/success-count.txt
+          echo "$FAIL_COUNT" > .github-outputs/fail-count.txt
+
+          echo ""
+          echo "========================================="
+          echo "Publishing Summary:"
+          echo "  Success: $SUCCESS_COUNT packages"
+          echo "  Failed: $FAIL_COUNT packages"
+          echo "========================================="
+
+          if [ "$FAIL_COUNT" -gt 0 ]; then
+            echo ""
+            echo "Failed packages:"
+            cat /tmp/failed-packages.txt
+            echo "::error::$FAIL_COUNT packages failed to publish"
+            exit 1
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Summary Report
+        if: always()
+        run: |
+          echo "========================================"
+          echo "VENNYX PACKAGE PUBLISHING REPORT"
+          echo "========================================"
+          echo ""
+
+          SUCCESS_COUNT=$(cat .github-outputs/success-count.txt 2>/dev/null | tr -d '[:space:]' || echo "0")
+          FAIL_COUNT=$(cat .github-outputs/fail-count.txt 2>/dev/null | tr -d '[:space:]' || echo "0")
+
+          # Handle empty values
+          SUCCESS_COUNT=${SUCCESS_COUNT:-0}
+          FAIL_COUNT=${FAIL_COUNT:-0}
+
+          TOTAL=$((SUCCESS_COUNT + FAIL_COUNT))
+
+          echo "Statistics:"
+          echo "  Total Packages: $TOTAL"
+          echo "  Successful: $SUCCESS_COUNT"
+          echo "  Failed: $FAIL_COUNT"
+
+          if [ "$TOTAL" -gt 0 ] && [ "$SUCCESS_COUNT" -gt 0 ]; then
+            SUCCESS_RATE=$(awk "BEGIN {printf \"%.1f\", ($SUCCESS_COUNT/$TOTAL)*100}")
+            echo "  Success Rate: ${SUCCESS_RATE}%"
+          fi
+
+          echo ""
+
+          if [ -s .github-outputs/success-packages.txt ]; then
+            echo "Successfully Published Packages:"
+            echo "----------------------------------------"
+            while IFS= read -r pkg; do
+              echo "  + $pkg"
+            done < .github-outputs/success-packages.txt
+            echo ""
+          fi
+
+          if [ -s .github-outputs/failed-packages.txt ]; then
+            echo "Failed Packages:"
+            echo "----------------------------------------"
+            while IFS= read -r pkg; do
+              echo "  - $pkg"
+            done < .github-outputs/failed-packages.txt
+            echo ""
+          fi
+
+          echo "========================================"
+
+          # Create job summary for GitHub UI
+          {
+            echo "## Vennyx Package Publishing Report"
+            echo ""
+            echo "### Statistics"
+            echo "| Metric | Count |"
+            echo "|--------|-------|"
+            echo "| Total Packages | $TOTAL |"
+            echo "| Successful | $SUCCESS_COUNT |"
+            echo "| Failed | $FAIL_COUNT |"
+
+            if [ -s .github-outputs/success-packages.txt ]; then
+              echo ""
+              echo "### Successfully Published Packages"
+              while IFS= read -r pkg; do
+                echo "- \`$pkg\`"
+              done < .github-outputs/success-packages.txt
+            fi
+
+            if [ -s .github-outputs/failed-packages.txt ]; then
+              echo ""
+              echo "### Failed Packages"
+              while IFS= read -r pkg; do
+                echo "- \`$pkg\`"
+              done < .github-outputs/failed-packages.txt
+            fi
+          } >> $GITHUB_STEP_SUMMARY

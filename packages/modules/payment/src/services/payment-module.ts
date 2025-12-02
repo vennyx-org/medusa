@@ -491,7 +491,7 @@ export default class PaymentModuleService
       data: session.data,
     })
 
-    await this.paymentSessionService_.delete(id, sharedContext)
+    await this.paymentSessionService_.softDelete(id, sharedContext)
   }
 
   @InjectManager()
