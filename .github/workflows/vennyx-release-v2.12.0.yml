@@ -68,11 +68,12 @@ jobs:
           echo "Updating all package.json files to @vennyx-org scope..."
 
           # First, collect all package info: names, versions, and private status
+          # Scan ALL package.json files (not just packages/)
           echo "Building package version map..."
           PRIVATE_PACKAGES=""
           VERSION_MAP="{}"
 
-          for pkg_file in $(find packages -name "package.json" -not -path "*/node_modules/*" -type f); do
+          for pkg_file in $(find . -name "package.json" -not -path "*/node_modules/*" -not -path "./.yarn/*" -type f); do
             PKG_NAME=$(jq -r '.name // ""' "$pkg_file")
             PKG_VERSION=$(jq -r '.version // ""' "$pkg_file")
             IS_PRIVATE=$(jq -r '.private // false' "$pkg_file")
@@ -93,9 +94,10 @@ jobs:
           echo "Private packages (will keep original names): $PRIVATE_PACKAGES"
           echo "Version map built with $(echo "$VERSION_MAP" | jq 'length') packages"
 
-          # Find and update all non-private packages
+          # STEP 1: Update non-private packages in packages/ (name + dependencies)
+          echo "Step 1: Updating non-private packages (name + dependencies)..."
           for pkg_file in $(find packages -name "package.json" -not -path "*/node_modules/*" -type f); do
-            # Skip private packages
+            # Skip private packages - they will be handled in step 2
             if grep -qE '"private":\s*true' "$pkg_file"; then
               continue
             fi
@@ -118,9 +120,7 @@ jobs:
 
             echo "  Updating $PKG_NAME -> $NEW_NAME"
 
-            # Update package.json
-            # NOTE: Only rename dependencies that are NOT private packages
-            # Use actual package versions from version map, not hardcoded base version
+            # Update package.json (name + dependencies)
             jq --arg name "$NEW_NAME" \
                --arg url "https://github.com/vennyx-org/medusa.git" \
                --arg dir "$PKG_DIR" \
@@ -128,11 +128,9 @@ jobs:
                --arg private_pkgs "$PRIVATE_PACKAGES" \
                --argjson version_map "$VERSION_MAP" \
                '
-               # Function to check if a package name is in the private list
                def is_private($pkg):
                  ($private_pkgs | split(" ")) | any(. == $pkg);
 
-               # Function to get actual version for a package from version map
                def get_version($pkg):
                  $version_map[$pkg] // "2.12.0";
 
@@ -155,6 +153,62 @@ jobs:
                .version = .version + "-" + $buildnum |
                .repository = {type: "git", url: $url, directory: $dir} |
                .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"} |
+               .dependencies |= update_medusa_deps |
+               .devDependencies |= update_medusa_deps |
+               .peerDependencies |= update_medusa_deps
+               ' \
+               "$pkg_file" > "$pkg_file.tmp"
+
+            mv "$pkg_file.tmp" "$pkg_file"
+          done
+
+          # STEP 2: Update ALL private packages and other workspaces (dependencies ONLY, keep name)
+          # This includes integration-tests/, www/, and private packages in packages/
+          echo "Step 2: Updating private packages and other workspaces (dependencies only)..."
+          for pkg_file in $(find . -name "package.json" -not -path "*/node_modules/*" -not -path "./.yarn/*" -type f); do
+            # Only process private packages or packages outside packages/
+            IS_PRIVATE=$(jq -r '.private // false' "$pkg_file")
+            IS_IN_PACKAGES=$(echo "$pkg_file" | grep -q "^./packages/" && echo "true" || echo "false")
+
+            # Skip non-private packages in packages/ (already handled in step 1)
+            if [ "$IS_IN_PACKAGES" = "true" ] && [ "$IS_PRIVATE" != "true" ]; then
+              continue
+            fi
+
+            PKG_NAME=$(jq -r '.name // ""' "$pkg_file")
+
+            if [ -z "$PKG_NAME" ] || [ "$PKG_NAME" = "null" ]; then
+              continue
+            fi
+
+            echo "  Updating dependencies in $pkg_file (keeping name: $PKG_NAME)"
+
+            # Update ONLY dependencies (keep name, version, etc unchanged)
+            jq --arg buildnum "$COMMON_TIMESTAMP" \
+               --arg private_pkgs "$PRIVATE_PACKAGES" \
+               --argjson version_map "$VERSION_MAP" \
+               '
+               def is_private($pkg):
+                 ($private_pkgs | split(" ")) | any(. == $pkg);
+
+               def get_version($pkg):
+                 $version_map[$pkg] // "2.12.0";
+
+               def update_medusa_deps:
+                 if . then
+                   with_entries(
+                     if (.key | startswith("@medusajs/")) and (is_private(.key) | not) then
+                       .key as $orig_key |
+                       .key = "@vennyx-org/" + (.key | sub("^@medusajs/"; "")) |
+                       .value = get_version($orig_key) + "-" + $buildnum
+                     else
+                       .
+                     end
+                   )
+                 else
+                   .
+                 end;
+
                .dependencies |= update_medusa_deps |
                .devDependencies |= update_medusa_deps |
                .peerDependencies |= update_medusa_deps
