@@ -56,59 +56,59 @@ jobs:
         run: |
           echo "COMMON_TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
 
-      - name: Publish packages
+      - name: Publish packages (8 parallel jobs)
         run: |
           set +e
 
+          # Export environment variables for parallel processes
+          export COMMON_TIMESTAMP
+          export PUBLISH_TAG="${{ github.event.inputs.version || 'latest' }}"
+          export BASE_VERSION="2.12.0"
+          export ORIGINAL_DIR=$(pwd)
+
           # Clean up previous run artifacts
-          rm -f /tmp/success-packages.txt /tmp/failed-packages.txt
-          touch /tmp/success-packages.txt /tmp/failed-packages.txt
+          rm -rf /tmp/publish-results
+          mkdir -p /tmp/publish-results
 
-          # Store original directory
-          ORIGINAL_DIR=$(pwd)
+          # Define publish function
+          publish_package() {
+            local pkg_file="$1"
+            local pid="$$"
 
-          # Find all non-private packages and process them
-          while IFS= read -r pkg_file; do
-            # Skip private packages (use -E for extended regex)
+            # Skip private packages
             if grep -qE '"private":\s*true' "$pkg_file"; then
-              continue
+              return 0
             fi
 
-            PKG_DIR=$(dirname "$pkg_file")
-            # Single jq call to get both name and version
-            read -r PKG_NAME PKG_VERSION < <(jq -r '[.name // "", .version // ""] | @tsv' "$pkg_file")
+            local PKG_DIR=$(dirname "$pkg_file")
+            local PKG_INFO=$(jq -r '[.name // "", .version // ""] | @tsv' "$pkg_file")
+            local PKG_NAME=$(echo "$PKG_INFO" | cut -f1)
+            local PKG_VERSION=$(echo "$PKG_INFO" | cut -f2)
 
             if [ -z "$PKG_NAME" ] || [ "$PKG_NAME" = "null" ]; then
-              echo "Warning: Invalid package name in $pkg_file, skipping"
-              continue
+              return 0
             fi
 
             # Determine new package name
+            local NEW_NAME
             if [[ "$PKG_NAME" == @* ]]; then
-              PACKAGE_NAME_WITHOUT_SCOPE=$(echo "$PKG_NAME" | sed 's/^@[^\/]*\///')
+              local PACKAGE_NAME_WITHOUT_SCOPE=$(echo "$PKG_NAME" | sed 's/^@[^\/]*\///')
               NEW_NAME="@vennyx-org/$PACKAGE_NAME_WITHOUT_SCOPE"
             else
               NEW_NAME="@vennyx-org/$PKG_NAME"
             fi
 
-            NEW_VERSION="${PKG_VERSION}-${COMMON_TIMESTAMP}"
+            local NEW_VERSION="${PKG_VERSION}-${COMMON_TIMESTAMP}"
 
-            echo "========================================"
-            echo "Publishing $NEW_NAME@$NEW_VERSION"
-            echo "  Source: $PKG_NAME"
-            echo "  Directory: $PKG_DIR"
-            echo "========================================"
+            echo "[Worker $pid] Publishing $NEW_NAME@$NEW_VERSION from $PKG_DIR"
 
             # Update package.json in place
-            # Updates ALL @medusajs/* dependencies to exact versioned format with timestamp
-            # This ensures semver compatibility (prerelease versions need exact match)
             if ! jq --arg name "$NEW_NAME" \
                --arg url "https://github.com/vennyx-org/medusa.git" \
                --arg dir "$PKG_DIR" \
                --arg buildnum "$COMMON_TIMESTAMP" \
-               --arg base_version "2.12.0" \
+               --arg base_version "$BASE_VERSION" \
                '
-               # Function to update ALL @medusajs/* deps to exact version with timestamp
                def update_medusa_deps:
                  if . then
                    with_entries(
@@ -131,36 +131,53 @@ jobs:
                .devDependencies |= update_medusa_deps |
                .peerDependencies |= update_medusa_deps
                ' \
-               "$pkg_file" > "$pkg_file.tmp"; then
-              echo "Failed to update package.json for $PKG_NAME"
-              echo "$NEW_NAME@$NEW_VERSION (jq failed)" >> /tmp/failed-packages.txt
-              continue
+               "$pkg_file" > "$pkg_file.tmp" 2>/dev/null; then
+              echo "[Worker $pid] Failed to update package.json for $PKG_NAME"
+              echo "$NEW_NAME@$NEW_VERSION (jq failed)" >> "/tmp/publish-results/failed-$pid-$(date +%s%N)"
+              return 1
             fi
             mv "$pkg_file.tmp" "$pkg_file"
 
-            # Publish from original directory (npm will use files[] automatically)
-            cd "$PKG_DIR" || {
-              echo "Failed to enter directory $PKG_DIR"
-              echo "$NEW_NAME@$NEW_VERSION (cd failed)" >> /tmp/failed-packages.txt
-              continue
+            # Publish from package directory
+            cd "$ORIGINAL_DIR/$PKG_DIR" || {
+              echo "[Worker $pid] Failed to enter directory $PKG_DIR"
+              echo "$NEW_NAME@$NEW_VERSION (cd failed)" >> "/tmp/publish-results/failed-$pid-$(date +%s%N)"
+              return 1
             }
 
-            if npm publish --ignore-scripts --access restricted --tag ${{ github.event.inputs.version || 'latest' }}; then
-              echo "Successfully published $NEW_NAME@$NEW_VERSION"
-              echo "$NEW_NAME@$NEW_VERSION" >> /tmp/success-packages.txt
+            if npm publish --ignore-scripts --access restricted --tag "$PUBLISH_TAG" 2>&1; then
+              echo "[Worker $pid] Successfully published $NEW_NAME@$NEW_VERSION"
+              echo "$NEW_NAME@$NEW_VERSION" >> "/tmp/publish-results/success-$pid-$(date +%s%N)"
             else
-              echo "Failed to publish $NEW_NAME"
-              echo "$NEW_NAME@$NEW_VERSION" >> /tmp/failed-packages.txt
+              echo "[Worker $pid] Failed to publish $NEW_NAME"
+              echo "$NEW_NAME@$NEW_VERSION" >> "/tmp/publish-results/failed-$pid-$(date +%s%N)"
             fi
 
-            # Return to original directory
-            cd "$ORIGINAL_DIR" || exit 1
+            cd "$ORIGINAL_DIR" || return 1
+          }
+          export -f publish_package
 
-          done < <(find packages -name "package.json" -not -path "*/node_modules/*" -type f)
+          echo "Starting parallel publish with 8 workers..."
+          echo "========================================="
 
-          # Count results (trim whitespace)
+          # Run publish in parallel (8 jobs)
+          find packages -name "package.json" -not -path "*/node_modules/*" -type f | \
+            xargs -P 8 -I {} bash -c 'publish_package "$@"' _ {}
+
+          echo "========================================="
+          echo "All workers completed. Collecting results..."
+
+          # Merge results from all workers
+          cat /tmp/publish-results/success-* > /tmp/success-packages.txt 2>/dev/null || touch /tmp/success-packages.txt
+          cat /tmp/publish-results/failed-* > /tmp/failed-packages.txt 2>/dev/null || touch /tmp/failed-packages.txt
+
+          # Count results
           SUCCESS_COUNT=$(wc -l < /tmp/success-packages.txt | tr -d '[:space:]')
           FAIL_COUNT=$(wc -l < /tmp/failed-packages.txt | tr -d '[:space:]')
+
+          # Handle empty counts
+          SUCCESS_COUNT=${SUCCESS_COUNT:-0}
+          FAIL_COUNT=${FAIL_COUNT:-0}
 
           # Save for summary step
           mkdir -p .github-outputs
