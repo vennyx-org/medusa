@@ -133,7 +133,6 @@ jobs:
                .version = .version + "-" + $buildnum |
                .repository = {type: "git", url: $url, directory: $dir} |
                .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"} |
-               del(.scripts.prepare, .scripts.postinstall) |
                .dependencies |= update_medusa_deps |
                .devDependencies |= update_medusa_deps |
                .peerDependencies |= update_medusa_deps
