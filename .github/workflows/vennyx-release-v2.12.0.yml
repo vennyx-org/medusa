@@ -69,6 +69,18 @@ jobs:
 
           BASE_VERSION="2.12.0"
 
+          # First, collect all private package names (these should NOT be renamed in dependencies)
+          PRIVATE_PACKAGES=""
+          for pkg_file in $(find packages -name "package.json" -not -path "*/node_modules/*" -type f); do
+            if grep -qE '"private":\s*true' "$pkg_file"; then
+              PKG_NAME=$(jq -r '.name // ""' "$pkg_file")
+              if [ -n "$PKG_NAME" ] && [ "$PKG_NAME" != "null" ]; then
+                PRIVATE_PACKAGES="$PRIVATE_PACKAGES $PKG_NAME"
+              fi
+            fi
+          done
+          echo "Private packages (will keep original names in dependencies): $PRIVATE_PACKAGES"
+
           # Find and update all non-private packages
           for pkg_file in $(find packages -name "package.json" -not -path "*/node_modules/*" -type f); do
             # Skip private packages
@@ -95,16 +107,22 @@ jobs:
             echo "  Updating $PKG_NAME -> $NEW_NAME"
 
             # Update package.json
+            # NOTE: Only rename dependencies that are NOT private packages
             jq --arg name "$NEW_NAME" \
                --arg url "https://github.com/vennyx-org/medusa.git" \
                --arg dir "$PKG_DIR" \
                --arg buildnum "$COMMON_TIMESTAMP" \
                --arg base_version "$BASE_VERSION" \
+               --arg private_pkgs "$PRIVATE_PACKAGES" \
                '
+               # Function to check if a package name is in the private list
+               def is_private($pkg):
+                 ($private_pkgs | split(" ")) | any(. == $pkg);
+
                def update_medusa_deps:
                  if . then
                    with_entries(
-                     if (.key | startswith("@medusajs/")) then
+                     if (.key | startswith("@medusajs/")) and (is_private(.key) | not) then
                        .key = "@vennyx-org/" + (.key | sub("^@medusajs/"; "")) |
                        .value = $base_version + "-" + $buildnum
                      else
