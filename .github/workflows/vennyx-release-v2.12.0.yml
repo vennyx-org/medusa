@@ -50,6 +50,13 @@ jobs:
       - name: Build original packages
         run: |
           yarn
+
+          # Build @medusajs/medusa first (required for plugin:build command)
+          # Plugin packages use 'medusa plugin:build' which needs @medusajs/medusa/dist/commands/
+          # Ignore TypeScript errors - we only need dist/commands/ for plugin CLI
+          (cd packages/medusa && yarn build) || true
+
+          # Build all packages
           yarn build
 
       - name: Define common timestamp
