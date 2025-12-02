@@ -246,7 +246,8 @@ The vennyx-release-v2.12.0.yml workflow:
 - **Workspace protocol**: integration-tests/ uses workspace:^ protocol which breaks after renaming - update ALL workspace package.json files
 
 ### Local Testing with Act
-Before pushing workflow changes, test locally with `act`:
+
+**CRITICAL RULE: Workflow changes MUST be tested with `act` before pushing. Workflows that fail in `act` should NOT be pushed to GitHub.**
 
 ```bash
 # IMPORTANT: Use full Linux image and correct architecture
@@ -266,3 +267,9 @@ act push \
 1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
 2. Generate new token with `write:packages` scope
 3. Use this token in the `--secret GITHUB_TOKEN=` parameter
+
+**Workflow Development Process:**
+1. Make changes to the workflow file
+2. Test with `act` locally
+3. If `act` fails, fix the issue and test again
+4. Only push to GitHub after `act` test passes
