@@ -59,6 +59,13 @@ yarn version
 yarn openapi:generate
 ```
 
+### CRITICAL: Commit and Push Rules
+**Claude Code MUST ask for user permission before:**
+- Any `git commit` operation
+- Any `git push` operation
+
+This rule applies to ALL files and ALL changes, regardless of the topic or context. No exceptions.
+
 ## Architecture and Patterns
 
 ### Module Structure
@@ -273,3 +280,10 @@ act push \
 2. Test with `act` locally
 3. If `act` fails, fix the issue and test again
 4. Only push to GitHub after `act` test passes
+
+**IMPORTANT: Act Test Monitoring Rule:**
+- Act tests take a long time (10-20 minutes) due to yarn install and yarn build
+- **DO NOT** check act output repeatedly - this fills up the context window
+- Wait **at least 15 minutes** before checking act test results
+- Start the test, note the time, then wait before checking output
+- Use `BashOutput` tool only ONCE after 15 minutes have passed

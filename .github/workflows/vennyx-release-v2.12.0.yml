@@ -271,7 +271,7 @@ jobs:
               return 1
             }
 
-            if npm publish --ignore-scripts --access restricted --tag "$PUBLISH_TAG" 2>&1; then
+            if npm publish --access restricted --tag "$PUBLISH_TAG" 2>&1; then
               echo "[Worker $pid] Successfully published $PKG_NAME@$PKG_VERSION"
               echo "$PKG_NAME@$PKG_VERSION" >> "/tmp/publish-results/success-$pid-$(date +%s%N)"
             else
