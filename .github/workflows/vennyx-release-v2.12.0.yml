@@ -63,14 +63,86 @@ jobs:
         run: |
           echo "COMMON_TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
 
+      - name: Update all package.json files
+        run: |
+          echo "Updating all package.json files to @vennyx-org scope..."
+
+          BASE_VERSION="2.12.0"
+
+          # Find and update all non-private packages
+          for pkg_file in $(find packages -name "package.json" -not -path "*/node_modules/*" -type f); do
+            # Skip private packages
+            if grep -qE '"private":\s*true' "$pkg_file"; then
+              continue
+            fi
+
+            PKG_NAME=$(jq -r '.name // ""' "$pkg_file")
+
+            if [ -z "$PKG_NAME" ] || [ "$PKG_NAME" = "null" ]; then
+              continue
+            fi
+
+            # Determine new package name
+            if [[ "$PKG_NAME" == @* ]]; then
+              PACKAGE_NAME_WITHOUT_SCOPE=$(echo "$PKG_NAME" | sed 's/^@[^\/]*\///')
+              NEW_NAME="@vennyx-org/$PACKAGE_NAME_WITHOUT_SCOPE"
+            else
+              NEW_NAME="@vennyx-org/$PKG_NAME"
+            fi
+
+            PKG_DIR=$(dirname "$pkg_file")
+
+            echo "  Updating $PKG_NAME -> $NEW_NAME"
+
+            # Update package.json
+            jq --arg name "$NEW_NAME" \
+               --arg url "https://github.com/vennyx-org/medusa.git" \
+               --arg dir "$PKG_DIR" \
+               --arg buildnum "$COMMON_TIMESTAMP" \
+               --arg base_version "$BASE_VERSION" \
+               '
+               def update_medusa_deps:
+                 if . then
+                   with_entries(
+                     if (.key | startswith("@medusajs/")) then
+                       .key = "@vennyx-org/" + (.key | sub("^@medusajs/"; "")) |
+                       .value = $base_version + "-" + $buildnum
+                     else
+                       .
+                     end
+                   )
+                 else
+                   .
+                 end;
+
+               .name = $name |
+               .version = .version + "-" + $buildnum |
+               .repository = {type: "git", url: $url, directory: $dir} |
+               .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"} |
+               .dependencies |= update_medusa_deps |
+               .devDependencies |= update_medusa_deps |
+               .peerDependencies |= update_medusa_deps
+               ' \
+               "$pkg_file" > "$pkg_file.tmp"
+
+            mv "$pkg_file.tmp" "$pkg_file"
+          done
+
+          echo "All package.json files updated."
+
+      - name: Update yarn lockfile
+        run: |
+          echo "Updating yarn lockfile with new package names..."
+          # Use --mode update-lockfile to only update the lockfile without installing
+          yarn install --mode update-lockfile || yarn install
+          echo "Lockfile updated."
+
       - name: Publish packages (8 parallel jobs)
         run: |
           set +e
 
           # Export environment variables for parallel processes
-          export COMMON_TIMESTAMP
           export PUBLISH_TAG="${{ github.event.inputs.version || 'latest' }}"
-          export BASE_VERSION="2.12.0"
           export ORIGINAL_DIR=$(pwd)
 
           # Clean up previous run artifacts
@@ -88,76 +160,33 @@ jobs:
             fi
 
             local PKG_DIR=$(dirname "$pkg_file")
-            local PKG_INFO=$(jq -r '[.name // "", .version // ""] | @tsv' "$pkg_file")
-            local PKG_NAME=$(echo "$PKG_INFO" | cut -f1)
-            local PKG_VERSION=$(echo "$PKG_INFO" | cut -f2)
+            local PKG_NAME=$(jq -r '.name // ""' "$pkg_file")
+            local PKG_VERSION=$(jq -r '.version // ""' "$pkg_file")
 
             if [ -z "$PKG_NAME" ] || [ "$PKG_NAME" = "null" ]; then
               return 0
             fi
 
-            # Determine new package name
-            local NEW_NAME
-            if [[ "$PKG_NAME" == @* ]]; then
-              local PACKAGE_NAME_WITHOUT_SCOPE=$(echo "$PKG_NAME" | sed 's/^@[^\/]*\///')
-              NEW_NAME="@vennyx-org/$PACKAGE_NAME_WITHOUT_SCOPE"
-            else
-              NEW_NAME="@vennyx-org/$PKG_NAME"
+            # Only publish @vennyx-org packages
+            if [[ "$PKG_NAME" != @vennyx-org/* ]]; then
+              return 0
             fi
 
-            local NEW_VERSION="${PKG_VERSION}-${COMMON_TIMESTAMP}"
-
-            echo "[Worker $pid] Publishing $NEW_NAME@$NEW_VERSION from $PKG_DIR"
-
-            # Update package.json in place
-            if ! jq --arg name "$NEW_NAME" \
-               --arg url "https://github.com/vennyx-org/medusa.git" \
-               --arg dir "$PKG_DIR" \
-               --arg buildnum "$COMMON_TIMESTAMP" \
-               --arg base_version "$BASE_VERSION" \
-               '
-               def update_medusa_deps:
-                 if . then
-                   with_entries(
-                     if (.key | startswith("@medusajs/")) then
-                       .value = $base_version + "-" + $buildnum
-                     else
-                       .
-                     end
-                   )
-                 else
-                   .
-                 end;
-
-               .name = $name |
-               .version = .version + "-" + $buildnum |
-               .repository = {type: "git", url: $url, directory: $dir} |
-               .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"} |
-               del(.scripts.prepare, .scripts.postinstall) |
-               .dependencies |= update_medusa_deps |
-               .devDependencies |= update_medusa_deps |
-               .peerDependencies |= update_medusa_deps
-               ' \
-               "$pkg_file" > "$pkg_file.tmp" 2>/dev/null; then
-              echo "[Worker $pid] Failed to update package.json for $PKG_NAME"
-              echo "$NEW_NAME@$NEW_VERSION (jq failed)" >> "/tmp/publish-results/failed-$pid-$(date +%s%N)"
-              return 1
-            fi
-            mv "$pkg_file.tmp" "$pkg_file"
+            echo "[Worker $pid] Publishing $PKG_NAME@$PKG_VERSION from $PKG_DIR"
 
             # Publish from package directory
             cd "$ORIGINAL_DIR/$PKG_DIR" || {
               echo "[Worker $pid] Failed to enter directory $PKG_DIR"
-              echo "$NEW_NAME@$NEW_VERSION (cd failed)" >> "/tmp/publish-results/failed-$pid-$(date +%s%N)"
+              echo "$PKG_NAME@$PKG_VERSION (cd failed)" >> "/tmp/publish-results/failed-$pid-$(date +%s%N)"
               return 1
             }
 
-            if npm publish --ignore-scripts --access restricted --tag "$PUBLISH_TAG" 2>&1; then
-              echo "[Worker $pid] Successfully published $NEW_NAME@$NEW_VERSION"
-              echo "$NEW_NAME@$NEW_VERSION" >> "/tmp/publish-results/success-$pid-$(date +%s%N)"
+            if npm publish --access restricted --tag "$PUBLISH_TAG" 2>&1; then
+              echo "[Worker $pid] Successfully published $PKG_NAME@$PKG_VERSION"
+              echo "$PKG_NAME@$PKG_VERSION" >> "/tmp/publish-results/success-$pid-$(date +%s%N)"
             else
-              echo "[Worker $pid] Failed to publish $NEW_NAME"
-              echo "$NEW_NAME@$NEW_VERSION" >> "/tmp/publish-results/failed-$pid-$(date +%s%N)"
+              echo "[Worker $pid] Failed to publish $PKG_NAME"
+              echo "$PKG_NAME@$PKG_VERSION" >> "/tmp/publish-results/failed-$pid-$(date +%s%N)"
             fi
 
             cd "$ORIGINAL_DIR" || return 1
