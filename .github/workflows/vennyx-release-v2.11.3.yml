@@ -119,6 +119,7 @@ jobs:
             fi
             
             # Update package.json (remove lifecycle scripts since build is already done)
+            # Also update peerDependencies for @medusajs/* packages to use the same version suffix
             jq --arg name "$NEW_NAME" \
                --arg url "https://github.com/vennyx-org/medusa.git" \
                --arg dir "$PKG_DIR" \
@@ -127,7 +128,18 @@ jobs:
                 .version = .version + "-" + $buildnum |
                 .repository = {type: "git", url: $url, directory: $dir} |
                 .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"} |
-                del(.scripts.prepare, .scripts.postinstall)' \
+                del(.scripts.prepare, .scripts.postinstall) |
+                if .peerDependencies then
+                  .peerDependencies |= with_entries(
+                    if (.key | startswith("@medusajs/")) and (.value == "2.11.3") then
+                      .value = "2.11.3-" + $buildnum
+                    else
+                      .
+                    end
+                  )
+                else
+                  .
+                end' \
                "$TARGET_DIR/package.json" > "$TARGET_DIR/package.json.new" && \
                 mv "$TARGET_DIR/package.json.new" "$TARGET_DIR/package.json"
             
