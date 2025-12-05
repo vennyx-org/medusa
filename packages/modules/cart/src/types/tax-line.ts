@@ -5,6 +5,7 @@ export interface UpdateTaxLineDTO {
   code?: string
   rate?: number
   provider_id?: string
+  is_compound?: boolean
 }
 
 export interface CreateTaxLineDTO {
@@ -13,4 +14,5 @@ export interface CreateTaxLineDTO {
   code: string
   rate: number
   provider_id?: string
+  is_compound?: boolean
 }

@@ -1,11 +1,11 @@
 import { z } from "zod"
+import { applyAndAndOrOperators } from "../../utils/common-validators"
 import {
   createFindParams,
   createOperatorMap,
   createSelectParams,
   WithAdditionalData,
 } from "../../utils/validators"
-import { applyAndAndOrOperators } from "../../utils/common-validators"
 
 export type AdminGetTaxRegionParamsType = z.infer<
   typeof AdminGetTaxRegionParams
@@ -52,6 +52,7 @@ export const CreateTaxRegion = z.object({
       code: z.string(),
       name: z.string(),
       is_combinable: z.boolean().optional(),
+      is_compound: z.boolean().optional(),
       metadata: z.record(z.unknown()).nullish(),
     })
     .optional(),

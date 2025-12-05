@@ -199,6 +199,7 @@ export function prepareTaxLinesData(data: CreateOrderLineItemTaxLineDTO[]) {
     code: d.code,
     rate: d.rate,
     provider_id: d.provider_id,
+    is_compound: d.is_compound,
   }))
 }
 
