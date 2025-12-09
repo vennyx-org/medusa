@@ -2525,7 +2525,14 @@ export default class OrderModuleService
       orderId,
       {
         select: ["id", "version", "items.detail", "summary", "total"],
-        relations: ["transactions", "credit_lines"],
+        relations: [
+          "transactions",
+          "credit_lines",
+          "items.tax_lines",
+          "items.adjustments",
+          "shipping_methods.tax_lines",
+          "shipping_methods.adjustments",
+        ],
       },
       sharedContext
     )
