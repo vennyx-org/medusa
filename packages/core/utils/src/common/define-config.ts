@@ -185,6 +185,9 @@ function resolveModules(
     { resolve: MODULE_PACKAGE_NAMES[Modules.ORDER] },
     { resolve: MODULE_PACKAGE_NAMES[Modules.SETTINGS] },
 
+    // TODO: re-enable this once we have the final release
+    // { resolve: MODULE_PACKAGE_NAMES[Modules.TRANSLATION] },
+
     {
       resolve: MODULE_PACKAGE_NAMES[Modules.AUTH],
       options: {

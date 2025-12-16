@@ -482,7 +482,7 @@ medusaIntegrationTestRunner({
           expect.objectContaining({
             transaction_total: 0,
             current_order_total: 61,
-            pending_difference: 11,
+            pending_difference: 61, // item is not yet received
             paid_total: 0,
             refunded_total: 0,
           })
@@ -707,6 +707,12 @@ medusaIntegrationTestRunner({
                 internal_note: "cx agent note",
               }),
             ],
+          })
+        )
+
+        expect(result.data.order_preview.summary).toEqual(
+          expect.objectContaining({
+            pending_difference: 61 + 1002, // original total + newly added shipping
           })
         )
 

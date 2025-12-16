@@ -267,10 +267,11 @@ export type ModuleExports<T = Constructor<any>> = {
   runMigrations?(
     options: LoaderOptions<any>,
     moduleDeclaration?: InternalModuleDeclaration
-  ): Promise<void>
+  ): Promise<{ name: string; path: string }[]>
   revertMigration?(
     options: LoaderOptions<any>,
-    moduleDeclaration?: InternalModuleDeclaration
+    moduleDeclaration?: InternalModuleDeclaration,
+    migrationNames?: string[]
   ): Promise<void>
   generateMigration?(
     options: LoaderOptions<any>,

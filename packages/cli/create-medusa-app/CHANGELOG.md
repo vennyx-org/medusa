@@ -1,5 +1,15 @@
 # Change Log
 
+## 2.12.2
+
+### Patch Changes
+
+- [#14254](https://github.com/medusajs/medusa/pull/14254) [`9bcfb990bf1d14f99859cf1247627bcc0d797136`](https://github.com/medusajs/medusa/commit/9bcfb990bf1d14f99859cf1247627bcc0d797136) Thanks [@adrien2p](https://github.com/adrien2p)! - chore(): Upgrade validator patched version
+
+- Updated dependencies []:
+  - @medusajs/deps@2.12.2
+  - @medusajs/telemetry@2.12.2
+
 ## 2.12.1
 
 ### Patch Changes

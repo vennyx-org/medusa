@@ -148,7 +148,7 @@ export class S3FileService extends AbstractFileProviderService {
       // Note: We could potentially set the content disposition when uploading,
       // but storing the original filename as metadata should suffice.
       Metadata: {
-        "x-amz-meta-original-filename": file.filename,
+        "original-filename": encodeURIComponent(file.filename),
       },
     })
 
@@ -160,7 +160,7 @@ export class S3FileService extends AbstractFileProviderService {
     }
 
     return {
-      url: `${this.config_.fileUrl}/${fileKey}`,
+      url: `${this.config_.fileUrl}/${encodeURIComponent(fileKey)}`,
       key: fileKey,
     }
   }

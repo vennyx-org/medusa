@@ -27,13 +27,13 @@ export const sidebars = [
           },
           {
             type: "link",
-            title: "Architecture",
-            path: "/learn/introduction/architecture",
+            title: "AI Assistants and LLMs",
+            path: "/learn/introduction/build-with-llms-ai",
           },
           {
             type: "link",
-            title: "AI Assistants and LLMs",
-            path: "/learn/introduction/build-with-llms-ai",
+            title: "Architecture",
+            path: "/learn/introduction/architecture",
           },
           {
             type: "link",
@@ -676,6 +676,22 @@ export const sidebars = [
                 title: "Create Feature Flag",
               },
             ],
+          },
+        ],
+      },
+      {
+        type: "category",
+        title: "Best Practices",
+        children: [
+          {
+            type: "link",
+            path: "/learn/best-practices/third-party-sync",
+            title: "Third-Party Syncing",
+          },
+          {
+            type: "ref",
+            path: "/learn/fundamentals/scheduled-jobs/interval",
+            title: "Scheduled Job Intervals",
           },
         ],
       },

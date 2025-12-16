@@ -980,6 +980,10 @@ export const filesMap = [
     "pathname": "/integrations/guides/meilisearch"
   },
   {
+    "filePath": "/www/apps/resources/app/integrations/guides/okta/page.mdx",
+    "pathname": "/integrations/guides/okta"
+  },
+  {
     "filePath": "/www/apps/resources/app/integrations/guides/payload/page.mdx",
     "pathname": "/integrations/guides/payload"
   },

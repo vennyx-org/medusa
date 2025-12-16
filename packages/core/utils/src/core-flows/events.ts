@@ -889,3 +889,49 @@ export const PaymentEvents = {
    */
   REFUNDED: "payment.refunded",
 }
+
+/**
+ * @category Translation
+ * @customNamespace Translation
+ */
+export const TranslationWorkflowEvents = {
+  /**
+   * Emitted when translations are created.
+   * 
+   * @since 2.13.0
+   * @featureFlag translation
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the translation
+   * }
+   * ```
+   */
+  CREATED: "translation.created",
+  /**
+   * Emitted when translations are updated.
+   *
+   * @since 2.13.0
+   * @featureFlag translation
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the translation
+   * }
+   * ```
+   */
+  UPDATED: "translation.updated",
+  /**
+   * Emitted when translations are deleted.
+   *
+   * @since 2.13.0
+   * @featureFlag translation
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the translation
+   * }
+   * ```
+   */
+  DELETED: "translation.deleted",
+}

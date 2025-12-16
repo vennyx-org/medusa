@@ -18,9 +18,11 @@ import {
 } from "@medusajs/framework/utils"
 
 import { MedusaModule } from "@medusajs/framework/modules-sdk"
-import { MedusaContainer } from "@medusajs/framework/types"
+import { Logger, MedusaContainer } from "@medusajs/framework/types"
 import { parse } from "url"
 import loaders, { initializeContainer } from "../loaders"
+import { reloadResources } from "./utils/dev-server"
+import { HMRReloadError } from "./utils/dev-server/errors"
 
 const EVERY_SIXTH_HOUR = "0 */6 * * *"
 const CRON_SCHEDULE = EVERY_SIXTH_HOUR
@@ -163,6 +165,37 @@ function findExpressRoutePath({
   return undefined
 }
 
+function handleHMRReload(logger: Logger) {
+  // Set up HMR reload handler if running in HMR mode
+  if (process.env.MEDUSA_HMR_ENABLED === "true" && process.send) {
+    ;(global as any).__MEDUSA_HMR_ROUTE_REGISTRY__ = true
+
+    process.on("message", async (msg: any) => {
+      if (msg?.type === "hmr-reload") {
+        const { action, file, rootDirectory } = msg
+
+        const success = await reloadResources({
+          logSource: "[HMR]",
+          action,
+          absoluteFilePath: file,
+          logger,
+          rootDirectory,
+        })
+          .then(() => true)
+          .catch((error) => {
+            if (HMRReloadError.isHMRReloadError(error)) {
+              return false
+            }
+            logger.error("[HMR] Reload failed with unexpected error", error)
+            return false
+          })
+
+        process.send!({ type: "hmr-result", success })
+      }
+    })
+  }
+}
+
 async function start(args: {
   directory: string
   host?: string
@@ -171,7 +204,10 @@ async function start(args: {
   cluster?: string
   workers?: string
   servers?: string
-}) {
+}): Promise<{
+  server: GracefulShutdownServer
+  gracefulShutDown: () => void
+} | void> {
   const {
     port = 9000,
     host,
@@ -296,7 +332,9 @@ async function start(args: {
         track("PING")
       })
 
-      return { server }
+      handleHMRReload(logger)
+
+      return { server, gracefulShutDown }
     } catch (err) {
       logger.error("Error starting server", err)
       process.exit(1)
@@ -357,14 +395,14 @@ async function start(args: {
           process.env.PLUGIN_ADMIN_UI_SKIP_CACHE = "true"
         }
 
-        await internalStart(!!types && msg.index === 0)
+        return await internalStart(!!types && msg.index === 0)
       })
     }
   } else {
     /**
      * Not in cluster mode
      */
-    await internalStart(!!types)
+    return await internalStart(!!types)
   }
 }
 

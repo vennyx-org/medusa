@@ -1,5 +1,6 @@
 import { model } from "@medusajs/framework/utils"
 import StoreCurrency from "./currency"
+import StoreLocale from "./locale"
 
 const Store = model
   .define("Store", {
@@ -12,9 +13,12 @@ const Store = model
     supported_currencies: model.hasMany(() => StoreCurrency, {
       mappedBy: "store",
     }),
+    supported_locales: model.hasMany(() => StoreLocale, {
+      mappedBy: "store",
+    }),
   })
   .cascades({
-    delete: ["supported_currencies"],
+    delete: ["supported_currencies", "supported_locales"],
   })
 
 export default Store

@@ -15,7 +15,7 @@ export const storefrontDevelopmentSidebar = [
       {
         type: "link",
         path: "/storefront-development/tips",
-        title: "Tips",
+        title: "Connect to Medusa",
       },
       {
         type: "link",

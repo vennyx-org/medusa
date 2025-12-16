@@ -279,6 +279,11 @@ export interface CreateCartWorkflowInputDTO {
    * The promotional codes applied on the cart.
    */
   promo_codes?: string[]
+
+  /**
+   * The locale code of the cart.
+   */
+  locale?: string
 }
 
 /**
@@ -335,6 +340,11 @@ export interface UpdateCartWorkflowInputDTO {
    * @example usd
    */
   currency_code?: string
+
+  /**
+   * The locale code for the cart.
+   */
+  locale?: string | null
 
   /**
    * Custom key-value pairs of data related to the cart.

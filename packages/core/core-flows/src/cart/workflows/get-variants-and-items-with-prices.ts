@@ -5,6 +5,7 @@ import {
   CreateCartCreateLineItemDTO,
   CustomerDTO,
   OrderWorkflow,
+  ProductVariantDTO,
   RegionDTO,
   UpdateLineItemDTO,
   UpdateLineItemWithSelectorDTO,
@@ -54,7 +55,7 @@ interface GetVariantsAndItemsWithPricesWorkflowInput {
 
 type GetVariantsAndItemsWithPricesWorkflowOutput = {
   // The variant can depend on the requested fields and therefore the caller will know better
-  variants: (object & {
+  variants: (Partial<ProductVariantDTO> & {
     calculated_price: {
       calculated_price: {
         price_list_type: string
@@ -184,8 +185,11 @@ export const getVariantsAndItemsWithPrices = createWorkflow(
           }
 
           const variant = variantsData.find((v) => v.id === item.variant_id)
-          if ((item.variant_id && !variant) || // variant specified but doesn't exist
-            (variant && (!variant?.product?.status || variant.product.status !== ProductStatus.PUBLISHED)) // variant exists but product is not published
+          if (
+            (item.variant_id && !variant) || // variant specified but doesn't exist
+            (variant &&
+              (!variant?.product?.status ||
+                variant.product.status !== ProductStatus.PUBLISHED)) // variant exists but product is not published
           ) {
             variantNotFoundOrPublished.push(item_.variant_id)
           }
@@ -225,7 +229,9 @@ export const getVariantsAndItemsWithPrices = createWorkflow(
         if (variantNotFoundOrPublished.length > 0) {
           throw new MedusaError(
             MedusaError.Types.INVALID_DATA,
-            `Variants ${variantNotFoundOrPublished.join(", ")} do not exist or belong to a product that is not published`
+            `Variants ${variantNotFoundOrPublished.join(
+              ", "
+            )} do not exist or belong to a product that is not published`
           )
         }
         if (priceNotFound.length > 0) {

@@ -1,5 +1,25 @@
 # @medusajs/dashboard
 
+## 2.12.2
+
+### Patch Changes
+
+- [#14221](https://github.com/medusajs/medusa/pull/14221) [`6176f93ac5ad403dd5fb733d6d22632747ccfca3`](https://github.com/medusajs/medusa/commit/6176f93ac5ad403dd5fb733d6d22632747ccfca3) Thanks [@fPolic](https://github.com/fPolic)! - fix(dashboard, order): summary pending diff calculation on preview
+
+- [#14077](https://github.com/medusajs/medusa/pull/14077) [`008f5bb47df3322fc678d16e80fa62e991bbc8f1`](https://github.com/medusajs/medusa/commit/008f5bb47df3322fc678d16e80fa62e991bbc8f1) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - feat(dashboard): Improve fully refunded order details
+
+- [#14232](https://github.com/medusajs/medusa/pull/14232) [`b53d63d6c86f0aee1d5601b680e6cca7fd5c31a7`](https://github.com/medusajs/medusa/commit/b53d63d6c86f0aee1d5601b680e6cca7fd5c31a7) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - fix(dashboard): pass prefix to useDataTable to fix product list not paginating
+
+- [#14175](https://github.com/medusajs/medusa/pull/14175) [`9e4d2df72fe9d50188e56670a96f79dace45d1ae`](https://github.com/medusajs/medusa/commit/9e4d2df72fe9d50188e56670a96f79dace45d1ae) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - fix(dashboard): avoid unnecessary product relations to be returned by default
+
+- [#14215](https://github.com/medusajs/medusa/pull/14215) [`3e3e6c37bd325cd78370aa4783666117ea665bb8`](https://github.com/medusajs/medusa/commit/3e3e6c37bd325cd78370aa4783666117ea665bb8) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - fix(dashboard): show correct color indicators for payment and fulfillment status columns for `view_configuration` feature flag
+
+- Updated dependencies []:
+  - @medusajs/js-sdk@2.12.2
+  - @medusajs/admin-shared@2.12.2
+  - @medusajs/icons@2.12.2
+  - @medusajs/ui@4.0.30
+
 ## 2.12.1
 
 ### Patch Changes

@@ -4,15 +4,22 @@ import { BigNumber as BigNumberJS } from "bignumber.js"
 import { MathBN } from "../math"
 
 export function calculateTaxTotal({
+  isTaxInclusive = false,
   taxLines,
   taxableAmount,
   setTotalField,
 }: {
+  isTaxInclusive?: boolean
   taxLines: any[]
   taxableAmount: BigNumberInput
   setTotalField?: string
 }) {
   let taxTotal = MathBN.convert(0)
+
+  if (isTaxInclusive) {
+    return taxTotal
+  }
+
   let baseWithTax = MathBN.convert(taxableAmount)
 
   // First process all non-compound taxes (like SCT)
@@ -71,24 +78,24 @@ export function calculateAmountsWithTax({
   // Handle tax-inclusive pricing differently
   if (includesTax) {
     // Complex case: need to back-calculate from tax-inclusive amount with compound taxes
-    
+
     // Calculate compound tax rates sum
     let compoundRateSum = MathBN.convert(0);
     for (const taxLine of compoundTaxLines) {
       compoundRateSum = MathBN.add(compoundRateSum, MathBN.div(taxLine.rate, 100))
     }
-    
+
     // Formula for extracting base amount from tax-inclusive pricing with compound tax
     const taxableAmount = MathBN.div(
-      amount, 
+      amount,
       MathBN.add(1, MathBN.add(sumStandardTaxRate, compoundRateSum))
     )
-    
+
     const tax = calculateTaxTotal({
       taxLines,
       taxableAmount,
     })
-    
+
     return {
       priceWithTax: amount,
       priceWithoutTax: MathBN.sub(amount, tax).toNumber(),
@@ -96,15 +103,15 @@ export function calculateAmountsWithTax({
   } else {
     // Tax exclusive pricing is easier - we just calculate tax normally
     const taxableAmount = amount
-    
+
     const tax = calculateTaxTotal({
       taxLines,
       taxableAmount,
     })
-    
+
     return {
       priceWithTax: MathBN.add(amount, tax).toNumber(),
       priceWithoutTax: amount,
     }
-  } 
+  }
 }

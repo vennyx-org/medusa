@@ -13,6 +13,7 @@ import { useUpdateStore } from "../../../../../hooks/api/store"
 import { useComboboxData } from "../../../../../hooks/use-combobox-data"
 import { sdk } from "../../../../../lib/client"
 import { useDocumentDirection } from "../../../../../hooks/use-document-direction"
+import { useFeatureFlag } from "../../../../../providers/feature-flag-provider"
 
 type EditStoreFormProps = {
   store: HttpTypes.AdminStore
@@ -21,6 +22,7 @@ type EditStoreFormProps = {
 const EditStoreSchema = z.object({
   name: z.string().min(1),
   default_currency_code: z.string().optional(),
+  default_locale_code: z.string().optional(),
   default_region_id: z.string().optional(),
   default_sales_channel_id: z.string().optional(),
   default_location_id: z.string().optional(),
@@ -28,12 +30,16 @@ const EditStoreSchema = z.object({
 
 export const EditStoreForm = ({ store }: EditStoreFormProps) => {
   const { t } = useTranslation()
+  const isTranslationsEnabled = useFeatureFlag("translation")
   const { handleSuccess } = useRouteModal()
-  const direction = useDocumentDirection()  
+  const direction = useDocumentDirection()
   const form = useForm<z.infer<typeof EditStoreSchema>>({
     defaultValues: {
       name: store.name,
       default_region_id: store.default_region_id || undefined,
+      default_locale_code:
+        store.supported_locales?.find((l) => l.is_default)?.locale_code ||
+        undefined,
       default_currency_code:
         store.supported_currencies?.find((c) => c.is_default)?.currency_code ||
         undefined,
@@ -73,10 +79,14 @@ export const EditStoreForm = ({ store }: EditStoreFormProps) => {
   })
 
   const handleSubmit = form.handleSubmit(async (values) => {
-    const { default_currency_code, ...rest } = values
+    const { default_currency_code, default_locale_code, ...rest } = values
 
     const normalizedMutation: HttpTypes.AdminUpdateStore = {
       ...rest,
+      supported_locales: store.supported_locales?.map((l) => ({
+        ...l,
+        is_default: l.locale_code === default_locale_code,
+      })),
       supported_currencies: store.supported_currencies?.map((c) => ({
         ...c,
         is_default: c.currency_code === default_currency_code,
@@ -95,7 +105,10 @@ export const EditStoreForm = ({ store }: EditStoreFormProps) => {
 
   return (
     <RouteDrawer.Form form={form}>
-      <KeyboundForm onSubmit={handleSubmit} className="flex h-full flex-col overflow-hidden">
+      <KeyboundForm
+        onSubmit={handleSubmit}
+        className="flex h-full flex-col overflow-hidden"
+      >
         <RouteDrawer.Body className="overflow-y-auto">
           <div className="flex flex-col gap-y-8">
             <Form.Field
@@ -143,6 +156,40 @@ export const EditStoreForm = ({ store }: EditStoreFormProps) => {
                 )
               }}
             />
+            {isTranslationsEnabled && (
+              <Form.Field
+                control={form.control}
+                name="default_locale_code"
+                render={({ field: { onChange, ...field } }) => {
+                  return (
+                    <Form.Item>
+                      <Form.Label>{t("store.defaultLocale")}</Form.Label>
+                      <Form.Control>
+                        <Select
+                          dir={direction}
+                          {...field}
+                          onValueChange={onChange}
+                        >
+                          <Select.Trigger ref={field.ref}>
+                            <Select.Value />
+                          </Select.Trigger>
+                          <Select.Content>
+                            {store.supported_locales?.map((locale) => (
+                              <Select.Item
+                                key={locale.locale_code}
+                                value={locale.locale_code}
+                              >
+                                {locale.locale_code}
+                              </Select.Item>
+                            ))}
+                          </Select.Content>
+                        </Select>
+                      </Form.Control>
+                    </Form.Item>
+                  )
+                }}
+              />
+            )}
             <Form.Field
               control={form.control}
               name="default_region_id"

@@ -26,12 +26,31 @@ export type BullJob<T> = {
 export type EmitOptions = JobsOptions
 
 export type EventBusRedisModuleOptions = {
+  /**
+   * Queue name for the event bus
+   */
   queueName?: string
-  queueOptions?: QueueOptions
 
-  workerOptions?: WorkerOptions
+  /**
+   * Options for BullMQ Queue instance
+   * @see https://api.docs.bullmq.io/interfaces/v5.QueueOptions.html
+   */
+  queueOptions?: Omit<QueueOptions, "connection">
 
+  /**
+   * Options for BullMQ Worker instance
+   * @see https://api.docs.bullmq.io/interfaces/v5.WorkerOptions.html
+   */
+  workerOptions?: Omit<WorkerOptions, "connection">
+
+  /**
+   * Redis connection string
+   */
   redisUrl?: string
+
+  /**
+   * Redis client options
+   */
   redisOptions?: RedisOptions
 
   /**

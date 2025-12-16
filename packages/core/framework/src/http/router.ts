@@ -1,6 +1,16 @@
-import { ContainerRegistrationKeys, parseCorsOrigins, promiseAll } from "@medusajs/utils"
+import {
+  ContainerRegistrationKeys,
+  FeatureFlag,
+  isFileDisabled,
+  parseCorsOrigins,
+} from "@medusajs/utils"
 import cors, { CorsOptions } from "cors"
-import type { ErrorRequestHandler, Express, RequestHandler } from "express"
+import type {
+  ErrorRequestHandler,
+  Express,
+  IRouter,
+  RequestHandler,
+} from "express"
 import type {
   AdditionalDataValidatorRoute,
   BodyParserConfigRoute,
@@ -15,6 +25,7 @@ import type {
 } from "./types"
 
 import { Logger, MedusaContainer } from "@medusajs/types"
+import { join } from "path"
 import { configManager } from "../config"
 import { MiddlewareFileLoader } from "./middleware-file-loader"
 import { authenticate, AuthType } from "./middlewares"
@@ -83,14 +94,13 @@ export class ApiLoader {
    */
   async #loadHttpResources() {
     const routesLoader = new RoutesLoader()
+
     const middlewareLoader = new MiddlewareFileLoader()
 
-    await promiseAll(
-      this.#sourceDirs.flatMap(dir => [
-        routesLoader.scanDir(dir),
-        middlewareLoader.scanDir(dir)
-      ])
-    )
+    for (const dir of this.#sourceDirs) {
+      await routesLoader.scanDir(dir)
+      await middlewareLoader.scanDir(dir)
+    }
 
     return {
       routes: routesLoader.getRoutes(),
@@ -103,6 +113,38 @@ export class ApiLoader {
       additionalDataValidatorRoutes:
         middlewareLoader.getAdditionalDataValidatorRoutes(),
     }
+  }
+
+  /**
+   * Checks if a route file is disabled for a given matcher and method
+   * by trying to find the corresponding route file path
+   */
+  #isRouteFileDisabled(matcher: string): boolean {
+    const routePathSegments = matcher
+      .split("/")
+      .filter(Boolean)
+      .map((segment) => {
+        if (segment.startsWith(":")) {
+          return `[${segment.slice(1)}]`
+        }
+        return segment
+      })
+
+    for (const sourceDir of this.#sourceDirs) {
+      for (const ext of [".ts", ".js"]) {
+        const routeFilePath = join(
+          sourceDir,
+          ...routePathSegments,
+          `route${ext}`
+        )
+
+        if (isFileDisabled(routeFilePath)) {
+          return true
+        }
+      }
+    }
+
+    return false
   }
 
   /**
@@ -121,6 +163,7 @@ export class ApiLoader {
         : route.handler
 
       this.#app[route.method.toLowerCase()](route.matcher, wrapHandler(handler))
+
       return
     }
 
@@ -140,6 +183,14 @@ export class ApiLoader {
       ? route.methods
       : [route.methods]
     methods.forEach((method) => {
+      const isDisabled = this.#isRouteFileDisabled(route.matcher)
+      if (isDisabled) {
+        this.#logger.debug(
+          `skipping disabled route middleware registration for ${method} ${route.matcher}`
+        )
+        return
+      }
+
       this.#logger.debug(
         `registering route middleware ${method} ${route.matcher}`
       )
@@ -356,6 +407,10 @@ export class ApiLoader {
   }
 
   async load() {
+    if (FeatureFlag.isFeatureEnabled("backend_hmr")) {
+      ;(global as any).__MEDUSA_HMR_API_LOADER__ = this
+    }
+
     const {
       errorHandler: sourceErrorHandler,
       middlewares,
@@ -463,5 +518,20 @@ export class ApiLoader {
      * Registering error handler as the final handler
      */
     this.#app.use(sourceErrorHandler ?? errorHandler())
+  }
+
+  /**
+   * Clear all API resources registered by this loader
+   * This removes all routes and middleware added after the initial stack state
+   * Used by HMR to reset the API state before reloading
+   */
+  clearAllResources() {
+    const router = this.#app._router as IRouter
+    const initialStackLength =
+      (global as any).__MEDUSA_HMR_INITIAL_STACK_LENGTH__ ?? 0
+
+    if (router && router.stack) {
+      router.stack.splice(initialStackLength)
+    }
   }
 }

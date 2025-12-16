@@ -2,7 +2,8 @@ export enum PriceListRelations {
   PRICES = "prices",
 }
 
-export const adminPriceListPriceRemoteQueryFields = [
+// Note: renamed to avoid referencing remoteQuery which is legacy
+export const adminPriceListPriceQueryFields = [
   "id",
   "currency_code",
   "amount",
@@ -29,11 +30,10 @@ export const adminPriceListRemoteQueryFields = [
   "deleted_at",
   "price_list_rules.value",
   "price_list_rules.attribute",
-  ...adminPriceListPriceRemoteQueryFields.map((field) => `prices.${field}`),
 ]
 
 export const retrivePriceListPriceQueryConfig = {
-  defaults: adminPriceListPriceRemoteQueryFields,
+  defaults: adminPriceListPriceQueryFields,
   isList: false,
 }
 

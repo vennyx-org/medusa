@@ -45,6 +45,7 @@ import { User } from "./user"
 import { Views } from "./views"
 import { WorkflowExecution } from "./workflow-execution"
 import { ShippingOptionType } from "./shipping-option-type"
+import { Locale } from "./locale"
 
 export class Admin {
   /**
@@ -180,6 +181,10 @@ export class Admin {
    */
   public currency: Currency
   /**
+   * @tags locale
+   */
+  public locale: Locale
+  /**
    * @tags payment
    */
   public payment: Payment
@@ -265,6 +270,7 @@ export class Admin {
     this.store = new Store(client)
     this.productTag = new ProductTag(client)
     this.user = new User(client)
+    this.locale = new Locale(client)
     this.currency = new Currency(client)
     this.payment = new Payment(client)
     this.productVariant = new ProductVariant(client)

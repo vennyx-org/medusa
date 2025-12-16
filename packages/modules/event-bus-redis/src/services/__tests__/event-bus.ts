@@ -21,11 +21,16 @@ const redisMock = {
   unlink: () => jest.fn(),
 } as unknown as Redis
 
-const simpleModuleOptions = { redisUrl: "test-url" }
 const moduleDeps = {
   logger: loggerMock,
   eventBusRedisConnection: redisMock,
+  eventBusRedisQueueName: "events-queue",
+  eventBusRedisQueueOptions: {},
+  eventBusRedisWorkerOptions: {},
+  eventBusRedisJobOptions: {},
 }
+
+const moduleDeclaration = { scope: "internal" } as any
 
 describe("RedisEventBusService", () => {
   let eventBus: RedisEventBusService
@@ -36,9 +41,7 @@ describe("RedisEventBusService", () => {
     beforeEach(async () => {
       jest.clearAllMocks()
 
-      eventBus = new RedisEventBusService(moduleDeps, simpleModuleOptions, {
-        scope: "internal",
-      })
+      eventBus = new RedisEventBusService(moduleDeps, {}, moduleDeclaration)
     })
 
     it("Creates a queue + worker", () => {
@@ -62,9 +65,7 @@ describe("RedisEventBusService", () => {
 
     it("Throws on isolated module declaration", () => {
       try {
-        eventBus = new RedisEventBusService(moduleDeps, simpleModuleOptions, {
-          scope: "internal",
-        })
+        eventBus = new RedisEventBusService(moduleDeps, {}, moduleDeclaration)
       } catch (error) {
         expect(error.message).toEqual(
           "At the moment this module can only be used with shared resources"
@@ -78,9 +79,7 @@ describe("RedisEventBusService", () => {
       beforeEach(async () => {
         jest.clearAllMocks()
 
-        eventBus = new RedisEventBusService(moduleDeps, simpleModuleOptions, {
-          scope: "internal",
-        })
+        eventBus = new RedisEventBusService(moduleDeps, {}, moduleDeclaration)
 
         queue = (eventBus as any).queue_
         queue.addBulk = jest.fn()
@@ -139,17 +138,15 @@ describe("RedisEventBusService", () => {
 
       it("should add job to queue with module job options", async () => {
         eventBus = new RedisEventBusService(
-          moduleDeps,
           {
-            ...simpleModuleOptions,
-            jobOptions: {
+            ...moduleDeps,
+            eventBusRedisJobOptions: {
               removeOnComplete: { age: 5 },
               attempts: 7,
             },
           },
-          {
-            scope: "internal",
-          }
+          {},
+          moduleDeclaration
         )
 
         queue = (eventBus as any).queue_
@@ -186,16 +183,14 @@ describe("RedisEventBusService", () => {
 
       it("should add job to queue with default, local, and global options merged", async () => {
         eventBus = new RedisEventBusService(
-          moduleDeps,
           {
-            ...simpleModuleOptions,
-            jobOptions: {
+            ...moduleDeps,
+            eventBusRedisJobOptions: {
               removeOnComplete: 5,
             },
           },
-          {
-            scope: "internal",
-          }
+          {},
+          moduleDeclaration
         )
 
         queue = (eventBus as any).queue_
@@ -340,9 +335,7 @@ describe("RedisEventBusService", () => {
       beforeEach(async () => {
         jest.clearAllMocks()
 
-        eventBus = new RedisEventBusService(moduleDeps, simpleModuleOptions, {
-          scope: "internal",
-        })
+        eventBus = new RedisEventBusService(moduleDeps, {}, moduleDeclaration)
 
         queue = (eventBus as any).queue_
         queue.addBulk = jest.fn()
@@ -485,9 +478,7 @@ describe("RedisEventBusService", () => {
       beforeEach(async () => {
         jest.clearAllMocks()
 
-        eventBus = new RedisEventBusService(moduleDeps, simpleModuleOptions, {
-          scope: "internal",
-        })
+        eventBus = new RedisEventBusService(moduleDeps, {}, moduleDeclaration)
       })
 
       it("should process a simple event with no options", async () => {

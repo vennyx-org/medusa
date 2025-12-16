@@ -9,13 +9,28 @@ import {
   isPresent,
   promiseAll,
 } from "@medusajs/framework/utils"
-import { BulkJobOptions, Queue, Worker } from "bullmq"
+import {
+  BulkJobOptions,
+  Queue,
+  QueueOptions,
+  Worker,
+  WorkerOptions,
+} from "bullmq"
 import { Redis } from "ioredis"
-import { BullJob, EventBusRedisModuleOptions, Options } from "../types"
+import {
+  BullJob,
+  EmitOptions,
+  EventBusRedisModuleOptions,
+  Options,
+} from "../types"
 
 type InjectedDependencies = {
   logger: Logger
   eventBusRedisConnection: Redis
+  eventBusRedisQueueName: string
+  eventBusRedisQueueOptions: Omit<QueueOptions, "connection">
+  eventBusRedisWorkerOptions: Omit<WorkerOptions, "connection">
+  eventBusRedisJobOptions: EmitOptions
 }
 
 type IORedisEventType<T = unknown> = {
@@ -31,46 +46,53 @@ type IORedisEventType<T = unknown> = {
 // eslint-disable-next-line max-len
 export default class RedisEventBusService extends AbstractEventBusModuleService {
   protected readonly logger_: Logger
-  protected readonly moduleOptions_: EventBusRedisModuleOptions
-  // eslint-disable-next-line max-len
-  protected readonly moduleDeclaration_: InternalModuleDeclaration
   protected readonly eventBusRedisConnection_: Redis
+
+  protected readonly queueName_: string
+  protected readonly queueOptions_: Omit<QueueOptions, "connection">
+  protected readonly workerOptions_: Omit<WorkerOptions, "connection">
+  protected readonly jobOptions_: EmitOptions
 
   protected queue_: Queue
   protected bullWorker_: Worker
 
   constructor(
-    { logger, eventBusRedisConnection }: InjectedDependencies,
-    moduleOptions: EventBusRedisModuleOptions = {},
-    moduleDeclaration: InternalModuleDeclaration
+    {
+      logger,
+      eventBusRedisConnection,
+      eventBusRedisQueueName,
+      eventBusRedisQueueOptions,
+      eventBusRedisWorkerOptions,
+      eventBusRedisJobOptions,
+    }: InjectedDependencies,
+    _moduleOptions: EventBusRedisModuleOptions = {},
+    _moduleDeclaration: InternalModuleDeclaration
   ) {
     // @ts-ignore
-    // eslint-disable-next-line prefer-rest-params
     super(...arguments)
 
     this.eventBusRedisConnection_ = eventBusRedisConnection
-
-    this.moduleOptions_ = moduleOptions
     this.logger_ = logger
 
-    this.queue_ = new Queue(moduleOptions.queueName ?? `events-queue`, {
+    this.queueName_ = eventBusRedisQueueName ?? "events-queue"
+    this.queueOptions_ = eventBusRedisQueueOptions ?? {}
+    this.workerOptions_ = eventBusRedisWorkerOptions ?? {}
+    this.jobOptions_ = eventBusRedisJobOptions ?? {}
+
+    this.queue_ = new Queue(this.queueName_, {
       prefix: `${this.constructor.name}`,
-      ...(moduleOptions.queueOptions ?? {}),
+      ...this.queueOptions_,
       connection: eventBusRedisConnection,
     })
 
     // Register our worker to handle emit calls
     if (this.isWorkerMode) {
-      this.bullWorker_ = new Worker(
-        moduleOptions.queueName ?? "events-queue",
-        this.worker_,
-        {
-          prefix: `${this.constructor.name}`,
-          ...(moduleOptions.workerOptions ?? {}),
-          connection: eventBusRedisConnection,
-          autorun: false,
-        }
-      )
+      this.bullWorker_ = new Worker(this.queueName_, this.worker_, {
+        prefix: `${this.constructor.name}`,
+        ...this.workerOptions_,
+        connection: eventBusRedisConnection,
+        autorun: false,
+      })
     }
   }
 
@@ -97,7 +119,7 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
       removeOnComplete: true,
       attempts: 1,
       // global options
-      ...(this.moduleOptions_.jobOptions ?? {}),
+      ...this.jobOptions_,
       ...options,
     }
 

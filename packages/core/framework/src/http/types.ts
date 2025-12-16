@@ -183,6 +183,14 @@ export interface MedusaRequest<
    * requests that allows for additional_data
    */
   additionalDataValidator?: ZodOptional<ZodNullable<ZodObject<any, any>>>
+
+  /**
+   * The locale for the current request, resolved from:
+   * 1. Query parameter `?locale=`
+   * 2. Content-Language header
+   * 3. Store's default locale
+   */
+  locale?: string
 }
 
 export interface AuthContext {

@@ -31,6 +31,14 @@ export const AdminUpdateStore = z.object({
       })
     )
     .optional(),
+  supported_locales: z
+    .array(
+      z.object({
+        locale_code: z.string(),
+        is_default: z.boolean().optional(),
+      })
+    )
+    .optional(),
   default_sales_channel_id: z.string().nullish(),
   default_region_id: z.string().nullish(),
   default_location_id: z.string().nullish(),

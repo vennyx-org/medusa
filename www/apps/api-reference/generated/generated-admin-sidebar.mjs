@@ -364,6 +364,24 @@ const generatedgeneratedAdminSidebarSidebar = {
     },
     {
       "type": "category",
+      "title": "Order Changes",
+      "children": [
+        {
+          "type": "link",
+          "path": "order-changes_orderchange_schema",
+          "title": "OrderChange Object",
+          "loaded": true,
+          "badge": {
+            "variant": "neutral",
+            "text": "Schema"
+          }
+        }
+      ],
+      "loaded": false,
+      "showLoadingIfEmpty": true
+    },
+    {
+      "type": "category",
       "title": "Order Edits",
       "children": [],
       "loaded": false,

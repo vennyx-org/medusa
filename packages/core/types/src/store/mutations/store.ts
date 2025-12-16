@@ -9,6 +9,17 @@ export interface CreateStoreCurrencyDTO {
   is_default?: boolean
 }
 
+export interface CreateStoreLocaleDTO {
+  /**
+   * The locale code of the store locale.
+   */
+  locale_code: string
+  /**
+   * Whether the locale is the default one for the store.
+   */
+  is_default?: boolean
+}
+
 /**
  * The store to be created.
  */
@@ -22,6 +33,11 @@ export interface CreateStoreDTO {
    * The supported currency codes of the store.
    */
   supported_currencies?: CreateStoreCurrencyDTO[]
+
+  /**
+   * The suppoprted locale codes of the store.
+   */
+  supported_locales?: CreateStoreLocaleDTO[]
 
   /**
    * The associated default sales channel's ID.
@@ -67,6 +83,11 @@ export interface UpdateStoreDTO {
    * The supported currency codes of the store.
    */
   supported_currencies?: CreateStoreCurrencyDTO[]
+
+  /**
+   * The supported locale codes of the store.
+   */
+  supported_locales?: CreateStoreLocaleDTO[]
 
   /**
    * The associated default sales channel's ID.

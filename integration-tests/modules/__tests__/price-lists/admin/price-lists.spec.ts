@@ -99,7 +99,10 @@ medusaIntegrationTestRunner({
             },
           ])
 
-          let response = await api.get(`/admin/price-lists`, adminHeaders)
+          let response = await api.get(
+            `/admin/price-lists?fields=prices.*,prices.price_rules.*,prices.price_set.*,prices.price_set.variant.*`,
+            adminHeaders
+          )
 
           expect(response.status).toEqual(200)
           expect(response.data.count).toEqual(1)
@@ -130,9 +133,16 @@ medusaIntegrationTestRunner({
                   updated_at: expect.any(String),
                   deleted_at: null,
                   price_set_id: expect.any(String),
+                  price_list_id: expect.any(String),
+                  title: null,
                   rules: {
                     region_id: region.id,
                   },
+                  rules_count: 1,
+                  raw_amount: expect.objectContaining({
+                    value: "5000",
+                    precision: 20,
+                  }),
                 },
               ],
             },
@@ -258,7 +268,7 @@ medusaIntegrationTestRunner({
           ])
 
           let response = await api.get(
-            `/admin/price-lists/${priceList.id}`,
+            `/admin/price-lists/${priceList.id}?fields=prices.*,prices.price_rules.*,prices.price_set.*,prices.price_set.variant.*`,
             adminHeaders
           )
 
@@ -288,8 +298,15 @@ medusaIntegrationTestRunner({
                   variant_id: variant.id,
                   created_at: expect.any(String),
                   updated_at: expect.any(String),
+                  price_list_id: expect.any(String),
                   price_set_id: expect.any(String),
                   deleted_at: null,
+                  rules_count: 1,
+                  raw_amount: expect.objectContaining({
+                    value: "5000",
+                    precision: 20,
+                  }),
+                  title: null,
                   rules: {
                     region_id: region.id,
                   },
@@ -355,7 +372,7 @@ medusaIntegrationTestRunner({
           }
 
           const response = await api.post(
-            `admin/price-lists`,
+            `admin/price-lists?fields=prices.*,prices.price_rules.*,prices.price_set.*,prices.price_set.variant.*`,
             data,
             adminHeaders
           )
@@ -388,6 +405,12 @@ medusaIntegrationTestRunner({
                   updated_at: expect.any(String),
                   deleted_at: null,
                   price_set_id: expect.any(String),
+                  rules_count: 1,
+                  raw_amount: expect.objectContaining({
+                    value: "400",
+                    precision: 20,
+                  }),
+                  title: null,
                   rules: {
                     region_id: region.id,
                   },

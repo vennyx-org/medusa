@@ -14,6 +14,7 @@ import {
   composeLinkName,
   composeTableName,
   ContainerRegistrationKeys,
+  isFileSkipped,
   Modules,
   promiseAll,
   simpleHash,
@@ -40,9 +41,9 @@ export const initialize = async (
     (mod) => Object.keys(mod)[0]
   )
 
-  const allLinksToLoad = Object.values(linkDefinitions).concat(
-    pluginLinksDefinitions ?? []
-  )
+  const allLinksToLoad = Object.values(linkDefinitions)
+    .concat(pluginLinksDefinitions ?? [])
+    .filter((linkDefinition) => !isFileSkipped(linkDefinition))
 
   await promiseAll(
     allLinksToLoad.map(async (linkDefinition) => {

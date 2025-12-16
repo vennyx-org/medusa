@@ -1,6 +1,7 @@
 import { validateAndTransformQuery } from "@medusajs/framework"
 import {
   applyDefaultFilters,
+  applyLocale,
   applyParamsAsFilters,
   authenticate,
   clearFiltersByKey,
@@ -63,6 +64,10 @@ async function applyMaybeLinkFilterIfNecessary(
 }
 
 export const storeProductRoutesMiddlewares: MiddlewareRoute[] = [
+  {
+    matcher: "/store/products/*",
+    middlewares: [applyLocale],
+  },
   {
     method: ["GET"],
     matcher: "/store/products",

@@ -1,5 +1,5 @@
-import { sync as existsSync } from "fs-exists-cached"
 import { setTelemetryEnabled } from "@medusajs/telemetry"
+import { sync as existsSync } from "fs-exists-cached"
 import path from "path"
 import resolveCwd from "resolve-cwd"
 import { newStarter } from "./commands/new"
@@ -196,6 +196,16 @@ function buildLocalCommands(cli, isLocalProject) {
           describe:
             "Skip prompts and execute only safe actions from sync links",
         })
+        builder.option("concurrency", {
+          type: "number",
+          describe: "Number of concurrent migrations to run",
+        })
+        builder.option("all-or-nothing", {
+          type: "boolean",
+          describe:
+            "If set, the command will fail if any migration fails and revert the migrations that were applied so far",
+          default: false,
+        })
       },
       handler: handlerP(
         getCommandHandler("db/migrate", (args, cmd) => {
@@ -269,6 +279,10 @@ function buildLocalCommands(cli, isLocalProject) {
         builder.option("execute-safe", {
           type: "boolean",
           describe: "Skip prompts and execute only safe actions",
+        })
+        builder.option("concurrency", {
+          type: "number",
+          describe: "Number of concurrent migrations to run",
         })
       },
       handler: handlerP(
@@ -423,12 +437,14 @@ function buildLocalCommands(cli, isLocalProject) {
           .option("workers", {
             type: "string",
             default: "0",
-            describe: "Number of worker processes in cluster mode or a percentage of cluster size (e.g., 25%).",
+            describe:
+              "Number of worker processes in cluster mode or a percentage of cluster size (e.g., 25%).",
           })
           .option("servers", {
             type: "string",
             default: "0",
-            describe: "Number of server processes in cluster mode or a percentage of cluster size (e.g., 25%).",
+            describe:
+              "Number of server processes in cluster mode or a percentage of cluster size (e.g., 25%).",
           }),
       handler: handlerP(
         getCommandHandler(`start`, (args, cmd) => {

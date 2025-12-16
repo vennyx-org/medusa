@@ -16,6 +16,10 @@ export const auth = [
     "path": "https://docs.medusajs.com/resources/how-to-tutorials/tutorials/phone-auth"
   },
   {
+    "title": "Integrate Okta",
+    "path": "https://docs.medusajs.com/resources/integrations/guides/okta"
+  },
+  {
     "title": "Log-out Customer in Storefront",
     "path": "https://docs.medusajs.com/resources/storefront-development/customers/log-out"
   },

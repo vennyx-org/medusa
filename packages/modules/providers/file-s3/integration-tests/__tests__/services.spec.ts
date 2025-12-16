@@ -1,5 +1,5 @@
-import fs from "fs/promises"
 import axios from "axios"
+import fs from "fs/promises"
 import { S3FileService } from "../../src/services/s3-file"
 jest.setTimeout(100000)
 
@@ -79,6 +79,40 @@ describe.skip("S3 File Plugin", () => {
         .catch((e) => e)
 
       expect(response.status).toEqual(404)
+    })
+  })
+
+  it("uploads a file with non-ascii characters in the name", async () => {
+    const fileContent = await fs.readFile(fixtureImagePath)
+    const fixtureAsBinary = fileContent.toString("base64")
+
+    const resp = await s3Service.upload({
+      filename: "catphoto-か.jpg",
+      mimeType: "image/jpeg",
+      content: fixtureAsBinary,
+      access: "private",
+    })
+
+    expect(resp).toEqual({
+      key: expect.stringMatching(/tests\/catphoto-か.*\.jpg/),
+      url: expect.stringMatching(/https:\/\/.*\/catphoto-%E3%81%8B.*\.jpg/),
+    })
+  })
+
+  it("uploads a file with special URL characters in the name", async () => {
+    const fileContent = await fs.readFile(fixtureImagePath)
+    const fixtureAsBinary = fileContent.toString("base64")
+
+    const resp = await s3Service.upload({
+      filename: "cat?photo.jpg",
+      mimeType: "image/jpeg",
+      content: fixtureAsBinary,
+      access: "private",
+    })
+
+    expect(resp).toEqual({
+      key: expect.stringMatching(/tests\/catphoto.*\.jpg/),
+      url: expect.stringMatching(/https:\/\/.*\/cat%3Fphoto.*\.jpg/),
     })
   })
 

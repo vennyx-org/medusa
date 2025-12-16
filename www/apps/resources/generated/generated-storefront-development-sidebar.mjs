@@ -24,7 +24,7 @@ const generatedgeneratedStorefrontDevelopmentSidebarSidebar = {
           "isPathHref": true,
           "type": "link",
           "path": "/storefront-development/tips",
-          "title": "Tips",
+          "title": "Connect to Medusa",
           "children": []
         },
         {

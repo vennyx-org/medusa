@@ -23,15 +23,15 @@ const myWorkflow = createWorkflow(
   () => {
     const data = throwUnlessStatusIsNotPaid({
       "paymentCollection": {
-        "id": "id_AY1YXxnmRrrvLnM2",
-        "currency_code": "ils",
+        "id": "id_q8joRwkhhdayNjILukL9",
+        "currency_code": "bob",
         "amount": {
-          "numeric": 38
+          "numeric": 0
         },
-        "status": "not_paid",
+        "status": "canceled",
         "payment_providers": [{
-          "id": "id_ydye8N0wefIOCLxaKo4",
-          "is_enabled": true
+          "id": "id_uCsj4XVomD8hhKud5H",
+          "is_enabled": false
         }]
       }
     })

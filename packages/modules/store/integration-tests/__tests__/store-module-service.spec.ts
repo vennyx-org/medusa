@@ -15,7 +15,11 @@ moduleIntegrationTestRunner<IStoreModuleService>({
           service: StoreModuleService,
         }).linkable
 
-        expect(Object.keys(linkable)).toEqual(["store", "storeCurrency"])
+        expect(Object.keys(linkable)).toEqual([
+          "store",
+          "storeCurrency",
+          "storeLocale",
+        ])
 
         Object.keys(linkable).forEach((key) => {
           delete linkable[key].toJSON
@@ -40,6 +44,15 @@ moduleIntegrationTestRunner<IStoreModuleService>({
               field: "storeCurrency",
             },
           },
+          storeLocale: {
+            id: {
+              linkable: "store_locale_id",
+              entity: "StoreLocale",
+              primaryKey: "id",
+              serviceName: "store",
+              field: "storeLocale",
+            },
+          },
         })
       })
 
@@ -53,6 +66,10 @@ moduleIntegrationTestRunner<IStoreModuleService>({
               supported_currencies: expect.arrayContaining([
                 expect.objectContaining({ currency_code: "eur" }),
                 expect.objectContaining({ currency_code: "usd" }),
+              ]),
+              supported_locales: expect.arrayContaining([
+                expect.objectContaining({ locale_code: "fr-FR" }),
+                expect.objectContaining({ locale_code: "en-US" }),
               ]),
               default_sales_channel_id: "test-sales-channel",
               default_region_id: "test-region",
@@ -73,6 +90,19 @@ moduleIntegrationTestRunner<IStoreModuleService>({
 
           expect(err).toEqual(
             "There should be a default currency set for the store"
+          )
+        })
+
+        it("should fail to get created if there is no default locale", async function () {
+          const err = await service
+            .createStores({
+              ...createStoreFixture,
+              supported_locales: [{ locale_code: "en-US" }],
+            })
+            .catch((err) => err.message)
+
+          expect(err).toEqual(
+            "There should be a default locale set for the store"
           )
         })
       })
@@ -130,6 +160,19 @@ moduleIntegrationTestRunner<IStoreModuleService>({
           )
         })
 
+        it("should fail updating locales without a default one", async function () {
+          const createdStore = await service.createStores(createStoreFixture)
+          const updateErr = await service
+            .updateStores(createdStore.id, {
+              supported_locales: [{ locale_code: "en-US" }],
+            })
+            .catch((err) => err.message)
+
+          expect(updateErr).toEqual(
+            "There should be a default locale set for the store"
+          )
+        })
+
         it("should fail updating currencies where a duplicate currency code exists", async function () {
           const createdStore = await service.createStores(createStoreFixture)
           const updateErr = await service
@@ -144,6 +187,20 @@ moduleIntegrationTestRunner<IStoreModuleService>({
           expect(updateErr).toEqual("Duplicate currency codes: usd")
         })
 
+        it("should fail updating locales where a duplicate locale code exists", async function () {
+          const createdStore = await service.createStores(createStoreFixture)
+          const updateErr = await service
+            .updateStores(createdStore.id, {
+              supported_locales: [
+                { locale_code: "en-US" },
+                { locale_code: "en-US" },
+              ],
+            })
+            .catch((err) => err.message)
+
+          expect(updateErr).toEqual("Duplicate locale codes: en-US")
+        })
+
         it("should fail updating currencies where there is more than 1 default currency", async function () {
           const createdStore = await service.createStores(createStoreFixture)
           const updateErr = await service
@@ -156,6 +213,20 @@ moduleIntegrationTestRunner<IStoreModuleService>({
             .catch((err) => err.message)
 
           expect(updateErr).toEqual("Only one default currency is allowed")
+        })
+
+        it("should fail updating locales where there is more than 1 default locale", async function () {
+          const createdStore = await service.createStores(createStoreFixture)
+          const updateErr = await service
+            .updateStores(createdStore.id, {
+              supported_locales: [
+                { locale_code: "en-US", is_default: true },
+                { locale_code: "fr-FR", is_default: true },
+              ],
+            })
+            .catch((err) => err.message)
+
+          expect(updateErr).toEqual("Only one default locale is allowed")
         })
       })
 

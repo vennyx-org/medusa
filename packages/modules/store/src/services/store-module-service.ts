@@ -20,7 +20,7 @@ import {
   removeUndefined,
 } from "@medusajs/framework/utils"
 
-import { Store, StoreCurrency } from "@models"
+import { Store, StoreCurrency, StoreLocale } from "@models"
 import { UpdateStoreInput } from "@types"
 
 type InjectedDependencies = {
@@ -32,7 +32,8 @@ export default class StoreModuleService
   extends MedusaService<{
     Store: { dto: StoreTypes.StoreDTO }
     StoreCurrency: { dto: StoreTypes.StoreCurrencyDTO }
-  }>({ Store, StoreCurrency })
+    StoreLocale: { dto: StoreTypes.StoreLocaleDTO }
+  }>({ Store, StoreCurrency, StoreLocale })
   implements IStoreModuleService
 {
   protected baseRepository_: DAL.RepositoryService
@@ -88,7 +89,7 @@ export default class StoreModuleService
     return (
       await this.storeService_.upsertWithReplace(
         normalizedInput,
-        { relations: ["supported_currencies"] },
+        { relations: ["supported_currencies", "supported_locales"] },
         sharedContext
       )
     ).entities
@@ -200,7 +201,7 @@ export default class StoreModuleService
     return (
       await this.storeService_.upsertWithReplace(
         normalizedInput,
-        { relations: ["supported_currencies"] },
+        { relations: ["supported_currencies", "supported_locales"] },
         sharedContext
       )
     ).entities
@@ -226,37 +227,56 @@ export default class StoreModuleService
   ) {
     for (const store of stores) {
       if (store.supported_currencies?.length) {
-        const duplicates = getDuplicates(
-          store.supported_currencies?.map((c) => c.currency_code)
+        StoreModuleService.validateSupportedItems(
+          store.supported_currencies,
+          (c) => c.currency_code,
+          "currency"
         )
-
-        if (duplicates.length) {
-          throw new MedusaError(
-            MedusaError.Types.INVALID_DATA,
-            `Duplicate currency codes: ${duplicates.join(", ")}`
-          )
-        }
-
-        let seenDefault = false
-        store.supported_currencies?.forEach((c) => {
-          if (c.is_default) {
-            if (seenDefault) {
-              throw new MedusaError(
-                MedusaError.Types.INVALID_DATA,
-                `Only one default currency is allowed`
-              )
-            }
-            seenDefault = true
-          }
-        })
-
-        if (!seenDefault) {
-          throw new MedusaError(
-            MedusaError.Types.INVALID_DATA,
-            `There should be a default currency set for the store`
-          )
-        }
       }
+
+      // TODO: If we are protecting this module behind a feature flag, we should check if the feature flag is enabled before validating the locales.
+      if (store.supported_locales?.length) {
+        StoreModuleService.validateSupportedItems(
+          store.supported_locales,
+          (l) => l.locale_code,
+          "locale"
+        )
+      }
+    }
+  }
+
+  private static validateSupportedItems<T extends { is_default?: boolean }>(
+    items: T[],
+    getCode: (item: T) => string,
+    typeName: string
+  ) {
+    const duplicates = getDuplicates(items.map(getCode))
+
+    if (duplicates.length) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        `Duplicate ${typeName} codes: ${duplicates.join(", ")}`
+      )
+    }
+
+    let seenDefault = false
+    items.forEach((item) => {
+      if (item.is_default) {
+        if (seenDefault) {
+          throw new MedusaError(
+            MedusaError.Types.INVALID_DATA,
+            `Only one default ${typeName} is allowed`
+          )
+        }
+        seenDefault = true
+      }
+    })
+
+    if (!seenDefault) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        `There should be a default ${typeName} set for the store`
+      )
     }
   }
 

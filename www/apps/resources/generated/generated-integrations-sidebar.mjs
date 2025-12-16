@@ -60,6 +60,14 @@ const generatedgeneratedIntegrationsSidebarSidebar = {
           "path": "/commerce-modules/auth/auth-providers/github",
           "title": "GitHub",
           "children": []
+        },
+        {
+          "loaded": true,
+          "isPathHref": true,
+          "type": "link",
+          "path": "/integrations/guides/okta",
+          "title": "Okta",
+          "children": []
         }
       ]
     },

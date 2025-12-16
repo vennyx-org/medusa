@@ -18,50 +18,6 @@ export const metadata = {
 
 In this chapter, you'll learn how you can use AI assistants and LLMs effectively in your Medusa development.
 
-## AI Assistant in Documentation
-
-The Medusa documentation is equipped with an AI Assistant that can answer your questions and help you build customizations with Medusa.
-
-### Open the AI Assistant
-
-To open the AI Assistant, either:
-
-- Use the keyboard shortcut `Ctrl + I` for Windows/Linux, or `Cmd + I` for macOS.
-- Click the <InlineIcon Icon={AiAssistent} alt="AI Assistant" /> icon in the top right corner of the documentation.
-
-You can then ask the AI Assistant any questions about Medusa, such as:
-
-- What is a workflow?
-- How to create a product review module?
-- How to update Medusa?
-- How to fix this error?
-
-The AI Assistant will provide you with relevant documentation links, code snippets, and explanations to help you with your development.
-
-### Ask About Code Snippets
-
-While browsing the documentation, you'll find a <InlineIcon Icon={AiAssistentLuminosity} alt="AI Assistant" /> icon in the header of code snippets. You can click this icon to ask the AI Assistant about the code snippet.
-
-The AI Assistant will analyze the code and provide explanations, usage examples, and any additional information you need to understand how the code works.
-
-### Ask About Documentation Pages
-
-If you need more help understanding a specific documentation page, you can click the "Explain with AI Assistant" link in the page's right sidebar. This will open the AI Assistant and provide context about the current page, allowing you to ask questions related to the content.
-
-### Formatting and Code Blocks
-
-In your questions to the AI Assistant, you can format code blocks by wrapping them in triple backticks (```). For example:
-
-~~~markdown
-```
-console.log("Hello, World!")
-```
-~~~
-
-You can add new lines using the `Shift + Enter` shortcut.
-
----
-
 ## MCP Remote Server
 
 The Medusa documentation provides a remote Model Context Protocol (MCP) server that allows you to find information from the Medusa documentation right in your IDEs or AI tools, such as Cursor.
@@ -123,6 +79,61 @@ claude mcp add --transport http medusa https://docs.medusajs.com/mcp
 </TabsContent>
   </TabsContentWrapper>
 </Tabs>
+
+### How to Use the MCP Server
+
+After connecting to the Medusa MCP server in your AI tool or IDE, you can start asking questions or requesting your AI assistant to build Medusa customizations. It will fetch the relevant information from the Medusa documentation and provide you with accurate answers, code snippets, and explanations.
+
+For example, you can ask:
+
+1. "Create a Product Review module for Medusa. Refer to the Medusa documentation for information."
+2. "How to update Medusa to the latest version?"
+3. "Explain the Medusa workflow system."
+4. "Integrate Medusa with X provider. Refer to the Medusa documentation for information."
+
+---
+
+## AI Assistant in Documentation
+
+The Medusa documentation is equipped with an AI Assistant that can answer your questions and help you build customizations with Medusa.
+
+### Open the AI Assistant
+
+To open the AI Assistant, either:
+
+- Use the keyboard shortcut `Ctrl + I` for Windows/Linux, or `Cmd + I` for macOS.
+- Click the <InlineIcon Icon={AiAssistent} alt="AI Assistant" /> icon in the top right corner of the documentation.
+
+You can then ask the AI Assistant any questions about Medusa, such as:
+
+- What is a workflow?
+- How to create a product review module?
+- How to update Medusa?
+- How to fix this error?
+
+The AI Assistant will provide you with relevant documentation links, code snippets, and explanations to help you with your development.
+
+### Ask About Code Snippets
+
+While browsing the documentation, you'll find a <InlineIcon Icon={AiAssistentLuminosity} alt="AI Assistant" /> icon in the header of code snippets. You can click this icon to ask the AI Assistant about the code snippet.
+
+The AI Assistant will analyze the code and provide explanations, usage examples, and any additional information you need to understand how the code works.
+
+### Ask About Documentation Pages
+
+If you need more help understanding a specific documentation page, you can click the "Explain with AI Assistant" link in the page's right sidebar. This will open the AI Assistant and provide context about the current page, allowing you to ask questions related to the content.
+
+### Formatting and Code Blocks
+
+In your questions to the AI Assistant, you can format code blocks by wrapping them in triple backticks (```). For example:
+
+~~~markdown
+```
+console.log("Hello, World!")
+```
+~~~
+
+You can add new lines using the `Shift + Enter` shortcut.
 
 ---
 

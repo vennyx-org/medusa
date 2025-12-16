@@ -203,6 +203,20 @@ class MedusaModule {
     return [...MedusaModule.moduleResolutions_.values()]
   }
 
+  public static unregisterModuleResolution(moduleKey: string): void {
+    MedusaModule.moduleResolutions_.delete(moduleKey)
+    MedusaModule.joinerConfig_.delete(moduleKey)
+    const moduleAliases = MedusaModule.modules_
+      .get(moduleKey)
+      ?.map((m) => m.alias || m.hash)
+    if (moduleAliases) {
+      for (const alias of moduleAliases) {
+        MedusaModule.instances_.delete(alias)
+      }
+    }
+    MedusaModule.modules_.delete(moduleKey)
+  }
+
   public static setModuleResolution(
     moduleKey: string,
     resolution: ModuleResolution
@@ -516,25 +530,27 @@ class MedusaModule {
     }
 
     const resolvedServices = await promiseAll(
-      loadedModules.map(async ({
-        hashKey,
-        modDeclaration,
-        moduleResolutions,
-        container,
-        finishLoading,
-      }) => {
-        const service = await MedusaModule.resolveLoadedModule({
+      loadedModules.map(
+        async ({
           hashKey,
           modDeclaration,
           moduleResolutions,
           container,
-        })
+          finishLoading,
+        }) => {
+          const service = await MedusaModule.resolveLoadedModule({
+            hashKey,
+            modDeclaration,
+            moduleResolutions,
+            container,
+          })
 
-        MedusaModule.instances_.set(hashKey, service)
-        finishLoading(service)
-        MedusaModule.loading_.delete(hashKey)
-        return service
-      })
+          MedusaModule.instances_.set(hashKey, service)
+          finishLoading(service)
+          MedusaModule.loading_.delete(hashKey)
+          return service
+        }
+      )
     )
 
     services.push(...resolvedServices)
@@ -590,7 +606,10 @@ class MedusaModule {
 
         try {
           // TODO: rework that to store on a separate property
-          joinerConfig = await services[keyName].__joinerConfig?.()
+          joinerConfig =
+            typeof services[keyName].__joinerConfig === "function"
+              ? await services[keyName].__joinerConfig?.()
+              : services[keyName].__joinerConfig
         } catch {
           // noop
         }
@@ -809,7 +828,7 @@ class MedusaModule {
     moduleKey,
     modulePath,
     cwd,
-  }: MigrationOptions): Promise<void> {
+  }: MigrationOptions): Promise<{ name: string; path: string }[]> {
     const moduleResolutions = registerMedusaModule({
       moduleKey,
       moduleDeclaration: {
@@ -827,6 +846,7 @@ class MedusaModule {
 
     container ??= createMedusaContainer()
 
+    let result: { name: string; path: string }[] = []
     for (const mod in moduleResolutions) {
       const { runMigrations } = await loadModuleMigrations(
         container,
@@ -835,23 +855,29 @@ class MedusaModule {
       )
 
       if (typeof runMigrations === "function") {
-        await runMigrations({
+        const res = await runMigrations({
           options,
           container: container!,
           logger: logger_,
         })
+        result.push(...res)
       }
     }
+
+    return result
   }
 
-  public static async migrateDown({
-    options,
-    container,
-    moduleExports,
-    moduleKey,
-    modulePath,
-    cwd,
-  }: MigrationOptions): Promise<void> {
+  public static async migrateDown(
+    {
+      options,
+      container,
+      moduleExports,
+      moduleKey,
+      modulePath,
+      cwd,
+    }: MigrationOptions,
+    migrationNames?: string[]
+  ): Promise<void> {
     const moduleResolutions = registerMedusaModule({
       moduleKey,
       moduleDeclaration: {
@@ -881,6 +907,7 @@ class MedusaModule {
           options,
           container: container!,
           logger: logger_,
+          migrationNames,
         })
       }
     }

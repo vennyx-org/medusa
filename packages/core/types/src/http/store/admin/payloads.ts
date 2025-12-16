@@ -4,7 +4,7 @@
 export interface AdminUpdateStoreSupportedCurrency {
   /**
    * The currency's ISO 3 code.
-   * 
+   *
    * @example
    * usd
    */
@@ -15,10 +15,21 @@ export interface AdminUpdateStoreSupportedCurrency {
   is_default?: boolean
   /**
    * Whether prices in this currency are tax inclusive.
-   * 
+   *
    * Learn more in [this documentation](https://docs.medusajs.com/resources/commerce-modules/pricing/tax-inclusive-pricing).
    */
   is_tax_inclusive?: boolean
+}
+
+export interface AdminUpdateStoreSupportedLocale {
+  /**
+   * The locale's BCP 47 language tag.
+   */
+  locale_code: string
+  /**
+   * Whether this locale is the default locale in the store.
+   */
+  is_default?: boolean
 }
 
 /**
@@ -33,6 +44,10 @@ export interface AdminUpdateStore {
    * The supported currencies of the store.
    */
   supported_currencies?: AdminUpdateStoreSupportedCurrency[]
+  /**
+   * The supported locales of the store.
+   */
+  supported_locales?: AdminUpdateStoreSupportedLocale[]
   /**
    * The ID of the default sales channel of the store.
    */

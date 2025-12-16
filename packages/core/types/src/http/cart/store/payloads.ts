@@ -39,6 +39,11 @@ export interface StoreCreateCart {
    * Key-value pairs of custom data.
    */
   metadata?: Record<string, unknown>
+
+  /**
+   * The locale code of the cart.
+   */
+  locale?: string
 }
 
 export interface StoreUpdateCart {
@@ -71,6 +76,10 @@ export interface StoreUpdateCart {
    * The promotion codes to apply on the cart.
    */
   promo_codes?: string[]
+  /**
+   * The locale code of the cart.
+   */
+  locale?: string
 }
 
 export interface StoreUpdateCartCustomer {}

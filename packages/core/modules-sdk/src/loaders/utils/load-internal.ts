@@ -48,6 +48,14 @@ type ModuleResource = {
 type MigrationFunction = (
   options: LoaderOptions<any>,
   moduleDeclaration?: InternalModuleDeclaration
+) => Promise<{ name: string; path: string }[]>
+type RevertMigrationFunction = (
+  options: LoaderOptions<any> & { migrationNames?: string[] },
+  moduleDeclaration?: InternalModuleDeclaration
+) => Promise<void>
+type GenerateMigrationFunction = (
+  options: LoaderOptions<any>,
+  moduleDeclaration?: InternalModuleDeclaration
 ) => Promise<void>
 
 type ResolvedModule = ModuleExports & {
@@ -390,8 +398,8 @@ export async function loadModuleMigrations(
   moduleExports?: ModuleExports
 ): Promise<{
   runMigrations?: MigrationFunction
-  revertMigration?: MigrationFunction
-  generateMigration?: MigrationFunction
+  revertMigration?: RevertMigrationFunction
+  generateMigration?: GenerateMigrationFunction
 }> {
   const runMigrationsFn: ((...args) => Promise<any>)[] = []
   const revertMigrationFn: ((...args) => Promise<any>)[] = []
@@ -488,9 +496,12 @@ export async function loadModuleMigrations(
     }
 
     const runMigrations = async (...args) => {
+      let result: { name: string; path: string }[] = []
       for (const migration of runMigrationsFn.filter(Boolean)) {
-        await migration.apply(migration, args)
+        const res = await migration.apply(migration, args)
+        result.push(...res)
       }
+      return result
     }
     const revertMigration = async (...args) => {
       for (const migration of revertMigrationFn.filter(Boolean)) {
