@@ -1,0 +1,407 @@
+name: Vennyx Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: choice
+        default: "latest"
+        description: "Which tag to use for publishing"
+        required: true
+        options:
+          - latest
+          - beta
+          - alpha
+          - next
+  push:
+    branches:
+      - vennyx-2.12.3
+    paths-ignore:
+      - "docs/**"
+      - "www/**"
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  build-and-publish:
+    name: Build and Publish to Vennyx Organization
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@vennyx-org"
+          cache: 'yarn'
+
+      - name: Create GitHub .npmrc
+        run: |
+          cat << EOF > .npmrc
+          @vennyx-org:registry=https://npm.pkg.github.com
+          //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
+          EOF
+
+      - name: Build original packages
+        run: |
+          yarn
+
+          # Build @medusajs/medusa first (required for plugin:build command)
+          # Plugin packages use 'medusa plugin:build' which needs @medusajs/medusa/dist/commands/
+          # Ignore TypeScript errors - we only need dist/commands/ for plugin CLI
+          (cd packages/medusa && yarn build) || true
+
+          # Build all packages
+          yarn build
+
+      - name: Define common timestamp
+        run: |
+          echo "COMMON_TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Update all package.json files
+        run: |
+          echo "Updating all package.json files to @vennyx-org scope..."
+
+          # First, collect all package info: names, versions, and private status
+          # Scan ALL package.json files (not just packages/)
+          echo "Building package version map..."
+          PRIVATE_PACKAGES=""
+          VERSION_MAP="{}"
+
+          for pkg_file in $(find . -name "package.json" -not -path "*/node_modules/*" -not -path "./.yarn/*" -type f); do
+            PKG_NAME=$(jq -r '.name // ""' "$pkg_file")
+            PKG_VERSION=$(jq -r '.version // ""' "$pkg_file")
+            IS_PRIVATE=$(jq -r '.private // false' "$pkg_file")
+
+            if [ -z "$PKG_NAME" ] || [ "$PKG_NAME" = "null" ]; then
+              continue
+            fi
+
+            # Collect private package names
+            if [ "$IS_PRIVATE" = "true" ]; then
+              PRIVATE_PACKAGES="$PRIVATE_PACKAGES $PKG_NAME"
+            fi
+
+            # Build version map (package name -> version)
+            VERSION_MAP=$(echo "$VERSION_MAP" | jq --arg name "$PKG_NAME" --arg version "$PKG_VERSION" '. + {($name): $version}')
+          done
+
+          echo "Private packages (will keep original names): $PRIVATE_PACKAGES"
+          echo "Version map built with $(echo "$VERSION_MAP" | jq 'length') packages"
+
+          # STEP 1: Update non-private packages in packages/ (name + dependencies)
+          echo "Step 1: Updating non-private packages (name + dependencies)..."
+          for pkg_file in $(find packages -name "package.json" -not -path "*/node_modules/*" -type f); do
+            # Skip private packages - they will be handled in step 2
+            if grep -qE '"private":\s*true' "$pkg_file"; then
+              continue
+            fi
+
+            PKG_NAME=$(jq -r '.name // ""' "$pkg_file")
+
+            if [ -z "$PKG_NAME" ] || [ "$PKG_NAME" = "null" ]; then
+              continue
+            fi
+
+            # Determine new package name
+            if [[ "$PKG_NAME" == @* ]]; then
+              PACKAGE_NAME_WITHOUT_SCOPE=$(echo "$PKG_NAME" | sed 's/^@[^\/]*\///')
+              NEW_NAME="@vennyx-org/$PACKAGE_NAME_WITHOUT_SCOPE"
+            else
+              NEW_NAME="@vennyx-org/$PKG_NAME"
+            fi
+
+            PKG_DIR=$(dirname "$pkg_file")
+
+            echo "  Updating $PKG_NAME -> $NEW_NAME"
+
+            # Update package.json (name + dependencies)
+            jq --arg name "$NEW_NAME" \
+               --arg url "https://github.com/vennyx-org/medusa.git" \
+               --arg dir "$PKG_DIR" \
+               --arg buildnum "$COMMON_TIMESTAMP" \
+               --arg private_pkgs "$PRIVATE_PACKAGES" \
+               --argjson version_map "$VERSION_MAP" \
+               '
+               def is_private($pkg):
+                 ($private_pkgs | split(" ")) | any(. == $pkg);
+
+               def get_version($pkg):
+                 $version_map[$pkg] // "2.12.3";
+
+               def update_medusa_deps:
+                 if . then
+                   with_entries(
+                     if (.key | startswith("@medusajs/")) and (is_private(.key) | not) then
+                       .key as $orig_key |
+                       .key = "@vennyx-org/" + (.key | sub("^@medusajs/"; "")) |
+                       .value = get_version($orig_key) + "-" + $buildnum
+                     else
+                       .
+                     end
+                   )
+                 else
+                   .
+                 end;
+
+               .name = $name |
+               .version = .version + "-" + $buildnum |
+               .repository = {type: "git", url: $url, directory: $dir} |
+               .publishConfig = {registry: "https://npm.pkg.github.com", access: "restricted"} |
+               .dependencies |= update_medusa_deps |
+               .devDependencies |= update_medusa_deps |
+               .peerDependencies |= update_medusa_deps
+               ' \
+               "$pkg_file" > "$pkg_file.tmp"
+
+            mv "$pkg_file.tmp" "$pkg_file"
+          done
+
+          # STEP 2: Update ALL private packages and other workspaces (dependencies ONLY, keep name)
+          # This includes integration-tests/, www/, and private packages in packages/
+          echo "Step 2: Updating private packages and other workspaces (dependencies only)..."
+          for pkg_file in $(find . -name "package.json" -not -path "*/node_modules/*" -not -path "./.yarn/*" -type f); do
+            # Only process private packages or packages outside packages/
+            IS_PRIVATE=$(jq -r '.private // false' "$pkg_file")
+            IS_IN_PACKAGES=$(echo "$pkg_file" | grep -q "^./packages/" && echo "true" || echo "false")
+
+            # Skip non-private packages in packages/ (already handled in step 1)
+            if [ "$IS_IN_PACKAGES" = "true" ] && [ "$IS_PRIVATE" != "true" ]; then
+              continue
+            fi
+
+            PKG_NAME=$(jq -r '.name // ""' "$pkg_file")
+
+            if [ -z "$PKG_NAME" ] || [ "$PKG_NAME" = "null" ]; then
+              continue
+            fi
+
+            echo "  Updating dependencies in $pkg_file (keeping name: $PKG_NAME)"
+
+            # Update ONLY dependencies (keep name, version, etc unchanged)
+            jq --arg buildnum "$COMMON_TIMESTAMP" \
+               --arg private_pkgs "$PRIVATE_PACKAGES" \
+               --argjson version_map "$VERSION_MAP" \
+               '
+               def is_private($pkg):
+                 ($private_pkgs | split(" ")) | any(. == $pkg);
+
+               def get_version($pkg):
+                 $version_map[$pkg] // "2.12.3";
+
+               def update_medusa_deps:
+                 if . then
+                   with_entries(
+                     if (.key | startswith("@medusajs/")) and (is_private(.key) | not) then
+                       .key as $orig_key |
+                       .key = "@vennyx-org/" + (.key | sub("^@medusajs/"; "")) |
+                       .value = get_version($orig_key) + "-" + $buildnum
+                     else
+                       .
+                     end
+                   )
+                 else
+                   .
+                 end;
+
+               .dependencies |= update_medusa_deps |
+               .devDependencies |= update_medusa_deps |
+               .peerDependencies |= update_medusa_deps
+               ' \
+               "$pkg_file" > "$pkg_file.tmp"
+
+            mv "$pkg_file.tmp" "$pkg_file"
+          done
+
+          echo "All package.json files updated."
+
+      - name: Update yarn lockfile
+        run: |
+          echo "Updating yarn lockfile with new package names..."
+          # Use --mode update-lockfile to only update the lockfile without installing
+          yarn install --mode update-lockfile || yarn install
+          echo "Lockfile updated."
+
+      - name: Publish packages (8 parallel jobs)
+        run: |
+          set +e
+
+          # Export environment variables for parallel processes
+          export PUBLISH_TAG="${{ github.event.inputs.version || 'latest' }}"
+          export ORIGINAL_DIR=$(pwd)
+
+          # Clean up previous run artifacts
+          rm -rf /tmp/publish-results
+          mkdir -p /tmp/publish-results
+
+          # Define publish function
+          publish_package() {
+            local pkg_file="$1"
+            local pid="$$"
+
+            # Skip private packages
+            if grep -qE '"private":\s*true' "$pkg_file"; then
+              return 0
+            fi
+
+            local PKG_DIR=$(dirname "$pkg_file")
+            local PKG_NAME=$(jq -r '.name // ""' "$pkg_file")
+            local PKG_VERSION=$(jq -r '.version // ""' "$pkg_file")
+
+            if [ -z "$PKG_NAME" ] || [ "$PKG_NAME" = "null" ]; then
+              return 0
+            fi
+
+            # Only publish @vennyx-org packages
+            if [[ "$PKG_NAME" != @vennyx-org/* ]]; then
+              return 0
+            fi
+
+            echo "[Worker $pid] Publishing $PKG_NAME@$PKG_VERSION from $PKG_DIR"
+
+            # Publish from package directory
+            cd "$ORIGINAL_DIR/$PKG_DIR" || {
+              echo "[Worker $pid] Failed to enter directory $PKG_DIR"
+              echo "$PKG_NAME@$PKG_VERSION (cd failed)" >> "/tmp/publish-results/failed-$pid-$(date +%s%N)"
+              return 1
+            }
+
+            if npm publish --access restricted --tag "$PUBLISH_TAG" 2>&1; then
+              echo "[Worker $pid] Successfully published $PKG_NAME@$PKG_VERSION"
+              echo "$PKG_NAME@$PKG_VERSION" >> "/tmp/publish-results/success-$pid-$(date +%s%N)"
+            else
+              echo "[Worker $pid] Failed to publish $PKG_NAME"
+              echo "$PKG_NAME@$PKG_VERSION" >> "/tmp/publish-results/failed-$pid-$(date +%s%N)"
+            fi
+
+            cd "$ORIGINAL_DIR" || return 1
+          }
+          export -f publish_package
+
+          echo "Starting parallel publish with 8 workers..."
+          echo "========================================="
+
+          # Run publish in parallel (8 jobs)
+          find packages -name "package.json" -not -path "*/node_modules/*" -type f | \
+            xargs -P 8 -I {} bash -c 'publish_package "$@"' _ {}
+
+          echo "========================================="
+          echo "All workers completed. Collecting results..."
+
+          # Merge results from all workers
+          cat /tmp/publish-results/success-* > /tmp/success-packages.txt 2>/dev/null || touch /tmp/success-packages.txt
+          cat /tmp/publish-results/failed-* > /tmp/failed-packages.txt 2>/dev/null || touch /tmp/failed-packages.txt
+
+          # Count results
+          SUCCESS_COUNT=$(wc -l < /tmp/success-packages.txt | tr -d '[:space:]')
+          FAIL_COUNT=$(wc -l < /tmp/failed-packages.txt | tr -d '[:space:]')
+
+          # Handle empty counts
+          SUCCESS_COUNT=${SUCCESS_COUNT:-0}
+          FAIL_COUNT=${FAIL_COUNT:-0}
+
+          # Save for summary step
+          mkdir -p .github-outputs
+          cp /tmp/success-packages.txt .github-outputs/
+          cp /tmp/failed-packages.txt .github-outputs/
+          echo "$SUCCESS_COUNT" > .github-outputs/success-count.txt
+          echo "$FAIL_COUNT" > .github-outputs/fail-count.txt
+
+          echo ""
+          echo "========================================="
+          echo "Publishing Summary:"
+          echo "  Success: $SUCCESS_COUNT packages"
+          echo "  Failed: $FAIL_COUNT packages"
+          echo "========================================="
+
+          if [ "$FAIL_COUNT" -gt 0 ]; then
+            echo ""
+            echo "Failed packages:"
+            cat /tmp/failed-packages.txt
+            echo "::error::$FAIL_COUNT packages failed to publish"
+            exit 1
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Summary Report
+        if: always()
+        run: |
+          echo "========================================"
+          echo "VENNYX PACKAGE PUBLISHING REPORT"
+          echo "========================================"
+          echo ""
+
+          SUCCESS_COUNT=$(cat .github-outputs/success-count.txt 2>/dev/null | tr -d '[:space:]' || echo "0")
+          FAIL_COUNT=$(cat .github-outputs/fail-count.txt 2>/dev/null | tr -d '[:space:]' || echo "0")
+
+          # Handle empty values
+          SUCCESS_COUNT=${SUCCESS_COUNT:-0}
+          FAIL_COUNT=${FAIL_COUNT:-0}
+
+          TOTAL=$((SUCCESS_COUNT + FAIL_COUNT))
+
+          echo "Statistics:"
+          echo "  Total Packages: $TOTAL"
+          echo "  Successful: $SUCCESS_COUNT"
+          echo "  Failed: $FAIL_COUNT"
+
+          if [ "$TOTAL" -gt 0 ] && [ "$SUCCESS_COUNT" -gt 0 ]; then
+            SUCCESS_RATE=$(awk "BEGIN {printf \"%.1f\", ($SUCCESS_COUNT/$TOTAL)*100}")
+            echo "  Success Rate: ${SUCCESS_RATE}%"
+          fi
+
+          echo ""
+
+          if [ -s .github-outputs/success-packages.txt ]; then
+            echo "Successfully Published Packages:"
+            echo "----------------------------------------"
+            while IFS= read -r pkg; do
+              echo "  + $pkg"
+            done < .github-outputs/success-packages.txt
+            echo ""
+          fi
+
+          if [ -s .github-outputs/failed-packages.txt ]; then
+            echo "Failed Packages:"
+            echo "----------------------------------------"
+            while IFS= read -r pkg; do
+              echo "  - $pkg"
+            done < .github-outputs/failed-packages.txt
+            echo ""
+          fi
+
+          echo "========================================"
+
+          # Create job summary for GitHub UI
+          {
+            echo "## Vennyx Package Publishing Report"
+            echo ""
+            echo "### Statistics"
+            echo "| Metric | Count |"
+            echo "|--------|-------|"
+            echo "| Total Packages | $TOTAL |"
+            echo "| Successful | $SUCCESS_COUNT |"
+            echo "| Failed | $FAIL_COUNT |"
+
+            if [ -s .github-outputs/success-packages.txt ]; then
+              echo ""
+              echo "### Successfully Published Packages"
+              while IFS= read -r pkg; do
+                echo "- \`$pkg\`"
+              done < .github-outputs/success-packages.txt
+            fi
+
+            if [ -s .github-outputs/failed-packages.txt ]; then
+              echo ""
+              echo "### Failed Packages"
+              while IFS= read -r pkg; do
+                echo "- \`$pkg\`"
+              done < .github-outputs/failed-packages.txt
+            fi
+          } >> $GITHUB_STEP_SUMMARY
