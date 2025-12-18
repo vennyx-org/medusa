@@ -735,5 +735,44 @@
       "refundPaymentWorkflow"
     ],
     "deprecated": false
+  },
+  {
+    "name": "translation.created",
+    "parentName": "TranslationWorkflowEvents",
+    "propertyName": "CREATED",
+    "payload": "```ts\n{\n  id, // The ID of the translation\n}\n```",
+    "description": "Emitted when translations are created.",
+    "workflows": [
+      "createTranslationsWorkflow",
+      "batchTranslationsWorkflow"
+    ],
+    "since": "2.12.3",
+    "deprecated": false
+  },
+  {
+    "name": "translation.updated",
+    "parentName": "TranslationWorkflowEvents",
+    "propertyName": "UPDATED",
+    "payload": "```ts\n{\n  id, // The ID of the translation\n}\n```",
+    "description": "Emitted when translations are updated.",
+    "workflows": [
+      "updateTranslationsWorkflow",
+      "batchTranslationsWorkflow"
+    ],
+    "since": "2.12.3",
+    "deprecated": false
+  },
+  {
+    "name": "translation.deleted",
+    "parentName": "TranslationWorkflowEvents",
+    "propertyName": "DELETED",
+    "payload": "```ts\n{\n  id, // The ID of the translation\n}\n```",
+    "description": "Emitted when translations are deleted.",
+    "workflows": [
+      "deleteTranslationsWorkflow",
+      "batchTranslationsWorkflow"
+    ],
+    "since": "2.12.3",
+    "deprecated": false
   }
 ]

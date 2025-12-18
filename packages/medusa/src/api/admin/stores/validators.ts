@@ -35,7 +35,6 @@ export const AdminUpdateStore = z.object({
     .array(
       z.object({
         locale_code: z.string(),
-        is_default: z.boolean().optional(),
       })
     )
     .optional(),

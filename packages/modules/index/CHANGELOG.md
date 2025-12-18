@@ -1,5 +1,14 @@
 # @medusajs/index
 
+## 2.12.3
+
+### Patch Changes
+
+- [#14298](https://github.com/medusajs/medusa/pull/14298) [`e199f1eb01ed8e25e0864f77580e75f19412d6c5`](https://github.com/medusajs/medusa/commit/e199f1eb01ed8e25e0864f77580e75f19412d6c5) Thanks [@carlos-r-l-rodrigues](https://github.com/carlos-r-l-rodrigues)! - fix(index): detect enum fields
+
+- Updated dependencies [[`7b4dda5a179c78de5e099231ec407836db4c8dbd`](https://github.com/medusajs/medusa/commit/7b4dda5a179c78de5e099231ec407836db4c8dbd), [`8964a03fa1b9e6a4c443bf5b21d65d41a8441d29`](https://github.com/medusajs/medusa/commit/8964a03fa1b9e6a4c443bf5b21d65d41a8441d29), [`c8a7122ba918751b215dc0b19cf9b09b2c011ab8`](https://github.com/medusajs/medusa/commit/c8a7122ba918751b215dc0b19cf9b09b2c011ab8)]:
+  - @medusajs/framework@2.12.3
+
 ## 2.12.2
 
 ### Patch Changes

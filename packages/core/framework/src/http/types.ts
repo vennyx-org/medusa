@@ -187,7 +187,7 @@ export interface MedusaRequest<
   /**
    * The locale for the current request, resolved from:
    * 1. Query parameter `?locale=`
-   * 2. Content-Language header
+   * 2. x-medusa-locale header
    * 3. Store's default locale
    */
   locale?: string

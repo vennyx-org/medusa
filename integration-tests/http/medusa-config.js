@@ -85,6 +85,7 @@ module.exports = defineConfig({
   },
   featureFlags: {
     index_engine: process.env.ENABLE_INDEX_MODULE === "true",
+    translation: process.env.MEDUSA_FF_TRANSLATION === "true",
   },
   modules,
 })

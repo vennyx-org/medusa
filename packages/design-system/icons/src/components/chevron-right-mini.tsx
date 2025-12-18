@@ -16,7 +16,7 @@ const ChevronRightMini = React.forwardRef<SVGSVGElement, IconProps>(
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={1.5}
-          d="M5.278 1.944 10.833 7.5l-5.555 5.555"
+          d="M5.75 11.75 10 7.5 5.75 3.25"
         />
       </svg>
     )

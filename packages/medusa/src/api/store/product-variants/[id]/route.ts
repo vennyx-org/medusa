@@ -4,6 +4,7 @@ import {
 } from "@medusajs/framework/http"
 import { HttpTypes, QueryContextType } from "@medusajs/framework/types"
 import {
+  applyTranslations,
   ContainerRegistrationKeys,
   MedusaError,
   QueryContext,
@@ -59,6 +60,12 @@ export const GET = async (
       `Product variant with id: ${req.params.id} was not found`
     )
   }
+
+  await applyTranslations({
+    localeCode: req.locale,
+    objects: [variant],
+    container: req.scope,
+  })
 
   if (withInventoryQuantity) {
     await wrapVariantsWithInventoryQuantityForSalesChannel(req, [variant])

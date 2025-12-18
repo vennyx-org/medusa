@@ -7,7 +7,7 @@ export interface BaseLocale {
    */
   code: string
   /**
-   * The locale's name.
+   * The locale's display name.
    *
    * @example
    * English (United States)

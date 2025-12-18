@@ -12,7 +12,7 @@ import {
   Modules,
 } from "@medusajs/framework/utils"
 import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
-import { applyTranslationsToItems } from "../utils/apply-translations-to-items"
+import { applyTranslationsToItems } from "../../common/utils/apply-translations-to-items"
 import { productVariantsFields } from "../utils/fields"
 
 export interface UpdateCartItemsTranslationsStepInput {
@@ -84,7 +84,7 @@ export const updateCartItemsTranslationsStep = createStep(
     try {
       const isTranslationEnabled = FeatureFlag.isFeatureEnabled("translation")
 
-      if (!isTranslationEnabled || !data.locale) {
+      if (!isTranslationEnabled) {
         return new StepResponse(void 0, [])
       }
 

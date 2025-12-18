@@ -149,6 +149,16 @@
           "nullable": false,
           "mappedType": "json"
         },
+        "translated_field_count": {
+          "name": "translated_field_count",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "0",
+          "mappedType": "integer"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz",

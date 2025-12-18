@@ -1,12 +1,3 @@
-import { Modules, OrderWorkflowEvents } from "@medusajs/framework/utils"
-import {
-  createStep,
-  createWorkflow,
-  StepResponse,
-  transform,
-  WorkflowData,
-  WorkflowResponse,
-} from "@medusajs/framework/workflows-sdk"
 import {
   IOrderModuleService,
   OrderDTO,
@@ -14,10 +5,24 @@ import {
   UpdateOrderDTO,
   UpsertOrderAddressDTO,
 } from "@medusajs/framework/types"
+import { Modules, OrderWorkflowEvents } from "@medusajs/framework/utils"
+import {
+  createStep,
+  createWorkflow,
+  StepResponse,
+  transform,
+  when,
+  WorkflowData,
+  WorkflowResponse,
+} from "@medusajs/framework/workflows-sdk"
 import { emitEventStep, useRemoteQueryStep } from "../../common"
-import { previewOrderChangeStep, registerOrderChangesStep } from "../../order"
-import { validateDraftOrderStep } from "../steps/validate-draft-order"
 import { acquireLockStep, releaseLockStep } from "../../locking"
+import {
+  previewOrderChangeStep,
+  registerOrderChangesStep,
+  updateOrderItemsTranslationsStep,
+} from "../../order"
+import { validateDraftOrderStep } from "../steps/validate-draft-order"
 
 export const updateDraftOrderWorkflowId = "update-draft-order"
 
@@ -53,6 +58,11 @@ export interface UpdateDraftOrderWorkflowInput {
    * The ID of the sales channel to associate the draft order with.
    */
   sales_channel_id?: string
+  /**
+   * The new locale of the draft order. When changed, all line items
+   * will be re-translated to the new locale.
+   */
+  locale?: string | null
   /**
    * The new metadata of the draft order.
    */
@@ -166,6 +176,7 @@ export const updateDraftOrderWorkflow = createWorkflow(
         "sales_channel_id",
         "email",
         "customer_id",
+        "locale",
         "shipping_address.*",
         "billing_address.*",
         "metadata",
@@ -306,11 +317,34 @@ export const updateDraftOrderWorkflow = createWorkflow(
           })
         }
 
+        if (!!input.locale && input.locale !== order.locale) {
+          changes.push({
+            change_type: "update_order" as const,
+            order_id: input.id,
+            created_by: input.user_id,
+            confirmed_by: input.user_id,
+            details: {
+              type: "locale",
+              old: order.locale,
+              new: updatedOrder.locale,
+            },
+          })
+        }
+
         return changes
       }
     )
 
     registerOrderChangesStep(orderChangeInput)
+
+    when({ input, order }, ({ input, order }) => {
+      return !!input.locale && input.locale !== order.locale
+    }).then(() => {
+      updateOrderItemsTranslationsStep({
+        order_id: input.id,
+        locale: input.locale!,
+      })
+    })
 
     emitEventStep({
       eventName: OrderWorkflowEvents.UPDATED,

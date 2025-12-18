@@ -6,21 +6,37 @@ export interface AdminTranslation {
 
   /**
    * The ID of the entity being translated.
+   * 
+   * @example
+   * "prod_123"
    */
   reference_id: string
 
   /**
-   * The type of entity being translated (e.g., "product", "product_variant").
+   * The name of the table that the translation belongs to.
+   * 
+   * @example
+   * "product"
    */
   reference: string
 
   /**
-   * The BCP 47 language tag code for this translation (e.g., "en-US", "fr-FR").
+   * The BCP 47 language tag code for this translation.
+   * 
+   * @example
+   * "en-US"
    */
   locale_code: string
 
   /**
-   * The translated fields as key-value pairs.
+   * The translations of the resource.
+   * The object's keys are the field names of the data model, and its value is the translated value.
+   * 
+   * @example
+   * {
+   *   "title": "Product Title",
+   *   "description": "Product Description",
+   * }
    */
   translations: Record<string, unknown>
 

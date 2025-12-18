@@ -10,16 +10,26 @@ import { createTranslationsStep } from "../steps"
 import { validateTranslationsStep } from "../steps"
 import { TranslationWorkflowEvents } from "@medusajs/framework/utils"
 
+/**
+ * The translations to create.
+ */
 export type CreateTranslationsWorkflowInput = {
+  /**
+   * The translations to create.
+   */
   translations: CreateTranslationDTO[]
 }
 
 export const createTranslationsWorkflowId = "create-translations"
 /**
- * This workflow creates one or more translations.
+ * This workflow creates one or more translations. It's used by other workflows
+ * like the {@link batchTranslationsWorkflow} workflow.
  *
  * You can use this workflow within your own customizations or custom workflows, allowing you
  * to create translations in your custom flows.
+ * 
+ * @since 2.12.3
+ * @featureFlag translation
  *
  * @example
  * const { result } = await createTranslationsWorkflow(container)

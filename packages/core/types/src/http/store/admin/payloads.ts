@@ -24,12 +24,11 @@ export interface AdminUpdateStoreSupportedCurrency {
 export interface AdminUpdateStoreSupportedLocale {
   /**
    * The locale's BCP 47 language tag.
+   * 
+   * @example
+   * "en-US"
    */
   locale_code: string
-  /**
-   * Whether this locale is the default locale in the store.
-   */
-  is_default?: boolean
 }
 
 /**
@@ -46,6 +45,8 @@ export interface AdminUpdateStore {
   supported_currencies?: AdminUpdateStoreSupportedCurrency[]
   /**
    * The supported locales of the store.
+   * 
+   * @since 2.12.3
    */
   supported_locales?: AdminUpdateStoreSupportedLocale[]
   /**

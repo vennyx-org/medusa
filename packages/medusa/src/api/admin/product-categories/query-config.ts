@@ -29,6 +29,7 @@ export const allowed = [
   "category_children",
   "parent_category",
   "products",
+  "translations",
 ]
 
 export const retrieveProductCategoryConfig = {

@@ -41,7 +41,12 @@ export interface StoreCreateCart {
   metadata?: Record<string, unknown>
 
   /**
-   * The locale code of the cart.
+   * The BCP 47 language tag code of the locale.
+   * 
+   * @since 2.12.3
+   * 
+   * @example
+   * "en-US"
    */
   locale?: string
 }
@@ -77,7 +82,12 @@ export interface StoreUpdateCart {
    */
   promo_codes?: string[]
   /**
-   * The locale code of the cart.
+   * The BCP 47 language tag code of the locale.
+   * 
+   * @since 2.12.3
+   * 
+   * @example
+   * "en-US"
    */
   locale?: string
 }

@@ -281,7 +281,12 @@ export interface CreateCartWorkflowInputDTO {
   promo_codes?: string[]
 
   /**
-   * The locale code of the cart.
+   * The locale code of the cart in BCP 47 format.
+   * 
+   * @since 2.12.3
+   * 
+   * @example
+   * "en-US"
    */
   locale?: string
 }
@@ -342,7 +347,12 @@ export interface UpdateCartWorkflowInputDTO {
   currency_code?: string
 
   /**
-   * The locale code for the cart.
+   * The locale code for the cart in BCP 47 format.
+   * 
+   * @since 2.12.3
+   * 
+   * @example
+   * "en-US"
    */
   locale?: string | null
 

@@ -36,10 +36,10 @@ describe("applyLocale", () => {
     expect(nextFunction).toHaveBeenCalledTimes(1)
   })
 
-  it("should set locale from Content-Language header when query param is not present", async () => {
+  it("should set locale from x-medusa-locale header when query param is not present", async () => {
     mockRequest.query = {}
     ;(mockRequest.get as jest.Mock).mockImplementation((header: string) => {
-      if (header === "content-language") {
+      if (header === "x-medusa-locale") {
         return "fr-FR"
       }
       return undefined
@@ -51,10 +51,10 @@ describe("applyLocale", () => {
     expect(nextFunction).toHaveBeenCalledTimes(1)
   })
 
-  it("should prioritize query parameter over Content-Language header", async () => {
+  it("should prioritize query parameter over x-medusa-locale header", async () => {
     mockRequest.query = { locale: "de-DE" }
     ;(mockRequest.get as jest.Mock).mockImplementation((header: string) => {
-      if (header === "content-language") {
+      if (header === "x-medusa-locale") {
         return "fr-FR"
       }
       return undefined
@@ -80,7 +80,7 @@ describe("applyLocale", () => {
   it("should handle empty string in query parameter", async () => {
     mockRequest.query = { locale: "" }
     ;(mockRequest.get as jest.Mock).mockImplementation((header: string) => {
-      if (header === "content-language") {
+      if (header === "x-medusa-locale") {
         return "es-ES"
       }
       return undefined

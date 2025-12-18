@@ -3,10 +3,37 @@ import { model } from "@medusajs/framework/utils"
 const Translation = model
   .define("translation", {
     id: model.id({ prefix: "trans" }).primaryKey(),
+    /**
+     * The ID of the entity that the translation belongs to. For example, the ID of a product or a product variant.
+     */
     reference_id: model.text().searchable(),
-    reference: model.text().searchable(), // e.g., "product", "product_variant", "product_category"
-    locale_code: model.text().searchable(), // BCP 47 language tag, e.g., "en-US", "da-DK"
-    translations: model.json(), // JSON object containing translated fields, e.g., { "title": "...", "description": "..." }
+    /**
+     * The name of the table that the translation belongs to. For example, "product" or "product_variant".
+     */
+    reference: model.text().searchable(),
+    /**
+     * The BCP 47 language tag code of the locale
+     * 
+     * @example
+     * "en-US"
+     */
+    locale_code: model.text().searchable(),
+    /**
+     * The translations of the entity.
+     * The object's keys are the field names of the entity, and its value is the translated value.
+     * 
+     * @example
+     * {
+     *   "title": "Product Title",
+     *   "description": "Product Description",
+     * }
+     */
+    translations: model.json(),
+    /**
+     * Precomputed count of translated fields of a resource.
+     * Useful for optimization purposes.
+     */
+    translated_field_count: model.number().default(0),
   })
   .indexes([
     {

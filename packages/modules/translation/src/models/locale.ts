@@ -3,8 +3,14 @@ import { model } from "@medusajs/framework/utils"
 const Locale = model
   .define("locale", {
     id: model.id({ prefix: "loc" }).primaryKey(),
-    code: model.text().searchable(), // BCP 47 language tag, e.g., "en-US", "da-DK"
-    name: model.text().searchable(), // Human-readable name, e.g., "English (US)", "Danish"
+    /**
+     * The BCP 47 language tag code of the locale (e.g., "en-US", "da-DK").
+     */
+    code: model.text().searchable(),
+    /**
+     * The human-readable name of the locale (e.g., "English (US)", "Danish").
+     */
+    name: model.text().searchable(),
   })
   .indexes([
     {

@@ -33,6 +33,16 @@ export const adminOrderRoutesMiddlewares: MiddlewareRoute[] = [
     ],
   },
   {
+    method: ["POST"],
+    matcher: "/admin/orders/export",
+    middlewares: [
+      validateAndTransformQuery(
+        AdminGetOrdersParams,
+        QueryConfig.exportTransformQueryConfig
+      ),
+    ],
+  },
+  {
     method: ["GET"],
     matcher: "/admin/orders/:id",
     middlewares: [

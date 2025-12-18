@@ -263,16 +263,6 @@
           "nullable": false,
           "mappedType": "text"
         },
-        "is_default": {
-          "name": "is_default",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "false",
-          "mappedType": "boolean"
-        },
         "store_id": {
           "name": "store_id",
           "type": "text",

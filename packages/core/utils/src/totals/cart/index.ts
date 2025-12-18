@@ -1,5 +1,6 @@
 import { BigNumberInput, CartLikeWithTotals } from "@medusajs/types"
-import { BigNumber } from "../big-number"
+import { defaultCurrencies } from "../../defaults/currencies"
+import { BigNumber, getEpsilonFromDecimalPrecision } from "../big-number"
 import { calculateCreditLinesTotal } from "../credit-lines"
 import { GetItemTotalInput, getLineItemsTotals } from "../line-item"
 import { MathBN } from "../math"
@@ -14,6 +15,7 @@ interface TotalsConfig {
 }
 
 export interface DecorateCartLikeInputDTO {
+  currency_code?: string
   credit_lines?: {
     amount: BigNumberInput
   }[]
@@ -200,6 +202,7 @@ export function decorateCartTotals(
       creditLines,
       includesTax: false,
       taxRate: creditLinesSumTaxRate,
+      currencyCode: cartLike.currency_code,
     })
 
   const taxTotal = MathBN.add(itemsTaxTotal, shippingTaxTotal)
@@ -278,6 +281,11 @@ export function decorateCartTotals(
       ...(cart.items?.map((item) => item.return_requested_total ?? 0) ?? [0])
     )
 
+    const upperCurCode = cart.currency_code?.toUpperCase() as string
+    const currencyEpsilon = getEpsilonFromDecimalPrecision(
+      defaultCurrencies[upperCurCode]?.decimal_digits
+    )
+
     const pendingDifference = new BigNumber(
       MathBN.sub(
         MathBN.sub(cart.total, pendingReturnTotal),
@@ -285,7 +293,12 @@ export function decorateCartTotals(
       )
     )
 
-    cart.summary.pending_difference = pendingDifference
+    cart.summary.pending_difference = MathBN.lte(
+      MathBN.abs(pendingDifference),
+      currencyEpsilon
+    )
+      ? MathBN.convert(0)
+      : pendingDifference
   }
 
   return cart

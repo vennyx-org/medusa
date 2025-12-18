@@ -24,6 +24,10 @@ export const order = [
     "path": "https://docs.medusajs.com/user-guide/orders/exchanges"
   },
   {
+    "title": "Export Orders",
+    "path": "https://docs.medusajs.com/user-guide/orders/export"
+  },
+  {
     "title": "Manage Order Fulfillments",
     "path": "https://docs.medusajs.com/user-guide/orders/fulfillments"
   },

@@ -53,6 +53,7 @@ export const completeCartFields = [
   "id",
   "currency_code",
   "email",
+  "locale",
   "created_at",
   "updated_at",
   "completed_at",

@@ -39,6 +39,14 @@ const generatedgeneratedStorefrontDevelopmentSidebarSidebar = {
           "loaded": true,
           "isPathHref": true,
           "type": "link",
+          "path": "/storefront-development/localization",
+          "title": "Localization",
+          "children": []
+        },
+        {
+          "loaded": true,
+          "isPathHref": true,
+          "type": "link",
           "path": "/storefront-development/production-optimizations",
           "title": "Production Optimizations",
           "children": []

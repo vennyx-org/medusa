@@ -6,7 +6,7 @@ products:
   - order
 ---
 
-import { CodeTabs, CodeTab, Table } from "docs-ui"
+import { CodeTabs, CodeTab, Table, Prerequisites } from "docs-ui"
 
 export const metadata = {
   title: `Order Confirmation in Storefront`,
@@ -143,6 +143,21 @@ return (
 ```
 
 In the above example, you show the order items in a list, displaying the item's title, quantity, and unit price formatted with the `formatPrice` function.
+
+### Locale of Order Items
+
+<Prerequisites
+  items={[
+    {
+      text: "Translation Module Configured",
+      link: "/commerce-modules/translation#configure-translation-module",
+    }
+  ]}
+/>
+
+When you complete the cart, items in the order will be in the locale that was set for the cart. This ensures that the customer sees the order details in their preferred language.
+
+If no locale was set for the cart, then the order's items will be in the original product content.
 
 ---
 

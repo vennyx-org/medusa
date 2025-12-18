@@ -1,6 +1,6 @@
 {
   "name": "@medusajs/event-bus-redis",
-  "version": "2.12.2",
+  "version": "2.12.3",
   "description": "Redis Event Bus Module for Medusa",
   "main": "dist/index.js",
   "files": [
@@ -23,7 +23,7 @@
   "author": "Medusa",
   "license": "MIT",
   "devDependencies": {
-    "@medusajs/framework": "2.12.2"
+    "@medusajs/framework": "2.12.3"
   },
   "scripts": {
     "watch": "yarn run -T tsc --build --watch",
@@ -36,6 +36,6 @@
     "ioredis": "^5.4.1"
   },
   "peerDependencies": {
-    "@medusajs/framework": "2.12.2"
+    "@medusajs/framework": "2.12.3"
   }
 }

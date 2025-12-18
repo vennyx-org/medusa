@@ -304,6 +304,15 @@
           "nullable": false,
           "mappedType": "text"
         },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
         "no_notification": {
           "name": "no_notification",
           "type": "boolean",

@@ -132,3 +132,67 @@ export interface FilterableTranslationProps
    */
   locale_code?: string | string[] | OperatorMap<string>
 }
+
+/**
+ * Input for getStatistics method.
+ */
+export interface TranslationStatisticsInput {
+  /**
+   * Locales to check translations for.
+   * 
+   * @example
+   * ["en-US", "fr-FR"]
+   */
+  locales: string[]
+
+  /**
+   * Key-value pairs of entity types and their configurations.
+   */
+  entities: Record<string, {
+    /**
+     * Total number of records for the entity type.
+     * For example, total number of products.
+     * 
+     * This is necessary to compute expected translation counts.
+     */ 
+    count: number
+  }>
+}
+
+/**
+ * Statistics for a specific locale.
+ */
+export interface LocaleStatistics {
+  /**
+   * Expected total number of translated fields.
+   */
+  expected: number
+
+  /**
+   * Actual number of translated fields. This doesn't count
+   * translations that are null or empty.
+   */
+  translated: number
+
+  /**
+   * Number of missing translations for expected translatable
+   * fields.
+   */
+  missing: number
+}
+
+/**
+ * Statistics for an entity type.
+ */
+export interface EntityTypeStatistics extends LocaleStatistics {
+  /**
+   * Breakdown of statistics by locale.
+   */
+  by_locale: Record<string, LocaleStatistics>
+}
+
+/**
+ * Output of getStatistics method.
+ * Maps entity types to their translation statistics.
+ */
+export type TranslationStatisticsOutput = Record<string, EntityTypeStatistics>

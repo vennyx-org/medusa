@@ -24,6 +24,11 @@ export const storefrontDevelopmentSidebar = [
       },
       {
         type: "link",
+        path: "/storefront-development/localization",
+        title: "Localization",
+      },
+      {
+        type: "link",
         path: "/storefront-development/production-optimizations",
         title: "Production Optimizations",
       },

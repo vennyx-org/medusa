@@ -60,8 +60,6 @@ export const StoreLocaleSection = ({ store }: StoreLocaleSectionProps) => {
     meta: {
       storeId: store.id,
       supportedLocales: store.supported_locales,
-      defaultLocaleCode: store.supported_locales?.find((l) => l.is_default)
-        ?.locale_code,
     },
   })
 
@@ -165,12 +163,10 @@ const LocaleActions = ({
   storeId,
   locale,
   supportedLocales,
-  defaultLocaleCode,
 }: {
   storeId: string
   locale: HttpTypes.AdminLocale
   supportedLocales: HttpTypes.AdminStoreLocale[]
-  defaultLocaleCode: string
 }) => {
   const { mutateAsync } = useUpdateStore(storeId)
   const { t } = useTranslation()
@@ -218,7 +214,6 @@ const LocaleActions = ({
               icon: <Trash />,
               label: t("actions.remove"),
               onClick: handleRemove,
-              disabled: locale.code === defaultLocaleCode,
             },
           ],
         },
@@ -267,9 +262,7 @@ const useColumns = () => {
       columnHelper.display({
         id: "actions",
         cell: ({ row, table }) => {
-          const { supportedLocales, storeId, defaultLocaleCode } = table.options
-            .meta as {
-            defaultLocaleCode: string
+          const { supportedLocales, storeId } = table.options.meta as {
             supportedLocales: HttpTypes.AdminStoreLocale[]
             storeId: string
           }
@@ -279,7 +272,6 @@ const useColumns = () => {
               storeId={storeId}
               locale={row.original}
               supportedLocales={supportedLocales}
-              defaultLocaleCode={defaultLocaleCode}
             />
           )
         },

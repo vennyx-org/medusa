@@ -7,6 +7,7 @@ export const defaultAdminOrderFields = [
   "summary",
   "total",
   "metadata",
+  "locale",
   "created_at",
   "updated_at",
 ]
@@ -115,5 +116,35 @@ export const listOrderItemsQueryConfig = {
 
 export const listShippingOptionsQueryConfig = {
   defaultLimit: 100,
+  isList: true,
+}
+
+export const defaultAdminExportOrderFields = [
+  "id",
+  "display_id",
+  "status",
+  "created_at",
+  "updated_at",
+  "email",
+  "currency_code",
+  "region_id",
+  "subtotal",
+  "tax_total",
+  "shipping_total",
+  "discount_total",
+  "gift_card_total",
+  "total",
+  "*customer",
+  "*shipping_address",
+  "*billing_address",
+  "*sales_channel",
+  "*items",
+  "*shipping_methods",
+  "*payment_collections",
+  "*fulfillments",
+]
+
+export const exportTransformQueryConfig = {
+  defaults: defaultAdminExportOrderFields,
   isList: true,
 }

@@ -11,6 +11,7 @@
     "apply": "Apply",
     "range": "Range",
     "search": "Search",
+    "original": "Original",
     "of": "of",
     "results": "results",
     "pages": "pages",
@@ -33,6 +34,7 @@
     "modified": "Modified",
     "added": "Added",
     "removed": "Removed",
+    "remaining": "Left",
     "admin": "Admin",
     "store": "Store",
     "details": "Details",
@@ -99,7 +101,9 @@
   },
   "actions": {
     "save": "Save",
+    "saveChanges": "Save changes",
     "saveAsDraft": "Save as draft",
+    "saveAndClose": "Save and close",
     "copy": "Copy",
     "copied": "Copied",
     "duplicate": "Duplicate",
@@ -1079,6 +1083,18 @@
     "onDateFromSalesChannel": "{{date}} from {{salesChannel}}",
     "list": {
       "noRecordsMessage": "Your orders will show up here."
+    },
+    "export": {
+      "header": "Export Order List",
+      "description": "Export the order list to a CSV file.",
+      "success": {
+        "title": "Export started",
+        "description": "You will be notified when the export is ready."
+      },
+      "filters": {
+        "title": "Filters",
+        "description": "The following filters will be applied to the export."
+      }
     },
     "status": {
       "not_paid": "Not paid",
@@ -2497,6 +2513,39 @@
     "deleteUserWarning": "You are about to delete the user {{name}}. This action cannot be undone.",
     "deleteUserSuccess": "User {{name}} deleted successfully",
     "invite": "Invite"
+  },
+  "translations": {
+    "domain": "Translations",
+    "actions": {
+      "manage": "Manage translations",
+      "manageLocales": "Manage locales"
+    },
+    "subtitle": "Manage translations of your data in Medusa",
+    "list": {
+      "metrics": "{{translated}} of {{total}} fields translated"
+    },
+    "edit": {
+      "successToast": "Translations updated successfully",
+      "unsavedChanges": {
+        "title": "Unsaved translations",
+        "description": "Don't lose your work. You have changes that haven't been saved yet"
+      }
+    },
+    "bulk": {
+      "header": "Translations Bulk Editor",
+      "mainColumn": "Locale"
+    },
+    "activeLocales": {
+      "heading": "Languages",
+      "subtitle": "Activated translations",
+      "noLocalesTip": "Configure at least one locale to start translating your data"
+    },
+    "completion": {
+      "heading": "Translated fields",
+      "translated": "Translated",
+      "toTranslate": "Missing",
+      "footer": "Languages"
+    }
   },
   "store": {
     "domain": "Store",

@@ -11,7 +11,10 @@ export interface AdminLocaleListParams
    */
   q?: string
   /**
-   * Filter by locale code(s).
+   * Filter by locale code(s) in BCP 47 format.
+   * 
+   * @example
+   * "en-US"
    */
   code?: string | string[]
 }

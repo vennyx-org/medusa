@@ -17,13 +17,12 @@ import {
   when,
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk"
-import { useQueryGraphStep } from "../../common"
+import { getTranslatedLineItemsStep, useQueryGraphStep } from "../../common"
 import { emitEventStep } from "../../common/steps/emit-event"
 import { acquireLockStep, releaseLockStep } from "../../locking"
 import {
   createLineItemsStep,
   getLineItemActionsStep,
-  getTranslatedLineItemsStep,
   updateLineItemsStep,
 } from "../steps"
 import { validateCartStep } from "../steps/validate-cart"

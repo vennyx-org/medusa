@@ -27,7 +27,7 @@ export class Locale {
    * To retrieve the list of locales:
    *
    * ```ts
-   * sdk.admin.locales.list()
+   * sdk.admin.locale.list()
    * .then(({ locales, count, limit, offset }) => {
    *   console.log(locales)
    * })
@@ -38,7 +38,7 @@ export class Locale {
    * For example, to retrieve only 10 items and skip 10 items:
    *
    * ```ts
-   * sdk.admin.locales.list({
+   * sdk.admin.locale.list({
    *   limit: 10,
    *   offset: 10
    * })
@@ -51,7 +51,7 @@ export class Locale {
    * in each locale:
    *
    * ```ts
-   * sdk.admin.locales.list({
+   * sdk.admin.locale.list({
    *   fields: "code,name"
    * })
    * .then(({ locales, count, limit, offset }) => {
@@ -75,7 +75,7 @@ export class Locale {
    * This method retrieves a locale by its code. It sends a request to the
    * [Get Locale](https://docs.medusajs.com/api/admin#locales_getlocalescode) API route.
    *
-   * @param code - The locale's code.
+   * @param code - The locale's code in BCP 47 format.
    * @param query - Configure the fields to retrieve in the locale.
    * @param headers - Headers to pass in the request
    * @returns The locale's details.

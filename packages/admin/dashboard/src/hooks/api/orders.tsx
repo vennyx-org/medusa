@@ -10,8 +10,8 @@ import {
 import { sdk } from "../../lib/client"
 import { queryClient } from "../../lib/query-client"
 import { queryKeysFactory, TQueryKey } from "../../lib/query-key-factory"
-import { reservationItemsQueryKeys } from "./reservations"
 import { inventoryItemsQueryKeys } from "./inventory"
+import { reservationItemsQueryKeys } from "./reservations"
 
 const ORDERS_QUERY_KEY = "orders" as const
 const _orderKeys = queryKeysFactory(ORDERS_QUERY_KEY) as TQueryKey<"orders"> & {
@@ -433,6 +433,23 @@ export const useUpdateOrderChange = (
         queryKey: ordersQueryKeys.changes(orderId),
       })
 
+      options?.onSuccess?.(data, variables, context)
+    },
+    ...options,
+  })
+}
+
+export const useExportOrders = (
+  query?: HttpTypes.AdminOrderFilters,
+  options?: UseMutationOptions<
+    { transaction_id: string },
+    FetchError,
+    HttpTypes.AdminOrderFilters
+  >
+) => {
+  return useMutation({
+    mutationFn: () => sdk.admin.order.export(query),
+    onSuccess: (data, variables, context) => {
       options?.onSuccess?.(data, variables, context)
     },
     ...options,

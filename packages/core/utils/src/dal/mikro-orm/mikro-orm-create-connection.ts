@@ -7,6 +7,9 @@ import { CustomDBMigrator } from "./custom-db-migrator"
 
 type FilterDef = Parameters<typeof MikroORMFilter>[0]
 
+const expectedMigrationsImportStatement =
+  'import { Migration } from "@medusajs/framework/mikro-orm/migrations"'
+
 export class CustomTsMigrationGenerator extends TSMigrationGenerator {
   // TODO: temporary fix to drop unique constraint before creating unique index
   private dropUniqueConstraintBeforeUniqueIndex(
@@ -41,7 +44,17 @@ export class CustomTsMigrationGenerator extends TSMigrationGenerator {
       diff.up.unshift(sql)
     }
 
-    return super.generateMigrationFile(className, diff)
+    let migrationFileContent = super.generateMigrationFile(className, diff)
+    migrationFileContent = migrationFileContent
+      .replace(
+        'import { Migration } from "@mikro-orm/migrations"',
+        expectedMigrationsImportStatement
+      )
+      .replace(
+        "import { Migration } from '@mikro-orm/migrations'",
+        expectedMigrationsImportStatement
+      )
+    return migrationFileContent
   }
 
   createStatement(sql: string, padLeft: number): string {

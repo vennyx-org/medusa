@@ -5250,6 +5250,11 @@ export const slugChanges = [
     "filePath": "/www/apps/resources/references/modules/tax_models/page.mdx"
   },
   {
+    "origSlug": "/references/modules/translation_models",
+    "newSlug": "/references/translation/models",
+    "filePath": "/www/apps/resources/references/modules/translation_models/page.mdx"
+  },
+  {
     "origSlug": "/references/modules/user_models",
     "newSlug": "/references/user/models",
     "filePath": "/www/apps/resources/references/modules/user_models/page.mdx"
@@ -7450,6 +7455,11 @@ export const slugChanges = [
     "filePath": "/www/apps/resources/references/store_models/variables/store_models.StoreCurrency/page.mdx"
   },
   {
+    "origSlug": "/references/store_models/variables/store_models.StoreLocale",
+    "newSlug": "/references/store/models/StoreLocale",
+    "filePath": "/www/apps/resources/references/store_models/variables/store_models.StoreLocale/page.mdx"
+  },
+  {
     "origSlug": "/references/tax/ITaxModuleService/methods/tax.ITaxModuleService.createTaxRateRules",
     "newSlug": "/references/tax/createTaxRateRules",
     "filePath": "/www/apps/resources/references/tax/ITaxModuleService/methods/tax.ITaxModuleService.createTaxRateRules/page.mdx"
@@ -7593,6 +7603,101 @@ export const slugChanges = [
     "origSlug": "/references/tax_provider/interfaces/tax_provider.ITaxProvider",
     "newSlug": "/references/tax/provider",
     "filePath": "/www/apps/resources/references/tax_provider/interfaces/tax_provider.ITaxProvider/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.createLocales",
+    "newSlug": "/references/translation/createLocales",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.createLocales/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.createTranslations",
+    "newSlug": "/references/translation/createTranslations",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.createTranslations/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.deleteLocales",
+    "newSlug": "/references/translation/deleteLocales",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.deleteLocales/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.deleteTranslations",
+    "newSlug": "/references/translation/deleteTranslations",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.deleteTranslations/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listAndCountLocales",
+    "newSlug": "/references/translation/listAndCountLocales",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listAndCountLocales/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listAndCountTranslations",
+    "newSlug": "/references/translation/listAndCountTranslations",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listAndCountTranslations/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listLocales",
+    "newSlug": "/references/translation/listLocales",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listLocales/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listTranslations",
+    "newSlug": "/references/translation/listTranslations",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listTranslations/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.restoreLocales",
+    "newSlug": "/references/translation/restoreLocales",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.restoreLocales/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.restoreTranslations",
+    "newSlug": "/references/translation/restoreTranslations",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.restoreTranslations/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.retrieveLocale",
+    "newSlug": "/references/translation/retrieveLocale",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.retrieveLocale/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.retrieveTranslation",
+    "newSlug": "/references/translation/retrieveTranslation",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.retrieveTranslation/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.softDeleteLocales",
+    "newSlug": "/references/translation/softDeleteLocales",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.softDeleteLocales/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.softDeleteTranslations",
+    "newSlug": "/references/translation/softDeleteTranslations",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.softDeleteTranslations/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.updateLocales",
+    "newSlug": "/references/translation/updateLocales",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.updateLocales/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.updateTranslations",
+    "newSlug": "/references/translation/updateTranslations",
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.updateTranslations/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation/interfaces/translation.ITranslationModuleService",
+    "newSlug": "/references/translation",
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.ITranslationModuleService/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation_models/variables/translation_models.Locale",
+    "newSlug": "/references/translation/models/Locale",
+    "filePath": "/www/apps/resources/references/translation_models/variables/translation_models.Locale/page.mdx"
+  },
+  {
+    "origSlug": "/references/translation_models/variables/translation_models.Translation",
+    "newSlug": "/references/translation/models/Translation",
+    "filePath": "/www/apps/resources/references/translation_models/variables/translation_models.Translation/page.mdx"
   },
   {
     "origSlug": "/references/user/IUserModuleService/methods/user.IUserModuleService.createInvites",

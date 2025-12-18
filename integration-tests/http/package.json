@@ -1,6 +1,6 @@
 {
   "name": "integration-tests-http",
-  "version": "1.0.32",
+  "version": "1.0.33",
   "main": "index.js",
   "license": "MIT",
   "private": true,

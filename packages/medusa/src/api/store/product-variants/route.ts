@@ -4,6 +4,7 @@ import {
 } from "@medusajs/framework/http"
 import { HttpTypes, QueryContextType } from "@medusajs/framework/types"
 import {
+  applyTranslations,
   ContainerRegistrationKeys,
   QueryContext,
 } from "@medusajs/framework/utils"
@@ -53,6 +54,12 @@ export const GET = async (
       },
     }
   )
+
+  await applyTranslations({
+    localeCode: req.locale,
+    objects: variants,
+    container: req.scope,
+  })
 
   if (withInventoryQuantity) {
     await wrapVariantsWithInventoryQuantityForSalesChannel(req, variants)

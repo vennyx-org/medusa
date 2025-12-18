@@ -41,10 +41,6 @@ export interface StoreLocaleDTO {
    */
   locale_code: string
   /**
-   * Whether the locale is the default one for the store.
-   */
-  is_default: boolean
-  /**
    * The store ID associated with the locale.
    */
   store_id: string

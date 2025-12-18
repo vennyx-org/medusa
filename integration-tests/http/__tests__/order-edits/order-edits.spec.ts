@@ -487,6 +487,31 @@ medusaIntegrationTestRunner({
           }),
         ])
 
+        // Update item with decimal quantity
+        result = (
+          await api.post(
+            `/admin/order-edits/${orderId}/items/item/${item.id}`,
+            {
+              quantity: 2.5,
+              unit_price: 30,
+            },
+            adminHeaders
+          )
+        ).data.order_preview
+
+        expect(result.summary.current_order_total).toEqual(111.4)
+        expect(result.summary.original_order_total).toEqual(60)
+
+        const decimalUpdatedItem = result.items.find((i) => i.id === item.id)
+        expect(decimalUpdatedItem.actions[3]).toEqual(
+          expect.objectContaining({
+            details: expect.objectContaining({
+              quantity: 2.5,
+              unit_price: 30,
+              quantity_diff: 0.5,
+            }),
+          })
+        )
         // Remove the item by setting the quantity to 0
         result = (
           await api.post(
@@ -542,7 +567,7 @@ medusaIntegrationTestRunner({
           )
         ).data.order_changes
 
-        expect(result[0].actions).toHaveLength(5)
+        expect(result[0].actions).toHaveLength(6)
         expect(result[0].status).toEqual("confirmed")
         expect(result[0].confirmed_by).toEqual(expect.stringContaining("user_"))
       })

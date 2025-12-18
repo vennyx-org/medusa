@@ -1,7 +1,7 @@
 import { IStoreModuleService } from "@medusajs/framework/types"
 import { Module, Modules } from "@medusajs/framework/utils"
-import { StoreModuleService } from "@services"
 import { moduleIntegrationTestRunner } from "@medusajs/test-utils"
+import { StoreModuleService } from "@services"
 import { createStoreFixture } from "../__fixtures__"
 
 jest.setTimeout(100000)
@@ -92,19 +92,6 @@ moduleIntegrationTestRunner<IStoreModuleService>({
             "There should be a default currency set for the store"
           )
         })
-
-        it("should fail to get created if there is no default locale", async function () {
-          const err = await service
-            .createStores({
-              ...createStoreFixture,
-              supported_locales: [{ locale_code: "en-US" }],
-            })
-            .catch((err) => err.message)
-
-          expect(err).toEqual(
-            "There should be a default locale set for the store"
-          )
-        })
       })
 
       describe("upserting a store", () => {
@@ -160,19 +147,6 @@ moduleIntegrationTestRunner<IStoreModuleService>({
           )
         })
 
-        it("should fail updating locales without a default one", async function () {
-          const createdStore = await service.createStores(createStoreFixture)
-          const updateErr = await service
-            .updateStores(createdStore.id, {
-              supported_locales: [{ locale_code: "en-US" }],
-            })
-            .catch((err) => err.message)
-
-          expect(updateErr).toEqual(
-            "There should be a default locale set for the store"
-          )
-        })
-
         it("should fail updating currencies where a duplicate currency code exists", async function () {
           const createdStore = await service.createStores(createStoreFixture)
           const updateErr = await service
@@ -213,20 +187,6 @@ moduleIntegrationTestRunner<IStoreModuleService>({
             .catch((err) => err.message)
 
           expect(updateErr).toEqual("Only one default currency is allowed")
-        })
-
-        it("should fail updating locales where there is more than 1 default locale", async function () {
-          const createdStore = await service.createStores(createStoreFixture)
-          const updateErr = await service
-            .updateStores(createdStore.id, {
-              supported_locales: [
-                { locale_code: "en-US", is_default: true },
-                { locale_code: "fr-FR", is_default: true },
-              ],
-            })
-            .catch((err) => err.message)
-
-          expect(updateErr).toEqual("Only one default locale is allowed")
         })
       })
 

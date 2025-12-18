@@ -24,7 +24,6 @@ import {
   findOneOrAnyRegionStep,
   findOrCreateCustomerStep,
   findSalesChannelStep,
-  getTranslatedLineItemsStep,
 } from "../steps"
 import { validateSalesChannelStep } from "../steps/validate-sales-channel"
 import { productVariantsFields } from "../utils/fields"
@@ -35,6 +34,7 @@ import { getVariantsAndItemsWithPrices } from "./get-variants-and-items-with-pri
 import { refreshPaymentCollectionForCartWorkflow } from "./refresh-payment-collection"
 import { updateCartPromotionsWorkflow } from "./update-cart-promotions"
 import { updateTaxLinesWorkflow } from "./update-tax-lines"
+import { getTranslatedLineItemsStep } from "../../common"
 
 /**
  * The data to create the cart, along with custom data that's passed to the workflow's hooks.

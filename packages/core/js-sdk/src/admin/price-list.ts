@@ -283,6 +283,8 @@ export class PriceList {
    * This method retrieves the prices of a price list. It sends a request to the
    * [Get Prices](https://docs.medusajs.com/v2/api/admin#price-lists_getpricelistsidprices)
    * API route.
+   * 
+   * @since 2.12.3
    *
    * @param id - The price list's ID.
    * @param query - Configure the fields to retrieve in the price list.

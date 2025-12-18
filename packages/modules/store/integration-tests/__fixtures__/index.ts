@@ -8,7 +8,7 @@ export const createStoreFixture: StoreTypes.CreateStoreDTO = {
   ],
   supported_locales: [
     { locale_code: "fr-FR" },
-    { locale_code: "en-US", is_default: true },
+    { locale_code: "en-US" },
   ],
   default_sales_channel_id: "test-sales-channel",
   default_region_id: "test-region",

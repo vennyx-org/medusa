@@ -94,7 +94,7 @@ export const generatedEditDates = {
   "app/learn/fundamentals/custom-cli-scripts/seed-data/page.mdx": "2025-09-15T16:02:51.362Z",
   "app/learn/fundamentals/environment-variables/page.mdx": "2025-11-26T11:05:38.863Z",
   "app/learn/build/page.mdx": "2025-10-27T09:30:26.957Z",
-  "app/learn/deployment/general/page.mdx": "2025-10-21T07:39:08.998Z",
+  "app/learn/deployment/general/page.mdx": "2025-12-11T06:45:25.632Z",
   "app/learn/fundamentals/workflows/multiple-step-usage/page.mdx": "2025-08-01T14:59:59.501Z",
   "app/learn/installation/page.mdx": "2025-12-04T14:30:00.510Z",
   "app/learn/fundamentals/data-models/check-constraints/page.mdx": "2025-07-25T13:50:21.065Z",
@@ -135,7 +135,7 @@ export const generatedEditDates = {
   "app/learn/fundamentals/workflows/locks/page.mdx": "2025-12-09T11:20:25.011Z",
   "app/learn/codemods/page.mdx": "2025-09-29T15:40:03.620Z",
   "app/learn/codemods/replace-imports/page.mdx": "2025-10-09T11:37:44.754Z",
-  "app/learn/fundamentals/admin/translations/page.mdx": "2025-10-30T11:55:32.221Z",
+  "app/learn/fundamentals/admin/translations/page.mdx": "2025-12-16T13:56:21.400Z",
   "app/learn/configurations/medusa-config/asymmetric-encryption/page.mdx": "2025-10-31T09:53:38.607Z",
   "app/learn/best-practices/third-party-sync/page.mdx": "2025-12-03T11:48:58.209Z"
 }

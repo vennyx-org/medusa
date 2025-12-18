@@ -28,8 +28,74 @@ export interface AdminTranslationsBatchResponse {
    * The deleted translations.
    */
   deleted: {
+    /**
+     * The IDs of the deleted translations.
+     */
     ids: string[]
+    /**
+     * The name of the deleted object.
+     */
     object: "translation"
+    /**
+     * Whether the translations were deleted successfully.
+     */
     deleted: boolean
   }
+}
+
+/**
+ * Statistics for a specific locale.
+ */
+export interface AdminTranslationLocaleStatistics {
+  /**
+   * Expected number of translated fields.
+   */
+  expected: number
+  /**
+   * Actual number of translated fields. This doesn't count
+   * translations that are null or empty.
+   */
+  translated: number
+  /**
+   * Number of missing translations for expected translatable
+   * fields.
+   */
+  missing: number
+}
+
+/**
+ * Statistics for an entity type.
+ */
+export interface AdminTranslationEntityStatistics
+  extends AdminTranslationLocaleStatistics {
+  /**
+   * Breakdown of statistics by locale.
+   */
+  by_locale: Record<string, AdminTranslationLocaleStatistics>
+}
+
+/**
+ * Response for translation statistics endpoint.
+ */
+export interface AdminTranslationStatisticsResponse {
+  /**
+   * Statistics by entity type.
+   */
+  statistics: Record<string, AdminTranslationEntityStatistics>
+}
+
+/**
+ * Response for translation settings endpoint.
+ */
+export interface AdminTranslationSettingsResponse {
+  /**
+   * A mapping of entity types to their translatable field names.
+   *
+   * @example
+   * {
+   *   "product": ["title", "description", "subtitle", "status"],
+   *   "product_variant": ["title", "material"]
+   * }
+   */
+  translatable_fields: Record<string, string[]>
 }

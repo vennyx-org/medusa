@@ -56,10 +56,6 @@ export interface AdminStoreLocale {
    */
   store_id: string
   /**
-   * Whether the locale is the default locale for the store.
-   */
-  is_default: boolean
-  /**
    * The locale's details.
    */
   locale: AdminLocale

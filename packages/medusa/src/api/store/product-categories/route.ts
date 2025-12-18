@@ -1,12 +1,15 @@
 import {
-  StoreProductCategoryListParams,
-  StoreProductCategoryListResponse,
-} from "@medusajs/framework/types"
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
-import {
   AuthenticatedMedusaRequest,
   MedusaResponse,
 } from "@medusajs/framework/http"
+import {
+  StoreProductCategoryListParams,
+  StoreProductCategoryListResponse,
+} from "@medusajs/framework/types"
+import {
+  applyTranslations,
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 export const GET = async (
   req: AuthenticatedMedusaRequest<StoreProductCategoryListParams>,
@@ -19,6 +22,12 @@ export const GET = async (
     fields: req.queryConfig.fields,
     filters: req.filterableFields,
     pagination: req.queryConfig.pagination,
+  })
+
+  await applyTranslations({
+    localeCode: req.locale,
+    objects: product_categories,
+    container: req.scope,
   })
 
   res.json({

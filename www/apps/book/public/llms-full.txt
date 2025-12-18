@@ -7943,7 +7943,9 @@ module.exports = defineConfig({
       resolve: "@medusajs/medusa/workflow-engine-redis",
       options: {
         redis: {
-          url: process.env.REDIS_URL,
+          // Note: This was `url` before v2.12.2
+          // It's now deprecated in favor of `redisUrl`
+          redisUrl: process.env.REDIS_URL,
         },
       },
     },
@@ -8827,7 +8829,7 @@ Translations for admin customizations are available from [Medusa v2.11.1](https:
 
 The Medusa Admin dashboard supports [multiple languages](https://docs.medusajs.com/user-guide/tips/languages/index.html.md) for its interface. Medusa uses [react-i18next](https://react.i18next.com/) to manage translations in the admin dashboard.
 
-Medusa Admin translations apply to the interface only. Medusa doesn't support translating store content, such as product names or descriptions. To implement localization for store content, [integrate a CMS](https://docs.medusajs.com/resources/integrations#cms/index.html.md).
+Medusa Admin translations apply to the interface only. To translate content like product data, check out the [Translations user guide](https://docs.medusajs.com/user-guide/settings/translations/index.html.md).
 
 When you create [Widgets](https://docs.medusajs.com/learn/fundamentals/admin/widgets/index.html.md) or [UI Routes](https://docs.medusajs.com/learn/fundamentals/admin/ui-routes/index.html.md) to customize the Medusa Admin, you can provide translations for the text content in your customizations, allowing users to view your customizations in their preferred language.
 
@@ -30825,6 +30827,16 @@ A cart holds information about:
 - The payment method and information necessary to complete the purchase.
   - These are stored and handled by the [Payment Module](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/payment/index.html.md).
 
+### Cart Locale
+
+Cart locale is available starting [Medusa v2.12.3](https://github.com/medusajs/medusa/releases/tag/v2.12.3).
+
+The `Cart` data model has a `locale` property that indicates the locale of the cart. This locale is in the [IETF BCP 47 standard](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1) format, such as `en-US` for American English or `fr-FR` for French (France).
+
+When creating a cart, you can set the `locale` property to specify the desired locale for the cart. The information of the items in the cart, such as product titles and descriptions, will be displayed in the specified locale if translations are available.
+
+Refer to the [Translation Module](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/translation/index.html.md) to learn more about how translations and locales work.
+
 ***
 
 ## Line Items
@@ -33983,6 +33995,18 @@ An order holds information about:
   - This is stored and handled by the [Customer Module](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/customer/index.html.md).
 - Payment and shipping information
 
+## Order Locale
+
+Order locale is available starting [Medusa v2.12.3](https://github.com/medusajs/medusa/releases/tag/v2.12.3).
+
+The `Order` data model has a `locale` property that indicates the locale of the order. This locale is in the [IETF BCP 47 standard](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1) format, such as `en-US` for American English or `fr-FR` for French (France).
+
+When an order is created from a cart or a draft order, the order inherits their locale. This ensures that all item details in the order, such as product titles and descriptions, are presented in the correct language if translations are available.
+
+When order items are changed through an edit, claim, or exchange, the new items added to the order will also have their details in the order's locale if translations are available.
+
+You can also edit an order's locale using the [Update Order](https://docs.medusajs.com/api/admin#orders_postordersid) API route.
+
 ***
 
 ## Order Items
@@ -34215,6 +34239,12 @@ So, the same [order concepts](https://docs.medusajs.com/Users/shahednasser/medus
 Similar to regular orders, draft orders can be [edited](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/order/edit/index.html.md), allowing admin users to add, update, or remove items, as well as add shipping methods.
 
 When the order edit is confirmed on the draft order, the changes are applied directly to the draft order and its [version](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/order/order-versioning/index.html.md) is incremented.
+
+### Draft Order Locale
+
+A draft order's `locale` can be set and updated before converting it to a regular order. All item details in the draft order, such as product titles and descriptions, will be presented in the correct language if translations are available.
+
+When the draft order is converted to a regular order, it retains its `locale` property. The details of the order items will remain in the specified locale.
 
 ### Converting Draft Orders to Regular Orders
 
@@ -35745,7 +35775,9 @@ A Commerce Module also defines data models, representing tables in the database.
 - [Stock Location Module](https://docs.medusajs.com/commerce-modules/stock-location/index.html.md)
 - [Store Module](https://docs.medusajs.com/commerce-modules/store/index.html.md)
 - [Tax Module](https://docs.medusajs.com/commerce-modules/tax/index.html.md)
-- [User Module](https://docs.medusajs.com/commerce-modules/user/index.html.md)
+- [Translation Module](https://docs.medusajs.com/commerce-modules/translation/index.html.md)
+
+[User Module](https://docs.medusajs.com/commerce-modules/user/index.html.md): undefined
 
 ***
 
@@ -39051,6 +39083,14 @@ Read-only links are used to query data across modules, but the relations aren't 
 |OrderLineItem|Product|Read-only - has one|Learn more|
 |ProductVariant|PriceSet|Stored - one-to-one|Learn more|
 |Product|SalesChannel|Stored - many-to-many|Learn more|
+|Product|Translation|Read-only - one-to-many|Learn more|
+|ProductVariant|Translation|Read-only - one-to-many|Learn more|
+|ProductCategory|Translation|Read-only - one-to-many|Learn more|
+|ProductCollection|Translation|Read-only - one-to-many|Learn more|
+|ProductTag|Translation|Read-only - one-to-many|Learn more|
+|ProductType|Translation|Read-only - one-to-many|Learn more|
+|ProductOption|Translation|Read-only - one-to-many|Learn more|
+|ProductOptionValue|Translation|Read-only - one-to-many|Learn more|
 
 ***
 
@@ -39476,6 +39516,61 @@ createRemoteLinkStep({
     sales_channel_id: "sc_123",
   },
 })
+```
+
+***
+
+## Translation Module
+
+### Prerequisites
+
+
+
+Medusa defines read-only links from several data models in the Product Module to the [Translation](https://docs.medusajs.com/references/translation/models/Translation/index.html.md) data model in the [Translation Module](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/translation/index.html.md):
+
+- `Product` (one-to-many) to `Translation`, and vice versa.
+- `ProductVariant` (one-to-many) to `Translation`. You can only retrieve the translations of a product variant, and not the other way around.
+- `ProductCategory` (one-to-many) to `Translation`. You can only retrieve the translations of a product category, and not the other way around.
+- `ProductCollection` (one-to-many) to `Translation`. You can only retrieve the translations of a product collection, and not the other way around.
+- `ProductTag` (one-to-many) to `Translation`. You can only retrieve the translations of a product tag, and not the other way around.
+- `ProductType` (one-to-many) to `Translation`. You can only retrieve the translations of a product type, and not the other way around.
+- `ProductOption` (one-to-many) to `Translation`. You can only retrieve the translations of a product option, and not the other way around.
+- `ProductOptionValue` (one-to-many) to `Translation`. You can only retrieve the translations of a product option value, and not the other way around.
+
+### Retrieve with Query
+
+To retrieve the translations of a product with [Query](https://docs.medusajs.com/docs/learn/fundamentals/module-links/query/index.html.md), pass `translations.*` in `fields`:
+
+You can pass the `translations.*` field when querying any of the above-mentioned data models to retrieve their associated translations.
+
+### query.graph
+
+```ts
+const { data: products } = await query.graph({
+  entity: "product",
+  fields: [
+    "translations.*",
+  ],
+})
+
+// products[0].translations
+```
+
+### useQueryGraphStep
+
+```ts
+import { useQueryGraphStep } from "@medusajs/medusa/core-flows"
+
+// ...
+
+const { data: products } = useQueryGraphStep({
+  entity: "product",
+  fields: [
+    "translations.*",
+  ],
+})
+
+// products[0].translations
 ```
 
 
@@ -42081,14 +42176,15 @@ Read-only links are used to query data across modules, but the relations aren't 
 |First Data Model|Second Data Model|Type|Description|
 |---|---|---|---|
 |StoreCurrency|Currency|Read-only - has many|Learn more|
+|StoreLocale|Locale|Read-only - has many|Learn more|
 
 ***
 
 ## Currency Module
 
-The Store Module has a `Currency` data model that stores the supported currencies of a store. However, these currencies don't hold all the details of a currency, such as its name or symbol.
+The Store Module has a `StoreCurrency` data model that stores the supported currencies of a store. However, these currencies don't hold all the details of a currency, such as its name or symbol.
 
-Instead, Medusa defines a read-only link between the [Currency Module](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/currency/index.html.md)'s `Currency` data model and the Store Module's `StoreCurrency` data model. This means you can retrieve the details of a store's supported currencies, but you don't manage the links in a pivot table in the database. The currencies of a store are determined by the `currency_code` of the [Currency](https://docs.medusajs.com/references/store/models/StoreCurrency/index.html.md) data model in the Store Module (not in the Currency Module).
+Instead, Medusa defines a read-only link from the Store Module's `StoreCurrency` data model to the [Currency Module](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/currency/index.html.md)'s `Currency` data model. This means you can retrieve the details of a store's supported currencies, but you don't manage the links in a pivot table in the database.
 
 ### Retrieve with Query
 
@@ -42123,6 +42219,73 @@ const { data: stores } = useQueryGraphStep({
 
 // stores[0].supported_currencies
 ```
+
+***
+
+## Translation Module
+
+### Prerequisites
+
+- [Translation Module Configured](https://docs.medusajs.com/commerce-modules/translation#configure-translation-module/index.html.md)
+
+The Store Module has a `StoreLocale` data model that stores the supported locales of a store. However, these locales don't hold all the details of a locale, such as its name.
+
+Instead, Medusa defines a read-only link from the Store Module's `StoreLocale` data model to the [Translation Module](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/translation/index.html.md)'s `Locale` data model. This means you can retrieve the details of a store's supported locales, but you don't manage the links in a pivot table in the database.
+
+### Retrieve with Query
+
+To retrieve the details of a store's locales with [Query](https://docs.medusajs.com/docs/learn/fundamentals/module-links/query/index.html.md), pass `supported_locales.locale.*` in `fields`:
+
+### query.graph
+
+```ts
+const { data: stores } = await query.graph({
+  entity: "store",
+  fields: [
+    "supported_locales.locale.*",
+  ],
+})
+
+// stores[0].supported_locales[0].locale
+```
+
+### useQueryGraphStep
+
+```ts
+import { useQueryGraphStep } from "@medusajs/medusa/core-flows"
+
+// ...
+
+const { data: stores } = useQueryGraphStep({
+  entity: "store",
+  fields: [
+    "supported_locales.locale.*",
+  ],
+})
+
+// stores[0].supported_locales[0].locale
+```
+
+
+# Store Locales
+
+In this guide, you'll learn about locales defined in the Store Module.
+
+### Prerequisites
+
+- [Medusa v2.12.3 or later](https://github.com/medusajs/medusa/releases/tag/v2.12.3)
+
+While the Store Module allows you to manage the locales for your store, the actual locale data and translations are managed by the [Translation Module](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/translation/index.html.md).
+
+## Supported Locales
+
+The Store Module has a [StoreLocale](https://docs.medusajs.com/references/store/models/StoreLocale/index.html.md) data model that represents the locales supported by your store. It has a `locale_code` property that follows the [IETF BCP 47 standard](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1). For example, `en-US` represents American English, while `fr-FR` represents French (France).
+
+`StoreLocale` belongs to the [Store](https://docs.medusajs.com/references/store/models/Store/index.html.md) data model, which has a `supported_locales` property that lists all the locales available in your store.
+
+For example, if your store supports English (United States) and French (France), you'll have two `StoreLocale` records with the locale codes `en-US` and `fr-FR`.
+
+![Diagram illustrating the relationship between the Store and StoreLocale data models](https://res.cloudinary.com/dza7lstvk/image/upload/v1765371144/Medusa%20Resources/store-locale_ckanv4.jpg)
 
 
 # Store Module
@@ -42672,6 +42835,518 @@ Each tax region can have a default tax provider. The tax provider is responsible
 You can use Medusa's default tax provider or create a custom one, allowing you to integrate with third-party tax services or implement your own tax calculation logic.
 
 Learn more about tax providers in the [Tax Provider](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/tax/tax-provider/index.html.md) guide.
+
+
+# Translation Concepts
+
+In this guide, you'll learn about the key concepts related to the Translation Module, including locales and translations.
+
+### Prerequisites
+
+- [Translation Module Configured](https://docs.medusajs.com/commerce-modules/translation#configure-translation-module/index.html.md)
+
+## Locales
+
+The [Locale data model](https://docs.medusajs.com/references/translation/models/Locale/index.html.md) represents a language that resources can be translated into.
+
+Its `code` property follows the [IETF BCP 47 standard](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1). For example, `en-US` represents American English, while `fr-FR` represents French (France).
+
+Locales are automatically populated in your Medusa application the first time the Translation Module is used.
+
+### Default Locale
+
+The Translation Module doesn't enforce a default locale. If a resource doesn't have a translation in the requested locale, it will fall back to the original value stored in the resource's data model.
+
+***
+
+## Translations
+
+The [Translation data model](https://docs.medusajs.com/references/translation/models/Translation/index.html.md) represents a translated value for a specific resource in a specific locale.
+
+The data model has the following properties to associate the translation with the resource:
+
+- `reference_id`: The ID of the resource being translated (for example, the ID of the product being translated).
+- `reference`: The name of the table where the resource is stored (for example, `product` when translating a product).
+
+The locale of the translation is indicated by the `locale_code` property, which follows the same [IETF BCP 47 standard](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1) as the [Locale](#locales) data model.
+
+A resource may have only one translation per locale. For example, a product can have only one translation in `fr-FR` and another translation in `es-ES`.
+
+The actual translated values are stored in the `translations` property, which is a JSON object where each key represents a field of the resource being translated, and the value is the translated text.
+
+For example, a translation for a product to French (`fr-FR`) may look like this:
+
+```json
+{
+  "reference_id": "prod_123",
+  "reference": "product",
+  "locale_code": "fr-FR",
+  "translations": {
+    "title": "Produit Exemple",
+    "description": "Ceci est une description en français."
+  }
+}
+```
+
+Each key in the `translations` object corresponds to a property in the product resource, such as `title` and `description`, with their respective translated values.
+
+***
+
+## Retrieve Translations in Medusa
+
+To retrieve translations for the storefront, refer to the [Serve Translations in the Storefront](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/translation/storefront/index.html.md) guide.
+
+You can retrieve translations for a resource on the Medusa server using [Query](https://docs.medusajs.com/docs/learn/fundamentals/module-links/query/index.html.md). You can filter translations by `reference_id` and `locale_code` to get the specific translation you need.
+
+For example:
+
+```ts
+const { data: translations } = await query.graph({
+  entity: "translation",
+  fields: ["reference_id", "locale_code", "translations"],
+  filters: {
+    reference_id: "prod_123",
+    locale_code: "fr-FR",
+  },
+})
+
+console.log(translations)
+// Output:
+// [{
+//   reference_id: "prod_123",
+//   locale_code: "fr-FR",
+//   translations: {
+//     title: "Produit Exemple",
+//     description: "Ceci est une description en français."
+//   }
+// }]
+```
+
+In this example, you retrieve the translation records of a product with the ID `prod_123` in French (`fr-FR`).
+
+If you've enabled the [Caching Module](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/infrastructure-modules/caching/index.html.md) in your Medusa application, you can also cache translation queries to improve performance:
+
+```ts
+const { data: translations } = await query.graph({
+  entity: "translation",
+  fields: ["reference_id", "locale_code", "translations"],
+  filters: {
+    reference_id: "prod_123",
+    locale_code: "fr-FR",
+  },
+}, {
+  cache: {
+    enable: true,
+  },
+})
+
+console.log(translations)
+// Output:
+// [{
+//   reference_id: "prod_123",
+//   locale_code: "fr-FR",
+//   translations: {
+//     title: "Produit Exemple",
+//     description: "Ceci est une description en français."
+//   }
+// }]
+```
+
+
+# Links between Translation Module and Other Modules
+
+This document showcases the module links that Medusa defines between the Translation Module and other Commerce Modules.
+
+## Summary
+
+Medusa defines the following links between the Translation Module and other Commerce Modules:
+
+|First Data Model|Second Data Model|Type|Description|
+|---|---|---|---|
+|Product|Translation|Read-only - one-to-many|Learn more|
+|ProductVariant|Translation|Read-only - one-to-many|Learn more|
+|ProductCategory|Translation|Read-only - one-to-many|Learn more|
+|ProductCollection|Translation|Read-only - one-to-many|Learn more|
+|ProductTag|Translation|Read-only - one-to-many|Learn more|
+|ProductType|Translation|Read-only - one-to-many|Learn more|
+|ProductOption|Translation|Read-only - one-to-many|Learn more|
+|ProductOptionValue|Translation|Read-only - one-to-many|Learn more|
+|StoreLocale|Locale|Read-only - has many|Learn more|
+
+***
+
+## Product Module
+
+Medusa defines the following read-only links between the Translation and Product Modules:
+
+|Data Model|Link Type|Description|
+|---|---|---|
+|Product|One-to-many (bidirectional)|Retrieve translations associated with a product and vice versa.|
+|ProductVariant|One-to-many (read-only)|Retrieve translations of a product variant only.|
+|ProductCategory|One-to-many (read-only)|Retrieve translations of a product category only.|
+|ProductCollection|One-to-many (read-only)|Retrieve translations of a product collection only.|
+|ProductTag|One-to-many (read-only)|Retrieve translations of a product tag only.|
+|ProductType|One-to-many (read-only)|Retrieve translations of a product type only.|
+|ProductOption|One-to-many (read-only)|Retrieve translations of a product option only.|
+|ProductOptionValue|One-to-many (read-only)|Retrieve translations of a product option value only.|
+
+### Retrieve with Query
+
+To retrieve the translations of a product with [Query](https://docs.medusajs.com/docs/learn/fundamentals/module-links/query/index.html.md), pass `translations.*` in `fields`:
+
+You can pass the `translations.*` field when querying any of the above-mentioned data models to retrieve their associated translations.
+
+### query.graph
+
+```ts
+const { data: products } = await query.graph({
+  entity: "product",
+  fields: [
+    "translations.*",
+  ],
+})
+
+// products[0].translations
+```
+
+### useQueryGraphStep
+
+```ts
+import { useQueryGraphStep } from "@medusajs/medusa/core-flows"
+
+// ...
+
+const { data: products } = useQueryGraphStep({
+  entity: "product",
+  fields: [
+    "translations.*",
+  ],
+})
+
+// products[0].translations
+```
+
+***
+
+## Store Module
+
+The [Store Module](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/store/index.html.md) has a `StoreLocale` data model that stores the supported locales of a store. However, these locales don't hold all the details of a locale, such as its name.
+
+Instead, Medusa defines a read-only link from the Store Module's `StoreLocale` data model to the Translation Module's `Locale` data model. This means you can retrieve the details of a store's supported locales, but you don't manage the links in a pivot table in the database.
+
+### Retrieve with Query
+
+To retrieve the details of a store's locales with [Query](https://docs.medusajs.com/docs/learn/fundamentals/module-links/query/index.html.md), pass `supported_locales.locale.*` in `fields`:
+
+### query.graph
+
+```ts
+const { data: stores } = await query.graph({
+  entity: "store",
+  fields: [
+    "supported_locales.locale.*",
+  ],
+})
+
+// stores[0].supported_locales[0].locale
+```
+
+### useQueryGraphStep
+
+```ts
+import { useQueryGraphStep } from "@medusajs/medusa/core-flows"
+
+// ...
+
+const { data: stores } = useQueryGraphStep({
+  entity: "store",
+  fields: [
+    "supported_locales.locale.*",
+  ],
+})
+
+// stores[0].supported_locales[0].locale
+```
+
+
+# Translation Module
+
+In this section of the documentation, you will find resources to learn more about the Translation Module and how to use it in your application.
+
+### Prerequisites
+
+- [Medusa v2.12.3 or later](https://github.com/medusajs/medusa/releases/tag/v2.12.3)
+- [Translation Feature Flag Enabled](#)
+
+Refer to the [Medusa Admin User Guide](https://docs.medusajs.com/user-guide/settings/translations/index.html.md) to learn how to manage translations in the dashboard.
+
+Medusa has translation features available out-of-the-box through the Translation Module. A [module](https://docs.medusajs.com/docs/learn/fundamentals/modules/index.html.md) is a standalone package that provides features for a single domain. Each of Medusa's commerce features is provided in Commerce Modules, such as the Translation Module.
+
+Refer to the [Module Isolation](https://docs.medusajs.com/docs/learn/fundamentals/modules/isolation/index.html.md) guide to learn more about why modules are isolated.
+
+## Translation Features
+
+- [Translation and Locale Management](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/translation/concepts/index.html.md): Manage locales and add translations for different resources in your store.
+- [Multi-Language Support](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/translation/storefront/index.html.md): Manage and serve resources like products in multiple languages to cater to a diverse customer base.
+
+***
+
+## Configure Translation Module
+
+The Translation Module is currently behind a feature flag. To use it in your Medusa application, add it to the `modules` array and enable the `translation` feature flag.
+
+In your `medusa-config.ts` file, add the Translation Module to the `modules` array and enable the `translation` feature flag:
+
+```ts title="medusa-config.ts"
+module.exports = defineConfig({
+  // ...
+  modules: [
+    // other modules...
+    {
+      resolve: "@medusajs/medusa/translation",
+    },
+  ],
+  featureFlags: {
+    translation: true,
+  },
+})
+```
+
+Then, run the following command to make the necessary database changes for the Translation Module:
+
+```bash
+npx medusa db:migrate
+```
+
+You can then use the Translation Module in your Medusa application.
+
+***
+
+## How to Use the Translation Module
+
+In your Medusa application, you build flows around Commerce Modules. A flow is built as a [Workflow](https://docs.medusajs.com/docs/learn/fundamentals/workflows/index.html.md), which is a special function composed of a series of steps that guarantees data consistency and a reliable rollback mechanism.
+
+You can build custom workflows and steps. You can also re-use Medusa's workflows and steps, which are provided by the `@medusajs/medusa/core-flows` package.
+
+For example:
+
+```ts title="src/workflows/create-translation.ts" highlights={highlights}
+import { 
+  createWorkflow, 
+  WorkflowResponse,
+  createStep,
+  StepResponse,
+} from "@medusajs/framework/workflows-sdk"
+import { Modules } from "@medusajs/framework/utils"
+
+const createTranslationStep = createStep(
+  "create-translation",
+  async ({}, { container }) => {
+    const translationModuleService = container.resolve(Modules.TRANSLATION)
+
+    const translation = await translationModuleService.createTranslations({
+      reference_id: "product_123",
+      reference: "product",
+      locale_code: "fr-FR",
+      translations: {
+        title: "Produit Exemple",
+        description: "Ceci est une description en français.",
+      },
+    })
+
+    return new StepResponse({ translation }, translation.id)
+  },
+  async (translationId, { container }) => {
+    const translationModuleService = container.resolve(Modules.TRANSLATION)
+
+    await translationModuleService.deleteTranslations([translationId])
+  },
+)
+
+export const createTranslationWorkflow = createWorkflow(
+  "create-translation",
+  () => {
+    const { translation } = createTranslationStep()
+
+    return new WorkflowResponse({
+      translation,
+    })
+  },
+)
+```
+
+You can then execute the workflow in your custom API routes, scheduled jobs, or subscribers:
+
+### API Route
+
+```ts title="src/api/workflow/route.ts" highlights={[["11"], ["12"]]} collapsibleLines="1-6" expandButtonLabel="Show Imports"
+import type {
+  MedusaRequest,
+  MedusaResponse,
+} from "@medusajs/framework/http"
+import { createTranslationWorkflow } from "../../workflows/create-translation"
+
+export async function GET(
+  req: MedusaRequest,
+  res: MedusaResponse
+) {
+  const { result } = await createTranslationWorkflow(req.scope)
+    .run()
+
+  res.send(result)
+}
+```
+
+### Subscriber
+
+```ts title="src/subscribers/user-created.ts" highlights={[["11"], ["12"]]} collapsibleLines="1-6" expandButtonLabel="Show Imports"
+import {
+  type SubscriberConfig,
+  type SubscriberArgs,
+} from "@medusajs/framework"
+import { createTranslationWorkflow } from "../workflows/create-translation"
+
+export default async function handleUserCreated({
+  event: { data },
+  container,
+}: SubscriberArgs<{ id: string }>) {
+  const { result } = await createTranslationWorkflow(container)
+    .run()
+
+  console.log(result)
+}
+
+export const config: SubscriberConfig = {
+  event: "user.created",
+}
+```
+
+### Scheduled Job
+
+```ts title="src/jobs/run-daily.ts" highlights={[["7"], ["8"]]}
+import { MedusaContainer } from "@medusajs/framework/types"
+import { createTranslationWorkflow } from "../workflows/create-translation"
+
+export default async function myCustomJob(
+  container: MedusaContainer
+) {
+  const { result } = await createTranslationWorkflow(container)
+    .run()
+
+  console.log(result)
+}
+
+export const config = {
+  name: "run-once-a-day",
+  schedule: `0 0 * * *`,
+}
+```
+
+Refer to the [Workflows](https://docs.medusajs.com/docs/learn/fundamentals/workflows/index.html.md) documentation to learn more.
+
+***
+
+## Supported Module Translations
+
+The Translation Module currently supports translations for all data models in the [Product Module](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/product/index.html.md), including products, product variants, and categories.
+
+Future versions of the Translation Module will include support for all Commerce Modules, as well as custom modules.
+
+***
+
+
+# Serve Translations in the Storefront
+
+In this guide, you’ll learn how to use locales and serve translated content in your storefront application in your Medusa application.
+
+### Prerequisites
+
+- [Translation Module Configured](https://docs.medusajs.com/commerce-modules/translation#configure-translation-module/index.html.md)
+
+## Fetch Store Locales
+
+You can retrieve the list of locales available in your store using the [List Locales Store API route](https://docs.medusajs.com/api/store#locales_getlocales). You can display this list to customers, allowing them to select their preferred language.
+
+For example, to fetch the list of locales, send a `GET` request to the following endpoint:
+
+```bash
+curl "http://localhost:9000/store/locales" \
+-H 'x-publishable-api-key: {your_publishable_api_key}'
+```
+
+Learn more in the [Localization](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/storefront-development/localization/index.html.md) storefront guide.
+
+You must pass a publishable API key in the request header to store API routes. Learn more in the [Store API reference](https://docs.medusajs.com/api/store#publishable-api-key).
+
+***
+
+## Retrieve Translations for Resources
+
+Currently, you can retrieve translations using the [Store API routes](https://docs.medusajs.com/api/store) for product-related resources, such as products, product variants, and categories. Future releases will expand translation support to additional resources.
+
+Medusa determines the locale for the request in the following order of priority:
+
+- The `locale` query parameter in the API request.
+- The `x-medusa-locale` header in the API request.
+
+If translations aren't available for the selected locale, or no locale is selected, the original content stored in the resource's data model is returned.
+
+For example:
+
+```bash
+curl "http://localhost:9000/store/products?locale=fr-FR" \
+-H 'x-publishable-api-key: {your_publishable_api_key}'
+```
+
+This returns the list of products with their French (France) translations if available:
+
+```json
+{
+  "products": [
+    {
+      "id": "prod_123",
+      "title": "Produit Exemple",
+      "description": "Ceci est une description en français.",
+      // other product fields...
+    },
+    // other products...
+  ]
+}
+```
+
+Learn more in the [List Products](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/storefront-development/products/list#retrieve-translations-for-products/index.html.md) storefront guide.
+
+***
+
+## Set a Cart's Locale
+
+A cart can have a locale, which determines the language of the item contents. You can set the locale when creating the cart and update it if the user changes their language preference.
+
+For example, when creating a cart, set the `locale` property in the request body:
+
+```bash
+curl -X POST "http://localhost:9000/store/carts" \
+-H 'x-publishable-api-key: {your_publishable_api_key}' \
+-H "Content-Type: application/json" \
+-d '{
+  // other cart properties...
+  "locale": "fr-FR"
+}'
+```
+
+This creates a cart with the French (France) locale. When you add items to the cart, their titles and descriptions are displayed in French if translations are available.
+
+If you don't specify a locale when creating the cart, the original product content is used for the items in the cart.
+
+Learn more in the [Create Cart](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/storefront-development/cart/create/index.html.md) and [Update Cart](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/storefront-development/cart/update/index.html.md) storefront guides.
+
+***
+
+## Locale of Placed Order
+
+When a cart is completed and an order is placed, the locale of the cart is copied to the order. The content of items in the order is displayed in the locale that was set in the cart.
+
+This ensures that customers see order details in their preferred language.
 
 
 # Send Invite User Email Notification
@@ -48157,7 +48832,8 @@ module.exports = defineConfig({
       resolve: "@medusajs/medusa/workflow-engine-redis",
       options: {
         redis: {
-          url: process.env.WE_REDIS_URL,
+          redisUrl: process.env.WE_REDIS_URL,
+          // ...other Redis options
         },
       },
     },
@@ -48175,12 +48851,23 @@ WE_REDIS_URL=<YOUR_REDIS_URL>
 
 ### Redis Workflow Engine Module Options
 
-|Option|Description|Required|Default|
-|---|---|---|---|---|---|---|
-|\`url\`|A string indicating the Redis connection URL.|No. If not provided, you must provide the |-|
-|\`options\`|An object of Redis options. Refer to the |No|-|
-|\`queueName\`|The name of the queue used to keep track of retries and timeouts.|No|\`medusa-workflows\`|
-|\`pubsub\`|A connection object having the following properties:|No. If not provided, you must provide the |-|
+|Option|Description|Required|
+|---|---|---|---|---|
+|\`url\`|A string indicating the Redis connection URL.|No. If not provided, you must provide the |
+|\`redisUrl\`|A string indicating the Redis connection URL.|No. If not provided, you must provide the |
+|\`pubsub\`|A connection object having the following properties:|No. If not provided, you must provide the |
+|\`queueName\`|The name of the queue used to keep track of retries and timeouts for workflow executions.|No|
+|\`jobQueueName\`|The name of the queue used to keep track of retries and timeouts for scheduled jobs.|No|
+|\`options\`|An object of Redis options. Refer to the |No|
+|\`redisOptions\`|An object of Redis options. Refer to the |No|
+|\`queueOptions\`|An object of options to pass to all BullMQ instances. Refer to |No|
+|\`workerOptions\`|An object of options to pass to all BullMQ worker instances. Refer to |No|
+|\`mainQueueOptions\`|An object of options to pass to the main BullMQ queue instance for workflows. Refer to |No|
+|\`mainWorkerOptions\`|An object of options to pass to the main BullMQ worker instance for workflows. Refer to |No|
+|\`jobQueueOptions\`|An object of options to pass to the main BullMQ workflow queue instance for scheduled jobs. Refer to |No|
+|\`jobWorkerOptions\`|An object of options to pass to the main BullMQ workflow worker instance for scheduled jobs. Refer to |No|
+|\`cleanerQueueOptions\`|An object of options to pass to the BullMQ cleaner queue instance. Refer to |No|
+|\`cleanerWorkerOptions\`|An object of options to pass to the BullMQ cleaner worker instance. Refer to |No|
 
 ## Test the Module
 
@@ -51868,6 +52555,39 @@ sdk.store.product.list({
 In the example above, you pass the `x-no-compression` header in the request to disable HTTP compression. You pass it as the last parameter of the `sdk.store.product.list` method.
 
 The JS SDK appends request-specific headers to authentication headers and headers configured in the `globalHeaders` configuration. So, in the example above, the `x-no-compression` header is passed in the request along with the authentication headers and any headers configured in the `globalHeaders` configuration.
+
+***
+
+## Localization with JS SDK
+
+### Prerequisites
+
+- [Translation Module Configured](https://docs.medusajs.com/commerce-modules/translation#configure-translation-module/index.html.md)
+
+If you support [localization](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/storefront-development/localization/index.html.md) in your storefront, you can use the `setLocale` method of the JS SDK.
+
+The `setLocale` method stores the locale in the JS SDK to pass the it as a `x-medusa-locale` header in all subsequent requests. Also, if your application supports `localStorage`, the method sets the locale in the `medusa_locale` key of the `localStorage`.
+
+For example, to set the locale to French (France):
+
+```ts
+sdk.setLocale("fr-FR")
+// products content is fetched in French
+const { products } = await sdk.store.product.list()
+```
+
+The `setLocale` method accepts the locale string in the [IETF BCP 47 standard](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1). All subsequent requests sent using the JS SDK will include the specified locale in the `x-medusa-locale` header.
+
+In the above example, the product content, such as title and description, is fetched in French and falls back to the original content if translations aren't available.
+
+You can also retrieve the currently set locale using the `getLocale` method:
+
+```ts
+const currentLocale = sdk.getLocale()
+console.log(currentLocale) // "fr-FR"
+```
+
+Learn more about localization and translations in the [Translation Module](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/translation/index.html.md) guide.
 
 ***
 
@@ -98684,6 +99404,8 @@ If you encounter issues not covered in the troubleshooting guides:
 # Implement Localization in Medusa by Integrating Contentful
 
 In this tutorial, you'll learn how to localize your Medusa store's data with Contentful.
+
+[Translation Module](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/translation/index.html.md) is available since [Medusa v2.12.3](https://github.com/medusajs/medusa/releases/tag/v2.12.3). It allows you to manage translations for product-related resources through Medusa's Store API routes. For general localization needs, consider using the Translation Module instead of integrating a third-party CMS.
 
 When you install a Medusa application, you get a fully-fledged commerce platform with a Framework for customization. While Medusa provides features essential for internationalization, such as support for multiple [regions](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/region/index.html.md) and [currencies](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/currency/index.html.md), it doesn't provide content localization.
 
@@ -150410,12 +151132,14 @@ A multi-regional setup lets merchants manage their inventory through Medusa acro
 
 ## Multi-Lingual Setup
 
-By integrating a third-party Content Management Systems (CMS), you benefit from rich content features including managing your content in multiple languages. This allows you to cater to customers’ different languages in the regions you serve.
+Medusa's [Translation Module](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/commerce-modules/translation/index.html.md) allows merchants to manage translations for product-related resources through Medusa's Store API routes.
 
-To integrate a third-party system, create a custom module whose main service connects to that third-party service. You can also follow the [Contentful integration guide](https://docs.medusajs.com/Users/shahednasser/medusa/www/apps/resources/app/integrations/guides/contentful/index.html.md) to learn how to integrate Contentful and benefit from localization features.
+This enables merchants to provide a localized experience for customers in different regions by serving translated content in their storefront applications.
 
-- [Create a Module](https://docs.medusajs.com/docs/learn/fundamentals/modules/index.html.md): Learn how to create a module in Medusa.
-- [Integrate Contentful](https://docs.medusajs.com/integrations/guides/contentful/index.html.md): Integrate Contentful with Localization Features.
+Future versions of the Translation Module will expand translation support to additional resources beyond product-related ones.
+
+- [Manage Translations](https://docs.medusajs.com/user-guide/settings/translations/index.html.md): Learn how to manage translations in the Medusa Admin.
+- [Localizing Storefronts](https://docs.medusajs.com/storefront-development/localization/index.html.md): Learn how to localize your storefront applications.
 
 
 # Omnichannel Commerce Recipe

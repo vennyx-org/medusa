@@ -1,5 +1,8 @@
 import { HttpTypes } from "@medusajs/framework/types"
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import {
+  applyTranslations,
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 import {
   AuthenticatedMedusaRequest,
   MedusaResponse,
@@ -16,6 +19,12 @@ export const GET = async (
     filters: req.filterableFields,
     pagination: req.queryConfig.pagination,
     fields: req.queryConfig.fields,
+  })
+
+  await applyTranslations({
+    localeCode: req.locale,
+    objects: product_types,
+    container: req.scope,
   })
 
   res.json({

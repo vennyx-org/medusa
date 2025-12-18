@@ -10,6 +10,15 @@ export type DeleteTranslationsStepInput = string[]
 export const deleteTranslationsStepId = "delete-translations"
 /**
  * This step deletes one or more translations.
+ * 
+ * @since 2.12.3
+ * @featureFlag translation
+ *
+ * @example
+ * const data = deleteTranslationsStep([
+ *   "trans_123",
+ *   "trans_456",
+ * ])
  */
 export const deleteTranslationsStep = createStep(
   deleteTranslationsStepId,

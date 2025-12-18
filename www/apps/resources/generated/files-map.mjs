@@ -612,6 +612,10 @@ export const filesMap = [
     "pathname": "/commerce-modules/store/links-to-other-modules"
   },
   {
+    "filePath": "/www/apps/resources/app/commerce-modules/store/locales/page.mdx",
+    "pathname": "/commerce-modules/store/locales"
+  },
+  {
     "filePath": "/www/apps/resources/app/commerce-modules/store/page.mdx",
     "pathname": "/commerce-modules/store"
   },
@@ -654,6 +658,30 @@ export const filesMap = [
   {
     "filePath": "/www/apps/resources/app/commerce-modules/tax/workflows/page.mdx",
     "pathname": "/commerce-modules/tax/workflows"
+  },
+  {
+    "filePath": "/www/apps/resources/app/commerce-modules/translation/concepts/page.mdx",
+    "pathname": "/commerce-modules/translation/concepts"
+  },
+  {
+    "filePath": "/www/apps/resources/app/commerce-modules/translation/js-sdk/page.mdx",
+    "pathname": "/commerce-modules/translation/js-sdk"
+  },
+  {
+    "filePath": "/www/apps/resources/app/commerce-modules/translation/links-to-other-modules/page.mdx",
+    "pathname": "/commerce-modules/translation/links-to-other-modules"
+  },
+  {
+    "filePath": "/www/apps/resources/app/commerce-modules/translation/page.mdx",
+    "pathname": "/commerce-modules/translation"
+  },
+  {
+    "filePath": "/www/apps/resources/app/commerce-modules/translation/storefront/page.mdx",
+    "pathname": "/commerce-modules/translation/storefront"
+  },
+  {
+    "filePath": "/www/apps/resources/app/commerce-modules/translation/workflows/page.mdx",
+    "pathname": "/commerce-modules/translation/workflows"
   },
   {
     "filePath": "/www/apps/resources/app/commerce-modules/user/admin-widget-zones/page.mdx",
@@ -1342,6 +1370,10 @@ export const filesMap = [
   {
     "filePath": "/www/apps/resources/app/storefront-development/guides/react-native-expo/page.mdx",
     "pathname": "/storefront-development/guides/react-native-expo"
+  },
+  {
+    "filePath": "/www/apps/resources/app/storefront-development/localization/page.mdx",
+    "pathname": "/storefront-development/localization"
   },
   {
     "filePath": "/www/apps/resources/app/storefront-development/page.mdx",
@@ -14592,6 +14624,14 @@ export const filesMap = [
     "pathname": "/references/modules/tax_provider"
   },
   {
+    "filePath": "/www/apps/resources/references/modules/translation/page.mdx",
+    "pathname": "/references/modules/translation"
+  },
+  {
+    "filePath": "/www/apps/resources/references/modules/translation_models/page.mdx",
+    "pathname": "/references/modules/translation_models"
+  },
+  {
     "filePath": "/www/apps/resources/references/modules/types/page.mdx",
     "pathname": "/references/modules/types"
   },
@@ -19080,6 +19120,10 @@ export const filesMap = [
     "pathname": "/references/store_models/variables/store_models.StoreCurrency"
   },
   {
+    "filePath": "/www/apps/resources/references/store_models/variables/store_models.StoreLocale/page.mdx",
+    "pathname": "/references/store_models/variables/store_models.StoreLocale"
+  },
+  {
     "filePath": "/www/apps/resources/references/tax/IBigNumber/methods/tax.IBigNumber.toJSON/page.mdx",
     "pathname": "/references/tax/IBigNumber/methods/tax.IBigNumber.toJSON"
   },
@@ -19470,6 +19514,258 @@ export const filesMap = [
   {
     "filePath": "/www/apps/resources/references/tax_provider/types/tax_provider.ShippingTaxCalculationLine/page.mdx",
     "pathname": "/references/tax_provider/types/tax_provider.ShippingTaxCalculationLine"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/IMessageAggregator/methods/translation.IMessageAggregator.clearMessages/page.mdx",
+    "pathname": "/references/translation/IMessageAggregator/methods/translation.IMessageAggregator.clearMessages"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/IMessageAggregator/methods/translation.IMessageAggregator.getMessages/page.mdx",
+    "pathname": "/references/translation/IMessageAggregator/methods/translation.IMessageAggregator.getMessages"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/IMessageAggregator/methods/translation.IMessageAggregator.save/page.mdx",
+    "pathname": "/references/translation/IMessageAggregator/methods/translation.IMessageAggregator.save"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/IMessageAggregator/methods/translation.IMessageAggregator.saveRawMessageData/page.mdx",
+    "pathname": "/references/translation/IMessageAggregator/methods/translation.IMessageAggregator.saveRawMessageData"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/IModuleService/methods/translation.IModuleService.__joinerConfig/page.mdx",
+    "pathname": "/references/translation/IModuleService/methods/translation.IModuleService.__joinerConfig"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.createLocales/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.createLocales"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.createTranslations/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.createTranslations"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.deleteLocales/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.deleteLocales"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.deleteTranslations/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.deleteTranslations"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listAndCountLocales/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listAndCountLocales"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listAndCountTranslations/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listAndCountTranslations"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listLocales/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listLocales"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listTranslations/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.listTranslations"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.restoreLocales/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.restoreLocales"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.restoreTranslations/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.restoreTranslations"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.retrieveLocale/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.retrieveLocale"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.retrieveTranslation/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.retrieveTranslation"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.softDeleteLocales/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.softDeleteLocales"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.softDeleteTranslations/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.softDeleteTranslations"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.updateLocales/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.updateLocales"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.updateTranslations/page.mdx",
+    "pathname": "/references/translation/ITranslationModuleService/methods/translation.ITranslationModuleService.updateTranslations"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.BaseFilterable/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.BaseFilterable"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.Context/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.Context"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.CreateLocaleDTO/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.CreateLocaleDTO"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.CreateTranslationDTO/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.CreateTranslationDTO"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.FilterableLocaleProps/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.FilterableLocaleProps"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.FilterableTranslationProps/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.FilterableTranslationProps"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.FindConfig/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.FindConfig"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.IMessageAggregator/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.IMessageAggregator"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.IModuleService/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.IModuleService"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.ITranslationModuleService/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.ITranslationModuleService"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.JoinerServiceConfig/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.JoinerServiceConfig"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.JoinerServiceConfigAlias/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.JoinerServiceConfigAlias"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.LocaleDTO/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.LocaleDTO"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.MessageAggregatorFormat/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.MessageAggregatorFormat"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.RestoreReturn/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.RestoreReturn"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.SoftDeleteReturn/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.SoftDeleteReturn"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.TranslationDTO/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.TranslationDTO"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.UpdateLocaleDTO/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.UpdateLocaleDTO"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/interfaces/translation.UpdateTranslationDTO/page.mdx",
+    "pathname": "/references/translation/interfaces/translation.UpdateTranslationDTO"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.Constructor/page.mdx",
+    "pathname": "/references/translation/types/translation.Constructor"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.Event/page.mdx",
+    "pathname": "/references/translation/types/translation.Event"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.EventMetadata/page.mdx",
+    "pathname": "/references/translation/types/translation.EventMetadata"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.ExpandScalar/page.mdx",
+    "pathname": "/references/translation/types/translation.ExpandScalar"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.FilterQuery/page.mdx",
+    "pathname": "/references/translation/types/translation.FilterQuery"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.FilterQueryProperties/page.mdx",
+    "pathname": "/references/translation/types/translation.FilterQueryProperties"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.FilterValue/page.mdx",
+    "pathname": "/references/translation/types/translation.FilterValue"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.FilterValue2/page.mdx",
+    "pathname": "/references/translation/types/translation.FilterValue2"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.FindConfigOrder/page.mdx",
+    "pathname": "/references/translation/types/translation.FindConfigOrder"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.JoinerRelationship/page.mdx",
+    "pathname": "/references/translation/types/translation.JoinerRelationship"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.LinkModulesExtraFields/page.mdx",
+    "pathname": "/references/translation/types/translation.LinkModulesExtraFields"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.Message/page.mdx",
+    "pathname": "/references/translation/types/translation.Message"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.ModuleJoinerConfig/page.mdx",
+    "pathname": "/references/translation/types/translation.ModuleJoinerConfig"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.ModuleJoinerRelationship/page.mdx",
+    "pathname": "/references/translation/types/translation.ModuleJoinerRelationship"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.OperatorMap/page.mdx",
+    "pathname": "/references/translation/types/translation.OperatorMap"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.PrevLimit/page.mdx",
+    "pathname": "/references/translation/types/translation.PrevLimit"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.Primary/page.mdx",
+    "pathname": "/references/translation/types/translation.Primary"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.Query/page.mdx",
+    "pathname": "/references/translation/types/translation.Query"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.RawMessageFormat/page.mdx",
+    "pathname": "/references/translation/types/translation.RawMessageFormat"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.ReadonlyPrimary/page.mdx",
+    "pathname": "/references/translation/types/translation.ReadonlyPrimary"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation/types/translation.Scalar/page.mdx",
+    "pathname": "/references/translation/types/translation.Scalar"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation_models/variables/translation_models.Locale/page.mdx",
+    "pathname": "/references/translation_models/variables/translation_models.Locale"
+  },
+  {
+    "filePath": "/www/apps/resources/references/translation_models/variables/translation_models.Translation/page.mdx",
+    "pathname": "/references/translation_models/variables/translation_models.Translation"
   },
   {
     "filePath": "/www/apps/resources/references/types/CacheTypes/interfaces/types.CacheTypes.ICacheService/page.mdx",

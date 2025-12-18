@@ -57,6 +57,12 @@ const generatedgeneratedStoreSidebarSidebar = {
       "loaded": true
     },
     {
+      "type": "link",
+      "title": "Localization",
+      "path": "localization",
+      "loaded": true
+    },
+    {
       "type": "separator"
     },
     {

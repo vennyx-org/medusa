@@ -1,5 +1,11 @@
 # @medusajs/icons
 
+## 2.12.3
+
+### Patch Changes
+
+- [#14297](https://github.com/medusajs/medusa/pull/14297) [`a43eb11d6565d19e82cf2b06e262ab509214b3d4`](https://github.com/medusajs/medusa/commit/a43eb11d6565d19e82cf2b06e262ab509214b3d4) Thanks [@fPolic](https://github.com/fPolic)! - chore(icons): sync new icons
+
 ## 2.12.2
 
 ## 2.12.1

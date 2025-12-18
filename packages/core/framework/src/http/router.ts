@@ -28,7 +28,7 @@ import { Logger, MedusaContainer } from "@medusajs/types"
 import { join } from "path"
 import { configManager } from "../config"
 import { MiddlewareFileLoader } from "./middleware-file-loader"
-import { authenticate, AuthType } from "./middlewares"
+import { applyLocale, authenticate, AuthType } from "./middlewares"
 import { createBodyParserMiddlewaresStack } from "./middlewares/bodyparser"
 import { ensurePublishableApiKeyMiddleware } from "./middlewares/ensure-publishable-api-key"
 import { errorHandler } from "./middlewares/error-handler"
@@ -406,6 +406,18 @@ export class ApiLoader {
     this.#app.use(namespace, middleware as RequestHandler)
   }
 
+  #applyLocaleMiddleware(namespace: string) {
+    this.#logger.debug(
+      `Registering locale middleware for namespace ${namespace}`
+    )
+    let middleware = ApiLoader.traceMiddleware
+      ? ApiLoader.traceMiddleware(applyLocale, {
+          route: namespace,
+        })
+      : applyLocale
+    this.#app.use(namespace, middleware as RequestHandler)
+  }
+
   async load() {
     if (FeatureFlag.isFeatureEnabled("backend_hmr")) {
       ;(global as any).__MEDUSA_HMR_API_LOADER__ = this
@@ -481,6 +493,8 @@ export class ApiLoader {
      * Publishable key check, CORS and auth setup for store routes.
      */
     this.#applyStorePublishableKeyMiddleware("/store")
+
+    this.#applyLocaleMiddleware("/store")
 
     this.#applyAuthMiddleware(
       routesFinder,

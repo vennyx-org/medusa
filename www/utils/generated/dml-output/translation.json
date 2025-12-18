@@ -1,0 +1,26 @@
+{
+	"Locale": {
+		"filePath": "packages/modules/translation/src/models/locale.ts",
+		"properties": {
+			"id": "The ID of the locale.",
+			"code": "The code of the locale in BCP 47 format. For example, `en-US`.",
+			"name": "The display name of the locale"
+		},
+		"deprecated": {
+			"is_deprecated": false
+		}
+	},
+	"Translation": {
+		"filePath": "packages/modules/translation/src/models/translation.ts",
+		"properties": {
+			"id": "The ID of the translation.",
+			"reference_id": "The ID of the resource that this translation belongs to. For example, the product ID.",
+			"reference": "The name of the table that the resource belongs to. For example, `product`.",
+			"locale_code": "The translation's locale code in BCP 47 format. For example, `en-US`.",
+			"translations": "The key-value pairs of the translated fields. The key is a property in the referenced resource, and the value is the translated value for that property."
+		},
+		"deprecated": {
+			"is_deprecated": false
+		}
+	}
+}

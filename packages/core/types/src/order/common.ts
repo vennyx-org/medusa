@@ -1139,6 +1139,11 @@ export interface OrderDTO {
   is_draft_order?: boolean
 
   /**
+   * The locale of the order.
+   */
+  locale?: string | null
+
+  /**
    * Holds custom data in key-value pairs.
    */
   metadata?: Record<string, unknown> | null

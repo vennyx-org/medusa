@@ -1,5 +1,6 @@
 import { StoreProductTagResponse } from "@medusajs/framework/types"
 import {
+  applyTranslations,
   ContainerRegistrationKeys,
   MedusaError,
 } from "@medusajs/framework/utils"
@@ -30,5 +31,14 @@ export const GET = async (
       `Product tag with id: ${req.params.id} was not found`
     )
   }
-  res.json({ product_tag: data[0] })
+
+  const productTag = data[0]
+
+  await applyTranslations({
+    localeCode: req.locale,
+    objects: [productTag],
+    container: req.scope,
+  })
+
+  res.json({ product_tag: productTag })
 }
