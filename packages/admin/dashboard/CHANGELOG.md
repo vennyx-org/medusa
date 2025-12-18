@@ -1,5 +1,17 @@
 # @medusajs/dashboard
 
+## 2.12.4
+
+### Patch Changes
+
+- [#14330](https://github.com/medusajs/medusa/pull/14330) [`9f8da1e2e07ae1424e38b8bc61be465558e6980b`](https://github.com/medusajs/medusa/commit/9f8da1e2e07ae1424e38b8bc61be465558e6980b) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - fix(dashboard): Remove unused translation property
+
+- Updated dependencies []:
+  - @medusajs/admin-shared@2.12.4
+  - @medusajs/js-sdk@2.12.4
+  - @medusajs/icons@2.12.4
+  - @medusajs/ui@4.0.32
+
 ## 2.12.3
 
 ### Patch Changes

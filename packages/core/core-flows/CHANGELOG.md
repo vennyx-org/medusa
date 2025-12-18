@@ -1,5 +1,14 @@
 # @medusajs/core-flows
 
+## 2.12.4
+
+### Patch Changes
+
+- [#14338](https://github.com/medusajs/medusa/pull/14338) [`c0ec54fc15fece373ac77f547706ab85eb5bc844`](https://github.com/medusajs/medusa/commit/c0ec54fc15fece373ac77f547706ab85eb5bc844) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(core-flows): fix type of getTranslatedLineItemsStep
+
+- Updated dependencies []:
+  - @medusajs/framework@2.12.4
+
 ## 2.12.3
 
 ### Patch Changes

@@ -1,5 +1,65 @@
 # Change Log
 
+## 2.12.4
+
+### Patch Changes
+
+- [#14342](https://github.com/medusajs/medusa/pull/14342) [`92d240d7493ed350aed8b8af80c1dfc62b07a88c`](https://github.com/medusajs/medusa/commit/92d240d7493ed350aed8b8af80c1dfc62b07a88c) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(medusa): fix type of product variant request param
+
+- Updated dependencies [[`c0ec54fc15fece373ac77f547706ab85eb5bc844`](https://github.com/medusajs/medusa/commit/c0ec54fc15fece373ac77f547706ab85eb5bc844)]:
+  - @medusajs/core-flows@2.12.4
+  - @medusajs/admin-bundler@2.12.4
+  - @medusajs/analytics@2.12.4
+  - @medusajs/api-key@2.12.4
+  - @medusajs/auth@2.12.4
+  - @medusajs/caching@2.12.4
+  - @medusajs/cart@2.12.4
+  - @medusajs/currency@2.12.4
+  - @medusajs/customer@2.12.4
+  - @medusajs/file@2.12.4
+  - @medusajs/fulfillment@2.12.4
+  - @medusajs/index@2.12.4
+  - @medusajs/inventory@2.12.4
+  - @medusajs/link-modules@2.12.4
+  - @medusajs/locking@2.12.4
+  - @medusajs/notification@2.12.4
+  - @medusajs/order@2.12.4
+  - @medusajs/payment@2.12.4
+  - @medusajs/pricing@2.12.4
+  - @medusajs/product@2.12.4
+  - @medusajs/promotion@2.12.4
+  - @medusajs/region@2.12.4
+  - @medusajs/sales-channel@2.12.4
+  - @medusajs/settings@2.12.4
+  - @medusajs/stock-location@2.12.4
+  - @medusajs/store@2.12.4
+  - @medusajs/tax@2.12.4
+  - @medusajs/translation@2.12.4
+  - @medusajs/user@2.12.4
+  - @medusajs/workflow-engine-inmemory@2.12.4
+  - @medusajs/workflow-engine-redis@2.12.4
+  - @medusajs/draft-order@2.12.4
+  - @medusajs/framework@2.12.4
+  - @medusajs/telemetry@2.12.4
+  - @medusajs/cache-inmemory@2.12.4
+  - @medusajs/cache-redis@2.12.4
+  - @medusajs/event-bus-local@2.12.4
+  - @medusajs/event-bus-redis@2.12.4
+  - @medusajs/analytics-local@2.12.4
+  - @medusajs/analytics-posthog@2.12.4
+  - @medusajs/auth-emailpass@2.12.4
+  - @medusajs/auth-github@2.12.4
+  - @medusajs/auth-google@2.12.4
+  - @medusajs/caching-redis@2.12.4
+  - @medusajs/file-local@2.12.4
+  - @medusajs/file-s3@2.12.4
+  - @medusajs/fulfillment-manual@2.12.4
+  - @medusajs/locking-postgres@2.12.4
+  - @medusajs/locking-redis@2.12.4
+  - @medusajs/notification-local@2.12.4
+  - @medusajs/notification-sendgrid@2.12.4
+  - @medusajs/payment-stripe@2.12.4
+
 ## 2.12.3
 
 ### Patch Changes
