@@ -214,8 +214,12 @@ export const getVariantsAndItemsWithPrices = createWorkflow(
 
           if (variant && !isCustomPrice) {
             input.unitPrice = calculatedPriceSet.calculated_amount
-            input.isTaxInclusive =
-              calculatedPriceSet.is_calculated_price_tax_inclusive
+            // Only override is_tax_inclusive if not explicitly provided in the input item
+            // This preserves the caller's intent for tax-inclusive/exclusive pricing
+            if (item_.is_tax_inclusive === undefined) {
+              input.isTaxInclusive =
+                calculatedPriceSet.is_calculated_price_tax_inclusive
+            }
           }
 
           const preparedItem = prepareLineItemData(input)
