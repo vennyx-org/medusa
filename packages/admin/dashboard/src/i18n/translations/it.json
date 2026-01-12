@@ -558,6 +558,13 @@
         "label": "Scontabile",
         "hint": "Quando deselezionato, gli sconti non verranno applicati a questo prodotto"
       },
+      "is_tax_inclusive": {
+        "label": "Prezzo IVA inclusa",
+        "hint": "Determina se i prezzi dei prodotti includono le tasse",
+        "default": "Usa impostazione predefinita regione/negozio",
+        "true": "I prezzi includono le tasse",
+        "false": "I prezzi non includono le tasse"
+      },
       "type": {
         "label": "Tipo"
       },

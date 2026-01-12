@@ -560,6 +560,13 @@
           "label": "Slevový",
           "hint": "Když není zaškrtnuto, slevy nebudou na tento produkt aplikovány"
         },
+        "is_tax_inclusive": {
+          "label": "Cena včetně daně",
+          "hint": "Určuje, zda ceny produktů zahrnují daň",
+          "default": "Použít výchozí nastavení regionu/obchodu",
+          "true": "Ceny zahrnují daň",
+          "false": "Ceny nezahrnují daň"
+        },
         "shipping_profile": {
           "label": "Profil dopravy",
           "hint": "Připojte produkt k profilu dopravy"

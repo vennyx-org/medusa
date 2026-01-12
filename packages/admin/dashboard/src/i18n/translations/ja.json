@@ -547,6 +547,13 @@
         "label": "割引可能",
         "hint": "チェックを外すと、この商品に割引は適用されません"
       },
+      "is_tax_inclusive": {
+        "label": "税込価格",
+        "hint": "商品価格に税金が含まれているかどうかを決定します",
+        "default": "地域/店舗のデフォルトを使用",
+        "true": "価格は税込み",
+        "false": "価格は税抜き"
+      },
       "type": {
         "label": "タイプ"
       },
@@ -2474,7 +2481,10 @@
         "placeholder": "wrong_size",
         "tooltip": "値は返品理由の一意の識別子である必要があります。"
       },
-      "label": { "label": "ラベル", "placeholder": "サイズが合わない" },
+      "label": {
+        "label": "ラベル",
+        "placeholder": "サイズが合わない"
+      },
       "description": {
         "label": "説明",
         "placeholder": "顧客が間違ったサイズを受け取った"

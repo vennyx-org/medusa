@@ -576,6 +576,13 @@
         "label": "Rabaty",
         "hint": "Jeśli odznaczone, rabaty nie będą stosowane do tego produktu"
       },
+      "is_tax_inclusive": {
+        "label": "Cena brutto",
+        "hint": "Określa czy ceny produktów zawierają podatek",
+        "default": "Użyj domyślnego ustawienia regionu/sklepu",
+        "true": "Ceny zawierają podatek",
+        "false": "Ceny nie zawierają podatku"
+      },
       "shipping_profile": {
         "label": "Profil wysyłki",
         "hint": "Połącz produkt z profilem wysyłki"

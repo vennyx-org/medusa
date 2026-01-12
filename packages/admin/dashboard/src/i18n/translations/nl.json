@@ -556,6 +556,13 @@
         "label": "Korting mogelijk",
         "hint": "Wanneer uitgeschakeld, worden kortingen niet toegepast op dit product"
       },
+      "is_tax_inclusive": {
+        "label": "Prijs inclusief BTW",
+        "hint": "Bepaalt of productprijzen inclusief belasting zijn",
+        "default": "Gebruik standaardinstelling van regio/winkel",
+        "true": "Prijzen zijn inclusief belasting",
+        "false": "Prijzen zijn exclusief belasting"
+      },
       "shipping_profile": {
         "label": "Verzendprofiel",
         "hint": "Koppel het product aan een verzendprofiel"
@@ -2654,7 +2661,10 @@
         "placeholder": "verkeerde_maat",
         "tooltip": "De waarde moet een unieke identificatie zijn voor de retourreden."
       },
-      "label": { "label": "Label", "placeholder": "Verkeerde maat" },
+      "label": {
+        "label": "Label",
+        "placeholder": "Verkeerde maat"
+      },
       "description": {
         "label": "Beschrijving",
         "placeholder": "Klant ontving de verkeerde maat"

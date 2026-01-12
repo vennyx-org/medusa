@@ -27,6 +27,7 @@ const EditProductSchema = zod.object({
   material: zod.string().optional(),
   description: zod.string().optional(),
   discountable: zod.boolean(),
+  is_tax_inclusive: zod.enum(["default", "true", "false"]),
 })
 
 export const EditProductForm = ({ product }: EditProductFormProps) => {
@@ -46,6 +47,12 @@ export const EditProductForm = ({ product }: EditProductFormProps) => {
       handle: product.handle || "",
       description: product.description || "",
       discountable: product.discountable,
+      is_tax_inclusive:
+        product.is_tax_inclusive == null
+          ? "default"
+          : product.is_tax_inclusive
+            ? "true"
+            : "false",
     },
     schema: EditProductSchema,
     configs: configs,
@@ -55,9 +62,22 @@ export const EditProductForm = ({ product }: EditProductFormProps) => {
   const { mutateAsync, isPending } = useUpdateProduct(product.id)
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    const { title, discountable, handle, status, ...optional } = data
+    const {
+      title,
+      discountable,
+      handle,
+      status,
+      is_tax_inclusive,
+      ...optional
+    } = data
 
     const nullableData = transformNullableFormData(optional)
+
+    // Convert string enum to boolean|null
+    const isTaxInclusiveValue =
+      is_tax_inclusive === "default"
+        ? null
+        : is_tax_inclusive === "true"
 
     await mutateAsync(
       {
@@ -65,6 +85,7 @@ export const EditProductForm = ({ product }: EditProductFormProps) => {
         discountable,
         handle,
         status: status as HttpTypes.AdminProductStatus,
+        is_tax_inclusive: isTaxInclusiveValue,
         ...nullableData,
       },
       {
@@ -224,6 +245,45 @@ export const EditProductForm = ({ product }: EditProductFormProps) => {
               name="discountable"
               label={t("fields.discountable")}
               description={t("products.discountableHint")}
+            />
+            <Form.Field
+              control={form.control}
+              name="is_tax_inclusive"
+              render={({ field: { onChange, ref, ...field } }) => {
+                return (
+                  <Form.Item>
+                    <Form.Label>
+                      {t("products.fields.is_tax_inclusive.label")}
+                    </Form.Label>
+                    <Form.Hint>
+                      {t("products.fields.is_tax_inclusive.hint")}
+                    </Form.Hint>
+                    <Form.Control>
+                      <Select
+                        dir={direction}
+                        {...field}
+                        onValueChange={onChange}
+                      >
+                        <Select.Trigger ref={ref}>
+                          <Select.Value />
+                        </Select.Trigger>
+                        <Select.Content>
+                          <Select.Item value="default">
+                            {t("products.fields.is_tax_inclusive.default")}
+                          </Select.Item>
+                          <Select.Item value="true">
+                            {t("products.fields.is_tax_inclusive.true")}
+                          </Select.Item>
+                          <Select.Item value="false">
+                            {t("products.fields.is_tax_inclusive.false")}
+                          </Select.Item>
+                        </Select.Content>
+                      </Select>
+                    </Form.Control>
+                    <Form.ErrorMessage />
+                  </Form.Item>
+                )
+              }}
             />
             <FormExtensionZone fields={fields} form={form} />
           </div>

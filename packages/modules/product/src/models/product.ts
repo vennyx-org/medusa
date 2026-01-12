@@ -29,6 +29,7 @@ const Product = model
     mid_code: model.text().nullable(),
     material: model.text().nullable(),
     discountable: model.boolean().default(true),
+    is_tax_inclusive: model.boolean().nullable(),
     external_id: model.text().nullable(),
     metadata: model.json().nullable(),
     variants: model.hasMany(() => ProductVariant, {

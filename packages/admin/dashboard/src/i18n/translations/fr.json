@@ -547,6 +547,13 @@
         "label": "Discountable",
         "hint": "Lorsque la case n'est pas cochée, les remises ne seront pas appliquées à ce produit"
       },
+      "is_tax_inclusive": {
+        "label": "Prix TTC",
+        "hint": "Détermine si les prix des produits incluent la taxe",
+        "default": "Utiliser la valeur par défaut de la région/boutique",
+        "true": "Prix TTC (taxe incluse)",
+        "false": "Prix HT (hors taxe)"
+      },
       "type": {
         "label": "Type"
       },
@@ -2447,7 +2454,10 @@
         "placeholder": "mauvaise_taille",
         "tooltip": "La valeur doit être un identifiant unique pour la raison de retour."
       },
-      "label": { "label": "Label", "placeholder": "Mauvaise taille" },
+      "label": {
+        "label": "Label",
+        "placeholder": "Mauvaise taille"
+      },
       "description": {
         "label": "Description",
         "placeholder": "Le client a reçu la mauvaise taille"

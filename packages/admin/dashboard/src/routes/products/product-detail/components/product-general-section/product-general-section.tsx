@@ -122,6 +122,16 @@ export const ProductGeneralSection = ({
         title={t("fields.discountable")}
         value={product.discountable ? t("fields.true") : t("fields.false")}
       />
+      <SectionRow
+        title={t("products.fields.is_tax_inclusive.label")}
+        value={
+          product.is_tax_inclusive == null
+            ? t("products.fields.is_tax_inclusive.default")
+            : product.is_tax_inclusive
+              ? t("products.fields.is_tax_inclusive.true")
+              : t("products.fields.is_tax_inclusive.false")
+        }
+      />
       {displays.map((Component, index) => {
         return <Component key={index} data={product} />
       })}

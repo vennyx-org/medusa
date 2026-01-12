@@ -560,6 +560,13 @@
                 "label": "Dapat Diskon",
                 "hint": "Jika tidak dicentang, diskon tidak akan diterapkan pada produk ini"
             },
+            "is_tax_inclusive": {
+                "label": "Harga Termasuk Pajak",
+                "hint": "Menentukan apakah harga produk sudah termasuk pajak",
+                "default": "Gunakan pengaturan default wilayah/toko",
+                "true": "Harga sudah termasuk pajak",
+                "false": "Harga belum termasuk pajak"
+            },
             "shipping_profile": {
                 "label": "Profil pengiriman",
                 "hint": "Hubungkan produk ke profil pengiriman"

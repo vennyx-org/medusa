@@ -560,6 +560,13 @@
         "label": "Može biti sa popustom",
         "hint": "Kada je neoznačeno, popusti neće biti primijenjeni na ovaj proizvod"
       },
+      "is_tax_inclusive": {
+        "label": "Cijena sa uračunatim porezom",
+        "hint": "Određuje da li cijene proizvoda uključuju porez",
+        "default": "Koristi zadane postavke regije/trgovine",
+        "true": "Cijene uključuju porez",
+        "false": "Cijene ne uključuju porez"
+      },
       "shipping_profile": {
         "label": "Profil za dostavu",
         "hint": "Povežite proizvod sa profilom za dostavu"
@@ -598,7 +605,6 @@
       "weight": {
         "label": "Težina"
       },
-
       "options": {
         "label": "Opcije proizvoda",
         "hint": "Opcije se koriste za definisanje boje, veličine itd. proizvoda",
@@ -2665,7 +2671,10 @@
         "placeholder": "pogrešna_veličina",
         "tooltip": "Vrijednost treba biti jedinstveni identifikator za razlog povrata."
       },
-      "label": { "label": "Oznaka", "placeholder": "Pogrešna veličina" },
+      "label": {
+        "label": "Oznaka",
+        "placeholder": "Pogrešna veličina"
+      },
       "description": {
         "label": "Opis",
         "placeholder": "Kupac je primio pogrešnu veličinu"

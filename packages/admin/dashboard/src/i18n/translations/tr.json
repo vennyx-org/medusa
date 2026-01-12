@@ -558,6 +558,13 @@
         "label": "İndirim Uygulanabilir",
         "hint": "İşaretlenmediğinde, bu ürüne indirim uygulanmaz."
       },
+      "is_tax_inclusive": {
+        "label": "Vergi Dahil Fiyatlandırma",
+        "hint": "Ürün fiyatlarının vergi içerip içermediğini belirler",
+        "default": "Bölge/mağaza varsayılanını kullan",
+        "true": "Fiyatlar vergi dahil",
+        "false": "Fiyatlar vergi hariç"
+      },
       "type": {
         "label": "Tür"
       },

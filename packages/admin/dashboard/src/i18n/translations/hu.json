@@ -556,6 +556,13 @@
         "label": "Kedvezményezhető",
         "hint": "Ha kikapcsolja, a termékre nem alkalmazhatók kedvezmények."
       },
+      "is_tax_inclusive": {
+        "label": "Bruttó ár",
+        "hint": "Meghatározza, hogy a termékárak tartalmazzák-e az adót",
+        "default": "Régió/áruház alapértelmezés használata",
+        "true": "Az árak tartalmazzák az adót",
+        "false": "Az árak nem tartalmazzák az adót"
+      },
       "shipping_profile": {
         "label": "Szállítási profil",
         "hint": "Termék csatolása egy szállítási profilhoz."
@@ -2654,7 +2661,10 @@
         "placeholder": "wrong_size",
         "tooltip": "Az értéknek egyedi azonosítónak kell lennie a visszaküldési okhoz."
       },
-      "label": { "label": "Címke", "placeholder": "Rossz méret" },
+      "label": {
+        "label": "Címke",
+        "placeholder": "Rossz méret"
+      },
       "description": {
         "label": "Leírás",
         "placeholder": "A vásárló rossz méretet kapott"

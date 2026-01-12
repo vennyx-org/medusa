@@ -598,6 +598,13 @@
         "label": "Discountable",
         "hint": "When unchecked, discounts will not be applied to this product"
       },
+      "is_tax_inclusive": {
+        "label": "Tax Inclusive Pricing",
+        "hint": "Determines if product prices include tax",
+        "default": "Use region/store default",
+        "true": "Prices include tax",
+        "false": "Prices exclude tax"
+      },
       "shipping_profile": {
         "label": "Shipping profile",
         "hint": "Connect the product to a shipping profile"

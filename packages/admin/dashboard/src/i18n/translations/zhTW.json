@@ -395,7 +395,6 @@
       "required": "新擁有者為必填項。"
     }
   },
-
   "sales_channels": {
     "availableIn": "在 <1>{{y}}</1> 個銷售管道中的 <0>{{x}}</0> 個可用"
   },
@@ -594,6 +593,13 @@
       "discountable": {
         "label": "可折扣",
         "hint": "取消勾選時，折扣將不會套用於此商品"
+      },
+      "is_tax_inclusive": {
+        "label": "含稅價格",
+        "hint": "決定商品價格是否包含稅金",
+        "default": "使用區域/商店預設值",
+        "true": "價格含稅",
+        "false": "價格不含稅"
       },
       "shipping_profile": {
         "label": "運送設定檔",

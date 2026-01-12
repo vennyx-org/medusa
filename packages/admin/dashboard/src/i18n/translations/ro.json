@@ -556,6 +556,13 @@
         "label": "Reducere",
         "hint": "Dacă nu este bifată, reducerile nu vor fi aplicate acestui produs"
       },
+      "is_tax_inclusive": {
+        "label": "Preț cu TVA inclus",
+        "hint": "Determină dacă prețurile produselor includ taxa",
+        "default": "Folosește setarea implicită a regiunii/magazinului",
+        "true": "Prețurile includ taxa",
+        "false": "Prețurile nu includ taxa"
+      },
       "type": {
         "label": "Tip"
       },

@@ -586,6 +586,13 @@
         "label": "Descuento aplicable",
         "hint": "Si no está marcado, no se aplicarán descuentos a este producto"
       },
+      "is_tax_inclusive": {
+        "label": "Precio con impuestos incluidos",
+        "hint": "Determina si los precios del producto incluyen impuestos",
+        "default": "Usar configuración predeterminada de la región/tienda",
+        "true": "Los precios incluyen impuestos",
+        "false": "Los precios no incluyen impuestos"
+      },
       "type": {
         "label": "Tipo"
       },

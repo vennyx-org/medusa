@@ -62,6 +62,7 @@ export const ProductCreateSchema = z
     handle: z.string().optional(),
     description: z.string().optional(),
     discountable: z.boolean(),
+    is_tax_inclusive: z.enum(["default", "true", "false"]),
     type_id: z.string().optional(),
     collection_id: z.string().optional(),
     shipping_profile_id: z.string().optional(),
@@ -122,6 +123,7 @@ export const PRODUCT_CREATE_FORM_DEFAULTS: Partial<
   z.infer<typeof ProductCreateSchema>
 > = {
   discountable: true,
+  is_tax_inclusive: "default",
   tags: [],
   sales_channels: [],
   options: [

@@ -208,7 +208,9 @@ export const getVariantsAndItemsWithPrices = createWorkflow(
             unitPrice: item_.unit_price,
             isTaxInclusive:
               item_.is_tax_inclusive ??
-              calculatedPriceSet?.is_calculated_price_tax_inclusive,
+              variant?.product?.is_tax_inclusive ??
+              calculatedPriceSet?.is_calculated_price_tax_inclusive ??
+              false,
             isCustomPrice: isCustomPrice,
           }
 
@@ -219,7 +221,9 @@ export const getVariantsAndItemsWithPrices = createWorkflow(
             // Using == null to catch both undefined and null
             if (item_.is_tax_inclusive == null) {
               input.isTaxInclusive =
-                calculatedPriceSet.is_calculated_price_tax_inclusive
+                variant?.product?.is_tax_inclusive ??
+                calculatedPriceSet.is_calculated_price_tax_inclusive ??
+                false
             }
           }
 

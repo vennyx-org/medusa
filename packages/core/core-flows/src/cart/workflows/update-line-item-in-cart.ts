@@ -276,11 +276,12 @@ export const updateLineItemInCartWorkflow = createWorkflow(
               ? true
               : item.is_custom_price,
             // TDFS-3100: Use ?? instead of || to preserve explicit false values
-          // The || operator treats false as falsy, causing is_tax_inclusive to be
-          // incorrectly overwritten when it's explicitly set to false
+          // Priority chain: item > product > calculated_price > false
           is_tax_inclusive:
               item.is_tax_inclusive ??
-              variant?.calculated_price?.is_calculated_price_tax_inclusive,
+              variant?.product?.is_tax_inclusive ??
+              variant?.calculated_price?.is_calculated_price_tax_inclusive ??
+              false,
           }
 
           if (variant && !updateData.is_custom_price) {

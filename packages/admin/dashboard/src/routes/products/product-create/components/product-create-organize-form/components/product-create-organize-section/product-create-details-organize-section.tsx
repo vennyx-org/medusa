@@ -1,4 +1,4 @@
-import { Button, Heading } from "@medusajs/ui"
+import { Button, Heading, Select } from "@medusajs/ui"
 import { UseFormReturn, useFieldArray } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -8,6 +8,7 @@ import { SwitchBox } from "../../../../../../../components/common/switch-box"
 import { Combobox } from "../../../../../../../components/inputs/combobox"
 import { StackedFocusModal } from "../../../../../../../components/modals"
 import { useComboboxData } from "../../../../../../../hooks/use-combobox-data"
+import { useDocumentDirection } from "../../../../../../../hooks/use-document-direction"
 import { sdk } from "../../../../../../../lib/client"
 import { CategoryCombobox } from "../../../../../common/components/category-combobox"
 import { ProductCreateSchemaType } from "../../../../types"
@@ -20,6 +21,7 @@ export const ProductCreateOrganizationSection = ({
   form,
 }: ProductCreateOrganizationSectionProps) => {
   const { t } = useTranslation()
+  const direction = useDocumentDirection()
 
   const collections = useComboboxData({
     queryKey: ["product_collections"],
@@ -80,6 +82,41 @@ export const ProductCreateOrganizationSection = ({
         label={t("products.fields.discountable.label")}
         description={t("products.fields.discountable.hint")}
         optional
+      />
+      <Form.Field
+        control={form.control}
+        name="is_tax_inclusive"
+        render={({ field: { onChange, ref, ...field } }) => {
+          return (
+            <Form.Item>
+              <Form.Label>
+                {t("products.fields.is_tax_inclusive.label")}
+              </Form.Label>
+              <Form.Hint>
+                {t("products.fields.is_tax_inclusive.hint")}
+              </Form.Hint>
+              <Form.Control>
+                <Select dir={direction} {...field} onValueChange={onChange}>
+                  <Select.Trigger ref={ref}>
+                    <Select.Value />
+                  </Select.Trigger>
+                  <Select.Content>
+                    <Select.Item value="default">
+                      {t("products.fields.is_tax_inclusive.default")}
+                    </Select.Item>
+                    <Select.Item value="true">
+                      {t("products.fields.is_tax_inclusive.true")}
+                    </Select.Item>
+                    <Select.Item value="false">
+                      {t("products.fields.is_tax_inclusive.false")}
+                    </Select.Item>
+                  </Select.Content>
+                </Select>
+              </Form.Control>
+              <Form.ErrorMessage />
+            </Form.Item>
+          )
+        }}
       />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Form.Field

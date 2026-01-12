@@ -560,6 +560,13 @@
         "label": "Có thể giảm giá",
         "hint": "Khi bỏ chọn, các chương trình giảm giá sẽ không áp dụng cho sản phẩm này"
       },
+      "is_tax_inclusive": {
+        "label": "Giá bao gồm thuế",
+        "hint": "Xác định liệu giá sản phẩm có bao gồm thuế không",
+        "default": "Sử dụng cài đặt mặc định của khu vực/cửa hàng",
+        "true": "Giá bao gồm thuế",
+        "false": "Giá không bao gồm thuế"
+      },
       "shipping_profile": {
         "label": "Hồ sơ vận chuyển",
         "hint": "Kết nối sản phẩm với một hồ sơ vận chuyển"
@@ -2697,7 +2704,10 @@
         "placeholder": "wrong_size",
         "tooltip": "Giá trị nên là một định danh duy nhất cho lý do trả hàng."
       },
-      "label": { "label": "Nhãn", "placeholder": "Kích thước sai" },
+      "label": {
+        "label": "Nhãn",
+        "placeholder": "Kích thước sai"
+      },
       "description": {
         "label": "Mô tả",
         "placeholder": "Khách hàng nhận nhầm kích thước"

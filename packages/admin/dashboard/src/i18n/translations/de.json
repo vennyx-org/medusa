@@ -546,6 +546,13 @@
         "label": "Rabattierbar",
         "hint": "Wenn diese Option deaktiviert ist, werden auf dieses Produkt keine Rabatte gewährt"
       },
+      "is_tax_inclusive": {
+        "label": "Bruttopreis",
+        "hint": "Bestimmt, ob die Produktpreise die Steuer enthalten",
+        "default": "Standard der Region/des Shops verwenden",
+        "true": "Preise enthalten Steuer",
+        "false": "Preise ohne Steuer"
+      },
       "type": {
         "label": "Typ"
       },

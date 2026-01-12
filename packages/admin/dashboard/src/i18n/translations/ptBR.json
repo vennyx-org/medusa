@@ -546,6 +546,13 @@
         "label": "Descontável",
         "hint": "Quando desmarcado, os descontos não serão aplicados a este produto"
       },
+      "is_tax_inclusive": {
+        "label": "Preço com impostos",
+        "hint": "Determina se os preços dos produtos incluem impostos",
+        "default": "Usar padrão da região/loja",
+        "true": "Preços incluem impostos",
+        "false": "Preços não incluem impostos"
+      },
       "type": {
         "label": "Tipo"
       },
@@ -2445,7 +2452,10 @@
         "placeholder": "tamanho_errado",
         "tooltip": "O valor deve ser um identificador único para a razão da devolução."
       },
-      "label": { "label": "Etiqueta", "placeholder": "Tamanho errado" },
+      "label": {
+        "label": "Etiqueta",
+        "placeholder": "Tamanho errado"
+      },
       "description": {
         "label": "Descrição",
         "placeholder": "O cliente recebeu o tamanho errado"

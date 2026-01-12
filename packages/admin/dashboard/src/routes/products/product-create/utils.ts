@@ -37,6 +37,10 @@ export const normalizeProductFormValues = (
     subtitle: values.subtitle?.trim(),
     description: values.description?.trim(),
     discountable: values.discountable,
+    is_tax_inclusive:
+      values.is_tax_inclusive === "default"
+        ? null
+        : values.is_tax_inclusive === "true",
     width: values.width ? parseFloat(values.width) : undefined,
     length: values.length ? parseFloat(values.length) : undefined,
     height: values.height ? parseFloat(values.height) : undefined,

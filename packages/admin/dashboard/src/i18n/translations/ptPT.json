@@ -593,6 +593,13 @@
         "label": "Com desconto",
         "hint": "Quando desmarcado, não serão aplicados descontos a este produto"
       },
+      "is_tax_inclusive": {
+        "label": "Preço com impostos",
+        "hint": "Determina se os preços dos produtos incluem impostos",
+        "default": "Usar predefinição da região/loja",
+        "true": "Preços incluem impostos",
+        "false": "Preços não incluem impostos"
+      },
       "shipping_profile": {
         "label": "Perfil de envio",
         "hint": "Liga o produto a um perfil de envio"

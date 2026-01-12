@@ -132,6 +132,13 @@ export interface ProductDTO {
    */
   discountable?: boolean
   /**
+   * Whether the product prices include tax.
+   * - `true`: Prices are tax-inclusive
+   * - `false`: Prices are tax-exclusive
+   * - `null`: Use PricePreference setting (default behavior)
+   */
+  is_tax_inclusive?: boolean | null
+  /**
    * The ID of the product in an external system. This is useful if you're integrating the product with a third-party service and want to maintain
    * a reference to the ID in the integrated service.
    */
@@ -1497,6 +1504,10 @@ export interface CreateProductDTO {
    */
   discountable?: boolean
   /**
+   * Whether the product prices include tax.
+   */
+  is_tax_inclusive?: boolean | null
+  /**
    * The URL of the product's thumbnail.
    */
   thumbnail?: string
@@ -1616,6 +1627,10 @@ export interface UpdateProductDTO {
    * Whether the product can be discounted.
    */
   discountable?: boolean
+  /**
+   * Whether the product prices include tax.
+   */
+  is_tax_inclusive?: boolean | null
   /**
    * The URL of the product's thumbnail.
    */
