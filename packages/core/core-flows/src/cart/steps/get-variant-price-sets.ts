@@ -52,6 +52,7 @@ export interface GetVariantPriceSetsStepBulkInput {
 interface VariantPriceSetData {
   id: string
   price_set?: { id: string }
+  product?: { is_tax_inclusive?: boolean | null }
 }
 
 interface PriceCalculationItem {
@@ -62,6 +63,11 @@ interface PriceCalculationItem {
   variantId: string
   priceSetId: string
   context?: Record<string, unknown>
+  /**
+   * Product-level tax inclusive setting. If set, overrides the calculated price's
+   * is_calculated_price_tax_inclusive value from PricePreference.
+   */
+  productIsTaxInclusive?: boolean | null
 }
 
 export interface GetVariantPriceSetsStepOutput {
@@ -78,7 +84,7 @@ async function fetchVariantPriceSets(
     await query.graph(
       {
         entity: "variant",
-        fields: ["id", "price_set.id"],
+        fields: ["id", "price_set.id", "product.is_tax_inclusive"],
         filters: { id: variantIds },
       },
       {
@@ -140,7 +146,16 @@ async function processVariantPriceSets(
     for (const item of groupItems) {
       const calculatedPriceSet = priceSetMap.get(item.priceSetId)
       if (calculatedPriceSet) {
-        result[item.id ?? item.variantId] = calculatedPriceSet
+        // Override is_calculated_price_tax_inclusive with product-level setting if available
+        // Product-level setting takes precedence over PricePreference
+        const finalPriceSet =
+          item.productIsTaxInclusive != null
+            ? {
+                ...calculatedPriceSet,
+                is_calculated_price_tax_inclusive: item.productIsTaxInclusive,
+              }
+            : calculatedPriceSet
+        result[item.id ?? item.variantId] = finalPriceSet
       }
     }
   }
@@ -197,6 +212,7 @@ function createCalculationItemsFromSharedContext(
       variantId: v.id,
       priceSetId: v.price_set!.id,
       context: sharedContext,
+      productIsTaxInclusive: v.product?.is_tax_inclusive,
     }))
 }
 
@@ -205,7 +221,8 @@ function createCalculationItemsFromSharedContext(
  */
 function createCalculationItemsFromBulkData(
   bulkData: GetVariantPriceSetsStepBulkInput["data"],
-  variantToPriceSetId: Map<string, string>
+  variantToPriceSetId: Map<string, string>,
+  variantToProductTaxInclusive: Map<string, boolean | null | undefined>
 ): PriceCalculationItem[] {
   const calculationItems: PriceCalculationItem[] = []
   for (const item of bulkData) {
@@ -216,6 +233,7 @@ function createCalculationItemsFromBulkData(
         variantId: item.variantId,
         priceSetId,
         context: item.context,
+        productIsTaxInclusive: variantToProductTaxInclusive.get(item.variantId),
       })
     }
   }
@@ -289,17 +307,23 @@ export const getVariantPriceSetsStep = createStep(
 
       validateVariantPriceSets(variantPriceSets)
 
-      // Map variant IDs to price set IDs
+      // Map variant IDs to price set IDs and product tax inclusive settings
       const variantToPriceSetId = new Map<string, string>()
+      const variantToProductTaxInclusive = new Map<
+        string,
+        boolean | null | undefined
+      >()
       variantPriceSets.forEach((v) => {
         if (v.price_set?.id) {
           variantToPriceSetId.set(v.id, v.price_set.id)
         }
+        variantToProductTaxInclusive.set(v.id, v.product?.is_tax_inclusive)
       })
 
       calculationItems = createCalculationItemsFromBulkData(
         bulkData,
-        variantToPriceSetId
+        variantToPriceSetId,
+        variantToProductTaxInclusive
       )
     }
 
