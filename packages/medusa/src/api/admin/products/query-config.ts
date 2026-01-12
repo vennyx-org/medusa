@@ -62,6 +62,7 @@ export const defaultAdminProductFields = [
   "handle",
   "is_giftcard",
   "discountable",
+  "is_tax_inclusive",
   "thumbnail",
   "collection_id",
   "type_id",
