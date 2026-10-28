@@ -131,8 +131,8 @@ properties:
       $ref: ./BaseProductImage.yaml
 required:
   - options
-  - length
   - title
+  - length
   - id
   - created_at
   - updated_at

@@ -891,7 +891,6 @@ medusaIntegrationTestRunner({
         })
 
         it("should validate required fields", async () => {
-          // Missing locales
           const response1 = await api
             .get(
               "/admin/translations/statistics?entity_types=product",
@@ -901,19 +900,134 @@ medusaIntegrationTestRunner({
 
           expect(response1.status).toEqual(400)
 
-          // Missing entity_types
           const response2 = await api
             .get("/admin/translations/statistics?locales=fr-FR", adminHeaders)
             .catch((e) => e.response)
 
           expect(response2.status).toEqual(400)
 
-          // Both missing
           const response3 = await api
             .get("/admin/translations/statistics", adminHeaders)
             .catch((e) => e.response)
 
           expect(response3.status).toEqual(400)
+        })
+      })
+
+      describe("GET /admin/translations/entities", () => {
+        it("should return entities with only translatable fields", async () => {
+          const productModule = appContainer.resolve(Modules.PRODUCT)
+          await productModule.createProducts([
+            {
+              title: "Product 1",
+              description: "Description 1",
+              handle: "product-1",
+              status: "published",
+            },
+            {
+              title: "Product 2",
+              description: "Description 2",
+              handle: "product-2",
+              status: "draft",
+            },
+          ])
+
+          const response = await api.get(
+            "/admin/translations/entities?type=product",
+            adminHeaders
+          )
+
+          expect(response.status).toEqual(200)
+          expect(response.data.data).toHaveLength(2)
+          expect(response.data.count).toEqual(2)
+          expect(response.data.offset).toEqual(0)
+          expect(response.data.limit).toEqual(20)
+
+          response.data.data.forEach((entity: Record<string, unknown>) => {
+            expect(entity).toHaveProperty("id")
+            expect(entity.title).toBeDefined()
+            expect(entity.description).toBeDefined()
+            expect(entity.material).toBeDefined()
+            expect(entity.status).not.toBeDefined()
+          })
+        })
+
+        it("should return empty array for unknown entity type", async () => {
+          const response = await api.get(
+            "/admin/translations/entities?type=unknown_entity",
+            adminHeaders
+          )
+
+          expect(response.status).toEqual(200)
+          expect(response.data.data).toEqual([])
+          expect(response.data.count).toEqual(0)
+        })
+
+        it("should support pagination", async () => {
+          const productModule = appContainer.resolve(Modules.PRODUCT)
+          await productModule.createProducts([
+            { title: "Product 1" },
+            { title: "Product 2" },
+            { title: "Product 3" },
+            { title: "Product 4" },
+            { title: "Product 5" },
+          ])
+
+          const response = await api.get(
+            "/admin/translations/entities?type=product&limit=2&offset=0",
+            adminHeaders
+          )
+
+          expect(response.status).toEqual(200)
+          expect(response.data.data).toHaveLength(2)
+          expect(response.data.count).toEqual(5)
+          expect(response.data.limit).toEqual(2)
+          expect(response.data.offset).toEqual(0)
+
+          const response2 = await api.get(
+            "/admin/translations/entities?type=product&limit=2&offset=2",
+            adminHeaders
+          )
+
+          expect(response2.status).toEqual(200)
+          expect(response2.data.data).toHaveLength(2)
+          expect(response2.data.offset).toEqual(2)
+        })
+
+        it("should return product variants with their translatable fields", async () => {
+          const productModule = appContainer.resolve(Modules.PRODUCT)
+          await productModule.createProducts([
+            {
+              title: "Product with variants",
+              variants: [
+                { title: "Variant 1", manage_inventory: false },
+                { title: "Variant 2", manage_inventory: false },
+              ],
+            },
+          ])
+
+          const response = await api.get(
+            "/admin/translations/entities?type=product_variant",
+            adminHeaders
+          )
+
+          expect(response.status).toEqual(200)
+          expect(response.data.data).toHaveLength(2)
+          expect(response.data.count).toEqual(2)
+
+          response.data.data.forEach((variant: Record<string, unknown>) => {
+            expect(variant).toHaveProperty("id")
+            expect(variant.title).toBeDefined()
+            expect(variant.manage_inventory).not.toBeDefined()
+          })
+        })
+
+        it("should validate required type parameter", async () => {
+          const response = await api
+            .get("/admin/translations/entities", adminHeaders)
+            .catch((e) => e.response)
+
+          expect(response.status).toEqual(400)
         })
       })
     })

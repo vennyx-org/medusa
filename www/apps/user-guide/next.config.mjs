@@ -13,6 +13,7 @@ import {
   prerequisitesLinkFixerPlugin,
   remarkAttachFrontmatterDataPlugin,
   recmaInjectMdxDataPlugin,
+  validateHighlightsPlugin,
 } from "remark-rehype-plugins"
 import bundleAnalyzer from "@next/bundle-analyzer"
 import withExtractedTableOfContents from "@stefanprobst/rehype-extract-toc"
@@ -79,6 +80,7 @@ const withMDX = mdx({
           tagName: "code",
         },
       ],
+      [validateHighlightsPlugin, { verbose: false }],
       [rehypeSlug],
       [
         cloudinaryImgRehypePlugin,

@@ -51,7 +51,7 @@ export const CartWorkflowEvents = {
 
   /**
    * Emitted when the customer in the cart is transferred.
-   * 
+   *
    * @since 2.8.0
    *
    * @eventPayload
@@ -365,6 +365,7 @@ export const AuthWorkflowEvents = {
    *   entity_id, // The identifier of the user or customer. For example, an email address.
    *   actor_type, // The type of actor. For example, "customer", "user", or custom.
    *   token, // The generated token.
+   *   metadata, // Optional custom metadata passed from the request.
    * }
    * ```
    */
@@ -862,6 +863,52 @@ export const ShippingOptionTypeWorkflowEvents = {
 }
 
 /**
+ * @category Shipping Option
+ * @customNamespace Fulfillment
+ */
+export const ShippingOptionWorkflowEvents = {
+  /**
+   * Emitted when shipping options are created.
+   *
+   * @since 2.12.4
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the shipping option
+   * }
+   * ```
+   */
+  CREATED: "shipping-option.created",
+  /**
+   * Emitted when shipping options are updated.
+   *
+   * @since 2.12.4
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the shipping option
+   * }
+   * ```
+   */
+  UPDATED: "shipping-option.updated",
+  /**
+   * Emitted when shipping options are deleted.
+   *
+   * @since 2.12.4
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the shipping option
+   * }
+   * ```
+   */
+  DELETED: "shipping-option.deleted",
+}
+
+/**
  * @category Payment
  * @customNamespace Payment
  */
@@ -897,7 +944,7 @@ export const PaymentEvents = {
 export const TranslationWorkflowEvents = {
   /**
    * Emitted when translations are created.
-   * 
+   *
    * @since 2.12.3
    * @featureFlag translation
    * @eventPayload

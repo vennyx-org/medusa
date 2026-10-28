@@ -16,7 +16,7 @@
  *       type: string
  *       externalDocs:
  *         url: https://docs.medusajs.com/api/store#publishable-api-key
- *   - name: Content-Language
+ *   - name: x-medusa-locale
  *     in: header
  *     description: The locale in BCP 47 format to retrieve localized content.
  *     required: false
@@ -383,6 +383,7 @@
  *           type: boolean
  *           title: $exists
  *           description: Filter by whether a value for this parameter exists (not `null`).
+ *       title: created_at
  *   - name: updated_at
  *     in: query
  *     description: Filter by the category's update date.
@@ -614,6 +615,7 @@
  *           type: boolean
  *           title: $exists
  *           description: Filter by whether a value for this parameter exists (not `null`).
+ *       title: updated_at
  *   - name: $and
  *     in: query
  *     required: false

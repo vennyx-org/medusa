@@ -34,7 +34,7 @@ If you use this workflow in another, you must acquire a lock before running it a
 
 :::
 
-<SourceCodeLink link="https://github.com/medusajs/medusa/blob/da5d0e3a1430979ab9cda7f239ea7066ded1f7ab/packages/core/core-flows/src/line-item/workflows/delete-line-items.ts#L42" />
+<SourceCodeLink link="https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/core-flows/src/line-item/workflows/delete-line-items.ts#L42" />
 
 ## Examples
 
@@ -132,6 +132,7 @@ const myWorkflow = createWorkflow(
   "my-workflow",
   () => {
     // Acquire lock from nested workflow here
+    // acquireLockStep({  key: input.cart_id,  timeout: 2,  ttl: 10,  })
     const result = deleteLineItemsWorkflow
       .runAsStep({
         input: {
@@ -140,6 +141,7 @@ const myWorkflow = createWorkflow(
         }
       })
     // Release lock here
+    // releaseLockStep({ key: input.cart_id })
   }
 )
 ```

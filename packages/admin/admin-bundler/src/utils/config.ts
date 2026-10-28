@@ -24,7 +24,8 @@ export async function getViteConfig(
   const backendUrl = options.backendUrl ?? ""
   const storefrontUrl = options.storefrontUrl ?? ""
   const authType = process.env.ADMIN_AUTH_TYPE ?? undefined
-  const jwtTokenStorageKey = process.env.ADMIN_JWT_TOKEN_STORAGE_KEY ?? undefined
+  const jwtTokenStorageKey =
+    process.env.ADMIN_JWT_TOKEN_STORAGE_KEY ?? undefined
 
   const baseConfig: InlineConfig = {
     root,

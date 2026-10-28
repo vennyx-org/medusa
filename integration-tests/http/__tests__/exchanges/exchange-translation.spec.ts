@@ -34,6 +34,7 @@ medusaIntegrationTestRunner({
       let stockLocation: { id: string }
       let shippingOption: { id: string }
       let outboundShippingOption: { id: string }
+      let returnShippingOption: { id: string }
       let inventoryItem: { id: string }
 
       beforeAll(async () => {
@@ -224,6 +225,33 @@ medusaIntegrationTestRunner({
           )
         ).data.shipping_option
 
+        returnShippingOption = (
+          await api.post(
+            `/admin/shipping-options`,
+            {
+              name: "Return shipping",
+              service_zone_id: fulfillmentSet.service_zones[0].id,
+              shipping_profile_id: shippingProfile.id,
+              provider_id: "manual_test-provider",
+              price_type: "flat",
+              type: {
+                label: "Test type",
+                description: "Test description",
+                code: "test-code",
+              },
+              prices: [{ currency_code: "usd", amount: 500 }],
+              rules: [
+                {
+                  operator: RuleOperator.EQ,
+                  attribute: "is_return",
+                  value: "true",
+                },
+              ],
+            },
+            adminHeaders
+          )
+        ).data.shipping_option
+
         await api.post(
           "/admin/translations/batch",
           {
@@ -269,6 +297,38 @@ medusaIntegrationTestRunner({
                 reference: "product_variant",
                 locale_code: "de-DE",
                 translations: { title: "Mittel" },
+              },
+              {
+                reference_id: outboundShippingOption.id,
+                reference: "shipping_option",
+                locale_code: "fr-FR",
+                translations: {
+                  name: "Expédition sortante",
+                },
+              },
+              {
+                reference_id: outboundShippingOption.id,
+                reference: "shipping_option",
+                locale_code: "de-DE",
+                translations: {
+                  name: "Ausgehende Versand",
+                },
+              },
+              {
+                reference_id: returnShippingOption.id,
+                reference: "shipping_option",
+                locale_code: "fr-FR",
+                translations: {
+                  name: "Expédition de retour",
+                },
+              },
+              {
+                reference_id: returnShippingOption.id,
+                reference: "shipping_option",
+                locale_code: "de-DE",
+                translations: {
+                  name: "Rückversand",
+                },
               },
             ],
           },
@@ -518,6 +578,278 @@ medusaIntegrationTestRunner({
               product_title: "Medusa T-Shirt",
               product_description: "A comfortable cotton t-shirt",
               variant_title: "Medium",
+            })
+          )
+        })
+      })
+
+      describe("Exchange shipping method translation", () => {
+        it("should translate outbound and inbound shipping methods added during exchange using order locale", async () => {
+          const order = await createOrderFromCart("fr-FR")
+
+          await api.post(
+            `/admin/orders/${order.id}/fulfillments`,
+            {
+              location_id: stockLocation.id,
+              items: [{ id: order.items[0].id, quantity: 1 }],
+            },
+            adminHeaders
+          )
+
+          const exchange = (
+            await api.post(
+              "/admin/exchanges",
+              { order_id: order.id, description: "Test exchange" },
+              adminHeaders
+            )
+          ).data.exchange
+
+          await api.post(
+            `/admin/exchanges/${exchange.id}/inbound/items`,
+            {
+              items: [{ id: order.items[0].id, quantity: 1 }],
+            },
+            adminHeaders
+          )
+
+          await api.post(
+            `/admin/exchanges/${exchange.id}/inbound/shipping-method`,
+            { shipping_option_id: returnShippingOption.id },
+            adminHeaders
+          )
+
+          await api.post(
+            `/admin/exchanges/${exchange.id}/outbound/items`,
+            {
+              items: [{ variant_id: product.variants[1].id, quantity: 1 }],
+            },
+            adminHeaders
+          )
+
+          await api.post(
+            `/admin/exchanges/${exchange.id}/outbound/shipping-method`,
+            { shipping_option_id: outboundShippingOption.id },
+            adminHeaders
+          )
+
+          const exchangeResult = (
+            await api.post(
+              `/admin/exchanges/${exchange.id}/request`,
+              {},
+              adminHeaders
+            )
+          ).data.exchange
+
+          const updatedOrder = (
+            await api.get(`/admin/orders/${order.id}`, adminHeaders)
+          ).data.order
+
+          const outboundShippingMethod = updatedOrder.shipping_methods.find(
+            (sm: any) => sm.shipping_option_id === outboundShippingOption.id
+          )
+
+          expect(outboundShippingMethod).toEqual(
+            expect.objectContaining({
+              shipping_option_id: outboundShippingOption.id,
+              name: "Expédition sortante",
+            })
+          )
+
+          const orderReturn = (
+            await api.get(
+              `/admin/returns/${exchangeResult.return_id}?fields=*shipping_methods`,
+              adminHeaders
+            )
+          ).data.return
+
+          const inboundShippingMethod = orderReturn.shipping_methods.find(
+            (sm: any) => sm.shipping_option_id === returnShippingOption.id
+          )
+
+          expect(inboundShippingMethod).toEqual(
+            expect.objectContaining({
+              shipping_option_id: returnShippingOption.id,
+              name: "Expédition de retour",
+            })
+          )
+        })
+
+        it("should translate outbound and inbound shipping methods using German locale", async () => {
+          const order = await createOrderFromCart("de-DE")
+
+          await api.post(
+            `/admin/orders/${order.id}/fulfillments`,
+            {
+              location_id: stockLocation.id,
+              items: [{ id: order.items[0].id, quantity: 1 }],
+            },
+            adminHeaders
+          )
+
+          const exchange = (
+            await api.post(
+              "/admin/exchanges",
+              { order_id: order.id, description: "Test exchange" },
+              adminHeaders
+            )
+          ).data.exchange
+
+          await api.post(
+            `/admin/exchanges/${exchange.id}/inbound/items`,
+            {
+              items: [{ id: order.items[0].id, quantity: 1 }],
+            },
+            adminHeaders
+          )
+
+          await api.post(
+            `/admin/exchanges/${exchange.id}/inbound/shipping-method`,
+            { shipping_option_id: returnShippingOption.id },
+            adminHeaders
+          )
+
+          await api.post(
+            `/admin/exchanges/${exchange.id}/outbound/items`,
+            {
+              items: [{ variant_id: product.variants[1].id, quantity: 1 }],
+            },
+            adminHeaders
+          )
+
+          await api.post(
+            `/admin/exchanges/${exchange.id}/outbound/shipping-method`,
+            { shipping_option_id: outboundShippingOption.id },
+            adminHeaders
+          )
+
+          const exchangeResult = (
+            await api.post(
+              `/admin/exchanges/${exchange.id}/request`,
+              {},
+              adminHeaders
+            )
+          ).data.exchange
+
+          const updatedOrder = (
+            await api.get(`/admin/orders/${order.id}`, adminHeaders)
+          ).data.order
+
+          const outboundShippingMethod = updatedOrder.shipping_methods.find(
+            (sm: any) => sm.shipping_option_id === outboundShippingOption.id
+          )
+
+          expect(outboundShippingMethod).toEqual(
+            expect.objectContaining({
+              shipping_option_id: outboundShippingOption.id,
+              name: "Ausgehende Versand",
+            })
+          )
+
+          const orderReturn = (
+            await api.get(
+              `/admin/returns/${exchangeResult.return_id}?fields=*shipping_methods`,
+              adminHeaders
+            )
+          ).data.return
+
+          const inboundShippingMethod = orderReturn.shipping_methods.find(
+            (sm: any) => sm.shipping_option_id === returnShippingOption.id
+          )
+
+          expect(inboundShippingMethod).toEqual(
+            expect.objectContaining({
+              shipping_option_id: returnShippingOption.id,
+              name: "Rückversand",
+            })
+          )
+        })
+
+        it("should have original shipping method names when order has no locale", async () => {
+          const order = await createOrderFromCart()
+
+          await api.post(
+            `/admin/orders/${order.id}/fulfillments`,
+            {
+              location_id: stockLocation.id,
+              items: [{ id: order.items[0].id, quantity: 1 }],
+            },
+            adminHeaders
+          )
+
+          const exchange = (
+            await api.post(
+              "/admin/exchanges",
+              { order_id: order.id, description: "Test exchange" },
+              adminHeaders
+            )
+          ).data.exchange
+
+          await api.post(
+            `/admin/exchanges/${exchange.id}/inbound/items`,
+            {
+              items: [{ id: order.items[0].id, quantity: 1 }],
+            },
+            adminHeaders
+          )
+
+          await api.post(
+            `/admin/exchanges/${exchange.id}/inbound/shipping-method`,
+            { shipping_option_id: returnShippingOption.id },
+            adminHeaders
+          )
+
+          await api.post(
+            `/admin/exchanges/${exchange.id}/outbound/items`,
+            {
+              items: [{ variant_id: product.variants[1].id, quantity: 1 }],
+            },
+            adminHeaders
+          )
+
+          await api.post(
+            `/admin/exchanges/${exchange.id}/outbound/shipping-method`,
+            { shipping_option_id: outboundShippingOption.id },
+            adminHeaders
+          )
+
+          const exchangeResult = (
+            await api.post(
+              `/admin/exchanges/${exchange.id}/request`,
+              {},
+              adminHeaders
+            )
+          ).data.exchange
+
+          const updatedOrder = (
+            await api.get(`/admin/orders/${order.id}`, adminHeaders)
+          ).data.order
+
+          const outboundShippingMethod = updatedOrder.shipping_methods.find(
+            (sm: any) => sm.shipping_option_id === outboundShippingOption.id
+          )
+
+          expect(outboundShippingMethod).toEqual(
+            expect.objectContaining({
+              shipping_option_id: outboundShippingOption.id,
+              name: "Outbound shipping",
+            })
+          )
+
+          const orderReturn = (
+            await api.get(
+              `/admin/returns/${exchangeResult.return_id}?fields=*shipping_methods`,
+              adminHeaders
+            )
+          ).data.return
+
+          const inboundShippingMethod = orderReturn.shipping_methods.find(
+            (sm: any) => sm.shipping_option_id === returnShippingOption.id
+          )
+
+          expect(inboundShippingMethod).toEqual(
+            expect.objectContaining({
+              shipping_option_id: returnShippingOption.id,
+              name: "Return shipping",
             })
           )
         })

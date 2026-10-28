@@ -275,6 +275,12 @@ export const CreatePromotionForm = () => {
       }
     }
 
+    // if switching to `across` allocation, reset call above will set the max quantity to 1 which is forbidden for this allocation type
+    // but since there wasn't change in the `application_method.allocation` field, useEffect below responsible for resetting will not be triggered
+    if (currentTemplate.defaults?.application_method?.allocation === "across") {
+      setValue("application_method.max_quantity", null)
+    }
+
     return currentTemplate
   }, [watchTemplateId, setValue, reset])
 

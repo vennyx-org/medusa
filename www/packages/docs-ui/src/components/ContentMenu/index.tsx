@@ -6,7 +6,7 @@ import { ContentMenuVersion } from "./Version"
 import { ContentMenuToc } from "./Toc"
 import { ContentMenuActions } from "./Actions"
 import { ContentMenuProducts } from "./Products"
-import { useLayout } from "../../providers"
+import { useLayout } from "../../providers/Layout"
 
 export const ContentMenu = () => {
   const { showCollapsedNavbar } = useLayout()

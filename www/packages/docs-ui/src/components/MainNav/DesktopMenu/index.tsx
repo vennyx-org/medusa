@@ -2,13 +2,11 @@
 
 import { BarsThree, Book, SidebarLeft, TimelineVertical } from "@medusajs/icons"
 import React, { useMemo, useRef, useState } from "react"
-import {
-  Button,
-  getOsShortcut,
-  Menu,
-  useClickOutside,
-  useSidebar,
-} from "../../.."
+import { Button } from "@/components/Button"
+import { Menu } from "@/components/Menu"
+import { useSidebar } from "@/providers/Sidebar"
+import { useClickOutside } from "@/hooks/use-click-outside"
+import { getOsShortcut } from "@/utils/os-browser-utils"
 import clsx from "clsx"
 import { HouseIcon } from "../../Icons/House"
 import { MainNavThemeMenu } from "./ThemeMenu"
@@ -87,6 +85,7 @@ export const MainNavDesktopMenu = () => {
         variant="transparent"
         onClick={() => setIsOpen((prev) => !prev)}
         className="!p-[6.5px]"
+        data-testid="menu-button"
       >
         <BarsThree className="text-medusa-fg-subtle" />
       </Button>

@@ -8,8 +8,10 @@ import * as z from "zod"
 import { Form } from "../../components/common/form"
 import AvatarBox from "../../components/common/logo-box/avatar-box"
 import { useSignInWithEmailPass } from "../../hooks/api"
+import { useCloudAuthEnabled } from "../../hooks/api/cloud"
 import { isFetchError } from "../../lib/is-fetch-error"
 import { useExtension } from "../../providers/extension-provider"
+import { CloudAuthLogin } from "./components/cloud-auth-login"
 
 const LoginSchema = z.object({
   email: z.string().email(),
@@ -21,6 +23,7 @@ export const Login = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { getWidgets } = useExtension()
+  const { data: cloudAuth } = useCloudAuthEnabled()
 
   const from = location.state?.from?.pathname || "/orders"
 
@@ -69,6 +72,11 @@ export const Login = () => {
   const validationError =
     form.formState.errors.email?.message ||
     form.formState.errors.password?.message
+
+  const loginAfterWidgets = [...getWidgets("login.after")] // cloning to avoid mutating the original array below
+  if (cloudAuth?.enabled) {
+    loginAfterWidgets.push(CloudAuthLogin)
+  }
 
   return (
     <div className="bg-ui-bg-subtle flex min-h-dvh w-dvw items-center justify-center">
@@ -150,7 +158,7 @@ export const Login = () => {
               </Button>
             </form>
           </Form>
-          {getWidgets("login.after").map((Component, i) => {
+          {loginAfterWidgets.map((Component, i) => {
             return <Component key={i} />
           })}
         </div>

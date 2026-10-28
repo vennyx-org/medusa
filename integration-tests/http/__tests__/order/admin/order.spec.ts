@@ -165,7 +165,10 @@ medusaIntegrationTestRunner({
         order = seeder.order
 
         order = (
-          await api.get(`/admin/orders/${order.id}?fields=+email`, adminHeaders)
+          await api.get(
+            `/admin/orders/${order.id}?fields=+email,+customer_id`,
+            adminHeaders
+          )
         ).data.order
       })
 
@@ -476,6 +479,215 @@ medusaIntegrationTestRunner({
         ).data.order_changes
 
         expect(orderChangesResult.length).toEqual(0)
+      })
+
+      describe("conditional customer creation", () => {
+        it("should create or find a customer when order email is unset and input email is provided", async () => {
+          const container = getContainer()
+          const orderService = container.resolve(ModuleRegistrationName.ORDER)
+          const customerService = container.resolve(
+            ModuleRegistrationName.CUSTOMER
+          )
+
+          const orderWithoutEmail = await orderService.createOrders({
+            region_id: seeder.region.id,
+            currency_code: "usd",
+            items: [
+              {
+                title: "Test Item",
+                quantity: 1,
+                unit_price: 100,
+              },
+            ],
+            shipping_address: {
+              first_name: "Test",
+              last_name: "Test",
+              address_1: "Test",
+              city: "Test",
+              country_code: "US",
+              postal_code: "12345",
+            },
+            billing_address: {
+              first_name: "Test",
+              last_name: "Test",
+              address_1: "Test",
+              city: "Test",
+              country_code: "US",
+              postal_code: "12345",
+            },
+          })
+
+          expect(orderWithoutEmail.email).toBeNull()
+
+          const newEmail = "newcustomer@example.com"
+
+          const customersBefore = await customerService.listCustomers()
+          const customerCountBefore = customersBefore.length
+
+          const response = await api.post(
+            `/admin/orders/${orderWithoutEmail.id}?fields=+email,+customer_id`,
+            {
+              email: newEmail,
+            },
+            adminHeaders
+          )
+
+          expect(response.data.order.email).toBe(newEmail)
+          expect(response.data.order.customer_id).toBeDefined()
+
+          const customersAfter = await customerService.listCustomers()
+          expect(customersAfter.length).toBe(customerCountBefore + 1)
+
+          const customer = await customerService.retrieveCustomer(
+            response.data.order.customer_id
+          )
+          expect(customer.email).toBe(newEmail)
+        })
+
+        it("should NOT create or find a customer when order email is already set and input email is provided", async () => {
+          const container = getContainer()
+          const customerService = container.resolve(
+            ModuleRegistrationName.CUSTOMER
+          )
+
+          const existingEmail = order.email
+
+          expect(existingEmail).toBeDefined()
+
+          const originalCustomerId = order.customer_id
+          const newEmail = "updated@example.com"
+
+          const customersBefore = await customerService.listCustomers()
+          const customerCountBefore = customersBefore.length
+
+          const response = await api.post(
+            `/admin/orders/${order.id}?fields=+email,+customer_id`,
+            {
+              email: newEmail,
+            },
+            adminHeaders
+          )
+
+          expect(response.data.order.email).toBe(newEmail)
+          expect(response.data.order.customer_id).toBe(originalCustomerId)
+
+          const customersAfter = await customerService.listCustomers()
+          expect(customersAfter.length).toBe(customerCountBefore)
+        })
+
+        it("should NOT create or find a customer when order email is unset and input email is not provided", async () => {
+          const container = getContainer()
+          const orderService = container.resolve(ModuleRegistrationName.ORDER)
+          const customerService = container.resolve(
+            ModuleRegistrationName.CUSTOMER
+          )
+
+          const orderWithoutEmail = await orderService.createOrders({
+            region_id: seeder.region.id,
+            currency_code: "usd",
+            email: undefined,
+            items: [
+              {
+                title: "Test Item",
+                quantity: 1,
+                unit_price: 100,
+              },
+            ],
+            shipping_address: {
+              first_name: "Test",
+              last_name: "Test",
+              address_1: "Test",
+              city: "Test",
+              country_code: "US",
+              postal_code: "12345",
+            },
+            billing_address: {
+              first_name: "Test",
+              last_name: "Test",
+              address_1: "Test",
+              city: "Test",
+              country_code: "US",
+              postal_code: "12345",
+            },
+          })
+
+          const customersBefore = await customerService.listCustomers()
+          const customerCountBefore = customersBefore.length
+
+          const response = await api.post(
+            `/admin/orders/${orderWithoutEmail.id}?fields=+customer_id`,
+            {
+              metadata: {
+                test: "value",
+              },
+            },
+            adminHeaders
+          )
+
+          expect(response.data.order.customer_id).toBeNull()
+
+          const customersAfter = await customerService.listCustomers()
+          expect(customersAfter.length).toBe(customerCountBefore)
+        })
+
+        it("should find existing customer when order email is unset and input email matches existing customer", async () => {
+          const container = getContainer()
+          const orderService = container.resolve(ModuleRegistrationName.ORDER)
+          const customerService = container.resolve(
+            ModuleRegistrationName.CUSTOMER
+          )
+
+          const existingEmail = "existingcustomer@example.com"
+
+          const existingCustomer = await customerService.createCustomers({
+            email: existingEmail,
+          })
+
+          const orderWithoutEmail = await orderService.createOrders({
+            region_id: seeder.region.id,
+            currency_code: "usd",
+            items: [
+              {
+                title: "Test Item",
+                quantity: 1,
+                unit_price: 100,
+              },
+            ],
+            shipping_address: {
+              first_name: "Test",
+              last_name: "Test",
+              address_1: "Test",
+              city: "Test",
+              country_code: "US",
+              postal_code: "12345",
+            },
+            billing_address: {
+              first_name: "Test",
+              last_name: "Test",
+              address_1: "Test",
+              city: "Test",
+              country_code: "US",
+              postal_code: "12345",
+            },
+          })
+
+          const customersBefore = await customerService.listCustomers()
+          const customerCountBefore = customersBefore.length
+
+          const response = await api.post(
+            `/admin/orders/${orderWithoutEmail.id}?fields=+email,+customer_id`,
+            {
+              email: existingEmail,
+            },
+            adminHeaders
+          )
+
+          expect(response.data.order.email).toBe(existingEmail)
+          expect(response.data.order.customer_id).toBe(existingCustomer.id)
+
+          const customersAfter = await customerService.listCustomers()
+          expect(customersAfter.length).toBe(customerCountBefore)
+        })
       })
     })
 

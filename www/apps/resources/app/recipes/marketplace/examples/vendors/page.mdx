@@ -585,11 +585,11 @@ You can now create the workflow that creates a vendor and its admin.
 Create the file `src/workflows/marketplace/create-vendor/index.ts` with the following content:
 
 export const vendorWorkflowHighlights = [
-  ["27", "createVendorStep", "Create the vendor."],
-  ["33", "transform", "Prepare the vendor admin's data."],
-  ["43", "createVendorAdminStep", "Create the vendor admin."],
-  ["47", "setAuthAppMetadataStep", "Create the `vendor` actor type."],
-  ["53", "useQueryGraphStep", "Retrieve the created vendor with its admins."],
+  ["28", "createVendorStep", "Create the vendor."],
+  ["34", "transform", "Prepare the vendor admin's data."],
+  ["44", "createVendorAdminStep", "Create the vendor admin."],
+  ["48", "setAuthAppMetadataStep", "Create the `vendor` actor type."],
+  ["54", "useQueryGraphStep", "Retrieve the created vendor with its admins."],
 ]
 
 ```ts title="src/workflows/marketplace/create-vendor/index.ts" highlights={vendorWorkflowHighlights}
@@ -1542,7 +1542,6 @@ export const vendorOrder3Highlights = [
   ["3", "map", "Loop over the vendor IDs and create a child order with only their items."],
   ["11", "prepareOrderData", "Format the order data and pass it as the workflow's input."],
   ["18", "push", "Add a link between the vendor and the order to be created later."],
-  ["30", "cancelOrderWorkflow", "Cancel all created workflows if an error occurs while creating any of them."]
 ]
 
 ```ts title="src/workflows/marketplace/create-vendor-orders/steps/create-vendor-orders.ts" highlights={vendorOrder3Highlights}

@@ -2,7 +2,8 @@
 
 import clsx from "clsx"
 import React from "react"
-import { Link, Tooltip } from "@/components"
+import { Link } from "@/components/Link"
+import { Tooltip } from "@/components/Tooltip"
 import { ExclamationCircle, PlaySolid } from "@medusajs/icons"
 import { GITHUB_ISSUES_LINK } from "@/constants"
 import { CodeBlockCopyAction } from "./Copy"

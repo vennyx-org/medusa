@@ -704,27 +704,31 @@ export interface ITranslationModuleService extends IModuleService {
   ): Promise<TranslationStatisticsOutput>
 
   /**
-   * This method retrieves the translatable fields of a resource. For example,
-   * product entities have translatable fields such as `title` and `description`.
+   * This method retrieves the translatable fields of a resource from the database.
+   * For example, product entities have translatable fields such as `title` and `description`.
    *
    * @param {string} entityType - Name of the resource's table to get translatable fields for.
    * If not provided, returns all translatable fields for all entity types. For example, `product` or `product_variant`.
-   * @returns {Record<string, string[]>} A mapping of resource names to their translatable fields.
+   * @param {Context} sharedContext - A context used to share resources, such as transaction manager, between the application and the module.
+   * @returns {Promise<Record<string, string[]>>} A mapping of resource names to their translatable fields.
    *
    * @example
    * To get translatable fields for all resources:
-   * 
+   *
    * ```ts
-   * const allFields = translationModuleService.getTranslatableFields()
+   * const allFields = await translationModuleService.getTranslatableFields()
    * // Returns: { product: ["title", "description", ...], product_variant: ["title", ...] }
    * ```
-   * 
+   *
    * To get translatable fields for a specific resource:
    *
    * ```ts
-   * const productFields = translationModuleService.getTranslatableFields("product")
+   * const productFields = await translationModuleService.getTranslatableFields("product")
    * // Returns: { product: ["title", "description", "subtitle", "status"] }
    * ```
    */
-  getTranslatableFields(entityType?: string): Record<string, string[]>
+  getTranslatableFields(
+    entityType?: string,
+    sharedContext?: Context
+  ): Promise<Record<string, string[]>>
 }

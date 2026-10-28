@@ -99,3 +99,35 @@ export interface AdminTranslationSettingsResponse {
    */
   translatable_fields: Record<string, string[]>
 }
+
+/**
+ * Response for translation entities endpoint.
+ * Returns paginated entities with only their translatable fields and all their translations.
+ */
+export interface AdminTranslationEntitiesResponse {
+  /**
+   * The list of entities with their translatable fields.
+   * Each entity contains only the fields configured as translatable
+   * for that entity type in the translation settings, plus all
+   * translations for all locales.
+   */
+  data: (Record<string, unknown> & {
+    id: string
+    translations: AdminTranslation[]
+  })[]
+
+  /**
+   * The total count of entities.
+   */
+  count: number
+
+  /**
+   * The offset of the current page.
+   */
+  offset: number
+
+  /**
+   * The limit of items per page.
+   */
+  limit: number
+}

@@ -6,7 +6,7 @@ import { Tooltip } from "../../../Tooltip"
 import { Link } from "../../../Link"
 import { ShieldCheck, XMark } from "@medusajs/icons"
 import { Button } from "../../../Button"
-import { useAiAssistant } from "../../../../providers"
+import { useAiAssistant } from "../../../../providers/AiAssistant"
 
 export const AiAssistantChatWindowHeader = () => {
   const { setChatOpened } = useAiAssistant()

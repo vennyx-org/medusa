@@ -1,5 +1,21 @@
 # @medusajs/orchestration
 
+## 2.12.5
+
+### Patch Changes
+
+- Updated dependencies [[`08c55e703573f3c11532228d2c626f7b7f16228f`](https://github.com/medusajs/medusa/commit/08c55e703573f3c11532228d2c626f7b7f16228f)]:
+  - @medusajs/utils@2.12.5
+  - @medusajs/deps@2.12.5
+
+## 2.12.4
+
+### Patch Changes
+
+- Updated dependencies [[`bf4cc12545edc5bf249edc6ecec115c5f7a2b31f`](https://github.com/medusajs/medusa/commit/bf4cc12545edc5bf249edc6ecec115c5f7a2b31f), [`001923da2bbebb3d42373f0f66e517830d9c0187`](https://github.com/medusajs/medusa/commit/001923da2bbebb3d42373f0f66e517830d9c0187), [`43305a562cfba914654da056b0a7e03c40849678`](https://github.com/medusajs/medusa/commit/43305a562cfba914654da056b0a7e03c40849678)]:
+  - @medusajs/utils@2.12.4
+  - @medusajs/deps@2.12.4
+
 ## 2.12.3
 
 ### Patch Changes

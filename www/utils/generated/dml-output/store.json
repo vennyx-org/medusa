@@ -32,9 +32,9 @@
 		"properties": {
 			"id": "The ID of the store locale.",
 			"locale_code": "The locale code in BCP 47 format. For example, `en-US`.",
-			"is_default": "Whether the store locale is default.",
 			"store": "The associated store.\n\n@expandable"
 		},
+		"since": "2.12.3",
 		"deprecated": {
 			"is_deprecated": false
 		}

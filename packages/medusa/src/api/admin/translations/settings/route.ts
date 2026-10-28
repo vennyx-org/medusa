@@ -25,12 +25,12 @@ export const GET = async (
   const translationService = req.scope.resolve<ITranslationModuleService>(
     Modules.TRANSLATION
   )
-  const translatable_fields = translationService.getTranslatableFields(
+  const translatableFields = await translationService.getTranslatableFields(
     req.validatedQuery.entity_type
   )
 
   res.json({
-    translatable_fields,
+    translatable_fields: translatableFields,
   })
 }
 

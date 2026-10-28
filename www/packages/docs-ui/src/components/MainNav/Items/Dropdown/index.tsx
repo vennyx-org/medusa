@@ -4,7 +4,7 @@ import { TriangleDownMini } from "@medusajs/icons"
 import clsx from "clsx"
 import React, { useRef, useState } from "react"
 import { NavigationItemDropdown } from "types"
-import { Menu } from "../../../.."
+import { Menu } from "../../../Menu"
 import { MainNavItemLink } from "../Link"
 
 type MainNavItemDropdownProps = {
@@ -55,10 +55,14 @@ export const MainNavItemDropdown = ({
           className
         )}
         tabIndex={-1}
+        data-testid="dropdown-title-wrapper"
       >
-        <span className="text-compact-small-plus">{item.title}</span>
+        <span className="text-compact-small-plus" data-testid="dropdown-title">
+          {item.title}
+        </span>
         <TriangleDownMini
           className={clsx("transition-transform", isOpen && "rotate-180")}
+          data-testid="triangle-icon"
         />
       </div>
     )
@@ -70,6 +74,7 @@ export const MainNavItemDropdown = ({
       ref={ref}
       onMouseOver={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
+      data-testid="dropdown-wrapper"
     >
       {getItemContent()}
       <div className="absolute top-full -left-docs_0.75 pt-docs_0.25">

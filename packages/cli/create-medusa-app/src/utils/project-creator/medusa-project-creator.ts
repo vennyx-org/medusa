@@ -204,15 +204,18 @@ export class MedusaProjectCreator
     })
   }
 
-  private handleError(e: any): void {
+  private handleError(e: Error): void {
     if (isAbortError(e)) {
       process.exit()
     }
+
+    const showStack = e.message.includes("npm") || e.message.includes("yarn")
 
     this.spinner.stop()
     logMessage({
       message: `An error occurred: ${e}`,
       type: "error",
+      stack: showStack ? e.stack?.replace(e.toString(), "") : "",
     })
   }
 

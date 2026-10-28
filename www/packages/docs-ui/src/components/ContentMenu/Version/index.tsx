@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react"
 import { Card } from "../../Card"
-import { useIsBrowser, useSiteConfig } from "../../../providers"
+import { useIsBrowser } from "../../../providers/BrowserProvider"
+import { useSiteConfig } from "../../../providers/SiteConfig"
 import clsx from "clsx"
 
-const LOCAL_STORAGE_KEY = "last-version"
+export const LOCAL_STORAGE_KEY = "last-version"
 
 export const ContentMenuVersion = () => {
   const {

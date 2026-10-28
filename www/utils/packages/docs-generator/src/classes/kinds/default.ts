@@ -607,12 +607,14 @@ class DefaultKindGenerator<T extends ts.Node = ts.Node> {
     sinceTag: ts.JSDocTag | undefined
     featureFlagTag: ts.JSDocTag | undefined
     summary: string | undefined
+    example: ts.JSDocTag | undefined
   } {
     const nodeComments = ts.getJSDocCommentsAndTags(node)
     let deprecatedTag: ts.JSDocTag | undefined
     let sinceTag: ts.JSDocTag | undefined
     let featureFlagTag: ts.JSDocTag | undefined
     let summary: string | undefined
+    let example: ts.JSDocTag | undefined
 
     nodeComments.forEach((comment) => {
       if (!("tags" in comment)) {
@@ -637,6 +639,10 @@ class DefaultKindGenerator<T extends ts.Node = ts.Node> {
         if (tag.tagName.getText() === "featureFlag") {
           featureFlagTag = tag
         }
+
+        if (tag.tagName.getText() === "example") {
+          example = tag
+        }
       })
     })
 
@@ -645,6 +651,7 @@ class DefaultKindGenerator<T extends ts.Node = ts.Node> {
       sinceTag,
       featureFlagTag,
       summary,
+      example,
     }
   }
 

@@ -3,15 +3,17 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import clsx from "clsx"
 import { Highlight, HighlightProps, themes, Token } from "prism-react-renderer"
-import { ApiRunner } from "@/components"
-import { useAnalytics, useColorMode } from "@/providers"
+import { ApiRunner } from "@/components/ApiRunner"
+import { useAnalytics } from "@/providers/Analytics"
+import { useColorMode } from "@/providers/ColorMode"
 import { CodeBlockHeader, CodeBlockHeaderMeta } from "./Header"
 import { CodeBlockLine } from "./Line"
 import { ApiAuthType, ApiDataOptions, ApiMethod } from "types"
 // @ts-expect-error can't install the types package because it doesn't support React v19
 import { CSSTransition } from "react-transition-group"
-import { DocsTrackingEvents, useCollapsibleCodeLines } from "../.."
-import { HighlightProps as CollapsibleHighlightProps } from "@/hooks"
+import { DocsTrackingEvents } from "@/constants"
+import { useCollapsibleCodeLines } from "@/hooks/use-collapsible-code-lines"
+import { HighlightProps as CollapsibleHighlightProps } from "@/hooks/use-collapsible-code-lines"
 import { CodeBlockActions, CodeBlockActionsProps } from "./Actions"
 import { CodeBlockCollapsibleButton } from "./Collapsible/Button"
 import { CodeBlockCollapsibleFade } from "./Collapsible/Fade"
@@ -367,6 +369,7 @@ export const CodeBlock = ({
             "code-block-highlight-light",
           wrapperClassName
         )}
+        data-testid="code-block"
       >
         {codeTitle && (
           <CodeBlockHeader
@@ -393,6 +396,7 @@ export const CodeBlock = ({
             className
           )}
           style={style}
+          data-testid="code-block-inner"
         >
           <Highlight
             theme={codeTheme}

@@ -5,10 +5,29 @@ import {
 } from "../modules-sdk"
 
 import type { RedisOptions } from "ioredis"
+
 import { ConnectionOptions } from "node:tls"
 // @ts-ignore
 import type { InlineConfig } from "vite"
 import type { Logger } from "../logger"
+
+/**
+ * Registry for module options types. Modules can augment this interface
+ * using declaration merging to provide typed options in defineConfig.
+ *
+ * @example
+ * ```ts
+ * // In @medusajs/translation module:
+ * declare module "@medusajs/types" {
+ *   interface ModuleOptions {
+ *     "@medusajs/translation": {
+ *       entities?: { type: string; fields: string[] }[]
+ *     }
+ *   }
+ * }
+ * ```
+ */
+export interface ModuleOptions {}
 
 /**
  * @interface
@@ -243,6 +262,22 @@ export type MedusaCloudOptions = {
    * The endpoint of the Medusa Cloud email service.
    */
   emailsEndpoint?: string
+  /**
+   * The authorization endpoint of the Medusa Cloud OAuth service.
+   */
+  oauthAuthorizeEndpoint?: string
+  /**
+   * The token endpoint of the Medusa Cloud OAuth token service.
+   */
+  oauthTokenEndpoint?: string
+  /**
+   * The callback URL for the Medusa Cloud OAuth service. If not provided, it will be set to `${AdminOptions.backendUrl}/auth/user/cloud/callback`.
+   */
+  oauthCallbackUrl?: string
+  /**
+   * Whether the Medusa Cloud OAuth service is disabled.
+   */
+  oauthDisabled?: boolean
 }
 
 /**
@@ -1093,17 +1128,6 @@ export type ConfigModule = {
   logger?: Logger
 }
 
-type InternalModuleDeclarationOverride = InternalModuleDeclaration & {
-  /**
-   * Optional key to be used to identify the module, if not provided, it will be inferred from the module joiner config service name.
-   */
-  key?: string
-  /**
-   * By default, modules are enabled, if provided as true, this will disable the module entirely.
-   */
-  disable?: boolean
-}
-
 type ExternalModuleDeclarationOverride = ExternalModuleDeclaration & {
   /**
    * key to be used to identify the module, if not provided, it will be inferred from the module joiner config service name.
@@ -1116,11 +1140,41 @@ type ExternalModuleDeclarationOverride = ExternalModuleDeclaration & {
 }
 
 /**
- * Modules accepted by the defineConfig function
+ * Generates a union of typed module configs for all known modules in the ModuleOptions registry.
+ * This enables automatic type inference when using registered module resolve strings.
  */
-export type InputConfigModules = Partial<
-  InternalModuleDeclarationOverride | ExternalModuleDeclarationOverride
->[]
+type KnownModuleConfigs = {
+  [K in keyof ModuleOptions]: Partial<
+    Omit<InternalModuleDeclaration, "options"> & {
+      key?: string
+      disable?: boolean
+      resolve: K
+      options?: ModuleOptions[K]
+    }
+  >
+}[keyof ModuleOptions]
+
+/**
+ * Generic module config for modules not registered in ModuleOptions.
+ */
+type GenericModuleConfig = Partial<
+  Omit<InternalModuleDeclaration, "options"> & {
+    key?: string
+    disable?: boolean
+    resolve?: string
+    options?: Record<string, unknown>
+  }
+>
+
+/**
+ * Modules accepted by the defineConfig function.
+ * Automatically infers options type for known modules registered in ModuleOptions.
+ */
+export type InputConfigModules = (
+  | KnownModuleConfigs
+  | GenericModuleConfig
+  | ExternalModuleDeclarationOverride
+)[]
 
 /**
  * The configuration accepted by the "defineConfig" helper

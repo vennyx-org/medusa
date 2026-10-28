@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation"
 import React, { createContext, useContext, useMemo } from "react"
 import { MenuItem, NavigationItem, NavigationItemDropdown } from "types"
-import { useSiteConfig } from "../SiteConifg"
+import { useSiteConfig } from "../SiteConfig"
 
 export type MainNavContext = {
   navItems: NavigationItem[]

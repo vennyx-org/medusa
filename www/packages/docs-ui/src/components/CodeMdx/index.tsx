@@ -3,10 +3,9 @@ import {
   CodeBlock,
   CodeBlockMetaFields,
   CodeBlockProps,
-  InlineCode,
-  InlineCodeProps,
-  MermaidDiagram,
-} from "@/components"
+} from "@/components/CodeBlock"
+import { InlineCode, InlineCodeProps } from "@/components/InlineCode"
+import { MermaidDiagram } from "@/components/MermaidDiagram"
 import { Npm2YarnCode } from "../Npm2YarnCode"
 
 export type CodeMdxProps = {

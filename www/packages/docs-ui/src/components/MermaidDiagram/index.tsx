@@ -1,4 +1,5 @@
 "use client"
+
 import React, {
   Suspense,
   useCallback,
@@ -7,7 +8,7 @@ import React, {
   useRef,
   useState,
 } from "react"
-import { Loading } from "@/components"
+import { Loading } from "@/components/Loading"
 import mermaid from "mermaid"
 import type { RenderResult } from "mermaid"
 import { Controlled as ControlledZoom } from "react-medium-image-zoom"

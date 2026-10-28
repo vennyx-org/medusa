@@ -6,7 +6,7 @@
  *   Retrieve a list of products. The products can be filtered by fields such as `id`. The products can also be sorted or paginated.
  * 
  * 
- *   You can retrieve the content of the products translated to a specific locale either by passing the `locale` query parameter or by setting the `Content-Language` header to the desired locale code in BCP 47 format. If you don't pass a locale, and your store has a default locale, the default locale will be used.
+ *   You can retrieve the content of the products translated to a specific locale either by passing the `locale` query parameter or by setting the `x-medusa-locale` header to the desired locale code in BCP 47 format. If you don't pass a locale, and your store has a default locale, the default locale will be used.
  * 
  * 
  *   With localization, the products' content like title and description will be in the specified locale if a translation is available,  and fallback to the original content otherwise. Learn more in the [Localization](#localization) section.
@@ -23,7 +23,7 @@
  *       type: string
  *       externalDocs:
  *         url: https://docs.medusajs.com/api/store#publishable-api-key
- *   - name: Content-Language
+ *   - name: x-medusa-locale
  *     in: header
  *     description: The locale in BCP 47 format to retrieve localized content.
  *     required: false
@@ -427,6 +427,7 @@
  *           type: boolean
  *           title: $exists
  *           description: Filter by whether a value for this parameter exists (not `null`).
+ *       title: created_at
  *   - name: updated_at
  *     in: query
  *     description: Filter by the product's update date.
@@ -658,6 +659,7 @@
  *           type: boolean
  *           title: $exists
  *           description: Filter by whether a value for this parameter exists (not `null`).
+ *       title: updated_at
  *   - name: region_id
  *     in: query
  *     description: The ID of the region the products are being viewed from. This is required if you're retrieving product variant prices with taxes.

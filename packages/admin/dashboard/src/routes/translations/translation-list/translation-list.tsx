@@ -1,6 +1,9 @@
-import { Container, Heading, Text } from "@medusajs/ui"
-import { TwoColumnPage } from "../../../components/layout/pages"
+import { Alert, Button, Container, Heading, Text } from "@medusajs/ui"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { TwoColumnPageSkeleton } from "../../../components/common/skeleton"
+import { TwoColumnPage } from "../../../components/layout/pages"
 import {
   useStore,
   useTranslationSettings,
@@ -9,8 +12,6 @@ import {
 import { ActiveLocalesSection } from "./components/active-locales-section/active-locales-section"
 import { TranslationListSection } from "./components/translation-list-section/translation-list-section"
 import { TranslationsCompletionSection } from "./components/translations-completion-section/translations-completion-section"
-import { TwoColumnPageSkeleton } from "../../../components/common/skeleton"
-import { useMemo } from "react"
 
 export type TranslatableEntity = {
   label: string
@@ -22,6 +23,7 @@ export type TranslatableEntity = {
 
 export const TranslationList = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   const { store, isPending, isError, error } = useStore()
   const {
@@ -60,29 +62,37 @@ export const TranslationList = () => {
       return []
     }
 
-    return Object.entries(translatable_fields)
-      .filter(
-        ([entity]) =>
-          !["product_option", "product_option_value"].includes(entity)
-      )
-      .map(([entity, fields]) => {
-        const entityStatistics = statistics?.[entity] ?? {
-          translated: 0,
-          expected: 0,
-        }
+    return (
+      Object.entries(translatable_fields)
+        .filter(
+          ([entity]) =>
+            !["product_option", "product_option_value"].includes(entity)
+        )
+        .map(([entity, fields]) => {
+          const entityStatistics = statistics?.[entity] ?? {
+            translated: 0,
+            expected: 0,
+          }
 
-        return {
-          label: entity
-            .split("_")
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" "),
-          reference: entity,
-          translatableFields: fields,
-          translatedCount: entityStatistics.translated,
-          totalCount: entityStatistics.expected,
-        }
-      })
+          return {
+            label: entity
+              .split("_")
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" "),
+            reference: entity,
+            translatableFields: fields,
+            translatedCount: entityStatistics.translated,
+            totalCount: entityStatistics.expected,
+          }
+        })
+        // sort by label alphabetically
+        .sort((a, b) => a.label.localeCompare(b.label))
+    )
   }, [translatable_fields, statistics])
+
+  const handleManageLocales = useCallback(() => {
+    navigate("/settings/translations/add-locales")
+  }, [navigate])
 
   const isReady =
     !!store &&
@@ -111,6 +121,25 @@ export const TranslationList = () => {
             {t("translations.subtitle")}
           </Text>
         </Container>
+
+        {!hasLocales && (
+          <Alert
+            variant="info"
+            className="bg-ui-bg-base flex items-center px-6 py-4"
+          >
+            <div className="flex items-center justify-between gap-x-2">
+              <p>{t("translations.activeLocales.noLocalesTip")}.</p>
+              <Button
+                onClick={handleManageLocales}
+                size="small"
+                variant="secondary"
+              >
+                {t("translations.activeLocales.noLocalesTipConfigureAction")}
+              </Button>
+            </div>
+          </Alert>
+        )}
+
         <TranslationListSection
           entities={translatableEntities}
           hasLocales={hasLocales}

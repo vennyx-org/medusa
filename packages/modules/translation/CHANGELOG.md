@@ -1,5 +1,29 @@
 # @medusajs/translation
 
+## 2.12.5
+
+### Patch Changes
+
+- Updated dependencies [[`233ec261be200fac83002415aa7c0df082339a3f`](https://github.com/medusajs/medusa/commit/233ec261be200fac83002415aa7c0df082339a3f)]:
+  - @medusajs/framework@2.12.5
+
+## 2.12.4
+
+### Patch Changes
+
+- [#14445](https://github.com/medusajs/medusa/pull/14445) [`9d2c78db4eac010d60b8943e769e68d506cfd529`](https://github.com/medusajs/medusa/commit/9d2c78db4eac010d60b8943e769e68d506cfd529) Thanks [@adrien2p](https://github.com/adrien2p)! - fix(translation): omit id from types properties
+
+- [#14345](https://github.com/medusajs/medusa/pull/14345) [`0277062fecc278e630bf2110761a545339f6b9fe`](https://github.com/medusajs/medusa/commit/0277062fecc278e630bf2110761a545339f6b9fe) Thanks [@0xFl4g](https://github.com/0xFl4g)! - fix(translation): prevent duplicate locale error on server restart
+
+- [#14355](https://github.com/medusajs/medusa/pull/14355) [`b21a599d118f126e64d2993d46ba60f4a4e94545`](https://github.com/medusajs/medusa/commit/b21a599d118f126e64d2993d46ba60f4a4e94545) Thanks [@adrien2p](https://github.com/adrien2p)! - feat(): Translation settings + user configuration + js/admin
+
+- [#14364](https://github.com/medusajs/medusa/pull/14364) [`1c89acc536b9b15a7a2984a34783cf3b08db6317`](https://github.com/medusajs/medusa/commit/1c89acc536b9b15a7a2984a34783cf3b08db6317) Thanks [@homosape](https://github.com/homosape)! - feat: added ka-GE to the default list of locales
+
+- [#14358](https://github.com/medusajs/medusa/pull/14358) [`11de7e3e3449f3a93724aaeed770a66840ffcaf9`](https://github.com/medusajs/medusa/commit/11de7e3e3449f3a93724aaeed770a66840ffcaf9) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - feat(translation,core-flows): translate remaining core entities and sync shipping option <> method translations
+
+- Updated dependencies [[`181d5fa67122e4e5f38b91f6b716d35f2d08a204`](https://github.com/medusajs/medusa/commit/181d5fa67122e4e5f38b91f6b716d35f2d08a204), [`d347e369ce555064e24f2dc3cd93b9e4e73a006d`](https://github.com/medusajs/medusa/commit/d347e369ce555064e24f2dc3cd93b9e4e73a006d)]:
+  - @medusajs/framework@2.12.4
+
 ## 2.12.3
 
 ### Patch Changes

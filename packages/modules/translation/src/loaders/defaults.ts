@@ -3,7 +3,10 @@ import {
   Logger,
   ModulesSdkTypes,
 } from "@medusajs/framework/types"
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import {
+  ContainerRegistrationKeys,
+  normalizeLocale,
+} from "@medusajs/framework/utils"
 import Locale from "@models/locale"
 
 /**
@@ -61,6 +64,7 @@ const defaultLocales = [
   { code: "zh-HK", name: "Chinese Traditional (Hong Kong)" },
   { code: "ja-JP", name: "Japanese (Japan)" },
   { code: "ko-KR", name: "Korean (South Korea)" },
+  { code: "ka-GE", name: "Georgian (Georgia)" },
 ]
 
 export default async ({ container }: LoaderOptions): Promise<void> => {
@@ -70,7 +74,24 @@ export default async ({ container }: LoaderOptions): Promise<void> => {
     container.resolve("localeService")
 
   try {
-    const resp = await localeService_.upsert(defaultLocales)
+    // Fetch existing locales to map their IDs for upsert
+    // The upsert method uses `id` as the key, so we need to include IDs for existing locales
+    const existingLocales = await localeService_.list(
+      {},
+      { select: ["id", "code"] }
+    )
+    const existingByCode = new Map(
+      existingLocales.map((l) => [l.code, l.id])
+    )
+
+    // Map default locales to include IDs for existing ones
+    const localesToUpsert = defaultLocales.map((locale) => {
+      const normalizedCode = normalizeLocale(locale.code)
+      const existingId = existingByCode.get(normalizedCode)
+      return existingId ? { ...locale, id: existingId } : locale
+    })
+
+    const resp = await localeService_.upsert(localesToUpsert)
     logger.debug(`Loaded ${resp.length} locales`)
   } catch (error) {
     logger.warn(

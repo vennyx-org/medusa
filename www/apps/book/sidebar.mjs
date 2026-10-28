@@ -368,6 +368,11 @@ export const sidebars = [
               },
               {
                 type: "link",
+                path: "/learn/fundamentals/api-routes/localization",
+                title: "Localization",
+              },
+              {
+                type: "link",
                 path: "/learn/fundamentals/api-routes/override",
                 title: "Override API Routes",
               },

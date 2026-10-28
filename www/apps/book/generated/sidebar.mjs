@@ -698,11 +698,21 @@ export const generatedSidebars = [
                 "loaded": true,
                 "isPathHref": true,
                 "type": "link",
+                "path": "/learn/fundamentals/api-routes/localization",
+                "title": "Localization",
+                "children": [],
+                "chapterTitle": "3.6.12. Localization",
+                "number": "3.6.12."
+              },
+              {
+                "loaded": true,
+                "isPathHref": true,
+                "type": "link",
                 "path": "/learn/fundamentals/api-routes/override",
                 "title": "Override API Routes",
                 "children": [],
-                "chapterTitle": "3.6.12. Override API Routes",
-                "number": "3.6.12."
+                "chapterTitle": "3.6.13. Override API Routes",
+                "number": "3.6.13."
               }
             ],
             "chapterTitle": "3.6. API Routes",

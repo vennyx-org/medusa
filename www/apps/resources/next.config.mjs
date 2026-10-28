@@ -4,6 +4,7 @@ import {
   prerequisitesLinkFixerPlugin,
   recmaInjectMdxDataPlugin,
   typeListLinkFixerPlugin,
+  validateHighlightsPlugin,
   workflowDiagramLinkFixerPlugin,
 } from "remark-rehype-plugins"
 
@@ -48,6 +49,7 @@ const withMDX = mdx({
         },
       ],
       ...mdxPluginOptions.options.rehypePlugins,
+      [validateHighlightsPlugin, { verbose: false }],
       [localLinksRehypePlugin],
       [typeListLinkFixerPlugin],
       [

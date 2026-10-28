@@ -81,6 +81,41 @@ export interface TranslationDTO {
 }
 
 /**
+ * The translation settings details.
+ */
+export interface TranslationSettingsDTO {
+  /**
+   * The ID of the settings record.
+   */
+  id: string
+
+  /**
+   * The entity type these settings apply to (e.g., "product", "product_variant").
+   */
+  entity_type: string
+
+  /**
+   * The translatable fields for this entity type.
+   */
+  fields: string[]
+
+  /**
+   * The date and time the settings were created.
+   */
+  created_at: Date | string
+
+  /**
+   * The date and time the settings were last updated.
+   */
+  updated_at: Date | string
+
+  /**
+   * The date and time the settings were deleted.
+   */
+  deleted_at: Date | string | null
+}
+
+/**
  * The filters to apply on the retrieved locales.
  */
 export interface FilterableLocaleProps

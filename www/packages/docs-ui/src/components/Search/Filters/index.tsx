@@ -2,7 +2,7 @@
 
 import clsx from "clsx"
 import React from "react"
-import { useSearch } from "../../../providers"
+import { useSearch } from "@/providers/Search"
 
 export const SearchFilters = () => {
   const { indices, selectedIndex, setSelectedIndex } = useSearch()

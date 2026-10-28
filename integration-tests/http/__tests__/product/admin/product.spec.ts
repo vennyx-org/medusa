@@ -2356,6 +2356,125 @@ medusaIntegrationTestRunner({
           )
         })
 
+        it("should update variant to manage_inventory false and unlink inventory items", async () => {
+          const inventoryItem1 = (
+            await api.post(
+              `/admin/inventory-items`,
+              { sku: "inventory-item-1" },
+              adminHeaders
+            )
+          ).data.inventory_item
+
+          const inventoryItem2 = (
+            await api.post(
+              `/admin/inventory-items`,
+              { sku: "inventory-item-2" },
+              adminHeaders
+            )
+          ).data.inventory_item
+
+          const createPayload = {
+            title: "Test product with inventory",
+            handle: "test-product-inventory",
+            options: [{ title: "size", values: ["large"] }],
+            shipping_profile_id: shippingProfile.id,
+            variants: [
+              {
+                title: "Variant with inventory",
+                prices: [{ currency_code: "usd", amount: 100 }],
+                manage_inventory: true,
+                options: { size: "large" },
+                inventory_items: [
+                  {
+                    inventory_item_id: inventoryItem1.id,
+                    required_quantity: 5,
+                  },
+                  {
+                    inventory_item_id: inventoryItem2.id,
+                    required_quantity: 10,
+                  },
+                ],
+              },
+            ],
+          }
+
+          const createdProduct = (
+            await api.post("/admin/products", createPayload, {
+              ...adminHeaders,
+              params: {
+                fields:
+                  "variants.inventory_items.*,variants.inventory_items.inventory.*",
+              },
+            })
+          ).data.product
+
+          const variantWithInventory = createdProduct.variants[0]
+
+          expect(variantWithInventory.manage_inventory).toBe(true)
+          expect(variantWithInventory.inventory_items).toHaveLength(2)
+          expect(variantWithInventory.inventory_items).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                inventory_item_id: inventoryItem1.id,
+                required_quantity: 5,
+              }),
+              expect.objectContaining({
+                inventory_item_id: inventoryItem2.id,
+                required_quantity: 10,
+              }),
+            ])
+          )
+
+          const updatePayload = {
+            variants: [
+              {
+                id: variantWithInventory.id,
+                manage_inventory: false,
+              },
+            ],
+          }
+
+          const updatedProduct = (
+            await api.post(
+              `/admin/products/${createdProduct.id}`,
+              updatePayload,
+              {
+                ...adminHeaders,
+                params: {
+                  fields:
+                    "variants.inventory_items.*,variants.inventory_items.inventory.*",
+                },
+              }
+            )
+          ).data.product
+
+          const updatedVariant = updatedProduct.variants.find(
+            (v) => v.id === variantWithInventory.id
+          )
+
+          expect(updatedVariant.manage_inventory).toBe(false)
+          expect(updatedVariant.inventory_items).toHaveLength(0)
+          expect(updatedVariant.inventory_items).toEqual([])
+
+          const inventoryItem1Response = await api.get(
+            `/admin/inventory-items/${inventoryItem1.id}`,
+            adminHeaders
+          )
+          const inventoryItem2Response = await api.get(
+            `/admin/inventory-items/${inventoryItem2.id}`,
+            adminHeaders
+          )
+
+          expect(inventoryItem1Response.status).toEqual(200)
+          expect(inventoryItem2Response.status).toEqual(200)
+          expect(inventoryItem1Response.data.inventory_item.id).toBe(
+            inventoryItem1.id
+          )
+          expect(inventoryItem2Response.data.inventory_item.id).toBe(
+            inventoryItem2.id
+          )
+        })
+
         it("updates products sales channels", async () => {
           const salesChannel1 = (
             await api.post(

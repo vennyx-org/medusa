@@ -160,7 +160,7 @@ class OasKindGenerator extends FunctionKindGenerator {
 
     this.tags = new Map()
     this.oasSchemaHelper = new OasSchemaHelper()
-    this.schemaFactory = new SchemaFactory()
+    this.schemaFactory = new SchemaFactory({ checker: this.checker })
     this.typesHelper = new TypesHelper({
       checker: this.checker,
     })
@@ -1377,7 +1377,7 @@ class OasKindGenerator extends FunctionKindGenerator {
       }),
       this.getParameterObject({
         type: "header",
-        name: "Content-Language",
+        name: "x-medusa-locale",
         description:
           "The locale in BCP 47 format to retrieve localized content.",
         required: false,
@@ -1549,17 +1549,30 @@ class OasKindGenerator extends FunctionKindGenerator {
     const typeAsString =
       zodObjectTypeName || this.checker.typeToString(itemType)
 
-    const schemaFromFactory = this.schemaFactory.tryGetSchema(
-      itemType.symbol?.getName() ||
-        itemType.aliasSymbol?.getName() ||
-        title ||
-        typeAsString,
-      {
-        title: title || typeAsString,
-        description,
-      },
-      rest.context
-    )
+    const schemaFromFactory =
+      this.schemaFactory.tryGetSchema({
+        name:
+          itemType.symbol?.getName() ||
+          itemType.aliasSymbol?.getName() ||
+          title ||
+          typeAsString,
+        additionalData: {
+          title: title || typeAsString,
+          description,
+        },
+        context: rest.context,
+        type: itemType,
+      }) ||
+      this.schemaFactory.tryGetSchema({
+        // remove type arguments from name
+        name: typeAsString.replace(/<.*>$/, ""),
+        additionalData: {
+          title: title || typeAsString,
+          description,
+        },
+        context: rest.context,
+        type: itemType,
+      })
 
     if (schemaFromFactory) {
       return schemaFromFactory

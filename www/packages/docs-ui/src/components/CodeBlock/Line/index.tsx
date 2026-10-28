@@ -1,8 +1,17 @@
 import React, { useMemo } from "react"
-import { Highlight } from ".."
+import { Highlight } from "../../CodeBlock"
 import { RenderProps, Token } from "prism-react-renderer"
 import clsx from "clsx"
-import { MarkdownContent, Tooltip } from "@/components"
+import { Tooltip } from "@/components/Tooltip"
+import dynamic from "next/dynamic"
+
+const MarkdownContent = dynamic(
+  async () =>
+    import("@/components/MarkdownContent").then((mod) => mod.MarkdownContent),
+  {
+    ssr: false,
+  }
+)
 
 type HighlightedTokens = {
   start: number
@@ -215,7 +224,10 @@ export const CodeBlockLine = ({
     isTokenHighlighted: boolean
     offset: number
   }) => (
-    <span className={clsx(isTokenHighlighted && "relative")}>
+    <span
+      className={clsx(isTokenHighlighted && "relative")}
+      data-testid="code-block-line-tokens"
+    >
       {isTokenHighlighted && (
         <span
           className={clsx(
@@ -227,6 +239,7 @@ export const CodeBlockLine = ({
             "lg:bg-medusa-alpha-white-alpha-6 lg:border lg:border-medusa-alpha-white-alpha-12",
             "lg:rounded-docs_xs scale-x-[1.05]"
           )}
+          data-testid="code-block-line-highlight"
         />
       )}
       {tokens.map((token, key) => {
@@ -242,6 +255,7 @@ export const CodeBlockLine = ({
               tokenClassName,
               isTokenHighlighted && "relative z-[1]"
             )}
+            data-testid="code-block-line-token"
             {...rest}
           />
         )
@@ -263,6 +277,7 @@ export const CodeBlockLine = ({
         isHighlightedLine && "bg-medusa-alpha-white-alpha-6",
         lineProps.className
       )}
+      data-testid="code-block-line"
     >
       {(showLineNumber || isTerminal) && (
         <span
@@ -272,6 +287,7 @@ export const CodeBlockLine = ({
             lineNumberColorClassName,
             lineNumberBgClassName
           )}
+          data-testid="line-number"
         >
           {isTerminal ? "❯" : showLineNumber ? lineNumber + 1 : ""}
         </span>

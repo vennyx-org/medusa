@@ -173,6 +173,15 @@ tags:
       url: https://docs.medusajs.com/resources/commerce-modules/user
     x-associatedSchema:
       $ref: '#/components/schemas/AdminInvite'
+  - name: Locales
+    description: |
+      A locale is a language that content is translated into for customers to view in a storefront.
+      Medusa installs locales by default. These API routes allow admin users to retrieve and view locales.
+    externalDocs:
+      description: Learn more about locales and translations.
+      url: https://docs.medusajs.com/resources/commerce-modules/translation/concepts
+    x-associatedSchema:
+      $ref: '#/components/schemas/AdminLocale'
   - name: Notifications
     description: |
       A notification informs an admin user of store changes or status changes of background tasks.
@@ -518,6 +527,15 @@ tags:
       </Note>
     x-associatedSchema:
       $ref: '#/components/schemas/AdminTransactionGroup'
+  - name: Translations
+    description: |
+      A translation is a localized version of content in a specific locale. For example, a product description in French.
+      These API routes allow admin users to manage translations for different locales and resources.
+    externalDocs:
+      description: Learn more about the Translation Module.
+      url: https://docs.medusajs.com/resources/commerce-modules/translation
+    x-associatedSchema:
+      $ref: '#/components/schemas/AdminTranslation'
   - name: Uploads
     description: |
       Use these API routes to upload files to your Medusa application using the installed file module provider.
@@ -885,6 +903,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the API key's update date.
@@ -1116,6 +1135,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by the API key's deletion date.
@@ -1347,6 +1367,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: revoked_at
           in: query
           description: Filter by the API key's revoke date.
@@ -1578,6 +1599,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: revoked_at
         - name: $and
           in: query
           description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
@@ -3141,6 +3163,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: q
           in: query
           description: The claim's q.
@@ -3422,6 +3445,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the claim's update date.
@@ -3653,6 +3677,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: $and
           in: query
           description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
@@ -3892,6 +3917,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a claim's update date.
@@ -4011,6 +4037,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a claim's deletion date.
@@ -4130,6 +4157,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
       security:
         - api_token: []
         - cookie_auth: []
@@ -4504,6 +4532,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a claim's update date.
@@ -4623,6 +4652,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a claim's deletion date.
@@ -4742,6 +4772,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
       security:
         - api_token: []
         - cookie_auth: []
@@ -4983,6 +5014,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a claim's update date.
@@ -5102,6 +5134,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a claim's deletion date.
@@ -5221,6 +5254,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
       security:
         - api_token: []
         - cookie_auth: []
@@ -5874,6 +5908,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a claim's update date.
@@ -5993,6 +6028,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a claim's deletion date.
@@ -6112,6 +6148,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
       security:
         - api_token: []
         - cookie_auth: []
@@ -6428,6 +6465,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a claim's update date.
@@ -6547,6 +6585,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a claim's deletion date.
@@ -6666,6 +6705,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
       security:
         - api_token: []
         - cookie_auth: []
@@ -6909,6 +6949,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a claim's update date.
@@ -7028,6 +7069,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a claim's deletion date.
@@ -7147,6 +7189,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
       security:
         - api_token: []
         - cookie_auth: []
@@ -7463,6 +7506,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a claim's update date.
@@ -7582,6 +7626,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a claim's deletion date.
@@ -7701,6 +7746,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
       security:
         - api_token: []
         - cookie_auth: []
@@ -7946,6 +7992,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a claim's update date.
@@ -8065,6 +8112,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a claim's deletion date.
@@ -8184,6 +8232,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
       security:
         - api_token: []
         - cookie_auth: []
@@ -8499,6 +8548,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a claim's update date.
@@ -8618,6 +8668,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a claim's deletion date.
@@ -8737,6 +8788,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
       security:
         - api_token: []
         - cookie_auth: []
@@ -9140,6 +9192,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: q
           in: query
           description: Search term to filter the collection's searchable properties by.
@@ -9421,6 +9474,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the collection's update date.
@@ -9652,6 +9706,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: $and
           in: query
           description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
@@ -10730,6 +10785,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter the customer groups by their update date.
@@ -10961,6 +11017,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter the customer groups by their deletion date.
@@ -11192,6 +11249,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
@@ -14532,6 +14590,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a customer's update date.
@@ -14763,6 +14822,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter a customer by their deletion date.
@@ -14994,6 +15054,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
@@ -17582,6 +17643,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the draft order's update date.
@@ -17813,6 +17875,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: customer_id
           in: query
           required: false
@@ -19906,6 +19969,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: id
           in: query
           required: false
@@ -20179,6 +20243,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the exchange's update date.
@@ -20410,6 +20475,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: with_deleted
           in: query
           description: Whether to include deleted records in the result.
@@ -25190,6 +25256,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the invite's update date.
@@ -25309,6 +25376,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by the invite's deletion date.
@@ -25428,6 +25496,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           required: false
@@ -25979,6 +26048,228 @@ paths:
             refreshed. You can listen to this event to send an email to the invited users,
             for example.
           deprecated: false
+  /admin/locales:
+    get:
+      operationId: GetLocales
+      summary: List Locales
+      description: Retrieve a list of locales. The locales can be filtered by fields such as `code`. The locales can also be sorted or paginated.
+      x-authenticated: true
+      parameters:
+        - name: q
+          in: query
+          description: Search query to filter locales by code or other fields.
+          required: false
+          schema:
+            type: string
+            title: q
+            description: Search query to filter locales by code or other fields.
+        - name: code
+          in: query
+          required: false
+          schema:
+            oneOf:
+              - type: string
+                title: code
+                description: Filter locales by a code.
+              - type: array
+                description: Filter locales by multiple codes.
+                items:
+                  type: string
+                  title: code
+                  description: A locale code.
+        - name: limit
+          in: query
+          description: Limit the number of items returned in the list.
+          required: false
+          schema:
+            type: number
+            title: limit
+            description: Limit the number of items returned in the list.
+            externalDocs:
+              url: '#pagination'
+        - name: offset
+          in: query
+          description: The number of items to skip when retrieving a list.
+          required: false
+          schema:
+            type: number
+            title: offset
+            description: The number of items to skip when retrieving a list.
+            externalDocs:
+              url: '#pagination'
+        - name: order
+          in: query
+          description: The field to sort the data by. By default, the sort order is ascending. To change the order to descending, prefix the field name with `-`.
+          required: false
+          schema:
+            type: string
+            title: order
+            description: The field to sort the data by. By default, the sort order is ascending. To change the order to descending, prefix the field name with `-`.
+            externalDocs:
+              url: '#pagination'
+        - name: with_deleted
+          in: query
+          description: The locale's with deleted.
+          required: false
+          schema:
+            type: boolean
+            title: with_deleted
+            description: The locale's with deleted.
+        - name: fields
+          in: query
+          description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
+          required: false
+          schema:
+            type: string
+            title: fields
+            description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
+            externalDocs:
+              url: '#select-fields-and-relations'
+        - name: $and
+          in: query
+          description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
+          required: false
+          schema:
+            type: array
+            description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
+            items:
+              type: object
+            title: $and
+        - name: $or
+          in: query
+          description: Join query parameters with an OR condition. Each object's content is the same type as the expected query parameters.
+          required: false
+          schema:
+            type: array
+            description: Join query parameters with an OR condition. Each object's content is the same type as the expected query parameters.
+            items:
+              type: object
+            title: $or
+      security:
+        - api_token: []
+        - cookie_auth: []
+        - jwt_token: []
+      x-codeSamples:
+        - lang: JavaScript
+          label: JS SDK
+          source: |-
+            import Medusa from "@medusajs/js-sdk"
+
+            export const sdk = new Medusa({
+              baseUrl: import.meta.env.VITE_BACKEND_URL || "/",
+              debug: import.meta.env.DEV,
+              auth: {
+                type: "session",
+              },
+            })
+
+            sdk.admin.locale.list()
+            .then(({ locales, count, limit, offset }) => {
+              console.log(locales)
+            })
+        - lang: Shell
+          label: cURL
+          source: |-
+            curl '{backend_url}/admin/locales' \
+            -H 'Authorization: Bearer {access_token}'
+      tags:
+        - Locales
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminLocaleListResponse'
+        '400':
+          $ref: '#/components/responses/400_error'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found_error'
+        '409':
+          $ref: '#/components/responses/invalid_state_error'
+        '422':
+          $ref: '#/components/responses/invalid_request_error'
+        '500':
+          $ref: '#/components/responses/500_error'
+      x-since: 2.12.3
+      x-featureFlag: translation
+  /admin/locales/{code}:
+    get:
+      operationId: GetLocalesCode
+      summary: Get a Locale
+      x-sidebar-summary: Get Locale
+      description: Retrieve a locale by its code. You can expand the locale's relations or select the fields that should be returned.
+      x-authenticated: true
+      parameters:
+        - name: code
+          in: path
+          description: The locale's code in [BCP 47 format](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1).
+          example: fr-FR
+          required: true
+          schema:
+            type: string
+        - name: fields
+          in: query
+          description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
+          required: false
+          schema:
+            type: string
+            title: fields
+            description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
+            externalDocs:
+              url: '#select-fields-and-relations'
+      security:
+        - api_token: []
+        - cookie_auth: []
+        - jwt_token: []
+      x-codeSamples:
+        - lang: JavaScript
+          label: JS SDK
+          source: |-
+            import Medusa from "@medusajs/js-sdk"
+
+            export const sdk = new Medusa({
+              baseUrl: import.meta.env.VITE_BACKEND_URL || "/",
+              debug: import.meta.env.DEV,
+              auth: {
+                type: "session",
+              },
+            })
+
+            sdk.admin.locale.retrieve("en-US")
+            .then(({ locale }) => {
+              console.log(locale)
+            })
+        - lang: Shell
+          label: cURL
+          source: |-
+            curl '{backend_url}/admin/locales/fr-FR' \
+            -H 'Authorization: Bearer {access_token}'
+      tags:
+        - Locales
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminLocaleResponse'
+        '400':
+          $ref: '#/components/responses/400_error'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found_error'
+        '409':
+          $ref: '#/components/responses/invalid_state_error'
+        '422':
+          $ref: '#/components/responses/invalid_request_error'
+        '500':
+          $ref: '#/components/responses/500_error'
+      x-since: 2.12.3
+      x-featureFlag: translation
   /admin/notifications:
     get:
       operationId: GetNotifications
@@ -26452,6 +26743,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the order change's update date.
@@ -26683,6 +26975,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by the order change's deletion date.
@@ -26914,6 +27207,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: id
           in: query
           required: false
@@ -28257,6 +28551,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the order's update date.
@@ -28488,6 +28783,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: customer_id
           in: query
           required: false
@@ -28589,6 +28885,480 @@ paths:
           $ref: '#/components/responses/500_error'
       x-workflow: getOrdersListWorkflow
       x-events: []
+  /admin/orders/export:
+    post:
+      operationId: PostOrdersExport
+      summary: Export Orders
+      description: |
+        Start an order export process to retrieve a CSV of exported orders.
+
+        You'll receive in the response the transaction ID of the workflow generating the CSV file. To check the status of the execution, send a GET request to `/admin/workflows-executions/export-orders/:transaction-id`.
+
+        Once the execution finishes successfully, a notification is created for the export. You can retrieve the notifications using the `/admin/notification` API route to retrieve the file's download URL.
+      x-authenticated: true
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            oneOf:
+              - type: string
+                title: id
+                description: The ID of the order to export.
+              - type: array
+                description: The IDs of the orders to export.
+                items:
+                  type: string
+                  title: id
+                  description: An order ID.
+        - name: sales_channel_id
+          in: query
+          description: The IDs of the sales channels to export their orders.
+          required: false
+          schema:
+            type: array
+            description: The IDs of the sales channels to export their orders.
+            items:
+              type: string
+              title: sales_channel_id
+              description: A sales channel ID.
+        - name: region_id
+          in: query
+          required: false
+          schema:
+            oneOf:
+              - type: string
+                title: region_id
+                description: The ID of a region to export orders in it.
+              - type: array
+                description: The IDs of regions to export their orders.
+                items:
+                  type: string
+                  title: region_id
+                  description: A region ID.
+        - name: customer_id
+          in: query
+          required: false
+          schema:
+            oneOf:
+              - type: string
+                title: customer_id
+                description: The ID of a customer to export their orders.
+              - type: array
+                description: The IDs of customers to export their orders.
+                items:
+                  type: string
+                  title: customer_id
+                  description: A customer ID.
+        - name: q
+          in: query
+          description: A search query to filter exported orders by.
+          required: false
+          schema:
+            type: string
+            title: q
+            description: A search query to filter exported orders by.
+        - name: created_at
+          in: query
+          description: Filter by an order's creation date.
+          required: false
+          schema:
+            type: object
+            description: Filter by an order's creation date.
+            properties:
+              $and:
+                type: array
+                description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
+                items:
+                  type: object
+                title: $and
+              $or:
+                type: array
+                description: Join query parameters with an OR condition. Each object's content is the same type as the expected query parameters.
+                items:
+                  type: object
+                title: $or
+              $eq:
+                oneOf:
+                  - type: string
+                    title: $eq
+                    description: Filter by an exact match.
+                  - type: array
+                    description: Filter by an exact match.
+                    items:
+                      type: string
+                      title: $eq
+                      description: Filter by an exact match.
+              $ne:
+                type: string
+                title: $ne
+                description: Filter by values not equal to this parameter.
+              $in:
+                type: array
+                description: Filter by values in this array.
+                items:
+                  type: string
+                  title: $in
+                  description: Filter by values in this array.
+              $nin:
+                type: array
+                description: Filter by values not in this array.
+                items:
+                  type: string
+                  title: $nin
+                  description: Filter by values not in this array.
+              $not:
+                oneOf:
+                  - type: string
+                    title: $not
+                    description: Filter by values not matching the conditions in this parameter.
+                  - type: object
+                    description: Filter by values not matching the conditions in this parameter.
+                  - type: array
+                    description: Filter by values not matching the conditions in this parameter.
+                    items:
+                      type: string
+                      title: $not
+                      description: Filter by values not matching the conditions in this parameter.
+              $gt:
+                type: string
+                title: $gt
+                description: Filter by values greater than this parameter. Useful for numbers and dates only.
+              $gte:
+                type: string
+                title: $gte
+                description: Filter by values greater than or equal to this parameter. Useful for numbers and dates only.
+              $lt:
+                type: string
+                title: $lt
+                description: Filter by values less than this parameter. Useful for numbers and dates only.
+              $lte:
+                type: string
+                title: $lte
+                description: Filter by values less than or equal to this parameter. Useful for numbers and dates only.
+              $like:
+                type: string
+                title: $like
+                description: Apply a `like` filter. Useful for strings only.
+              $re:
+                type: string
+                title: $re
+                description: Apply a regex filter. Useful for strings only.
+              $ilike:
+                type: string
+                title: $ilike
+                description: Apply a case-insensitive `like` filter. Useful for strings only.
+              $fulltext:
+                type: string
+                title: $fulltext
+                description: Filter to apply on full-text properties.
+              $overlap:
+                type: array
+                description: Filter arrays that have overlapping values with this parameter.
+                items:
+                  type: string
+                  title: $overlap
+                  description: Filter arrays that have overlapping values with this parameter.
+              $contains:
+                type: array
+                description: Filter arrays that contain some of the values of this parameter.
+                items:
+                  type: string
+                  title: $contains
+                  description: Filter arrays that contain some of the values of this parameter.
+              $contained:
+                type: array
+                description: Filter arrays that contain all values of this parameter.
+                items:
+                  type: string
+                  title: $contained
+                  description: Filter arrays that contain all values of this parameter.
+              $exists:
+                type: boolean
+                title: $exists
+                description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
+        - name: updated_at
+          in: query
+          description: Filter by an order's update date.
+          required: false
+          schema:
+            type: object
+            description: Filter by an order's update date.
+            properties:
+              $and:
+                type: array
+                description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
+                items:
+                  type: object
+                title: $and
+              $or:
+                type: array
+                description: Join query parameters with an OR condition. Each object's content is the same type as the expected query parameters.
+                items:
+                  type: object
+                title: $or
+              $eq:
+                oneOf:
+                  - type: string
+                    title: $eq
+                    description: Filter by an exact match.
+                  - type: array
+                    description: Filter by an exact match.
+                    items:
+                      type: string
+                      title: $eq
+                      description: Filter by an exact match.
+              $ne:
+                type: string
+                title: $ne
+                description: Filter by values not equal to this parameter.
+              $in:
+                type: array
+                description: Filter by values in this array.
+                items:
+                  type: string
+                  title: $in
+                  description: Filter by values in this array.
+              $nin:
+                type: array
+                description: Filter by values not in this array.
+                items:
+                  type: string
+                  title: $nin
+                  description: Filter by values not in this array.
+              $not:
+                oneOf:
+                  - type: string
+                    title: $not
+                    description: Filter by values not matching the conditions in this parameter.
+                  - type: object
+                    description: Filter by values not matching the conditions in this parameter.
+                  - type: array
+                    description: Filter by values not matching the conditions in this parameter.
+                    items:
+                      type: string
+                      title: $not
+                      description: Filter by values not matching the conditions in this parameter.
+              $gt:
+                type: string
+                title: $gt
+                description: Filter by values greater than this parameter. Useful for numbers and dates only.
+              $gte:
+                type: string
+                title: $gte
+                description: Filter by values greater than or equal to this parameter. Useful for numbers and dates only.
+              $lt:
+                type: string
+                title: $lt
+                description: Filter by values less than this parameter. Useful for numbers and dates only.
+              $lte:
+                type: string
+                title: $lte
+                description: Filter by values less than or equal to this parameter. Useful for numbers and dates only.
+              $like:
+                type: string
+                title: $like
+                description: Apply a `like` filter. Useful for strings only.
+              $re:
+                type: string
+                title: $re
+                description: Apply a regex filter. Useful for strings only.
+              $ilike:
+                type: string
+                title: $ilike
+                description: Apply a case-insensitive `like` filter. Useful for strings only.
+              $fulltext:
+                type: string
+                title: $fulltext
+                description: Filter to apply on full-text properties.
+              $overlap:
+                type: array
+                description: Filter arrays that have overlapping values with this parameter.
+                items:
+                  type: string
+                  title: $overlap
+                  description: Filter arrays that have overlapping values with this parameter.
+              $contains:
+                type: array
+                description: Filter arrays that contain some of the values of this parameter.
+                items:
+                  type: string
+                  title: $contains
+                  description: Filter arrays that contain some of the values of this parameter.
+              $contained:
+                type: array
+                description: Filter arrays that contain all values of this parameter.
+                items:
+                  type: string
+                  title: $contained
+                  description: Filter arrays that contain all values of this parameter.
+              $exists:
+                type: boolean
+                title: $exists
+                description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
+        - name: limit
+          in: query
+          description: Limit the number of items returned in the list.
+          required: false
+          schema:
+            type: number
+            title: limit
+            description: Limit the number of items returned in the list.
+            externalDocs:
+              url: '#pagination'
+        - name: offset
+          in: query
+          description: The number of items to skip when retrieving a list.
+          required: false
+          schema:
+            type: number
+            title: offset
+            description: The number of items to skip when retrieving a list.
+            externalDocs:
+              url: '#pagination'
+        - name: order
+          in: query
+          description: The field to sort the data by. By default, the sort order is ascending. To change the order to descending, prefix the field name with `-`.
+          required: false
+          schema:
+            type: string
+            title: order
+            description: The field to sort the data by. By default, the sort order is ascending. To change the order to descending, prefix the field name with `-`.
+            externalDocs:
+              url: '#pagination'
+        - name: with_deleted
+          in: query
+          description: Whether to include deleted orders in the export.
+          required: false
+          schema:
+            type: boolean
+            title: with_deleted
+            description: Whether to include deleted orders in the export.
+        - name: fields
+          in: query
+          description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
+          required: false
+          schema:
+            type: string
+            title: fields
+            description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
+            externalDocs:
+              url: '#select-fields-and-relations'
+        - name: status
+          in: query
+          required: false
+          schema:
+            oneOf:
+              - type: string
+                title: status
+                description: The status of the orders to export.
+                enum:
+                  - canceled
+                  - completed
+                  - pending
+                  - draft
+                  - archived
+                  - requires_action
+              - type: array
+                description: The statuses of the orders to export.
+                items:
+                  type: string
+                  description: The order status.
+                  enum:
+                    - canceled
+                    - completed
+                    - pending
+                    - draft
+                    - archived
+                    - requires_action
+              - type: object
+                description: The order's status.
+                properties:
+                  $and:
+                    type: array
+                    description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
+                    items:
+                      type: object
+                    title: $and
+                  $or:
+                    type: array
+                    description: Join query parameters with an OR condition. Each object's content is the same type as the expected query parameters.
+                    items:
+                      type: object
+                    title: $or
+        - name: $and
+          in: query
+          description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
+          required: false
+          schema:
+            type: array
+            description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
+            items:
+              type: object
+            title: $and
+        - name: $or
+          in: query
+          description: Join query parameters with an OR condition. Each object's content is the same type as the expected query parameters.
+          required: false
+          schema:
+            type: array
+            description: Join query parameters with an OR condition. Each object's content is the same type as the expected query parameters.
+            items:
+              type: object
+            title: $or
+      security:
+        - api_token: []
+        - cookie_auth: []
+        - jwt_token: []
+      x-codeSamples:
+        - lang: JavaScript
+          label: JS SDK
+          source: |-
+            import Medusa from "@medusajs/js-sdk"
+
+            export const sdk = new Medusa({
+              baseUrl: import.meta.env.VITE_BACKEND_URL || "/",
+              debug: import.meta.env.DEV,
+              auth: {
+                type: "session",
+              },
+            })
+
+            sdk.admin.order.export()
+            .then(({ transaction_id }) => {
+              console.log(transaction_id)
+            })
+        - lang: Shell
+          label: cURL
+          source: |-
+            curl -X POST '{backend_url}/admin/orders/export' \
+            -H 'Authorization: Bearer {access_token}'
+      tags:
+        - Orders
+      responses:
+        '202':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminExportOrderResponse'
+        '400':
+          $ref: '#/components/responses/400_error'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found_error'
+        '409':
+          $ref: '#/components/responses/invalid_state_error'
+        '422':
+          $ref: '#/components/responses/invalid_request_error'
+        '500':
+          $ref: '#/components/responses/500_error'
+      x-workflow: exportOrdersWorkflow
+      x-events: []
+      x-since: 2.12.3
   /admin/orders/{id}:
     get:
       operationId: GetOrdersId
@@ -29217,6 +29987,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the order change's update date.
@@ -29448,6 +30219,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by the order change's deletion date.
@@ -29679,6 +30451,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: id
           in: query
           required: false
@@ -31424,6 +32197,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the payment's update date.
@@ -31543,6 +32317,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by the payment's deletion date.
@@ -31662,6 +32437,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           required: false
@@ -32420,6 +33196,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: starts_at
         - name: ends_at
           in: query
           description: Filter by the price list's end date.
@@ -32539,6 +33316,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: ends_at
         - name: status
           in: query
           description: Filter by the price list's status.
@@ -32796,6 +33574,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: starts_at
         - name: ends_at
           in: query
           description: Filter by a price list's end date.
@@ -32915,6 +33694,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: ends_at
         - name: status
           in: query
           description: Filter by price list statuses.
@@ -33291,6 +34071,79 @@ paths:
           $ref: '#/components/responses/500_error'
       x-workflow: deletePriceListsWorkflow
       x-events: []
+  /admin/price-lists/{id}/prices:
+    get:
+      operationId: GetPriceListsIdPrices
+      summary: List Prices in a Price List
+      x-sidebar-summary: List Prices
+      description: Retrieve a list of prices in a price list. The prices can also be paginated.
+      x-authenticated: true
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the price list to retrieve prices from.
+          required: true
+          schema:
+            type: string
+        - name: fields
+          in: query
+          description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
+          required: false
+          schema:
+            type: string
+            title: fields
+            description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
+            externalDocs:
+              url: '#select-fields-and-relations'
+      security:
+        - api_token: []
+        - cookie_auth: []
+        - jwt_token: []
+      x-codeSamples:
+        - lang: JavaScript
+          label: JS SDK
+          source: |-
+            import Medusa from "@medusajs/js-sdk"
+
+            export const sdk = new Medusa({
+              baseUrl: import.meta.env.VITE_BACKEND_URL || "/",
+              debug: import.meta.env.DEV,
+              auth: {
+                type: "session",
+              },
+            })
+
+            sdk.admin.priceList.prices("plist_123")
+            .then(({ prices }) => {
+              console.log(prices)
+            })
+        - lang: Shell
+          label: cURL
+          source: |-
+            curl '{backend_url}/admin/price-lists/{id}/prices' \
+            -H 'Authorization: Bearer {access_token}'
+      tags:
+        - Price Lists
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminPriceListPriceListResponse'
+        '400':
+          $ref: '#/components/responses/400_error'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found_error'
+        '409':
+          $ref: '#/components/responses/invalid_state_error'
+        '422':
+          $ref: '#/components/responses/invalid_request_error'
+        '500':
+          $ref: '#/components/responses/500_error'
+      x-since: 2.12.3
   /admin/price-lists/{id}/prices/batch:
     post:
       operationId: PostPriceListsIdPricesBatch
@@ -34257,6 +35110,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the category's update date.
@@ -34376,6 +35230,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by the category's deletion date.
@@ -34495,6 +35350,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           required: false
@@ -35051,6 +35907,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the category's update date.
@@ -35282,6 +36139,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by the category's deletion date.
@@ -35513,6 +36371,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: limit
           in: query
           description: Limit the number of items returned in the list.
@@ -36097,6 +36956,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the tag's update date.
@@ -36216,6 +37076,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by the tag's deletion date.
@@ -36335,6 +37196,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           required: false
@@ -36930,6 +37792,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the type's update date.
@@ -37049,6 +37912,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by the type's deletion date.
@@ -37168,6 +38032,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           required: false
@@ -37765,6 +38630,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the product variant's update date.
@@ -37884,6 +38750,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by the product variant's deletion date.
@@ -38003,6 +38870,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
@@ -38457,6 +39325,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a product's update date.
@@ -38576,6 +39445,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a product's deletion date.
@@ -38695,6 +39565,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
@@ -39755,6 +40626,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a product's update date.
@@ -39874,6 +40746,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: handle
           in: query
           required: false
@@ -40043,6 +40916,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: order
           in: query
           description: The field to sort the data by. By default, the sort order is ascending. To change the order to descending, prefix the field name with `-`.
@@ -41587,6 +42461,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the product's update date.
@@ -41706,6 +42581,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by the product's deletion date.
@@ -41825,6 +42701,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
@@ -43162,6 +44039,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a promotion's update date.
@@ -43281,6 +44159,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a promotion's deletion date.
@@ -43400,6 +44279,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           required: false
@@ -45876,6 +46756,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a region's update date.
@@ -45995,6 +46876,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a region's deletion date.
@@ -46114,6 +46996,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           required: false
@@ -46846,6 +47729,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a reservation's update date.
@@ -46965,6 +47849,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a reservation's deletion date.
@@ -47084,6 +47969,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: with_deleted
           in: query
           description: Whether to include deleted records in the result.
@@ -47179,46 +48065,44 @@ paths:
                 title: $lte
                 description: Filter by values less than or equal to this parameter. Useful for numbers and dates only.
               $like:
-                type: string
+                type: number
                 title: $like
                 description: Apply a `like` filter. Useful for strings only.
               $re:
-                type: string
+                type: number
                 title: $re
                 description: Apply a regex filter. Useful for strings only.
               $ilike:
-                type: string
+                type: number
                 title: $ilike
                 description: Apply a case-insensitive `like` filter. Useful for strings only.
               $fulltext:
-                type: string
+                type: number
                 title: $fulltext
                 description: Filter to apply on full-text properties.
               $overlap:
                 type: array
                 description: Filter arrays that have overlapping values with this parameter.
                 items:
-                  type: string
-                  title: $overlap
+                  type: number
                   description: Filter arrays that have overlapping values with this parameter.
               $contains:
                 type: array
                 description: Filter arrays that contain some of the values of this parameter.
                 items:
-                  type: string
-                  title: $contains
+                  type: number
                   description: Filter arrays that contain some of the values of this parameter.
               $contained:
                 type: array
                 description: Filter arrays that contain all values of this parameter.
                 items:
-                  type: string
-                  title: $contained
+                  type: number
                   description: Filter arrays that contain all values of this parameter.
               $exists:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: quantity
       security:
         - api_token: []
         - cookie_auth: []
@@ -47858,6 +48742,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a return reason's update date.
@@ -47977,6 +48862,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a return reason's deletion date.
@@ -48096,6 +48982,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
@@ -48822,6 +49709,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the return's update date.
@@ -49053,6 +49941,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: customer_id
           in: query
           required: false
@@ -50074,6 +50963,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: limit
           in: query
           description: Limit the number of items returned in the list.
@@ -50343,6 +51233,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
       security:
         - api_token: []
         - cookie_auth: []
@@ -51176,6 +52067,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: limit
           in: query
           description: Limit the number of items returned in the list.
@@ -51445,6 +52337,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
       security:
         - api_token: []
         - cookie_auth: []
@@ -52366,6 +53259,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: limit
           in: query
           description: Limit the number of items returned in the list.
@@ -52635,6 +53529,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
       security:
         - api_token: []
         - cookie_auth: []
@@ -53296,6 +54191,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: limit
           in: query
           description: Limit the number of items returned in the list.
@@ -53565,6 +54461,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
       security:
         - api_token: []
         - cookie_auth: []
@@ -53831,6 +54728,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a sales channel's update date.
@@ -53950,6 +54848,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a sales channel's deletion date.
@@ -54069,6 +54968,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: location_id
           in: query
           required: false
@@ -54835,6 +55735,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a shipping option type's update date.
@@ -54954,6 +55855,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a shipping option type's deletion date.
@@ -55073,6 +55975,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
@@ -55720,6 +56623,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a shipping option's update date.
@@ -55839,6 +56743,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a shipping option's deletion date.
@@ -55958,6 +56863,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: stock_location_id
           in: query
           required: false
@@ -56163,7 +57069,17 @@ paths:
         '500':
           $ref: '#/components/responses/500_error'
       x-workflow: createShippingOptionsWorkflow
-      x-events: []
+      x-events:
+        - name: shipping-option.created
+          payload: |-
+            ```ts
+            {
+              id, // The ID of the shipping option
+            }
+            ```
+          description: Emitted when shipping options are created.
+          deprecated: false
+          since: 2.12.4
   /admin/shipping-options/{id}:
     get:
       operationId: GetShippingOptionsId
@@ -56316,7 +57232,17 @@ paths:
         '500':
           $ref: '#/components/responses/500_error'
       x-workflow: updateShippingOptionsWorkflow
-      x-events: []
+      x-events:
+        - name: shipping-option.updated
+          payload: |-
+            ```ts
+            {
+              id, // The ID of the shipping option
+            }
+            ```
+          description: Emitted when shipping options are updated.
+          deprecated: false
+          since: 2.12.4
     delete:
       operationId: DeleteShippingOptionsId
       summary: Delete a Shipping Option
@@ -56378,7 +57304,17 @@ paths:
         '500':
           $ref: '#/components/responses/500_error'
       x-workflow: deleteShippingOptionsWorkflow
-      x-events: []
+      x-events:
+        - name: shipping-option.deleted
+          payload: |-
+            ```ts
+            {
+              id, // The ID of the shipping option
+            }
+            ```
+          description: Emitted when shipping options are deleted.
+          deprecated: false
+          since: 2.12.4
   /admin/shipping-options/{id}/rules/batch:
     post:
       operationId: PostShippingOptionsIdRulesBatch
@@ -56721,6 +57657,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a shipping profile's update date.
@@ -56840,6 +57777,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a shipping profile's deletion date.
@@ -56959,6 +57897,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           required: false
@@ -57585,6 +58524,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a stock location's update date.
@@ -57704,6 +58644,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a stock location's deletion date.
@@ -57823,6 +58764,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           required: false
@@ -60453,6 +61395,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a tax rate's update date.
@@ -60572,6 +61515,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a tax rate's deletion date.
@@ -60691,6 +61635,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: $and
           in: query
           required: false
@@ -63025,6 +63970,696 @@ paths:
         - text: Cloud
           description: |
             This API route is only available in [Medusa Cloud](https://docs.medusajs.com/cloud/loyalty-plugin).
+  /admin/translations:
+    get:
+      operationId: GetTranslations
+      summary: List Translations
+      description: Retrieve a list of translations. The translations can be filtered by fields such as `reference_id` (For example, the ID of a product). The translations can also be sorted or paginated.
+      x-authenticated: true
+      parameters:
+        - name: q
+          in: query
+          description: Search query to filter translations by their fields.
+          required: false
+          schema:
+            type: string
+            title: q
+            description: Search query to filter translations by their fields.
+        - name: reference_id
+          in: query
+          required: false
+          schema:
+            oneOf:
+              - type: string
+                title: reference_id
+                description: Filter translations by a reference ID. For example, the ID of a product.
+                example: prod_123
+              - type: array
+                description: Filter translations by multiple reference IDs. For example, the IDs of products.
+                items:
+                  type: string
+                  title: reference_id
+                  description: The reference ID's details. For example, the ID of a product.
+                  example: prod_123
+        - name: reference
+          in: query
+          description: Filter translations by the resource they belong to. For example, `product` or `product_variant`.
+          required: false
+          schema:
+            type: string
+            title: reference
+            description: Filter translations by the resource they belong to. For example, `product` or `product_variant`.
+        - name: locale_code
+          in: query
+          required: false
+          schema:
+            oneOf:
+              - type: string
+                title: locale_code
+                description: Filter translations by a locale code in BCP 47 format.
+                example: fr-FR
+              - type: array
+                description: Filter translations by multiple locale codes in BCP 47 format.
+                items:
+                  type: string
+                  title: locale_code
+                  description: A locale code in BCP 47 format.
+                  example: fr-FR
+        - name: limit
+          in: query
+          description: Limit the number of items returned in the list.
+          required: false
+          schema:
+            type: number
+            title: limit
+            description: Limit the number of items returned in the list.
+            externalDocs:
+              url: '#pagination'
+        - name: offset
+          in: query
+          description: The number of items to skip when retrieving a list.
+          required: false
+          schema:
+            type: number
+            title: offset
+            description: The number of items to skip when retrieving a list.
+            externalDocs:
+              url: '#pagination'
+        - name: order
+          in: query
+          description: The field to sort the data by. By default, the sort order is ascending. To change the order to descending, prefix the field name with `-`.
+          required: false
+          schema:
+            type: string
+            title: order
+            description: The field to sort the data by. By default, the sort order is ascending. To change the order to descending, prefix the field name with `-`.
+            externalDocs:
+              url: '#pagination'
+        - name: with_deleted
+          in: query
+          description: The translation's with deleted.
+          required: false
+          schema:
+            type: boolean
+            title: with_deleted
+            description: The translation's with deleted.
+        - name: fields
+          in: query
+          description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
+          required: false
+          schema:
+            type: string
+            title: fields
+            description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
+            externalDocs:
+              url: '#select-fields-and-relations'
+        - name: $and
+          in: query
+          description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
+          required: false
+          schema:
+            type: array
+            description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
+            items:
+              type: object
+            title: $and
+        - name: $or
+          in: query
+          description: Join query parameters with an OR condition. Each object's content is the same type as the expected query parameters.
+          required: false
+          schema:
+            type: array
+            description: Join query parameters with an OR condition. Each object's content is the same type as the expected query parameters.
+            items:
+              type: object
+            title: $or
+      security:
+        - api_token: []
+        - cookie_auth: []
+        - jwt_token: []
+      x-codeSamples:
+        - lang: JavaScript
+          label: JS SDK
+          source: |-
+            import Medusa from "@medusajs/js-sdk"
+
+            export const sdk = new Medusa({
+              baseUrl: import.meta.env.VITE_BACKEND_URL || "/",
+              debug: import.meta.env.DEV,
+              auth: {
+                type: "session",
+              },
+            })
+
+            sdk.admin.translation.list()
+            .then(({ translations, count, limit, offset }) => {
+              console.log(translations)
+            })
+        - lang: Shell
+          label: cURL
+          source: |-
+            curl '{backend_url}/admin/translations' \
+            -H 'Authorization: Bearer {access_token}'
+      tags:
+        - Translations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - type: object
+                    description: The list of translations with pagination.
+                    required:
+                      - limit
+                      - offset
+                      - count
+                    properties:
+                      limit:
+                        type: number
+                        title: limit
+                        description: The maximum number of translations returned.
+                      offset:
+                        type: number
+                        title: offset
+                        description: The number of translations skipped before retrieving the returned translations.
+                      count:
+                        type: number
+                        title: count
+                        description: The total number of translations matching the query.
+                      estimate_count:
+                        type: number
+                        title: estimate_count
+                        description: The estimated count retrieved from the PostgreSQL query planner, which may be inaccurate.
+                        x-featureFlag: index_engine
+                  - type: object
+                    description: SUMMARY
+                    required:
+                      - translations
+                    properties:
+                      translations:
+                        type: array
+                        description: The list of translations.
+                        items:
+                          $ref: '#/components/schemas/AdminTranslation'
+        '400':
+          $ref: '#/components/responses/400_error'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found_error'
+        '409':
+          $ref: '#/components/responses/invalid_state_error'
+        '422':
+          $ref: '#/components/responses/invalid_request_error'
+        '500':
+          $ref: '#/components/responses/500_error'
+      x-since: 2.12.3
+      x-featureFlag: translation
+  /admin/translations/batch:
+    post:
+      operationId: PostTranslationsBatch
+      summary: Manage Translations
+      description: Manage translations in bulk by creating, updating, or deleting multiple translations in a single request. You can manage translations for various resources such as products, product variants, categories, and more.
+      x-authenticated: true
+      security:
+        - api_token: []
+        - cookie_auth: []
+        - jwt_token: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: The translations to be created, updated, or deleted in bulk.
+              properties:
+                create:
+                  type: array
+                  description: The translations to create.
+                  items:
+                    type: object
+                    description: The translation's details.
+                    required:
+                      - reference
+                      - reference_id
+                      - locale_code
+                      - translations
+                    properties:
+                      reference:
+                        type: string
+                        title: reference
+                        description: The resource that the translation belongs to.
+                        example: product
+                      reference_id:
+                        type: string
+                        title: reference_id
+                        description: The ID of the resource that the translation belongs to. For example, the ID of a product.
+                        example: prod_123
+                      locale_code:
+                        type: string
+                        title: locale_code
+                        description: The translation's locale code in BCP 47 format.
+                        example: fr-FR
+                      translations:
+                        type: object
+                        description: The translation key-value pairs. Each key is a field in the resource, and the value is the translated text.
+                        example:
+                          title: Chaussures
+                          description: Des chaussures élégantes.
+                update:
+                  type: array
+                  description: The translations to update.
+                  items:
+                    type: object
+                    description: The data for updating a translation.
+                    required:
+                      - id
+                    properties:
+                      id:
+                        type: string
+                        title: id
+                        description: The ID of the translation to update.
+                      reference:
+                        type: string
+                        title: reference
+                        description: The resource that the translation belongs to.
+                        example: product
+                      reference_id:
+                        type: string
+                        title: reference_id
+                        description: The ID of the resource that the translation belongs to. For example, the ID of a product.
+                        example: prod_123
+                      locale_code:
+                        type: string
+                        title: locale_code
+                        description: The translation's locale code in BCP 47 format.
+                        example: fr-FR
+                      translations:
+                        type: object
+                        description: The translation key-value pairs. Each key is a field in the resource, and the value is the translated text.
+                        example:
+                          title: Chaussures Modifiées
+                          description: Des chaussures élégantes et modifiées.
+                delete:
+                  type: array
+                  description: The translations to delete.
+                  items:
+                    type: string
+                    title: delete
+                    description: The ID of a translation to delete.
+      x-codeSamples:
+        - lang: JavaScript
+          label: JS SDK
+          source: |-
+            import Medusa from "@medusajs/js-sdk"
+
+            export const sdk = new Medusa({
+              baseUrl: import.meta.env.VITE_BACKEND_URL || "/",
+              debug: import.meta.env.DEV,
+              auth: {
+                type: "session",
+              },
+            })
+
+            sdk.admin.translation.batch({
+              create: [
+                {
+                  reference_id: "prod_123",
+                  reference: "product",
+                  locale_code: "en-US",
+                  translations: { title: "Shirt" }
+                }
+              ],
+              update: [
+                {
+                  id: "trans_123",
+                  translations: { title: "Pants" }
+                }
+              ],
+              delete: ["trans_321"]
+            })
+            .then(({ created, updated, deleted }) => {
+              console.log(created, updated, deleted)
+            })
+            ```
+        - lang: Shell
+          label: cURL
+          source: |-
+            curl -X POST '{backend_url}/admin/translations/batch' \
+            -H 'Authorization: Bearer {access_token}' \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "create": [
+                {
+                  "reference": "product",
+                  "reference_id": "prod_123",
+                  "locale_code": "fr-FR",
+                  "translations": {
+                    "title": "Chaussures",
+                    "description": "Des chaussures élégantes."
+                  }
+                }
+              ]
+            }'
+      tags:
+        - Translations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminTranslationsBatchResponse'
+        '400':
+          $ref: '#/components/responses/400_error'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found_error'
+        '409':
+          $ref: '#/components/responses/invalid_state_error'
+        '422':
+          $ref: '#/components/responses/invalid_request_error'
+        '500':
+          $ref: '#/components/responses/500_error'
+      x-workflow: batchTranslationsWorkflow
+      x-events:
+        - name: translation.created
+          payload: |-
+            ```ts
+            {
+              id, // The ID of the translation
+            }
+            ```
+          description: Emitted when translations are created.
+          deprecated: false
+          since: 2.12.3
+        - name: translation.updated
+          payload: |-
+            ```ts
+            {
+              id, // The ID of the translation
+            }
+            ```
+          description: Emitted when translations are updated.
+          deprecated: false
+          since: 2.12.3
+        - name: translation.deleted
+          payload: |-
+            ```ts
+            {
+              id, // The ID of the translation
+            }
+            ```
+          description: Emitted when translations are deleted.
+          deprecated: false
+          since: 2.12.3
+      x-since: 2.12.3
+      x-featureFlag: translation
+  /admin/translations/entities:
+    get:
+      operationId: GetTranslationsEntities
+      summary: List Translatable Entities
+      description: Retrieve a list of translatable entities. The entities can be filtered by fields such as `id`. The entities can also be sorted or paginated.
+      x-authenticated: true
+      parameters:
+        - name: type
+          in: query
+          description: Filter by a translatable entity type.
+          required: true
+          schema:
+            type: string
+            title: type
+            description: Filter by a translatable entity type.
+            example: product
+        - name: id
+          in: query
+          required: false
+          schema:
+            oneOf:
+              - type: string
+                title: id
+                description: Filter by an entity's ID.
+              - type: array
+                description: Filter by entity IDs.
+                items:
+                  type: string
+                  title: id
+                  description: An entity's ID.
+        - name: limit
+          in: query
+          description: Limit the number of items returned in the list.
+          required: false
+          schema:
+            type: number
+            title: limit
+            description: Limit the number of items returned in the list.
+            externalDocs:
+              url: '#pagination'
+        - name: offset
+          in: query
+          description: The number of items to skip when retrieving a list.
+          required: false
+          schema:
+            type: number
+            title: offset
+            description: The number of items to skip when retrieving a list.
+            externalDocs:
+              url: '#pagination'
+        - name: order
+          in: query
+          description: The field to sort the data by. By default, the sort order is ascending. To change the order to descending, prefix the field name with `-`.
+          required: false
+          schema:
+            type: string
+            title: order
+            description: The field to sort the data by. By default, the sort order is ascending. To change the order to descending, prefix the field name with `-`.
+            externalDocs:
+              url: '#pagination'
+        - name: with_deleted
+          in: query
+          description: The translation's with deleted.
+          required: false
+          schema:
+            type: boolean
+            title: with_deleted
+            description: The translation's with deleted.
+        - name: fields
+          in: query
+          description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
+          required: false
+          schema:
+            type: string
+            title: fields
+            description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
+            externalDocs:
+              url: '#select-fields-and-relations'
+      security:
+        - api_token: []
+        - cookie_auth: []
+        - jwt_token: []
+      x-codeSamples:
+        - lang: JavaScript
+          label: JS SDK
+          source: |-
+            import Medusa from "@medusajs/js-sdk"
+
+            export const sdk = new Medusa({
+              baseUrl: import.meta.env.VITE_BACKEND_URL || "/",
+              debug: import.meta.env.DEV,
+              auth: {
+                type: "session",
+              },
+            })
+
+            sdk.admin.translation.entities({
+              type: "product"
+            })
+            .then(({ data, count, offset, limit }) => {
+              console.log(data)
+            })
+        - lang: Shell
+          label: cURL
+          source: |-
+            curl '{backend_url}/admin/translations/entities' \
+            -H 'Authorization: Bearer {access_token}'
+      tags:
+        - Translations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminTranslationEntitiesResponse'
+        '400':
+          $ref: '#/components/responses/400_error'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found_error'
+        '409':
+          $ref: '#/components/responses/invalid_state_error'
+        '422':
+          $ref: '#/components/responses/invalid_request_error'
+        '500':
+          $ref: '#/components/responses/500_error'
+      x-since: 2.12.4
+      x-featureFlag: translation
+  /admin/translations/settings:
+    get:
+      operationId: GetTranslationsSettings
+      summary: List Translation Settings
+      x-sidebar-summary: List Settings
+      description: Retrieve the list of translatable fields for all entities, such as products and collections.
+      x-authenticated: true
+      parameters:
+        - name: entity_type
+          in: query
+          description: The entity to retrieve translation settings for.
+          required: false
+          schema:
+            type: string
+            title: entity_type
+            description: The entity to retrieve translation settings for.
+            example: product
+      security:
+        - api_token: []
+        - cookie_auth: []
+        - jwt_token: []
+      x-codeSamples:
+        - lang: JavaScript
+          label: JS SDK
+          source: |-
+            import Medusa from "@medusajs/js-sdk"
+
+            export const sdk = new Medusa({
+              baseUrl: import.meta.env.VITE_BACKEND_URL || "/",
+              debug: import.meta.env.DEV,
+              auth: {
+                type: "session",
+              },
+            })
+
+            sdk.admin.translation.settings({
+              entity_type: "product"
+            })
+            .then(({ translatable_fields }) => {
+              console.log(translatable_fields)
+            })
+        - lang: Shell
+          label: cURL
+          source: |-
+            curl '{backend_url}/admin/translations/settings' \
+            -H 'Authorization: Bearer {access_token}'
+      tags:
+        - Translations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminTranslationSettingsResponse'
+        '400':
+          $ref: '#/components/responses/400_error'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found_error'
+        '409':
+          $ref: '#/components/responses/invalid_state_error'
+        '422':
+          $ref: '#/components/responses/invalid_request_error'
+        '500':
+          $ref: '#/components/responses/500_error'
+      x-since: 2.12.3
+      x-featureFlag: translation
+  /admin/translations/statistics:
+    get:
+      operationId: GetTranslationsStatistics
+      summary: Retrieve Translation Statistics
+      x-sidebar-summary: Get Statistics
+      description: Get statistics on translations for specified locales and entity types. This includes overall translation progress for each entity type, and statistics for each locale within those entity types.
+      x-authenticated: true
+      parameters:
+        - name: locales
+          in: query
+          description: The locale codes to retrieve translation statistics for. Locale codes are in [BCP 47](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1) format.
+          required: true
+          schema:
+            type: array
+            description: The locale codes to retrieve translation statistics for.
+            items:
+              type: string
+              title: locales
+              description: A locale code in [BCP 47](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1) format.
+              example: fr-FR
+        - name: entity_types
+          in: query
+          description: The table names of entities to retrieve translation statistics for.
+          required: true
+          schema:
+            type: array
+            description: The table names of entities to retrieve translation statistics for.
+            items:
+              type: string
+              title: entity_types
+              description: The table name of an entity.
+              example: products
+      security:
+        - api_token: []
+        - cookie_auth: []
+        - jwt_token: []
+      x-codeSamples:
+        - lang: JavaScript
+          label: JS SDK
+          source: |-
+            import Medusa from "@medusajs/js-sdk"
+
+            export const sdk = new Medusa({
+              baseUrl: import.meta.env.VITE_BACKEND_URL || "/",
+              debug: import.meta.env.DEV,
+              auth: {
+                type: "session",
+              },
+            })
+
+            sdk.admin.translation.statistics({
+              entity_type: "product"
+            })
+            .then(({ statistics }) => {
+              console.log(statistics)
+            })
+        - lang: Shell
+          label: cURL
+          source: |-
+            curl '{backend_url}/admin/translations/statistics' \
+            -H 'Authorization: Bearer {access_token}'
+      tags:
+        - Translations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminTranslationStatisticsResponse'
+        '400':
+          $ref: '#/components/responses/400_error'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found_error'
+        '409':
+          $ref: '#/components/responses/invalid_state_error'
+        '422':
+          $ref: '#/components/responses/invalid_request_error'
+        '500':
+          $ref: '#/components/responses/500_error'
+      x-since: 2.12.3
+      x-featureFlag: translation
   /admin/uploads:
     post:
       operationId: PostUploads
@@ -63567,6 +65202,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a user's update date.
@@ -63686,6 +65322,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: deleted_at
           in: query
           description: Filter by a user's deletion date.
@@ -63805,6 +65442,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: deleted_at
         - name: with_deleted
           in: query
           description: Whether to include deleted records in the result.
@@ -64430,6 +66068,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by a view configuration's update date.
@@ -64549,6 +66188,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
@@ -66125,9 +67765,17 @@ paths:
           application/json:
             schema:
               type: object
-              title: identifier
-              description: The user's identifier for the selected auth provider. For example, for the `emailpass` auth provider, the value is the user's email.
-              example: admin@medusa-test.com
+              description: The input data necessary to generate a reset password token.
+              required:
+                - identifier
+              properties:
+                identifier:
+                  type: string
+                  description: The identifier of the admin user. For example, their email address.
+                  example: admin@medusa-test.com
+                metadata:
+                  type: object
+                  description: Optional metadata to include with the reset password token generation request.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -66186,6 +67834,7 @@ paths:
               entity_id, // The identifier of the user or customer. For example, an email address.
               actor_type, // The type of actor. For example, "customer", "user", or custom.
               token, // The generated token.
+              metadata, // Optional custom metadata passed from the request.
             }
             ```
           description: |-
@@ -67898,6 +69547,11 @@ components:
           externalDocs:
             url: https://docs.medusajs.com/api/admin#manage-metadata
             description: Learn how to manage metadata
+        translations:
+          type: array
+          description: The collection's translations.
+          items:
+            $ref: '#/components/schemas/AdminTranslation'
     AdminCollectionDeleteResponse:
       type: object
       description: The details of the deleted collection.
@@ -72137,6 +73791,17 @@ components:
           externalDocs:
             url: https://docs.medusajs.com/api/admin#manage-metadata
             description: Learn how to manage metadata
+    AdminExportOrderResponse:
+      type: object
+      description: The details of the order export.
+      x-schemaName: AdminExportOrderResponse
+      required:
+        - transaction_id
+      properties:
+        transaction_id:
+          type: string
+          title: transaction_id
+          description: The ID of the workflow execution's transaction. Use it to check the status of the export by sending a GET request to `/admin/workflows-executions/export-orders/:transaction-id`
     AdminExportProductResponse:
       type: object
       description: The details of the product export.
@@ -73296,6 +74961,82 @@ components:
             title: remove
             description: The ID of a product.
       x-schemaName: AdminLinkPriceListProducts
+    AdminLocale:
+      type: object
+      description: The locale's details.
+      x-schemaName: AdminLocale
+      required:
+        - code
+        - name
+        - created_at
+        - updated_at
+        - deleted_at
+      properties:
+        code:
+          type: string
+          title: code
+          description: The locale's code in BCP 47 format.
+          example: fr-FR
+        name:
+          type: string
+          title: name
+          description: The locale's display name.
+        created_at:
+          type: string
+          format: date-time
+          title: created_at
+          description: The date and time at which the locale was created.
+        updated_at:
+          type: string
+          format: date-time
+          title: updated_at
+          description: The date and time at which the locale was last updated.
+        deleted_at:
+          type: string
+          format: date-time
+          title: deleted_at
+          description: The date and time at which the locale was deleted.
+    AdminLocaleListResponse:
+      type: object
+      description: The list of locales with pagination details.
+      x-schemaName: AdminLocaleListResponse
+      required:
+        - limit
+        - offset
+        - count
+        - locales
+      properties:
+        limit:
+          type: number
+          title: limit
+          description: The maximum number of locales returned.
+        offset:
+          type: number
+          title: offset
+          description: The number of locales skipped before retrieving the returned locales.
+        count:
+          type: number
+          title: count
+          description: The total number of locales matching the query.
+        estimate_count:
+          type: number
+          title: estimate_count
+          description: The estimated count retrieved from the PostgreSQL query planner, which may be inaccurate.
+          x-featureFlag: index_engine
+        locales:
+          type: array
+          description: The list of locales.
+          items:
+            $ref: '#/components/schemas/AdminLocale'
+    AdminLocaleResponse:
+      type: object
+      description: The locale's details.
+      x-schemaName: AdminLocaleResponse
+      required:
+        - locale
+      properties:
+        locale:
+          $ref: '#/components/schemas/AdminLocale'
     AdminMarkPaymentCollectionAsPaid:
       type: object
       description: The payment details.
@@ -76125,6 +77866,38 @@ components:
           format: date-time
           title: deleted_at
           description: The date the price was deleted.
+    AdminPriceListPriceListResponse:
+      type: object
+      description: The list of prices.
+      x-schemaName: AdminPriceListPriceListResponse
+      required:
+        - limit
+        - offset
+        - count
+        - prices
+      properties:
+        limit:
+          type: number
+          title: limit
+          description: The maximum number of prices returned.
+        offset:
+          type: number
+          title: offset
+          description: The number of items skipped before retrieving the prices.
+        count:
+          type: number
+          title: count
+          description: The total number of prices.
+        estimate_count:
+          type: number
+          title: estimate_count
+          description: The estimated count retrieved from the PostgreSQL query planner, which may be inaccurate.
+          x-featureFlag: index_engine
+        prices:
+          type: array
+          description: The list of prices.
+          items:
+            $ref: '#/components/schemas/AdminPrice'
     AdminPriceListResponse:
       type: object
       description: The price list's details.
@@ -76252,9 +78025,9 @@ components:
         - type
         - options
         - images
-        - length
         - title
         - status
+        - length
         - id
         - created_at
         - updated_at
@@ -76417,6 +78190,11 @@ components:
           description: The date the product was deleted.
         shipping_profile:
           $ref: '#/components/schemas/AdminShippingProfile'
+        translations:
+          type: array
+          description: The product's translations.
+          items:
+            $ref: '#/components/schemas/AdminTranslation'
     AdminProductCategory:
       type: object
       description: The product category's details.
@@ -76807,6 +78585,11 @@ components:
           externalDocs:
             url: https://docs.medusajs.com/api/admin#manage-metadata
             description: Learn how to manage metadata
+        translations:
+          type: array
+          description: The tag's translations.
+          items:
+            $ref: '#/components/schemas/AdminTranslation'
     AdminProductTagDeleteResponse:
       type: object
       description: The details of the product tag deletion.
@@ -76909,6 +78692,11 @@ components:
           externalDocs:
             url: https://docs.medusajs.com/api/admin#manage-metadata
             description: Learn how to manage metadata
+        translations:
+          type: array
+          description: The type's translations.
+          items:
+            $ref: '#/components/schemas/AdminTranslation'
     AdminProductTypeDeleteResponse:
       type: object
       description: The details of the product type deletion.
@@ -77126,6 +78914,11 @@ components:
           type: string
           title: thumbnail
           description: The variant's thumbnail.
+        translations:
+          type: array
+          description: The variant's translations.
+          items:
+            $ref: '#/components/schemas/AdminTranslation'
     AdminProductVariantDeleteResponse:
       type: object
       description: The details of the product variant's deletion.
@@ -79022,6 +80815,7 @@ components:
         - id
         - name
         - supported_currencies
+        - supported_locales
         - default_sales_channel_id
         - default_region_id
         - default_location_id
@@ -79070,6 +80864,11 @@ components:
           format: date-time
           title: updated_at
           description: The date the store was updated.
+        supported_locales:
+          type: array
+          description: The store's supported locales.
+          items:
+            $ref: '#/components/schemas/AdminStoreLocale'
     AdminStoreCreditAccount:
       type: object
       description: The store credit account's details.
@@ -79256,6 +81055,48 @@ components:
           title: estimate_count
           description: The estimated count retrieved from the PostgreSQL query planner, which may be inaccurate.
           x-featureFlag: index_engine
+    AdminStoreLocale:
+      type: object
+      description: The details of a store's locale.
+      x-schemaName: AdminStoreLocale
+      required:
+        - id
+        - locale_code
+        - store_id
+        - locale
+        - created_at
+        - updated_at
+        - deleted_at
+      properties:
+        id:
+          type: string
+          title: id
+          description: The locale's ID.
+        locale_code:
+          type: string
+          title: locale_code
+          description: The locale's code in BCP 47 format.
+        store_id:
+          type: string
+          title: store_id
+          description: The ID of the store to which the locale belongs.
+        locale:
+          $ref: '#/components/schemas/AdminLocale'
+        created_at:
+          type: string
+          format: date-time
+          title: created_at
+          description: The date the locale was created.
+        updated_at:
+          type: string
+          format: date-time
+          title: updated_at
+          description: The date the locale was updated.
+        deleted_at:
+          type: string
+          format: date-time
+          title: deleted_at
+          description: The date the locale was deleted.
     AdminStoreResponse:
       type: object
       description: The store's details.
@@ -79693,6 +81534,226 @@ components:
           title: estimate_count
           description: The store credit account's estimate count.
           x-featureFlag: index_engine
+    AdminTranslation:
+      type: object
+      description: The translation's details.
+      x-schemaName: AdminTranslation
+      required:
+        - id
+        - reference_id
+        - reference
+        - locale_code
+        - translations
+        - created_at
+        - updated_at
+        - deleted_at
+      properties:
+        id:
+          type: string
+          title: id
+          description: The translation's ID.
+        reference_id:
+          type: string
+          title: reference_id
+          description: The ID of the resource that the translation belongs to. For example, the ID of a product.
+          example: prod_123
+        reference:
+          type: string
+          title: reference
+          description: The resource that the translation belongs to.
+          example: product
+        locale_code:
+          type: string
+          title: locale_code
+          description: The translation's locale code in BCP 47 format.
+          example: fr-FR
+        translations:
+          type: object
+          description: The translation key-value pairs. Each key is a field in the resource, and the value is the translated text.
+          example:
+            title: Chaussures
+            description: Des chaussures élégantes.
+        created_at:
+          type: string
+          format: date-time
+          title: created_at
+          description: The date that the translation was created.
+        updated_at:
+          type: string
+          format: date-time
+          title: updated_at
+          description: The date that the translation was updated.
+        deleted_at:
+          type: string
+          format: date-time
+          title: deleted_at
+          description: The date that the translation was deleted.
+    AdminTranslationEntitiesResponse:
+      type: object
+      description: The list of translatable entities.
+      x-schemaName: AdminTranslationEntitiesResponse
+      required:
+        - data
+        - count
+        - offset
+        - limit
+      properties:
+        data:
+          type: array
+          description: The list of translatable entities.
+          items:
+            allOf:
+              - type: object
+                description: The entity's data.
+                required:
+                  - id
+                  - translations
+                properties:
+                  id:
+                    type: string
+                    title: id
+                    description: The entity's ID.
+                  translations:
+                    type: array
+                    description: The entity's translations.
+                    items:
+                      $ref: '#/components/schemas/AdminTranslation'
+        count:
+          type: number
+          title: count
+          description: The total number of translatable entities.
+        offset:
+          type: number
+          title: offset
+          description: The number of items skipped before retrieving the returned items.
+        limit:
+          type: number
+          title: limit
+          description: The maximum number of items returned in the response.
+    AdminTranslationSettingsResponse:
+      type: object
+      description: The translation settings' details.
+      x-schemaName: AdminTranslationSettingsResponse
+      required:
+        - translatable_fields
+      properties:
+        translatable_fields:
+          type: object
+          description: Key-value pairs of translatable fields for different entities. Each key is an entity type, and the value is an array of fields that can be translated for that entity.
+          example:
+            product:
+              - title
+              - description
+    AdminTranslationStatisticsResponse:
+      type: object
+      description: The translation statistics details.
+      x-schemaName: AdminTranslationStatisticsResponse
+      required:
+        - statistics
+      properties:
+        statistics:
+          type: object
+          description: The translation statistics for different entity types. The key is the entity type, and the value is an object containing the statistics for that entity type.
+          example:
+            product:
+              expected: 150
+              translated: 120
+              missing: 30
+              by_locale:
+                fr-FR:
+                  expected: 150
+                  translated: 120
+                  missing: 30
+          required:
+            - by_locale
+            - expected
+            - translated
+            - missing
+          additionalProperties:
+            type: object
+            properties:
+              by_locale:
+                type: object
+                description: The translation statistics of an entity type broken down by locale. The key is the locale code in BCP 47 format, and the value is an object containing the statistics for that locale.
+                example:
+                  fr-FR:
+                    expected: 150
+                    translated: 120
+                    missing: 30
+                required:
+                  - expected
+                  - translated
+                  - missing
+                additionalProperties:
+                  type: object
+                  properties:
+                    expected:
+                      type: number
+                      title: expected
+                      description: The total number of translatable fields.
+                    translated:
+                      type: number
+                      title: translated
+                      description: The number of translated fields.
+                    missing:
+                      type: number
+                      title: missing
+                      description: The number of fields that are yet to be translated.
+              expected:
+                type: number
+                title: expected
+                description: The total number of translatable fields across specified locales.
+              translated:
+                type: number
+                title: translated
+                description: The number of translated fields across specified locales.
+              missing:
+                type: number
+                title: missing
+                description: The number of fields that are yet to be translated across specified locales.
+    AdminTranslationsBatchResponse:
+      type: object
+      description: The batch response for managing translations.
+      x-schemaName: AdminTranslationsBatchResponse
+      required:
+        - created
+        - updated
+        - deleted
+      properties:
+        created:
+          type: array
+          description: The created translations.
+          items:
+            $ref: '#/components/schemas/AdminTranslation'
+        updated:
+          type: array
+          description: The updated translations.
+          items:
+            $ref: '#/components/schemas/AdminTranslation'
+        deleted:
+          type: object
+          description: Summary of the deleted translations.
+          required:
+            - ids
+            - object
+            - deleted
+          properties:
+            ids:
+              type: array
+              description: The IDs of the deleted translations.
+              items:
+                type: string
+                title: ids
+                description: A translation ID.
+            object:
+              type: string
+              title: object
+              description: The type of object deleted.
+              default: translation
+            deleted:
+              type: boolean
+              title: deleted
+              description: Whether the translations were successfully deleted.
     AdminUpdateApiKey:
       type: object
       description: The details to update in an API key.
@@ -80156,6 +82217,11 @@ components:
           externalDocs:
             url: https://docs.medusajs.com/api/admin#manage-metadata
             description: Learn how to manage metadata
+        locale:
+          type: string
+          title: locale
+          description: The order's locale in [BCP 47](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1) format.
+          example: en-US
     AdminUpdateOrderChange:
       type: object
       description: The data to update in the order change.
@@ -81131,6 +83197,11 @@ components:
           externalDocs:
             url: https://docs.medusajs.com/api/admin#manage-metadata
             description: Learn how to manage metadata
+        supported_locales:
+          type: array
+          description: The store's supported locales.
+          items:
+            $ref: '#/components/schemas/AdminUpdateStoreSupportedLocale'
     AdminUpdateStoreSupportedCurrency:
       type: object
       description: The details to update in a supported currency of the store.
@@ -81151,6 +83222,18 @@ components:
           title: is_tax_inclusive
           description: Whether prices using this currency are tax inclusive.
       x-schemaName: AdminUpdateStoreSupportedCurrency
+    AdminUpdateStoreSupportedLocale:
+      type: object
+      description: The payload to update a store's supported locale.
+      x-schemaName: AdminUpdateStoreSupportedLocale
+      required:
+        - locale_code
+      properties:
+        locale_code:
+          type: string
+          title: locale_code
+          description: The locale's code in [BCP 47 format](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1).
+          example: fr-FR
     AdminUpdateTaxRate:
       type: object
       description: The properties to update in the tax rate.
@@ -82163,59 +84246,59 @@ components:
         original_item_total:
           type: number
           title: original_item_total
-          description: The cart's original item total.
+          description: The sum of all line items' original totals before discounts, including taxes.
         original_item_subtotal:
           type: number
           title: original_item_subtotal
-          description: The cart's original item subtotal.
+          description: The sum of all line items' original subtotals before discounts, excluding taxes.
         original_item_tax_total:
           type: number
           title: original_item_tax_total
-          description: The cart's original item tax total.
+          description: The sum of all line items' original tax totals before discounts.
         item_total:
           type: number
           title: item_total
-          description: The cart's item total.
+          description: The sum of all line items' totals after discounts, including taxes.
         item_subtotal:
           type: number
           title: item_subtotal
-          description: The cart's item subtotal.
+          description: The sum of all line items' subtotals before discounts, excluding taxes.
         item_tax_total:
           type: number
           title: item_tax_total
-          description: The cart's item tax total.
+          description: The sum of all line items' tax totals after discounts.
         original_total:
           type: number
           title: original_total
-          description: The cart's original total.
+          description: The cart's total before discounts, including taxes. Calculated as the sum of `original_item_total` and `original_shipping_total`.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The cart's original subtotal.
+          description: The cart's subtotal before discounts, excluding taxes. Calculated as the sum of `original_item_subtotal` and `original_shipping_subtotal`.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The cart's original tax total.
+          description: The cart's tax total before discounts. Calculated as the sum of `original_item_tax_total` and `original_shipping_tax_total`.
         total:
           type: number
           title: total
-          description: The cart's total.
+          description: The cart's final total after discounts and credit lines, including taxes.
         subtotal:
           type: number
           title: subtotal
-          description: The cart's subtotal.
+          description: The cart's subtotal before discounts, excluding taxes. Calculated as the sum of `item_subtotal` and `shipping_subtotal`.
         tax_total:
           type: number
           title: tax_total
-          description: The cart's tax total.
+          description: The cart's tax total after discounts. Calculated as the sum of `item_tax_total` and `shipping_tax_total`.
         discount_total:
           type: number
           title: discount_total
-          description: The cart's discount total.
+          description: The total amount of discounts applied to the cart, including the tax portion of discounts.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The cart's discount tax total.
+          description: The total amount of discounts applied to the cart's tax. Represents the tax portion of discounts.
         gift_card_total:
           type: number
           title: gift_card_total
@@ -82227,27 +84310,27 @@ components:
         shipping_total:
           type: number
           title: shipping_total
-          description: The cart's shipping total.
+          description: The sum of all shipping methods' totals after discounts, including taxes.
         shipping_subtotal:
           type: number
           title: shipping_subtotal
-          description: The cart's shipping subtotal.
+          description: The sum of all shipping methods' subtotals before discounts, excluding taxes.
         shipping_tax_total:
           type: number
           title: shipping_tax_total
-          description: The cart's shipping tax total.
+          description: The sum of all shipping methods' tax totals after discounts.
         original_shipping_total:
           type: number
           title: original_shipping_total
-          description: The cart's original shipping total.
+          description: The sum of all shipping methods' original totals before discounts, including taxes.
         original_shipping_subtotal:
           type: number
           title: original_shipping_subtotal
-          description: The cart's original shipping subtotal.
+          description: The sum of all shipping methods' original subtotals before discounts, excluding taxes.
         original_shipping_tax_total:
           type: number
           title: original_shipping_tax_total
-          description: The cart's original shipping tax total.
+          description: The sum of all shipping methods' original tax totals before discounts.
     BaseCartAddress:
       type: object
       description: The cart's shipping address.
@@ -82398,47 +84481,47 @@ components:
         original_total:
           type: number
           title: original_total
-          description: The item's original total.
+          description: The line item's original total before discounts, including taxes.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The item's original subtotal.
+          description: The line item's original subtotal before discounts, excluding taxes.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The item's original tax total.
+          description: The line item's original tax total before discounts.
         item_total:
           type: number
           title: item_total
-          description: The item's item total.
+          description: The line item's total after discounts, including taxes.
         item_subtotal:
           type: number
           title: item_subtotal
-          description: The item's item subtotal.
+          description: The line item's subtotal before discounts, excluding taxes.
         item_tax_total:
           type: number
           title: item_tax_total
-          description: The item's item tax total.
+          description: The line item's tax total after discounts.
         total:
           type: number
           title: total
-          description: The item's total.
+          description: The line item's total after discounts, including taxes.
         subtotal:
           type: number
           title: subtotal
-          description: The item's subtotal.
+          description: The line item's subtotal before discounts, excluding taxes.
         tax_total:
           type: number
           title: tax_total
-          description: The item's tax total.
+          description: The line item's tax total after discounts.
         discount_total:
           type: number
           title: discount_total
-          description: The item's discount total.
+          description: The total amount of discounts applied to the line item, including the tax portion of discounts.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The item's discount tax total.
+          description: The total amount of discounts applied to the line item's tax. Represents the tax portion of discounts.
     BaseCartShippingMethod:
       type: object
       description: A cart's shipping method.
@@ -82514,35 +84597,35 @@ components:
         original_total:
           type: number
           title: original_total
-          description: The shipping method's total including taxes, excluding promotions.
+          description: The shipping method's original total before discounts, including taxes.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The shipping method's total excluding taxes, including promotions.
+          description: The shipping method's original subtotal before discounts, excluding taxes.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The total taxes applied on the shipping method's amount including promotions.
+          description: The shipping method's original tax total before discounts.
         total:
           type: number
           title: total
-          description: The shipping method's total amount including taxes and promotions.
+          description: The shipping method's total after discounts, including taxes.
         subtotal:
           type: number
           title: subtotal
-          description: The shipping method's total amount excluding taxes, including promotions.
+          description: The shipping method's subtotal before discounts, excluding taxes.
         tax_total:
           type: number
           title: tax_total
-          description: The total taxes applied on the shipping method's amount including promotions.
+          description: The shipping method's tax total after discounts.
         discount_total:
           type: number
           title: discount_total
-          description: The total amount discounted.
+          description: The total amount of discounts applied to the shipping method, including the tax portion of discounts.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The taxes applied on the discounted amount.
+          description: The total amount of discounts applied to the shipping method's tax. Represents the tax portion of discounts.
     BaseClaimItem:
       type: object
       description: The claim item's details.
@@ -83005,59 +85088,59 @@ components:
         original_item_total:
           type: number
           title: original_item_total
-          description: The total of the order's items including taxes, excluding promotions.
+          description: The sum of all line items' original totals before discounts, including taxes.
         original_item_subtotal:
           type: number
           title: original_item_subtotal
-          description: The total of the order's items excluding taxes, including promotions.
+          description: The sum of all line items' original subtotals before discounts, excluding taxes.
         original_item_tax_total:
           type: number
           title: original_item_tax_total
-          description: The tax total of the order's items excluding promotions.
+          description: The sum of all line items' original tax totals before discounts.
         item_total:
           type: number
           title: item_total
-          description: The total of the order's items including taxes and promotions.
+          description: The sum of all line items' totals after discounts, including taxes.
         item_subtotal:
           type: number
           title: item_subtotal
-          description: The total of the order's items excluding taxes, including promotions.
+          description: The sum of all line items' subtotals before discounts, excluding taxes.
         item_tax_total:
           type: number
           title: item_tax_total
-          description: The tax total of the order's items including promotions.
+          description: The sum of all line items' tax totals after discounts.
         original_total:
           type: number
           title: original_total
-          description: The order's total excluding promotions, including taxes.
+          description: The order's total before discounts, including taxes. Calculated as the sum of `original_item_total` and `original_shipping_total`.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The order's total excluding taxes, including promotions.
+          description: The order's subtotal before discounts, excluding taxes. Calculated as the sum of `original_item_subtotal` and `original_shipping_subtotal`.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The order's tax total, excluding promotions.
+          description: The order's tax total before discounts. Calculated as the sum of `original_item_tax_total` and `original_shipping_tax_total`.
         total:
           type: number
           title: total
-          description: The order's total including taxes and promotions.
+          description: The order's final total after discounts and credit lines, including taxes.
         subtotal:
           type: number
           title: subtotal
-          description: The order's total excluding taxes, including promotions.
+          description: The order's subtotal before discounts, excluding taxes. Calculated as the sum of `item_subtotal` and `shipping_subtotal`.
         tax_total:
           type: number
           title: tax_total
-          description: The order's tax total including promotions.
+          description: The order's tax total after discounts. Calculated as the sum of `item_tax_total` and `shipping_tax_total`.
         discount_total:
           type: number
           title: discount_total
-          description: The order's discount or promotions total.
+          description: The total amount of discounts applied to the order, including the tax portion of discounts.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The tax total of order's discount or promotion.
+          description: The total amount of discounts applied to the order's tax. Represents the tax portion of discounts.
         gift_card_total:
           type: number
           title: gift_card_total
@@ -83069,27 +85152,27 @@ components:
         shipping_total:
           type: number
           title: shipping_total
-          description: The order's shipping total including taxes and promotions.
+          description: The sum of all shipping methods' totals after discounts, including taxes.
         shipping_subtotal:
           type: number
           title: shipping_subtotal
-          description: The order's shipping total excluding taxes, including promotions.
+          description: The sum of all shipping methods' subtotals before discounts, excluding taxes.
         shipping_tax_total:
           type: number
           title: shipping_tax_total
-          description: The tax total of the order's shipping.
+          description: The sum of all shipping methods' tax totals after discounts.
         original_shipping_total:
           type: number
           title: original_shipping_total
-          description: The order's shipping total including taxes, excluding promotions.
+          description: The sum of all shipping methods' original totals before discounts, including taxes.
         original_shipping_subtotal:
           type: number
           title: original_shipping_subtotal
-          description: The order's shipping total excluding taxes, including promotions.
+          description: The sum of all shipping methods' original subtotals before discounts, excluding taxes.
         original_shipping_tax_total:
           type: number
           title: original_shipping_tax_total
-          description: The tax total of the order's shipping excluding promotions.
+          description: The sum of all shipping methods' original tax totals before discounts.
         status:
           type: string
           title: status
@@ -83097,15 +85180,15 @@ components:
         credit_line_total:
           type: number
           title: credit_line_total
-          description: The order's credit line total.
+          description: The total amount of credit lines applied to the order, including taxes. Subtracted from the final total.
         item_discount_total:
           type: number
           title: item_discount_total
-          description: The total discount amount applied on the order's items.
+          description: The sum of all discounts applied to line items, including the tax portion of discounts.
         shipping_discount_total:
           type: number
           title: shipping_discount_total
-          description: The total discount amount applied on the order's shipping.
+          description: The sum of all discounts applied to shipping methods, including the tax portion of discounts.
         custom_display_id:
           type: string
           title: custom_display_id
@@ -83516,47 +85599,47 @@ components:
         original_total:
           type: number
           title: original_total
-          description: The item's total including taxes, excluding promotions.
+          description: The line item's original total before discounts, including taxes.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The item's total excluding taxes, including promotions.
+          description: The line item's original subtotal before discounts, excluding taxes.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The total taxes of the item, excluding promotions.
+          description: The line item's original tax total before discounts.
         item_total:
           type: number
           title: item_total
-          description: The total taxes of the item, including promotions.
+          description: The line item's total after discounts, including taxes.
         item_subtotal:
           type: number
           title: item_subtotal
-          description: The item's total excluding taxes, including promotions.
+          description: The line item's subtotal before discounts, excluding taxes.
         item_tax_total:
           type: number
           title: item_tax_total
-          description: The total taxes of the item, including promotions.
+          description: The line item's tax total after discounts.
         total:
           type: number
           title: total
-          description: The item's total, including taxes and promotions.
+          description: The line item's total after discounts, including taxes.
         subtotal:
           type: number
           title: subtotal
-          description: The item's subtotal excluding taxes, including promotions.
+          description: The line item's subtotal before discounts, excluding taxes.
         tax_total:
           type: number
           title: tax_total
-          description: The tax total of the item including promotions.
+          description: The line item's tax total after discounts.
         discount_total:
           type: number
           title: discount_total
-          description: The total discount amount of the item.
+          description: The total amount of discounts applied to the line item, including the tax portion of discounts.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The total taxes applied on the discounted amount.
+          description: The total amount of discounts applied to the line item's tax. Represents the tax portion of discounts.
         refundable_total:
           type: number
           title: refundable_total
@@ -86190,6 +88273,11 @@ components:
           description: The custom display ID of the order.
           externalDocs:
             url: https://docs.medusajs.com/resources/commerce-modules/order/custom-display-id
+        locale:
+          type: string
+          title: locale
+          description: The order's locale in [BCP 47](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1) format.
+          example: en-US
     OrderAddress:
       type: object
       description: The address's details.
@@ -87949,59 +90037,59 @@ components:
         original_item_total:
           type: number
           title: original_item_total
-          description: The cart items' total including taxes, excluding promotions.
+          description: The sum of all line items' original totals before discounts, including taxes.
         original_item_subtotal:
           type: number
           title: original_item_subtotal
-          description: The cart items' total excluding taxes, including promotions.
+          description: The sum of all line items' original subtotals before discounts, excluding taxes.
         original_item_tax_total:
           type: number
           title: original_item_tax_total
-          description: The cart items' tax total excluding promotions.
+          description: The sum of all line items' original tax totals before discounts.
         item_total:
           type: number
           title: item_total
-          description: The cart items' total including taxes and promotions.
+          description: The sum of all line items' totals after discounts, including taxes.
         item_subtotal:
           type: number
           title: item_subtotal
-          description: The cart items' total excluding taxes, including promotions.
+          description: The sum of all line items' subtotals before discounts, excluding taxes.
         item_tax_total:
           type: number
           title: item_tax_total
-          description: The cart items' tax total including promotions.
+          description: The sum of all line items' tax totals after discounts.
         original_total:
           type: number
           title: original_total
-          description: The cart's total including taxes, excluding promotions.
+          description: The cart's total before discounts, including taxes. Calculated as the sum of `original_item_total` and `original_shipping_total`.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The cart's total excluding taxes, including promotions.
+          description: The cart's subtotal before discounts, excluding taxes. Calculated as the sum of `original_item_subtotal` and `original_shipping_subtotal`.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The cart's tax total excluding promotions.
+          description: The cart's tax total before discounts. Calculated as the sum of `original_item_tax_total` and `original_shipping_tax_total`.
         total:
           type: number
           title: total
-          description: The cart's total including taxes and promotions.
+          description: The cart's final total after discounts and credit lines, including taxes.
         subtotal:
           type: number
           title: subtotal
-          description: The cart's total excluding taxes, including promotions.
+          description: The cart's subtotal before discounts, excluding taxes. Calculated as the sum of `item_subtotal` and `shipping_subtotal`.
         tax_total:
           type: number
           title: tax_total
-          description: The cart's tax total including promotions.
+          description: The cart's tax total after discounts. Calculated as the sum of `item_tax_total` and `shipping_tax_total`.
         discount_total:
           type: number
           title: discount_total
-          description: The cart's discount total.
+          description: The total amount of discounts applied to the cart, including the tax portion of discounts.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The tax total applied on the discounted amount.
+          description: The total amount of discounts applied to the cart's tax. Represents the tax portion of discounts.
         gift_card_total:
           type: number
           title: gift_card_total
@@ -88013,32 +90101,37 @@ components:
         shipping_total:
           type: number
           title: shipping_total
-          description: The cart's shipping total including taxes and promotions.
+          description: The sum of all shipping methods' totals after discounts, including taxes.
         shipping_subtotal:
           type: number
           title: shipping_subtotal
-          description: The cart's shipping total excluding taxes, including promotions.
+          description: The sum of all shipping methods' subtotals before discounts, excluding taxes.
         shipping_tax_total:
           type: number
           title: shipping_tax_total
-          description: The total taxes applied on the cart's shipping amount.
+          description: The sum of all shipping methods' tax totals after discounts.
         original_shipping_total:
           type: number
           title: original_shipping_total
-          description: The cart's shipping total including taxes, excluding promotions.
+          description: The sum of all shipping methods' original totals before discounts, including taxes.
         original_shipping_subtotal:
           type: number
           title: original_shipping_subtotal
-          description: The cart's shipping total excluding taxes, including promotions.
+          description: The sum of all shipping methods' original subtotals before discounts, excluding taxes.
         original_shipping_tax_total:
           type: number
           title: original_shipping_tax_total
-          description: The total taxes applied on the cart's shipping amount.
+          description: The sum of all shipping methods' original tax totals before discounts.
         promotions:
           type: array
           description: The cart's promotions.
           items:
             $ref: '#/components/schemas/StoreCartPromotion'
+        completed_at:
+          type: string
+          title: completed_at
+          description: The date the cart was completed.
+          format: date-time
     StoreCartAddPromotion:
       type: object
       description: The promotion's details.
@@ -88421,47 +90514,47 @@ components:
         original_total:
           type: number
           title: original_total
-          description: The item's total including taxes, excluding promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's original total before discounts, including taxes. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The item's total excluding taxes, including promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's original subtotal before discounts, excluding taxes. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The total taxes of the item excluding promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's original tax total before discounts. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         item_total:
           type: number
-          title: original_tax_total
-          description: The item's total including taxes and promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          title: item_total
+          description: The line item's total after discounts, including taxes. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         item_subtotal:
           type: number
           title: item_subtotal
-          description: The item's total excluding taxes, including promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's subtotal before discounts, excluding taxes. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         item_tax_total:
           type: number
           title: item_tax_total
-          description: The total taxes of the item including promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's tax total after discounts. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         total:
           type: number
           title: total
-          description: The item's total including taxes and promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's total after discounts, including taxes. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         subtotal:
           type: number
           title: subtotal
-          description: The item's total excluding taxes, including promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's subtotal before discounts, excluding taxes. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         tax_total:
           type: number
           title: tax_total
-          description: The total taxes of the item including promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's tax total after discounts. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         discount_total:
           type: number
           title: discount_total
-          description: The total discount of the item. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The total amount of discounts applied to the line item, including the tax portion of discounts. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The total taxes applied on the discounted amount. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The total amount of discounts applied to the line item's tax. Represents the tax portion of discounts. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
     StoreCartPromotion:
       type: object
       description: The promotion's promotions.
@@ -88739,35 +90832,35 @@ components:
         original_total:
           type: number
           title: original_total
-          description: The shipping method's total including taxes, excluding promotions. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The shipping method's original total before discounts, including taxes. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The shipping method's total excluding taxes, including promotions. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The shipping method's original subtotal before discounts, excluding taxes. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The total taxes applied on the shipping method's amount including promotions. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The shipping method's original tax total before discounts. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
         total:
           type: number
           title: total
-          description: The shipping method's total amount including taxes and promotions. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The shipping method's total after discounts, including taxes. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
         subtotal:
           type: number
           title: subtotal
-          description: The shipping method's total amount excluding taxes, including promotions. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The shipping method's subtotal before discounts, excluding taxes. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
         tax_total:
           type: number
           title: tax_total
-          description: The total taxes applied on the shipping method's amount including promotions. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The shipping method's tax total after discounts. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
         discount_total:
           type: number
           title: discount_total
-          description: The total amount discounted. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The total amount of discounts applied to the shipping method, including the tax portion of discounts. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The taxes applied on the discounted amount. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The total amount of discounts applied to the shipping method's tax. Represents the tax portion of discounts. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
     StoreCartShippingOption:
       type: object
       description: The shipping option's details.
@@ -89591,6 +91684,36 @@ components:
             url: https://docs.medusajs.com/resources/commerce-modules/payment/payment-session#data-property
             description: Learn more about the payment session's data property
       x-schemaName: StoreInitializePaymentSession
+    StoreLocale:
+      type: object
+      description: The store locale's details.
+      x-schemaName: StoreLocale
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          title: code
+          description: The locale's code in [BCP 47 format](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1).
+          example: en-US
+        name:
+          type: string
+          title: name
+          description: The locale's display name.
+          example: English (United States)
+    StoreLocaleListResponse:
+      type: object
+      description: The list of supported locales in the store.
+      x-schemaName: StoreLocaleListResponse
+      required:
+        - locales
+      properties:
+        locales:
+          type: array
+          description: The list of supported locales in the store.
+          items:
+            $ref: '#/components/schemas/StoreLocale'
     StoreOrder:
       type: object
       description: The order's details.
@@ -89737,59 +91860,59 @@ components:
         original_item_total:
           type: number
           title: original_item_total
-          description: The order items' total including taxes, excluding promotions.
+          description: The sum of all line items' original totals before discounts, including taxes.
         original_item_subtotal:
           type: number
           title: original_item_subtotal
-          description: The order items' total excluding taxes, including promotions.
+          description: The sum of all line items' original subtotals before discounts, excluding taxes.
         original_item_tax_total:
           type: number
           title: original_item_tax_total
-          description: The total taxes applied on the order items, excluding promotions.
+          description: The sum of all line items' original tax totals before discounts.
         item_total:
           type: number
           title: item_total
-          description: The order items' total including taxes and promotions.
+          description: The sum of all line items' totals after discounts, including taxes.
         item_subtotal:
           type: number
           title: item_subtotal
-          description: The order items' total excluding taxes, including promotions.
+          description: The sum of all line items' subtotals before discounts, excluding taxes.
         item_tax_total:
           type: number
           title: item_tax_total
-          description: The total taxes applied on the order's items, including promotions.
+          description: The sum of all line items' tax totals after discounts.
         original_total:
           type: number
           title: original_total
-          description: The order's total including taxes, excluding promotions.
+          description: The order's total before discounts, including taxes. Calculated as the sum of `original_item_total` and `original_shipping_total`.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The order's total excluding taxes, including promotions.
+          description: The order's subtotal before discounts, excluding taxes. Calculated as the sum of `original_item_subtotal` and `original_shipping_subtotal`.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The total taxes of the order excluding promotions.
+          description: The order's tax total before discounts. Calculated as the sum of `original_item_tax_total` and `original_shipping_tax_total`.
         total:
           type: number
           title: total
-          description: The order's total including taxes and promotions.
+          description: The order's final total after discounts and credit lines, including taxes.
         subtotal:
           type: number
           title: subtotal
-          description: The order's total excluding taxes, including promotions.
+          description: The order's subtotal before discounts, excluding taxes. Calculated as the sum of `item_subtotal` and `shipping_subtotal`.
         tax_total:
           type: number
           title: tax_total
-          description: The tax totals of the order including promotions.
+          description: The order's tax total after discounts. Calculated as the sum of `item_tax_total` and `shipping_tax_total`.
         discount_total:
           type: number
           title: discount_total
-          description: The order's discount total.
+          description: The total amount of discounts applied to the order, including the tax portion of discounts.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The total taxes applied on the discounted amount.
+          description: The total amount of discounts applied to the order's tax. Represents the tax portion of discounts.
         gift_card_total:
           type: number
           title: gift_card_total
@@ -89801,27 +91924,27 @@ components:
         shipping_total:
           type: number
           title: shipping_total
-          description: The order's shipping total including taxes and promotions.
+          description: The sum of all shipping methods' totals after discounts, including taxes.
         shipping_subtotal:
           type: number
           title: shipping_subtotal
-          description: The order's shipping total excluding taxes, including promotions.
+          description: The sum of all shipping methods' subtotals before discounts, excluding taxes.
         shipping_tax_total:
           type: number
           title: shipping_tax_total
-          description: The total taxes of the order's shipping including promotions.
+          description: The sum of all shipping methods' tax totals after discounts.
         original_shipping_total:
           type: number
           title: original_shipping_total
-          description: The order's shipping total including taxes, excluding promotions.
+          description: The sum of all shipping methods' original totals before discounts, including taxes.
         original_shipping_subtotal:
           type: number
           title: original_shipping_subtotal
-          description: The order's shipping total excluding taxes, including promotions.
+          description: The sum of all shipping methods' original subtotals before discounts, excluding taxes.
         original_shipping_tax_total:
           type: number
           title: original_shipping_tax_total
-          description: The total taxes of the order's shipping excluding promotions.
+          description: The sum of all shipping methods' original tax totals before discounts.
         customer:
           $ref: '#/components/schemas/StoreCustomer'
         transactions:
@@ -89836,15 +91959,15 @@ components:
         credit_line_total:
           type: number
           title: credit_line_total
-          description: The order's credit line total.
+          description: The total amount of credit lines applied to the order, including taxes. Subtracted from the final total.
         item_discount_total:
           type: number
           title: item_discount_total
-          description: The total discount amount applied on the order's items.
+          description: The sum of all discounts applied to line items, including the tax portion of discounts.
         shipping_discount_total:
           type: number
           title: shipping_discount_total
-          description: The total discount amount applied on the order's shipping.
+          description: The sum of all discounts applied to shipping methods, including the tax portion of discounts.
         custom_display_id:
           type: string
           title: custom_display_id
@@ -96769,8 +98892,8 @@ components:
             $ref: '#/components/schemas/BaseProductImage'
       required:
         - options
-        - length
         - title
+        - length
         - id
         - created_at
         - updated_at

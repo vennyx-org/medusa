@@ -1,14 +1,14 @@
+import { keepPreviousData } from "@tanstack/react-query"
+import { useEffect } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
+import { RouteFocusModal } from "../../../components/modals"
 import {
   useReferenceTranslations,
   useStore,
   useTranslationSettings,
 } from "../../../hooks/api"
-import { TranslationsEditForm } from "./components/translations-edit-form"
-import { useEffect } from "react"
-import { RouteFocusModal } from "../../../components/modals"
 import { useFeatureFlag } from "../../../providers/feature-flag-provider"
-import { keepPreviousData } from "@tanstack/react-query"
+import { TranslationsEditForm } from "./components/translations-edit-form"
 
 export const TranslationsEdit = () => {
   const isTranslationsEnabled = useFeatureFlag("translation")
@@ -41,15 +41,10 @@ export const TranslationsEdit = () => {
     isPending,
     isError,
     error,
-  } = useReferenceTranslations(
-    reference!,
-    translatable_fields?.[reference!] ?? [],
-    referenceIdParam,
-    {
-      enabled: !!translatable_fields && !!reference,
-      placeholderData: keepPreviousData,
-    }
-  )
+  } = useReferenceTranslations(reference!, referenceIdParam, {
+    enabled: !!reference,
+    placeholderData: keepPreviousData,
+  })
   const {
     store,
     isPending: isStorePending,

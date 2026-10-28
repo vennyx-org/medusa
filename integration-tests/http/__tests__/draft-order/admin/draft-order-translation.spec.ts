@@ -208,6 +208,22 @@ medusaIntegrationTestRunner({
                 locale_code: "de-DE",
                 translations: { title: "Mittel" },
               },
+              {
+                reference_id: shippingOption.id,
+                reference: "shipping_option",
+                locale_code: "fr-FR",
+                translations: {
+                  name: "Option d'expédition de test",
+                },
+              },
+              {
+                reference_id: shippingOption.id,
+                reference: "shipping_option",
+                locale_code: "de-DE",
+                translations: {
+                  name: "Test-Versandoption",
+                },
+              },
             ],
           },
           adminHeaders
@@ -476,6 +492,202 @@ medusaIntegrationTestRunner({
             expect.objectContaining({
               product_title: "Medusa T-Shirt DE",
               variant_title: "Mittel",
+            })
+          )
+        })
+      })
+
+      describe("POST /admin/draft-orders/:id/edit/shipping-methods (add shipping method to draft order)", () => {
+        it("should translate shipping method added to draft order using draft order locale", async () => {
+          const draftOrder = (
+            await api.post(
+              "/admin/draft-orders",
+              {
+                email: "test@test.com",
+                region_id: region.id,
+                sales_channel_id: salesChannel.id,
+                locale: "fr-FR",
+                shipping_address: {
+                  address_1: "123 Main St",
+                  city: "Anytown",
+                  country_code: "us",
+                  postal_code: "12345",
+                  first_name: "John",
+                },
+              },
+              adminHeaders
+            )
+          ).data.draft_order
+
+          await api.post(
+            `/admin/draft-orders/${draftOrder.id}/edit`,
+            {},
+            adminHeaders
+          )
+
+          const previewResponse = await api.post(
+            `/admin/draft-orders/${draftOrder.id}/edit/shipping-methods`,
+            { shipping_option_id: shippingOption.id },
+            adminHeaders
+          )
+
+          expect(
+            previewResponse.data.draft_order_preview.shipping_methods
+          ).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                shipping_option_id: shippingOption.id,
+                name: "Option d'expédition de test",
+              }),
+            ])
+          )
+
+          await api.post(
+            `/admin/draft-orders/${draftOrder.id}/edit/confirm`,
+            {},
+            adminHeaders
+          )
+
+          const updatedDraftOrder = (
+            await api.get(`/admin/draft-orders/${draftOrder.id}`, adminHeaders)
+          ).data.draft_order
+
+          expect(updatedDraftOrder.shipping_methods).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                shipping_option_id: shippingOption.id,
+                name: "Option d'expédition de test",
+              }),
+            ])
+          )
+        })
+
+        it("should have original shipping method name when draft order has no locale", async () => {
+          const draftOrder = (
+            await api.post(
+              "/admin/draft-orders",
+              {
+                email: "test@test.com",
+                region_id: region.id,
+                sales_channel_id: salesChannel.id,
+                shipping_address: {
+                  address_1: "123 Main St",
+                  city: "Anytown",
+                  country_code: "us",
+                  postal_code: "12345",
+                  first_name: "John",
+                },
+              },
+              adminHeaders
+            )
+          ).data.draft_order
+
+          await api.post(
+            `/admin/draft-orders/${draftOrder.id}/edit`,
+            {},
+            adminHeaders
+          )
+
+          const previewResponse = await api.post(
+            `/admin/draft-orders/${draftOrder.id}/edit/shipping-methods`,
+            { shipping_option_id: shippingOption.id },
+            adminHeaders
+          )
+
+          expect(
+            previewResponse.data.draft_order_preview.shipping_methods
+          ).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                shipping_option_id: shippingOption.id,
+                name: "Test shipping option",
+              }),
+            ])
+          )
+
+          await api.post(
+            `/admin/draft-orders/${draftOrder.id}/edit/confirm`,
+            {},
+            adminHeaders
+          )
+
+          const updatedDraftOrder = (
+            await api.get(`/admin/draft-orders/${draftOrder.id}`, adminHeaders)
+          ).data.draft_order
+
+          expect(updatedDraftOrder.shipping_methods).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                shipping_option_id: shippingOption.id,
+                name: "Test shipping option",
+              }),
+            ])
+          )
+        })
+      })
+
+      describe("POST /admin/draft-orders/:id (update draft order locale)", () => {
+        it("should re-translate shipping methods when locale is updated", async () => {
+          const draftOrder = (
+            await api.post(
+              "/admin/draft-orders",
+              {
+                email: "test@test.com",
+                region_id: region.id,
+                sales_channel_id: salesChannel.id,
+                locale: "fr-FR",
+                shipping_address: {
+                  address_1: "123 Main St",
+                  city: "Anytown",
+                  country_code: "us",
+                  postal_code: "12345",
+                  first_name: "John",
+                },
+              },
+              adminHeaders
+            )
+          ).data.draft_order
+
+          await api.post(
+            `/admin/draft-orders/${draftOrder.id}/edit`,
+            {},
+            adminHeaders
+          )
+
+          await api.post(
+            `/admin/draft-orders/${draftOrder.id}/edit/shipping-methods`,
+            { shipping_option_id: shippingOption.id },
+            adminHeaders
+          )
+
+          await api.post(
+            `/admin/draft-orders/${draftOrder.id}/edit/confirm`,
+            {},
+            adminHeaders
+          )
+
+          let updatedDraftOrder = (
+            await api.get(`/admin/draft-orders/${draftOrder.id}`, adminHeaders)
+          ).data.draft_order
+
+          expect(updatedDraftOrder.shipping_methods[0].name).toEqual(
+            "Option d'expédition de test"
+          )
+
+          await api.post(
+            `/admin/draft-orders/${draftOrder.id}`,
+            { locale: "de-DE" },
+            adminHeaders
+          )
+
+          updatedDraftOrder = (
+            await api.get(`/admin/draft-orders/${draftOrder.id}`, adminHeaders)
+          ).data.draft_order
+
+          expect(updatedDraftOrder.shipping_methods[0]).toEqual(
+            expect.objectContaining({
+              shipping_option_id: shippingOption.id,
+              name: "Test-Versandoption",
             })
           )
         })

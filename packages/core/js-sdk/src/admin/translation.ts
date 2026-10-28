@@ -162,6 +162,58 @@ export class Translation {
   }
 
   /**
+   * This method retrieves a paginated list of entities for a given entity type with only their
+   * translatable fields.
+   * It sends a request to the
+   * [Get Translation Entities](https://docs.medusajs.com/api/admin#translations_gettranslationentities) API route.
+   *
+   * @since 2.12.4
+   *
+   * @param query - The query parameters including the entity type and pagination configurations.
+   * @param headers - Headers to pass in the request.
+   * @returns The paginated list of entities with their translatable fields.
+   *
+   * @example
+   * To retrieve the entities for a given entity type:
+   *
+   * ```ts
+   * sdk.admin.translation.entities({
+   *   type: "product"
+   * })
+   * .then(({ data, count, offset, limit }) => {
+   *   console.log(data)
+   * })
+   * ```
+   *
+   * To configure the pagination, pass the `limit` and `offset` query parameters.
+   *
+   * For example, to retrieve only 10 items and skip 10 items:
+   *
+   * ```ts
+   * sdk.admin.translation.entities({
+   *   type: "product",
+   *   limit: 10,
+   *   offset: 10
+   * })
+   * .then(({ data, count, offset, limit }) => {
+   *   console.log(data)
+   * })
+   * ```
+   */
+  async entities(
+    query: HttpTypes.AdminTranslationEntitiesParams,
+    headers?: ClientHeaders
+  ) {
+    return await this.client.fetch<HttpTypes.AdminTranslationEntitiesResponse>(
+      `/admin/translations/entities`,
+      {
+        headers,
+        query,
+      }
+    )
+  }
+
+  /**
    * This method retrieves the statistics for the translations for a given entity type or all entity types if no entity type is provided.
    * It sends a request to the
    * [Get Translation Statistics](https://docs.medusajs.com/api/admin#translations_gettranslationsstatistics) API route.

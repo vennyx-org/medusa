@@ -9840,6 +9840,14 @@ const generatedgeneratedCommerceModulesSidebarSidebar = {
                       "loaded": true,
                       "isPathHref": true,
                       "type": "ref",
+                      "title": "updateCartPromotionsWorkflow",
+                      "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateCartPromotionsWorkflow",
+                      "children": []
+                    },
+                    {
+                      "loaded": true,
+                      "isPathHref": true,
+                      "type": "ref",
                       "title": "updateCartWorkflow",
                       "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateCartWorkflow",
                       "children": []
@@ -17219,6 +17227,14 @@ const generatedgeneratedCommerceModulesSidebarSidebar = {
               "loaded": true,
               "isPathHref": true,
               "type": "link",
+              "path": "/commerce-modules/translation/custom-data-models",
+              "title": "Translate Custom Models",
+              "children": []
+            },
+            {
+              "loaded": true,
+              "isPathHref": true,
+              "type": "link",
               "path": "/commerce-modules/translation/storefront",
               "title": "Translation in Storefront",
               "children": []
@@ -17295,7 +17311,86 @@ const generatedgeneratedCommerceModulesSidebarSidebar = {
               "path": "/commerce-modules/translation/workflows",
               "title": "Workflows",
               "hideChildren": true,
-              "children": []
+              "children": [
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "category",
+                  "title": "Workflows",
+                  "autogenerate_tags": "workflow+translation",
+                  "autogenerate_as_ref": true,
+                  "sort_sidebar": "alphabetize",
+                  "children": [
+                    {
+                      "loaded": true,
+                      "isPathHref": true,
+                      "type": "ref",
+                      "title": "batchTranslationsWorkflow",
+                      "path": "https://docs.medusajs.com/resources/references/medusa-workflows/batchTranslationsWorkflow",
+                      "children": []
+                    },
+                    {
+                      "loaded": true,
+                      "isPathHref": true,
+                      "type": "ref",
+                      "title": "createTranslationsWorkflow",
+                      "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createTranslationsWorkflow",
+                      "children": []
+                    },
+                    {
+                      "loaded": true,
+                      "isPathHref": true,
+                      "type": "ref",
+                      "title": "deleteTranslationsWorkflow",
+                      "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteTranslationsWorkflow",
+                      "children": []
+                    },
+                    {
+                      "loaded": true,
+                      "isPathHref": true,
+                      "type": "ref",
+                      "title": "updateTranslationsWorkflow",
+                      "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateTranslationsWorkflow",
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "loaded": true,
+                  "isPathHref": true,
+                  "type": "category",
+                  "title": "Steps",
+                  "autogenerate_tags": "step+translation",
+                  "autogenerate_as_ref": true,
+                  "sort_sidebar": "alphabetize",
+                  "children": [
+                    {
+                      "loaded": true,
+                      "isPathHref": true,
+                      "type": "ref",
+                      "title": "createTranslationsStep",
+                      "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/createTranslationsStep",
+                      "children": []
+                    },
+                    {
+                      "loaded": true,
+                      "isPathHref": true,
+                      "type": "ref",
+                      "title": "deleteTranslationsStep",
+                      "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/deleteTranslationsStep",
+                      "children": []
+                    },
+                    {
+                      "loaded": true,
+                      "isPathHref": true,
+                      "type": "ref",
+                      "title": "updateTranslationsStep",
+                      "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/updateTranslationsStep",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
             },
             {
               "loaded": true,
@@ -17366,6 +17461,24 @@ const generatedgeneratedCommerceModulesSidebarSidebar = {
                       "type": "link",
                       "path": "/references/translation/deleteTranslations",
                       "title": "deleteTranslations",
+                      "description": "",
+                      "children": []
+                    },
+                    {
+                      "loaded": true,
+                      "isPathHref": true,
+                      "type": "link",
+                      "path": "/references/translation/getStatistics",
+                      "title": "getStatistics",
+                      "description": "",
+                      "children": []
+                    },
+                    {
+                      "loaded": true,
+                      "isPathHref": true,
+                      "type": "link",
+                      "path": "/references/translation/getTranslatableFields",
+                      "title": "getTranslatableFields",
                       "description": "",
                       "children": []
                     },
@@ -17514,6 +17627,15 @@ const generatedgeneratedCommerceModulesSidebarSidebar = {
                       "type": "link",
                       "path": "/references/translation/models/Locale",
                       "title": "Locale",
+                      "description": "",
+                      "children": []
+                    },
+                    {
+                      "loaded": true,
+                      "isPathHref": true,
+                      "type": "link",
+                      "path": "/references/translation/models/Settings",
+                      "title": "Settings",
                       "description": "",
                       "children": []
                     },

@@ -97,6 +97,7 @@ services:
       - redis
     ports:
       - "9000:9000"
+      - "5173:5173"
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgres://postgres:postgres@postgres:5432/medusa-store
@@ -139,6 +140,7 @@ If this isn't the first Medusa project you're setting up with Docker on your mac
     - Use `"5433:5432"` for PostgreSQL.
     - Use `"6380:6379"` for Redis.
     - Use `"9001:9000"` for the Medusa server.
+    - Use `"5174:5173"` for the Medusa Admin dashboard.
 - Update the `DATABASE_URL` and `REDIS_URL` environment variables accordingly.
 
 ---
@@ -333,6 +335,8 @@ Where:
 
 ## 7. Update Medusa Configuration
 
+### Disable SSL for PostgreSQL Connection
+
 If you try to run the Medusa application now with Docker, you'll encounter an SSL error as the server tries to connect to the PostgreSQL database.
 
 To resolve the error, add the following configurations in `medusa-config.ts`:
@@ -354,6 +358,43 @@ module.exports = defineConfig({
 ```
 
 You add the [projectConfig.databaseDriverOptions](../../configurations/medusa-config/page.mdx#databasedriveroptions) to disable SSL for the PostgreSQL database connection.
+
+### Add Vite Configuration for Medusa Admin
+
+To ensure that the Medusa Admin dashboard works correctly when running inside Docker, connects to the Medusa server, and reloads properly with Hot Module Replacement (HMR), add the following Vite configuration in `medusa-config.ts`:
+
+```ts title="medusa-config.ts"
+module.exports = defineConfig({
+  // ...
+  admin: {
+    vite: (config) => {
+      return {
+        ...config,
+        server: {
+          ...config.server,
+          host: "0.0.0.0",
+          // Allow all hosts when running in Docker (development mode)
+          // In production, this should be more restrictive
+          allowedHosts: [
+            "localhost",
+            ".localhost",
+            "127.0.0.1",
+          ],
+          hmr: {
+            ...config.server?.hmr,
+            // HMR websocket port inside container
+            port: 5173, 
+            // Port browser connects to (exposed in docker-compose.yml)
+            clientPort: 5173,
+          },
+        },
+      }
+    },
+  },
+})
+```
+
+You configure the Vite development server to listen on all network interfaces (`0.0.0.0`) and set up HMR to work correctly within the Docker environment.
 
 ---
 

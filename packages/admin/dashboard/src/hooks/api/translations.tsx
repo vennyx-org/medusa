@@ -2,25 +2,16 @@ import { FetchError } from "@medusajs/js-sdk"
 import { HttpTypes } from "@medusajs/types"
 import {
   QueryKey,
+  useInfiniteQuery,
   UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
   useMutation,
   UseMutationOptions,
   useQuery,
   UseQueryOptions,
 } from "@tanstack/react-query"
 import { sdk } from "../../lib/client"
-import { queryKeysFactory } from "../../lib/query-key-factory"
 import { queryClient } from "../../lib/query-client"
-import { productsQueryKeys, useInfiniteProducts } from "./products"
-import {
-  productVariantQueryKeys,
-  useInfiniteVariants,
-} from "./product-variants"
-import { categoriesQueryKeys, useInfiniteCategories } from "./categories"
-import { collectionsQueryKeys, useInfiniteCollections } from "./collections"
-import { productTagsQueryKeys, useInfiniteProductTags } from "./tags"
-import { productTypesQueryKeys, useInfiniteProductTypes } from "./product-types"
+import { queryKeysFactory } from "../../lib/query-key-factory"
 
 const TRANSLATIONS_QUERY_KEY = "translations" as const
 export const translationsQueryKeys = queryKeysFactory(TRANSLATIONS_QUERY_KEY)
@@ -35,177 +26,77 @@ export const translationStatisticsQueryKeys = queryKeysFactory(
   TRANSLATION_STATISTICS_QUERY_KEY
 )
 
+const TRANSLATION_ENTITIES_QUERY_KEY = "translation_entities" as const
+export const translationEntitiesQueryKeys = queryKeysFactory(
+  TRANSLATION_ENTITIES_QUERY_KEY
+)
+
+const DEFAULT_PAGE_SIZE = 20
+
+/**
+ * Hook to fetch entities with their translatable fields and all translations.
+ * Uses the /admin/translations/entities endpoint which returns entities
+ * with all their translations for all locales.
+ *
+ * @param reference - The entity type (e.g., "product", "product_variant")
+ * @param referenceId - Optional ID(s) to filter specific entities
+ * @param options - React Query options
+ */
 export const useReferenceTranslations = (
   reference: string,
-  translatableFields: string[],
   referenceId?: string | string[],
   options?: Omit<
-    UseInfiniteQueryOptions<any, FetchError, any, any, QueryKey, number>,
+    UseInfiniteQueryOptions<
+      HttpTypes.AdminTranslationEntitiesResponse,
+      FetchError,
+      {
+        pages: HttpTypes.AdminTranslationEntitiesResponse[]
+        pageParams: number[]
+      },
+      HttpTypes.AdminTranslationEntitiesResponse,
+      QueryKey,
+      number
+    >,
     "queryFn" | "queryKey" | "initialPageParam" | "getNextPageParam"
   >
 ) => {
-  const referenceHookMap = new Map<
-    string,
-    () => Omit<UseInfiniteQueryResult<any, FetchError>, "data"> & {
-      data: {
-        translations: HttpTypes.AdminTranslation[]
-        references: (Record<string, any> & { id: string })[]
-        count: number
-      }
-    }
-  >([
-    [
-      "product",
-      () => {
-        const fields = translatableFields.concat(["translations.*"]).join(",")
+  const { data, ...rest } = useInfiniteQuery({
+    queryKey: translationEntitiesQueryKeys.list({
+      type: reference,
+      id: referenceId,
+    }),
+    queryFn: async ({ pageParam = 0 }) => {
+      return sdk.admin.translation.entities({
+        type: reference,
+        id: referenceId,
+        limit: DEFAULT_PAGE_SIZE,
+        offset: pageParam,
+      })
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      const nextOffset = lastPage.offset + lastPage.limit
+      return nextOffset < lastPage.count ? nextOffset : undefined
+    },
+    ...options,
+  })
 
-        const { data, ...rest } = useInfiniteProducts(
-          { fields, id: referenceId ?? [] },
-          options
-        )
-        const products = data?.pages.flatMap((page) => page.products) ?? []
+  const entitiesWithTranslations =
+    data?.pages.flatMap((page) => page.data) ?? []
+  const translations = entitiesWithTranslations.flatMap(
+    (entity) => entity.translations ?? []
+  )
+  const references = entitiesWithTranslations.map(
+    ({ translations: _, ...entity }) => entity
+  )
+  const count = data?.pages[0]?.count ?? 0
 
-        return {
-          ...rest,
-          data: {
-            translations:
-              products?.flatMap((product) => product.translations ?? []) ?? [],
-            references: products ?? [],
-            count: data?.pages[0]?.count ?? 0,
-          },
-        }
-      },
-    ],
-    [
-      "product_variant",
-      () => {
-        const fields = translatableFields.concat(["translations.*"]).join(",")
-
-        const { data, ...rest } = useInfiniteVariants(
-          { id: referenceId ?? [], fields },
-          options
-        )
-        const variants = data?.pages.flatMap((page) => page.variants) ?? []
-
-        return {
-          ...rest,
-          data: {
-            translations:
-              variants?.flatMap((variant) => variant.translations ?? []) ?? [],
-            references: variants ?? [],
-            translatableFields,
-            count: data?.pages[0]?.count ?? 0,
-          },
-        }
-      },
-    ],
-    [
-      "product_category",
-      () => {
-        const fields = translatableFields.concat(["translations.*"]).join(",")
-
-        const { data, ...rest } = useInfiniteCategories(
-          { id: referenceId ?? [], fields },
-          options
-        )
-        const categories =
-          data?.pages.flatMap((page) => page.product_categories) ?? []
-
-        return {
-          ...rest,
-          data: {
-            translations:
-              categories?.flatMap((category) => category.translations ?? []) ??
-              [],
-            references: categories ?? [],
-            translatableFields,
-            count: data?.pages[0]?.count ?? 0,
-          },
-        }
-      },
-    ],
-    [
-      "product_collection",
-      () => {
-        const fields = translatableFields.concat(["translations.*"]).join(",")
-
-        const { data, ...rest } = useInfiniteCollections(
-          { id: referenceId ?? [], fields },
-          options
-        )
-        const collections =
-          data?.pages.flatMap((page) => page.collections) ?? []
-
-        return {
-          ...rest,
-          data: {
-            translations:
-              collections?.flatMap(
-                (collection) => collection.translations ?? []
-              ) ?? [],
-            references: collections ?? [],
-            translatableFields,
-            count: data?.pages[0]?.count ?? 0,
-          },
-        }
-      },
-    ],
-    [
-      "product_type",
-      () => {
-        const fields = translatableFields.concat(["translations.*"]).join(",")
-
-        const { data, ...rest } = useInfiniteProductTypes(
-          { id: referenceId ?? [], fields },
-          options
-        )
-        const product_types =
-          data?.pages.flatMap((page) => page.product_types) ?? []
-
-        return {
-          ...rest,
-          data: {
-            translations:
-              product_types?.flatMap((type) => type.translations ?? []) ?? [],
-            references: product_types ?? [],
-            count: data?.pages[0]?.count ?? 0,
-            translatableFields,
-          },
-        }
-      },
-    ],
-    [
-      "product_tag",
-      () => {
-        const fields = translatableFields.concat(["translations.*"]).join(",")
-
-        const { data, ...rest } = useInfiniteProductTags(
-          { id: referenceId ?? [], fields },
-          options
-        )
-        const product_tags =
-          data?.pages.flatMap((page) => page.product_tags) ?? []
-
-        return {
-          ...rest,
-          data: {
-            translations:
-              product_tags?.flatMap((tag) => tag.translations ?? []) ?? [],
-            references: product_tags ?? [],
-            translatableFields,
-            count: data?.pages[0]?.count ?? 0,
-          },
-        }
-      },
-    ],
-    // TODO: product option and option values
-  ])
-  const referenceHook = referenceHookMap.get(reference)
-  if (!referenceHook) {
-    throw new Error(`No hook found for reference type: ${reference}`)
+  return {
+    references,
+    translations,
+    count,
+    ...rest,
   }
-  const { data, ...rest } = referenceHook()
-  return { ...data, ...rest }
 }
 
 export const useTranslations = (
@@ -229,15 +120,6 @@ export const useTranslations = (
   return { ...data, ...rest }
 }
 
-const referenceInvalidationKeysMap = new Map<string, QueryKey>([
-  ["product", productsQueryKeys.lists()],
-  ["product_variant", productVariantQueryKeys.lists()],
-  ["product_category", categoriesQueryKeys.lists()],
-  ["product_collection", collectionsQueryKeys.lists()],
-  ["product_type", productTypesQueryKeys.lists()],
-  ["product_tag", productTagsQueryKeys.lists()],
-])
-
 export const useBatchTranslations = (
   reference: string,
   options?: UseMutationOptions<
@@ -258,7 +140,7 @@ export const useBatchTranslations = (
   const invalidateQueries = async () => {
     await Promise.all([
       queryClient.invalidateQueries({
-        queryKey: referenceInvalidationKeysMap.get(reference),
+        queryKey: translationEntitiesQueryKeys.list({ type: reference }),
       }),
       queryClient.invalidateQueries({
         queryKey: translationStatisticsQueryKeys.lists(),
@@ -287,6 +169,27 @@ export const useTranslationSettings = (
   const { data, ...rest } = useQuery({
     queryKey: translationSettingsQueryKeys.list(query),
     queryFn: () => sdk.admin.translation.settings(query),
+    ...options,
+  })
+
+  return { ...data, ...rest }
+}
+
+export const useTranslationEntities = (
+  query: HttpTypes.AdminTranslationEntitiesParams,
+  options?: Omit<
+    UseQueryOptions<
+      HttpTypes.AdminTranslationEntitiesResponse,
+      FetchError,
+      HttpTypes.AdminTranslationEntitiesResponse,
+      QueryKey
+    >,
+    "queryFn" | "queryKey"
+  >
+) => {
+  const { data, ...rest } = useQuery({
+    queryKey: translationEntitiesQueryKeys.list(query),
+    queryFn: () => sdk.admin.translation.entities(query),
     ...options,
   })
 

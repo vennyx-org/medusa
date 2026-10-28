@@ -104,6 +104,10 @@ export const step = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/setTaxLinesForItemsStep"
   },
   {
+    "title": "updateCartItemsTranslationsStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/updateCartItemsTranslationsStep"
+  },
+  {
     "title": "updateCartPromotionsStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/updateCartPromotionsStep"
   },
@@ -174,6 +178,10 @@ export const step = [
   {
     "title": "emitEventStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/emitEventStep"
+  },
+  {
+    "title": "getTranslatedLineItemsStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/getTranslatedLineItemsStep"
   },
   {
     "title": "removeRemoteLinkStep",
@@ -540,6 +548,10 @@ export const step = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/deleteReturnsStep"
   },
   {
+    "title": "exportOrdersStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/exportOrdersStep"
+  },
+  {
     "title": "listOrderChangeActionsByTypeStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/listOrderChangeActionsByTypeStep"
   },
@@ -574,6 +586,10 @@ export const step = [
   {
     "title": "updateOrderChangesStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/updateOrderChangesStep"
+  },
+  {
+    "title": "updateOrderItemsTranslationsStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/updateOrderItemsTranslationsStep"
   },
   {
     "title": "updateOrderShippingMethodsStep",
@@ -1350,6 +1366,22 @@ export const step = [
   {
     "title": "updateTaxRegionsStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/updateTaxRegionsStep"
+  },
+  {
+    "title": "createTranslationsStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/createTranslationsStep"
+  },
+  {
+    "title": "deleteTranslationsStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/deleteTranslationsStep"
+  },
+  {
+    "title": "updateTranslationsStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/updateTranslationsStep"
+  },
+  {
+    "title": "validateTranslationsStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/validateTranslationsStep"
   },
   {
     "title": "createUsersStep",

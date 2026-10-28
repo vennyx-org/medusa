@@ -5,6 +5,7 @@ import rehypeSlug from "rehype-slug"
 import {
   brokenLinkCheckerPlugin,
   crossProjectLinksPlugin,
+  validateHighlightsPlugin,
 } from "remark-rehype-plugins"
 import path from "path"
 import { catchBadRedirects } from "build-scripts"
@@ -93,6 +94,7 @@ const withMDX = createMDX({
           tagName: "code",
         },
       ],
+      [validateHighlightsPlugin, { verbose: false }],
       [rehypeSlug],
     ],
     development: process.env.NODE_ENV === "development",

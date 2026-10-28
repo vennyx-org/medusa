@@ -255,7 +255,7 @@ medusaIntegrationTestRunner({
           )
         ).data.shipping_option
 
-        // Create translations for product and variants
+        // Create translations for product, variants, and shipping options
         await api.post(
           "/admin/translations/batch",
           {
@@ -301,6 +301,22 @@ medusaIntegrationTestRunner({
                 reference: "product_variant",
                 locale_code: "de-DE",
                 translations: { title: "Mittel" },
+              },
+              {
+                reference_id: shippingOption.id,
+                reference: "shipping_option",
+                locale_code: "fr-FR",
+                translations: {
+                  name: "Option d'expédition de test",
+                },
+              },
+              {
+                reference_id: shippingOption.id,
+                reference: "shipping_option",
+                locale_code: "de-DE",
+                translations: {
+                  name: "Test-Versandoption",
+                },
               },
             ],
           },
@@ -378,6 +394,30 @@ medusaIntegrationTestRunner({
             })
           )
         })
+
+        it("should preserve translated shipping methods when order is created from cart with locale", async () => {
+          const order = await createOrderFromCart("fr-FR")
+
+          expect(order.shipping_methods).toHaveLength(1)
+          expect(order.shipping_methods[0]).toEqual(
+            expect.objectContaining({
+              shipping_option_id: shippingOption.id,
+              name: "Option d'expédition de test",
+            })
+          )
+        })
+
+        it("should have original shipping method name when order is created without locale", async () => {
+          const order = await createOrderFromCart()
+
+          expect(order.shipping_methods).toHaveLength(1)
+          expect(order.shipping_methods[0]).toEqual(
+            expect.objectContaining({
+              shipping_option_id: shippingOption.id,
+              name: "Test shipping option",
+            })
+          )
+        })
       })
 
       describe("POST /admin/orders/:id (update order locale)", () => {
@@ -405,6 +445,32 @@ medusaIntegrationTestRunner({
           )
         })
 
+        it("should re-translate shipping methods when locale is updated", async () => {
+          const order = await createOrderFromCart("fr-FR")
+
+          expect(order.shipping_methods[0].name).toEqual(
+            "Option d'expédition de test"
+          )
+
+          await api.post(
+            `/admin/orders/${order.id}`,
+            { locale: "de-DE" },
+            adminHeaders
+          )
+
+          const updatedOrder = (
+            await api.get(`/admin/orders/${order.id}`, adminHeaders)
+          ).data.order
+
+          expect(updatedOrder.shipping_methods).toHaveLength(1)
+          expect(updatedOrder.shipping_methods[0]).toEqual(
+            expect.objectContaining({
+              shipping_option_id: shippingOption.id,
+              name: "Test-Versandoption",
+            })
+          )
+        })
+
         it("should not re-translate items when updating other fields", async () => {
           const order = await createOrderFromCart("fr-FR")
 
@@ -426,6 +492,31 @@ medusaIntegrationTestRunner({
             expect.objectContaining({
               product_title: "T-Shirt Medusa",
               variant_title: "Petit",
+            })
+          )
+        })
+
+        it("should not re-translate shipping methods when updating other fields", async () => {
+          const order = await createOrderFromCart("fr-FR")
+
+          await api.post(
+            `/admin/orders/${order.id}`,
+            { email: "updated@example.com" },
+            adminHeaders
+          )
+
+          const updatedOrder = (
+            await api.get(
+              `/admin/orders/${order.id}?fields=+email,+shipping_methods.name`,
+              adminHeaders
+            )
+          ).data.order
+
+          expect(updatedOrder.email).toEqual("updated@example.com")
+          expect(updatedOrder.shipping_methods[0]).toEqual(
+            expect.objectContaining({
+              shipping_option_id: shippingOption.id,
+              name: "Option d'expédition de test",
             })
           )
         })

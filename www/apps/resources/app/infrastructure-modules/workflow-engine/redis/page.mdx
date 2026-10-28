@@ -28,14 +28,10 @@ Our Cloud offering automatically provisions a Redis instance and configures the 
 Add the module into the `modules` property of the exported object in `medusa-config.ts`:
 
 export const highlights = [
-  ["12", "url", "The Redis connection URL."]
+  ["8", "redisUrl", "The Redis connection URL."]
 ]
 
 ```ts title="medusa-config.ts" highlights={highlights}
-import { Modules } from "@medusajs/framework/utils"
-
-// ...
-
 module.exports = defineConfig({
   // ...
   modules: [

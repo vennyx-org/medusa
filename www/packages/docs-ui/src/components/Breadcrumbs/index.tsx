@@ -3,11 +3,12 @@
 import React, { useMemo } from "react"
 import clsx from "clsx"
 import Link from "next/link"
-import { useSidebar, useSiteConfig } from "../../providers"
+import { useSidebar } from "@/providers/Sidebar"
+import { useSiteConfig } from "@/providers/SiteConfig"
 import { Button } from "../Button"
 import { TriangleRightMini } from "@medusajs/icons"
 import { Sidebar } from "types"
-import { getJsonLd } from "../../utils"
+import { getJsonLd } from "@/utils/get-json-ld"
 import type { BreadcrumbList } from "schema-dts"
 
 type BreadcrumbItems = {

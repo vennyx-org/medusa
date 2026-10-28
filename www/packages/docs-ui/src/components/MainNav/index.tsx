@@ -2,15 +2,13 @@
 
 import clsx from "clsx"
 import React from "react"
-import {
-  BorderedIcon,
-  Button,
-  GITHUB_ISSUES_LINK,
-  SearchModalOpener,
-  useLayout,
-  useSidebar,
-  useSiteConfig,
-} from "../.."
+import { BorderedIcon } from "@/components/BorderedIcon"
+import { Button } from "@/components/Button"
+import { GITHUB_ISSUES_LINK } from "@/constants"
+import { SearchModalOpener } from "@/components/Search/ModalOpener"
+import { useLayout } from "@/providers/Layout"
+import { useSidebar } from "@/providers/Sidebar"
+import { useSiteConfig } from "@/providers/SiteConfig"
 import { MainNavItems } from "./Items"
 import { MainNavDesktopMenu } from "./DesktopMenu"
 import { SidebarLeftIcon } from "../Icons/SidebarLeft"
@@ -33,12 +31,14 @@ export const MainNav = ({ className, itemsClassName }: MainNavProps) => {
   return (
     <div
       className={clsx("w-full z-20 sticky top-0 bg-medusa-bg-base", className)}
+      data-testid="main-nav"
     >
       <div
         className={clsx(
           "flex justify-between items-center px-docs_1 w-full gap-docs_1",
           showCollapsedNavbar && "border-b border-medusa-border-base"
         )}
+        data-testid="main-nav-content"
       >
         <div className="flex items-center gap-[10px]">
           {isSidebarShown && (
@@ -46,17 +46,19 @@ export const MainNav = ({ className, itemsClassName }: MainNavProps) => {
               className="lg:hidden my-docs_0.75 !p-[6.5px]"
               variant="transparent-clear"
               onClick={() => setMobileSidebarOpen(true)}
+              data-testid="mobile-sidebar-button"
             >
               <SidebarLeftIcon />
             </Button>
           )}
-          <Link href={`${config.baseUrl}`}>
+          <Link href={`${config.baseUrl}`} data-testid="logo-link">
             <BorderedIcon
               icon={config.logo}
               iconWrapperClassName="my-[14px]"
               wrapperClassName="w-[20px] h-[20px]"
               iconWidth={20}
               iconHeight={20}
+              data-testid="logo-icon"
             />
           </Link>
         </div>
@@ -68,6 +70,7 @@ export const MainNav = ({ className, itemsClassName }: MainNavProps) => {
             "flex items-center my-docs_0.75",
             showCollapsedNavbar && "flex-grow justify-between"
           )}
+          data-testid="main-nav-actions"
         >
           <div className="lg:flex items-center gap-[6px] text-medusa-fg-subtle hidden">
             <MainNavVersion />
@@ -115,7 +118,10 @@ export const MainNav = ({ className, itemsClassName }: MainNavProps) => {
         </div>
       </div>
       {showCollapsedNavbar && (
-        <div className={clsx("border-b border-medusa-border-base px-docs_1")}>
+        <div
+          className={clsx("border-b border-medusa-border-base px-docs_1")}
+          data-testid="collapsed-nav-items"
+        >
           <MainNavItems className={clsx("flex-wrap", itemsClassName)} />
         </div>
       )}

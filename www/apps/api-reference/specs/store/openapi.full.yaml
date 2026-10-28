@@ -68,6 +68,15 @@ tags:
       </Note>
     x-associatedSchema:
       $ref: '#/components/schemas/StoreGiftCard'
+  - name: Locales
+    description: |
+      A locale is a language that content is translated into for customers to view in a storefront.
+      Medusa installs locales by default. These API routes allow you to retrieve supported locales in the store.
+    externalDocs:
+      description: Learn more about locales and translations.
+      url: https://docs.medusajs.com/resources/commerce-modules/translation/concepts
+    x-associatedSchema:
+      $ref: '#/components/schemas/StoreLocale'
   - name: Orders
     description: |
       Guest and registered customers can view orders they placed.
@@ -511,9 +520,17 @@ paths:
           application/json:
             schema:
               type: object
-              title: identifier
-              description: The customer's identifier for the selected auth provider. For example, for the `emailpass` auth provider, the value is the customer's email.
-              example: customer@gmail.com
+              description: The input data necessary to generate a reset password token.
+              required:
+                - identifier
+              properties:
+                identifier:
+                  type: string
+                  description: The customer's identifier for the selected auth provider. For example, for the `emailpass` auth provider, the value is the customer's email.
+                  example: customer@gmail.com
+                metadata:
+                  type: object
+                  description: Optional metadata to include with the reset password token generation request.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -576,6 +593,7 @@ paths:
               entity_id, // The identifier of the user or customer. For example, an email address.
               actor_type, // The type of actor. For example, "customer", "user", or custom.
               token, // The generated token.
+              metadata, // Optional custom metadata passed from the request.
             }
             ```
           description: |-
@@ -849,6 +867,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -859,6 +887,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       requestBody:
         content:
           application/json:
@@ -958,6 +996,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -968,6 +1016,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -1036,6 +1094,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -1046,6 +1114,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       requestBody:
         content:
           application/json:
@@ -1161,6 +1239,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -1171,6 +1259,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -1311,6 +1409,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: |-
@@ -1324,6 +1432,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       security:
         - cookie_auth: []
         - jwt_token: []
@@ -1576,6 +1694,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -1586,6 +1714,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       requestBody:
         content:
           application/json:
@@ -1714,6 +1852,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -1724,6 +1872,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       requestBody:
         content:
           application/json:
@@ -1848,6 +2006,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -1858,6 +2026,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -1963,6 +2141,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -1973,6 +2161,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       requestBody:
         content:
           application/json:
@@ -2036,6 +2234,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -2046,6 +2254,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: Shell
           label: cURL
@@ -2115,6 +2333,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -2125,6 +2353,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       requestBody:
         content:
           application/json:
@@ -2318,6 +2556,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -2328,6 +2576,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: Shell
           label: cURL
@@ -2375,6 +2633,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -2658,6 +2926,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the collection's update date.
@@ -2889,6 +3158,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: handle
           in: query
           required: false
@@ -2953,6 +3223,16 @@ paths:
                   type: string
                   title: id
                   description: The collection's ID.
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -3054,6 +3334,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -3064,6 +3354,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -3127,6 +3427,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -3215,6 +3525,16 @@ paths:
             type: boolean
             title: with_deleted
             description: Whether to include deleted records in the result.
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: Shell
           label: cURL
@@ -3263,6 +3583,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -3273,6 +3603,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: Shell
           label: cURL
@@ -3318,6 +3658,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -3328,6 +3678,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       requestBody:
         content:
           application/json:
@@ -3436,6 +3796,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
@@ -3446,6 +3816,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       security:
         - cookie_auth: []
         - jwt_token: []
@@ -3516,6 +3896,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -3526,6 +3916,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       security:
         - cookie_auth: []
         - jwt_token: []
@@ -3623,6 +4023,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: city
           in: query
           description: Filter by the address's city.
@@ -3724,6 +4134,16 @@ paths:
             items:
               type: object
             title: $or
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       security:
         - cookie_auth: []
         - jwt_token: []
@@ -3795,6 +4215,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
@@ -3805,6 +4235,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       security:
         - cookie_auth: []
         - jwt_token: []
@@ -3904,6 +4344,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
@@ -3914,6 +4364,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       security:
         - cookie_auth: []
         - jwt_token: []
@@ -3993,6 +4453,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
@@ -4003,6 +4473,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       security:
         - cookie_auth: []
         - jwt_token: []
@@ -4096,6 +4576,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
@@ -4106,6 +4596,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields. This API route restricts the fields that can be selected. Learn how to override the retrievable fields in the [Retrieve Custom Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links) documentation.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       security:
         - cookie_auth: []
         - jwt_token: []
@@ -4323,6 +4823,94 @@ paths:
         - text: Cloud
           description: |
             This API route is only available in [Medusa Cloud](https://docs.medusajs.com/cloud/loyalty-plugin).
+  /store/locales:
+    get:
+      operationId: GetLocales
+      summary: List Locales
+      description: Retrieve the list of supported locales. You can use this list to allow customers to select their preferred locale in your storefront.
+      externalDocs:
+        url: https://docs.medusajs.com/resources/storefront-development/localization
+        description: Learn how to serve localized content in your storefront.
+      x-authenticated: false
+      parameters:
+        - name: x-publishable-api-key
+          in: header
+          description: Publishable API Key created in the Medusa Admin.
+          required: true
+          schema:
+            type: string
+            externalDocs:
+              url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
+      x-codeSamples:
+        - lang: JavaScript
+          label: JS SDK
+          source: |-
+            import Medusa from "@medusajs/js-sdk"
+
+            let MEDUSA_BACKEND_URL = "http://localhost:9000"
+
+            if (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL) {
+              MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+            }
+
+            export const sdk = new Medusa({
+              baseUrl: MEDUSA_BACKEND_URL,
+              debug: process.env.NODE_ENV === "development",
+              publishableKey: process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
+            })
+
+            sdk.store.locale.list()
+            .then(({ locales }) => {
+              console.log(locales)
+            })
+        - lang: Shell
+          label: cURL
+          source: |-
+            curl '{backend_url}/store/locales' \
+            -H 'x-publishable-api-key: {your_publishable_api_key}'
+      tags:
+        - Locales
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreLocaleListResponse'
+        '400':
+          $ref: '#/components/responses/400_error'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found_error'
+        '409':
+          $ref: '#/components/responses/invalid_state_error'
+        '422':
+          $ref: '#/components/responses/invalid_request_error'
+        '500':
+          $ref: '#/components/responses/500_error'
+      x-since: 2.12.3
+      x-featureFlag: translation
   /store/orders:
     get:
       operationId: GetOrders
@@ -4339,6 +4927,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -4452,6 +5050,16 @@ paths:
             type: boolean
             title: with_deleted
             description: Whether to include deleted records in the result.
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -4557,6 +5165,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -4567,6 +5185,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -4639,6 +5267,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: |-
@@ -4652,6 +5290,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       requestBody:
         content:
           application/json:
@@ -4741,6 +5389,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: |-
@@ -4754,6 +5412,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -4837,6 +5505,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: |-
@@ -4850,6 +5528,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       requestBody:
         content:
           application/json:
@@ -4939,6 +5627,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: |-
@@ -4952,6 +5650,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       requestBody:
         content:
           application/json:
@@ -5039,6 +5747,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -5049,6 +5767,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       requestBody:
         content:
           application/json:
@@ -5145,6 +5873,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -5155,6 +5893,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       requestBody:
         content:
           application/json:
@@ -5211,6 +5959,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -5265,6 +6023,16 @@ paths:
             type: boolean
             title: with_deleted
             description: Whether to include deleted records in the result.
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -5362,6 +6130,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -5711,6 +6489,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the category's update date.
@@ -5942,6 +6721,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: $and
           in: query
           required: false
@@ -5982,6 +6762,16 @@ paths:
             type: boolean
             title: with_deleted
             description: Whether to include deleted records in the result.
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -6054,6 +6844,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -6080,6 +6880,16 @@ paths:
             type: boolean
             title: include_descendants_tree
             description: Whether to retrieve a list of child categories. If you enable this, add to the `fields` query parameter `category_children` to set the children of a category in this field. You can either pass `*category_children` to retreieve the fields of all child categories, or select specific fields to make the response size smaller. For example, `fields=category_children.id,category_children.name`.
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -6143,6 +6953,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: |-
@@ -6473,6 +7293,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the tag's update date.
@@ -6704,6 +7525,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: with_deleted
           in: query
           description: Whether to include deleted records in the result.
@@ -6712,6 +7534,16 @@ paths:
             type: boolean
             title: with_deleted
             description: Whether to include deleted records in the result.
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: Shell
           label: cURL
@@ -6760,6 +7592,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: |-
@@ -6773,6 +7615,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: Shell
           label: cURL
@@ -6815,6 +7667,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: |-
@@ -7145,6 +8007,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the type's update date.
@@ -7376,6 +8239,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: with_deleted
           in: query
           description: Whether to include deleted records in the result.
@@ -7384,6 +8248,16 @@ paths:
             type: boolean
             title: with_deleted
             description: Whether to include deleted records in the result.
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: Shell
           label: cURL
@@ -7432,6 +8306,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: |-
@@ -7445,6 +8329,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: Shell
           label: cURL
@@ -7476,7 +8370,12 @@ paths:
     get:
       operationId: GetProducts
       summary: List Products
-      description: Retrieve a list of products. The products can be filtered by fields such as `id`. The products can also be sorted or paginated.
+      description: |
+        Retrieve a list of products. The products can be filtered by fields such as `id`. The products can also be sorted or paginated.
+
+        You can retrieve the content of the products translated to a specific locale either by passing the `locale` query parameter or by setting the `x-medusa-locale` header to the desired locale code in BCP 47 format. If you don't pass a locale, and your store has a default locale, the default locale will be used.
+
+        With localization, the products' content like title and description will be in the specified locale if a translation is available,  and fallback to the original content otherwise. Learn more in the [Localization](#localization) section.
       x-authenticated: false
       externalDocs:
         url: https://docs.medusajs.com/resources/storefront-development/products/price
@@ -7490,6 +8389,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -7882,6 +8791,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: created_at
         - name: updated_at
           in: query
           description: Filter by the product's update date.
@@ -8113,6 +9023,7 @@ paths:
                 type: boolean
                 title: $exists
                 description: Filter by whether a value for this parameter exists (not `null`).
+            title: updated_at
         - name: region_id
           in: query
           description: The ID of the region the products are being viewed from. This is required if you're retrieving product variant prices with taxes.
@@ -8204,6 +9115,16 @@ paths:
             type: string
             title: cart_id
             description: The product's cart id.
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -8285,7 +9206,12 @@ paths:
     get:
       operationId: GetProductsId
       summary: Get a Product
-      description: Retrieve a product by its ID. You can expand the product's relations or select the fields that should be returned.
+      description: |
+        Retrieve a product by its ID. You can expand the product's relations or select the fields that should be returned.
+
+        You can retrieve the content of the product translated to a specific locale either by passing the `locale` query parameter or by setting the `x-medusa-locale` header to the desired locale code in BCP 47 format. If you don't pass a locale, and your store has a default locale, the default locale will be used.
+
+        With localization, the product's content like title and description will be in the specified locale if a translation is available,  and fallback to the original content otherwise. Learn more in the [Localization](#localization) section.
       x-authenticated: false
       externalDocs:
         url: https://docs.medusajs.com/resources/storefront-development/products/price
@@ -8305,6 +9231,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -8354,6 +9290,16 @@ paths:
             type: string
             title: cart_id
             description: The ID of the customer's cart. If set, the cart's region and shipping address's country code and province are used instead of the `region_id`, `country_code`, and `province` properties.
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -8420,6 +9366,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -8536,6 +9492,16 @@ paths:
             type: boolean
             title: with_deleted
             description: Whether to include deleted records in the result.
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -8634,6 +9600,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -8644,6 +9620,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -8711,6 +9697,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -8757,6 +9753,16 @@ paths:
             type: boolean
             title: with_deleted
             description: Whether to include deleted records in the result.
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: Shell
           label: cURL
@@ -8834,6 +9840,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -8844,6 +9860,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: Shell
           label: cURL
@@ -8886,6 +9912,26 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       requestBody:
         content:
           application/json:
@@ -8980,6 +10026,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: Comma-separated fields that should be included in the returned data. if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. without prefix it will replace the entire default fields.
@@ -9054,6 +10110,16 @@ paths:
             type: boolean
             title: is_return
             description: Whether the shipping option can be used for returns.
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       x-codeSamples:
         - lang: JavaScript
           label: JS SDK
@@ -9127,6 +10193,16 @@ paths:
             type: string
             externalDocs:
               url: https://docs.medusajs.com/api/store#publishable-api-key
+        - name: x-medusa-locale
+          in: header
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
         - name: fields
           in: query
           description: |-
@@ -9140,6 +10216,16 @@ paths:
             description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields. Without prefix it will replace the entire default fields.
             externalDocs:
               url: '#select-fields-and-relations'
+        - name: locale
+          in: query
+          description: The locale in BCP 47 format to retrieve localized content.
+          required: false
+          schema:
+            type: string
+            example: en-US
+            externalDocs:
+              url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+              description: Learn more in the Serve Translations in Storefront guide.
       requestBody:
         content:
           application/json:
@@ -11254,6 +12340,11 @@ components:
           externalDocs:
             url: https://docs.medusajs.com/api/admin#manage-metadata
             description: Learn how to manage metadata
+        translations:
+          type: array
+          description: The collection's translations.
+          items:
+            $ref: '#/components/schemas/AdminTranslation'
     AdminCollectionDeleteResponse:
       type: object
       description: The details of the deleted collection.
@@ -15493,6 +16584,17 @@ components:
           externalDocs:
             url: https://docs.medusajs.com/api/admin#manage-metadata
             description: Learn how to manage metadata
+    AdminExportOrderResponse:
+      type: object
+      description: The details of the order export.
+      x-schemaName: AdminExportOrderResponse
+      required:
+        - transaction_id
+      properties:
+        transaction_id:
+          type: string
+          title: transaction_id
+          description: The ID of the workflow execution's transaction. Use it to check the status of the export by sending a GET request to `/admin/workflows-executions/export-orders/:transaction-id`
     AdminExportProductResponse:
       type: object
       description: The details of the product export.
@@ -16652,6 +17754,82 @@ components:
             title: remove
             description: The ID of a product.
       x-schemaName: AdminLinkPriceListProducts
+    AdminLocale:
+      type: object
+      description: The locale's details.
+      x-schemaName: AdminLocale
+      required:
+        - code
+        - name
+        - created_at
+        - updated_at
+        - deleted_at
+      properties:
+        code:
+          type: string
+          title: code
+          description: The locale's code in BCP 47 format.
+          example: fr-FR
+        name:
+          type: string
+          title: name
+          description: The locale's display name.
+        created_at:
+          type: string
+          format: date-time
+          title: created_at
+          description: The date and time at which the locale was created.
+        updated_at:
+          type: string
+          format: date-time
+          title: updated_at
+          description: The date and time at which the locale was last updated.
+        deleted_at:
+          type: string
+          format: date-time
+          title: deleted_at
+          description: The date and time at which the locale was deleted.
+    AdminLocaleListResponse:
+      type: object
+      description: The list of locales with pagination details.
+      x-schemaName: AdminLocaleListResponse
+      required:
+        - limit
+        - offset
+        - count
+        - locales
+      properties:
+        limit:
+          type: number
+          title: limit
+          description: The maximum number of locales returned.
+        offset:
+          type: number
+          title: offset
+          description: The number of locales skipped before retrieving the returned locales.
+        count:
+          type: number
+          title: count
+          description: The total number of locales matching the query.
+        estimate_count:
+          type: number
+          title: estimate_count
+          description: The estimated count retrieved from the PostgreSQL query planner, which may be inaccurate.
+          x-featureFlag: index_engine
+        locales:
+          type: array
+          description: The list of locales.
+          items:
+            $ref: '#/components/schemas/AdminLocale'
+    AdminLocaleResponse:
+      type: object
+      description: The locale's details.
+      x-schemaName: AdminLocaleResponse
+      required:
+        - locale
+      properties:
+        locale:
+          $ref: '#/components/schemas/AdminLocale'
     AdminMarkPaymentCollectionAsPaid:
       type: object
       description: The payment details.
@@ -19481,6 +20659,38 @@ components:
           format: date-time
           title: deleted_at
           description: The date the price was deleted.
+    AdminPriceListPriceListResponse:
+      type: object
+      description: The list of prices.
+      x-schemaName: AdminPriceListPriceListResponse
+      required:
+        - limit
+        - offset
+        - count
+        - prices
+      properties:
+        limit:
+          type: number
+          title: limit
+          description: The maximum number of prices returned.
+        offset:
+          type: number
+          title: offset
+          description: The number of items skipped before retrieving the prices.
+        count:
+          type: number
+          title: count
+          description: The total number of prices.
+        estimate_count:
+          type: number
+          title: estimate_count
+          description: The estimated count retrieved from the PostgreSQL query planner, which may be inaccurate.
+          x-featureFlag: index_engine
+        prices:
+          type: array
+          description: The list of prices.
+          items:
+            $ref: '#/components/schemas/AdminPrice'
     AdminPriceListResponse:
       type: object
       description: The price list's details.
@@ -19608,9 +20818,9 @@ components:
         - type
         - options
         - images
-        - length
         - title
         - status
+        - length
         - id
         - created_at
         - updated_at
@@ -19773,6 +20983,11 @@ components:
           description: The date the product was deleted.
         shipping_profile:
           $ref: '#/components/schemas/AdminShippingProfile'
+        translations:
+          type: array
+          description: The product's translations.
+          items:
+            $ref: '#/components/schemas/AdminTranslation'
     AdminProductCategory:
       type: object
       description: The product category's details.
@@ -20163,6 +21378,11 @@ components:
           externalDocs:
             url: https://docs.medusajs.com/api/admin#manage-metadata
             description: Learn how to manage metadata
+        translations:
+          type: array
+          description: The tag's translations.
+          items:
+            $ref: '#/components/schemas/AdminTranslation'
     AdminProductTagDeleteResponse:
       type: object
       description: The details of the product tag deletion.
@@ -20265,6 +21485,11 @@ components:
           externalDocs:
             url: https://docs.medusajs.com/api/admin#manage-metadata
             description: Learn how to manage metadata
+        translations:
+          type: array
+          description: The type's translations.
+          items:
+            $ref: '#/components/schemas/AdminTranslation'
     AdminProductTypeDeleteResponse:
       type: object
       description: The details of the product type deletion.
@@ -20482,6 +21707,11 @@ components:
           type: string
           title: thumbnail
           description: The variant's thumbnail.
+        translations:
+          type: array
+          description: The variant's translations.
+          items:
+            $ref: '#/components/schemas/AdminTranslation'
     AdminProductVariantDeleteResponse:
       type: object
       description: The details of the product variant's deletion.
@@ -22378,6 +23608,7 @@ components:
         - id
         - name
         - supported_currencies
+        - supported_locales
         - default_sales_channel_id
         - default_region_id
         - default_location_id
@@ -22426,6 +23657,11 @@ components:
           format: date-time
           title: updated_at
           description: The date the store was updated.
+        supported_locales:
+          type: array
+          description: The store's supported locales.
+          items:
+            $ref: '#/components/schemas/AdminStoreLocale'
     AdminStoreCreditAccount:
       type: object
       description: The store credit account's details.
@@ -22612,6 +23848,48 @@ components:
           title: estimate_count
           description: The estimated count retrieved from the PostgreSQL query planner, which may be inaccurate.
           x-featureFlag: index_engine
+    AdminStoreLocale:
+      type: object
+      description: The details of a store's locale.
+      x-schemaName: AdminStoreLocale
+      required:
+        - id
+        - locale_code
+        - store_id
+        - locale
+        - created_at
+        - updated_at
+        - deleted_at
+      properties:
+        id:
+          type: string
+          title: id
+          description: The locale's ID.
+        locale_code:
+          type: string
+          title: locale_code
+          description: The locale's code in BCP 47 format.
+        store_id:
+          type: string
+          title: store_id
+          description: The ID of the store to which the locale belongs.
+        locale:
+          $ref: '#/components/schemas/AdminLocale'
+        created_at:
+          type: string
+          format: date-time
+          title: created_at
+          description: The date the locale was created.
+        updated_at:
+          type: string
+          format: date-time
+          title: updated_at
+          description: The date the locale was updated.
+        deleted_at:
+          type: string
+          format: date-time
+          title: deleted_at
+          description: The date the locale was deleted.
     AdminStoreResponse:
       type: object
       description: The store's details.
@@ -23049,6 +24327,226 @@ components:
           title: estimate_count
           description: The store credit account's estimate count.
           x-featureFlag: index_engine
+    AdminTranslation:
+      type: object
+      description: The translation's details.
+      x-schemaName: AdminTranslation
+      required:
+        - id
+        - reference_id
+        - reference
+        - locale_code
+        - translations
+        - created_at
+        - updated_at
+        - deleted_at
+      properties:
+        id:
+          type: string
+          title: id
+          description: The translation's ID.
+        reference_id:
+          type: string
+          title: reference_id
+          description: The ID of the resource that the translation belongs to. For example, the ID of a product.
+          example: prod_123
+        reference:
+          type: string
+          title: reference
+          description: The resource that the translation belongs to.
+          example: product
+        locale_code:
+          type: string
+          title: locale_code
+          description: The translation's locale code in BCP 47 format.
+          example: fr-FR
+        translations:
+          type: object
+          description: The translation key-value pairs. Each key is a field in the resource, and the value is the translated text.
+          example:
+            title: Chaussures
+            description: Des chaussures élégantes.
+        created_at:
+          type: string
+          format: date-time
+          title: created_at
+          description: The date that the translation was created.
+        updated_at:
+          type: string
+          format: date-time
+          title: updated_at
+          description: The date that the translation was updated.
+        deleted_at:
+          type: string
+          format: date-time
+          title: deleted_at
+          description: The date that the translation was deleted.
+    AdminTranslationEntitiesResponse:
+      type: object
+      description: The list of translatable entities.
+      x-schemaName: AdminTranslationEntitiesResponse
+      required:
+        - data
+        - count
+        - offset
+        - limit
+      properties:
+        data:
+          type: array
+          description: The list of translatable entities.
+          items:
+            allOf:
+              - type: object
+                description: The entity's data.
+                required:
+                  - id
+                  - translations
+                properties:
+                  id:
+                    type: string
+                    title: id
+                    description: The entity's ID.
+                  translations:
+                    type: array
+                    description: The entity's translations.
+                    items:
+                      $ref: '#/components/schemas/AdminTranslation'
+        count:
+          type: number
+          title: count
+          description: The total number of translatable entities.
+        offset:
+          type: number
+          title: offset
+          description: The number of items skipped before retrieving the returned items.
+        limit:
+          type: number
+          title: limit
+          description: The maximum number of items returned in the response.
+    AdminTranslationSettingsResponse:
+      type: object
+      description: The translation settings' details.
+      x-schemaName: AdminTranslationSettingsResponse
+      required:
+        - translatable_fields
+      properties:
+        translatable_fields:
+          type: object
+          description: Key-value pairs of translatable fields for different entities. Each key is an entity type, and the value is an array of fields that can be translated for that entity.
+          example:
+            product:
+              - title
+              - description
+    AdminTranslationStatisticsResponse:
+      type: object
+      description: The translation statistics details.
+      x-schemaName: AdminTranslationStatisticsResponse
+      required:
+        - statistics
+      properties:
+        statistics:
+          type: object
+          description: The translation statistics for different entity types. The key is the entity type, and the value is an object containing the statistics for that entity type.
+          example:
+            product:
+              expected: 150
+              translated: 120
+              missing: 30
+              by_locale:
+                fr-FR:
+                  expected: 150
+                  translated: 120
+                  missing: 30
+          required:
+            - by_locale
+            - expected
+            - translated
+            - missing
+          additionalProperties:
+            type: object
+            properties:
+              by_locale:
+                type: object
+                description: The translation statistics of an entity type broken down by locale. The key is the locale code in BCP 47 format, and the value is an object containing the statistics for that locale.
+                example:
+                  fr-FR:
+                    expected: 150
+                    translated: 120
+                    missing: 30
+                required:
+                  - expected
+                  - translated
+                  - missing
+                additionalProperties:
+                  type: object
+                  properties:
+                    expected:
+                      type: number
+                      title: expected
+                      description: The total number of translatable fields.
+                    translated:
+                      type: number
+                      title: translated
+                      description: The number of translated fields.
+                    missing:
+                      type: number
+                      title: missing
+                      description: The number of fields that are yet to be translated.
+              expected:
+                type: number
+                title: expected
+                description: The total number of translatable fields across specified locales.
+              translated:
+                type: number
+                title: translated
+                description: The number of translated fields across specified locales.
+              missing:
+                type: number
+                title: missing
+                description: The number of fields that are yet to be translated across specified locales.
+    AdminTranslationsBatchResponse:
+      type: object
+      description: The batch response for managing translations.
+      x-schemaName: AdminTranslationsBatchResponse
+      required:
+        - created
+        - updated
+        - deleted
+      properties:
+        created:
+          type: array
+          description: The created translations.
+          items:
+            $ref: '#/components/schemas/AdminTranslation'
+        updated:
+          type: array
+          description: The updated translations.
+          items:
+            $ref: '#/components/schemas/AdminTranslation'
+        deleted:
+          type: object
+          description: Summary of the deleted translations.
+          required:
+            - ids
+            - object
+            - deleted
+          properties:
+            ids:
+              type: array
+              description: The IDs of the deleted translations.
+              items:
+                type: string
+                title: ids
+                description: A translation ID.
+            object:
+              type: string
+              title: object
+              description: The type of object deleted.
+              default: translation
+            deleted:
+              type: boolean
+              title: deleted
+              description: Whether the translations were successfully deleted.
     AdminUpdateApiKey:
       type: object
       description: The details to update in an API key.
@@ -23512,6 +25010,11 @@ components:
           externalDocs:
             url: https://docs.medusajs.com/api/admin#manage-metadata
             description: Learn how to manage metadata
+        locale:
+          type: string
+          title: locale
+          description: The order's locale in [BCP 47](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1) format.
+          example: en-US
     AdminUpdateOrderChange:
       type: object
       description: The data to update in the order change.
@@ -24487,6 +25990,11 @@ components:
           externalDocs:
             url: https://docs.medusajs.com/api/admin#manage-metadata
             description: Learn how to manage metadata
+        supported_locales:
+          type: array
+          description: The store's supported locales.
+          items:
+            $ref: '#/components/schemas/AdminUpdateStoreSupportedLocale'
     AdminUpdateStoreSupportedCurrency:
       type: object
       description: The details to update in a supported currency of the store.
@@ -24507,6 +26015,18 @@ components:
           title: is_tax_inclusive
           description: Whether prices using this currency are tax inclusive.
       x-schemaName: AdminUpdateStoreSupportedCurrency
+    AdminUpdateStoreSupportedLocale:
+      type: object
+      description: The payload to update a store's supported locale.
+      x-schemaName: AdminUpdateStoreSupportedLocale
+      required:
+        - locale_code
+      properties:
+        locale_code:
+          type: string
+          title: locale_code
+          description: The locale's code in [BCP 47 format](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1).
+          example: fr-FR
     AdminUpdateTaxRate:
       type: object
       description: The properties to update in the tax rate.
@@ -25519,59 +27039,59 @@ components:
         original_item_total:
           type: number
           title: original_item_total
-          description: The cart's original item total.
+          description: The sum of all line items' original totals before discounts, including taxes.
         original_item_subtotal:
           type: number
           title: original_item_subtotal
-          description: The cart's original item subtotal.
+          description: The sum of all line items' original subtotals before discounts, excluding taxes.
         original_item_tax_total:
           type: number
           title: original_item_tax_total
-          description: The cart's original item tax total.
+          description: The sum of all line items' original tax totals before discounts.
         item_total:
           type: number
           title: item_total
-          description: The cart's item total.
+          description: The sum of all line items' totals after discounts, including taxes.
         item_subtotal:
           type: number
           title: item_subtotal
-          description: The cart's item subtotal.
+          description: The sum of all line items' subtotals before discounts, excluding taxes.
         item_tax_total:
           type: number
           title: item_tax_total
-          description: The cart's item tax total.
+          description: The sum of all line items' tax totals after discounts.
         original_total:
           type: number
           title: original_total
-          description: The cart's original total.
+          description: The cart's total before discounts, including taxes. Calculated as the sum of `original_item_total` and `original_shipping_total`.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The cart's original subtotal.
+          description: The cart's subtotal before discounts, excluding taxes. Calculated as the sum of `original_item_subtotal` and `original_shipping_subtotal`.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The cart's original tax total.
+          description: The cart's tax total before discounts. Calculated as the sum of `original_item_tax_total` and `original_shipping_tax_total`.
         total:
           type: number
           title: total
-          description: The cart's total.
+          description: The cart's final total after discounts and credit lines, including taxes.
         subtotal:
           type: number
           title: subtotal
-          description: The cart's subtotal.
+          description: The cart's subtotal before discounts, excluding taxes. Calculated as the sum of `item_subtotal` and `shipping_subtotal`.
         tax_total:
           type: number
           title: tax_total
-          description: The cart's tax total.
+          description: The cart's tax total after discounts. Calculated as the sum of `item_tax_total` and `shipping_tax_total`.
         discount_total:
           type: number
           title: discount_total
-          description: The cart's discount total.
+          description: The total amount of discounts applied to the cart, including the tax portion of discounts.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The cart's discount tax total.
+          description: The total amount of discounts applied to the cart's tax. Represents the tax portion of discounts.
         gift_card_total:
           type: number
           title: gift_card_total
@@ -25583,27 +27103,27 @@ components:
         shipping_total:
           type: number
           title: shipping_total
-          description: The cart's shipping total.
+          description: The sum of all shipping methods' totals after discounts, including taxes.
         shipping_subtotal:
           type: number
           title: shipping_subtotal
-          description: The cart's shipping subtotal.
+          description: The sum of all shipping methods' subtotals before discounts, excluding taxes.
         shipping_tax_total:
           type: number
           title: shipping_tax_total
-          description: The cart's shipping tax total.
+          description: The sum of all shipping methods' tax totals after discounts.
         original_shipping_total:
           type: number
           title: original_shipping_total
-          description: The cart's original shipping total.
+          description: The sum of all shipping methods' original totals before discounts, including taxes.
         original_shipping_subtotal:
           type: number
           title: original_shipping_subtotal
-          description: The cart's original shipping subtotal.
+          description: The sum of all shipping methods' original subtotals before discounts, excluding taxes.
         original_shipping_tax_total:
           type: number
           title: original_shipping_tax_total
-          description: The cart's original shipping tax total.
+          description: The sum of all shipping methods' original tax totals before discounts.
     BaseCartAddress:
       type: object
       description: The cart's shipping address.
@@ -25754,47 +27274,47 @@ components:
         original_total:
           type: number
           title: original_total
-          description: The item's original total.
+          description: The line item's original total before discounts, including taxes.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The item's original subtotal.
+          description: The line item's original subtotal before discounts, excluding taxes.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The item's original tax total.
+          description: The line item's original tax total before discounts.
         item_total:
           type: number
           title: item_total
-          description: The item's item total.
+          description: The line item's total after discounts, including taxes.
         item_subtotal:
           type: number
           title: item_subtotal
-          description: The item's item subtotal.
+          description: The line item's subtotal before discounts, excluding taxes.
         item_tax_total:
           type: number
           title: item_tax_total
-          description: The item's item tax total.
+          description: The line item's tax total after discounts.
         total:
           type: number
           title: total
-          description: The item's total.
+          description: The line item's total after discounts, including taxes.
         subtotal:
           type: number
           title: subtotal
-          description: The item's subtotal.
+          description: The line item's subtotal before discounts, excluding taxes.
         tax_total:
           type: number
           title: tax_total
-          description: The item's tax total.
+          description: The line item's tax total after discounts.
         discount_total:
           type: number
           title: discount_total
-          description: The item's discount total.
+          description: The total amount of discounts applied to the line item, including the tax portion of discounts.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The item's discount tax total.
+          description: The total amount of discounts applied to the line item's tax. Represents the tax portion of discounts.
     BaseCartShippingMethod:
       type: object
       description: A cart's shipping method.
@@ -25870,35 +27390,35 @@ components:
         original_total:
           type: number
           title: original_total
-          description: The shipping method's total including taxes, excluding promotions.
+          description: The shipping method's original total before discounts, including taxes.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The shipping method's total excluding taxes, including promotions.
+          description: The shipping method's original subtotal before discounts, excluding taxes.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The total taxes applied on the shipping method's amount including promotions.
+          description: The shipping method's original tax total before discounts.
         total:
           type: number
           title: total
-          description: The shipping method's total amount including taxes and promotions.
+          description: The shipping method's total after discounts, including taxes.
         subtotal:
           type: number
           title: subtotal
-          description: The shipping method's total amount excluding taxes, including promotions.
+          description: The shipping method's subtotal before discounts, excluding taxes.
         tax_total:
           type: number
           title: tax_total
-          description: The total taxes applied on the shipping method's amount including promotions.
+          description: The shipping method's tax total after discounts.
         discount_total:
           type: number
           title: discount_total
-          description: The total amount discounted.
+          description: The total amount of discounts applied to the shipping method, including the tax portion of discounts.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The taxes applied on the discounted amount.
+          description: The total amount of discounts applied to the shipping method's tax. Represents the tax portion of discounts.
     BaseClaimItem:
       type: object
       description: The claim item's details.
@@ -26361,59 +27881,59 @@ components:
         original_item_total:
           type: number
           title: original_item_total
-          description: The total of the order's items including taxes, excluding promotions.
+          description: The sum of all line items' original totals before discounts, including taxes.
         original_item_subtotal:
           type: number
           title: original_item_subtotal
-          description: The total of the order's items excluding taxes, including promotions.
+          description: The sum of all line items' original subtotals before discounts, excluding taxes.
         original_item_tax_total:
           type: number
           title: original_item_tax_total
-          description: The tax total of the order's items excluding promotions.
+          description: The sum of all line items' original tax totals before discounts.
         item_total:
           type: number
           title: item_total
-          description: The total of the order's items including taxes and promotions.
+          description: The sum of all line items' totals after discounts, including taxes.
         item_subtotal:
           type: number
           title: item_subtotal
-          description: The total of the order's items excluding taxes, including promotions.
+          description: The sum of all line items' subtotals before discounts, excluding taxes.
         item_tax_total:
           type: number
           title: item_tax_total
-          description: The tax total of the order's items including promotions.
+          description: The sum of all line items' tax totals after discounts.
         original_total:
           type: number
           title: original_total
-          description: The order's total excluding promotions, including taxes.
+          description: The order's total before discounts, including taxes. Calculated as the sum of `original_item_total` and `original_shipping_total`.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The order's total excluding taxes, including promotions.
+          description: The order's subtotal before discounts, excluding taxes. Calculated as the sum of `original_item_subtotal` and `original_shipping_subtotal`.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The order's tax total, excluding promotions.
+          description: The order's tax total before discounts. Calculated as the sum of `original_item_tax_total` and `original_shipping_tax_total`.
         total:
           type: number
           title: total
-          description: The order's total including taxes and promotions.
+          description: The order's final total after discounts and credit lines, including taxes.
         subtotal:
           type: number
           title: subtotal
-          description: The order's total excluding taxes, including promotions.
+          description: The order's subtotal before discounts, excluding taxes. Calculated as the sum of `item_subtotal` and `shipping_subtotal`.
         tax_total:
           type: number
           title: tax_total
-          description: The order's tax total including promotions.
+          description: The order's tax total after discounts. Calculated as the sum of `item_tax_total` and `shipping_tax_total`.
         discount_total:
           type: number
           title: discount_total
-          description: The order's discount or promotions total.
+          description: The total amount of discounts applied to the order, including the tax portion of discounts.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The tax total of order's discount or promotion.
+          description: The total amount of discounts applied to the order's tax. Represents the tax portion of discounts.
         gift_card_total:
           type: number
           title: gift_card_total
@@ -26425,27 +27945,27 @@ components:
         shipping_total:
           type: number
           title: shipping_total
-          description: The order's shipping total including taxes and promotions.
+          description: The sum of all shipping methods' totals after discounts, including taxes.
         shipping_subtotal:
           type: number
           title: shipping_subtotal
-          description: The order's shipping total excluding taxes, including promotions.
+          description: The sum of all shipping methods' subtotals before discounts, excluding taxes.
         shipping_tax_total:
           type: number
           title: shipping_tax_total
-          description: The tax total of the order's shipping.
+          description: The sum of all shipping methods' tax totals after discounts.
         original_shipping_total:
           type: number
           title: original_shipping_total
-          description: The order's shipping total including taxes, excluding promotions.
+          description: The sum of all shipping methods' original totals before discounts, including taxes.
         original_shipping_subtotal:
           type: number
           title: original_shipping_subtotal
-          description: The order's shipping total excluding taxes, including promotions.
+          description: The sum of all shipping methods' original subtotals before discounts, excluding taxes.
         original_shipping_tax_total:
           type: number
           title: original_shipping_tax_total
-          description: The tax total of the order's shipping excluding promotions.
+          description: The sum of all shipping methods' original tax totals before discounts.
         status:
           type: string
           title: status
@@ -26453,15 +27973,15 @@ components:
         credit_line_total:
           type: number
           title: credit_line_total
-          description: The order's credit line total.
+          description: The total amount of credit lines applied to the order, including taxes. Subtracted from the final total.
         item_discount_total:
           type: number
           title: item_discount_total
-          description: The total discount amount applied on the order's items.
+          description: The sum of all discounts applied to line items, including the tax portion of discounts.
         shipping_discount_total:
           type: number
           title: shipping_discount_total
-          description: The total discount amount applied on the order's shipping.
+          description: The sum of all discounts applied to shipping methods, including the tax portion of discounts.
         custom_display_id:
           type: string
           title: custom_display_id
@@ -26872,47 +28392,47 @@ components:
         original_total:
           type: number
           title: original_total
-          description: The item's total including taxes, excluding promotions.
+          description: The line item's original total before discounts, including taxes.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The item's total excluding taxes, including promotions.
+          description: The line item's original subtotal before discounts, excluding taxes.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The total taxes of the item, excluding promotions.
+          description: The line item's original tax total before discounts.
         item_total:
           type: number
           title: item_total
-          description: The total taxes of the item, including promotions.
+          description: The line item's total after discounts, including taxes.
         item_subtotal:
           type: number
           title: item_subtotal
-          description: The item's total excluding taxes, including promotions.
+          description: The line item's subtotal before discounts, excluding taxes.
         item_tax_total:
           type: number
           title: item_tax_total
-          description: The total taxes of the item, including promotions.
+          description: The line item's tax total after discounts.
         total:
           type: number
           title: total
-          description: The item's total, including taxes and promotions.
+          description: The line item's total after discounts, including taxes.
         subtotal:
           type: number
           title: subtotal
-          description: The item's subtotal excluding taxes, including promotions.
+          description: The line item's subtotal before discounts, excluding taxes.
         tax_total:
           type: number
           title: tax_total
-          description: The tax total of the item including promotions.
+          description: The line item's tax total after discounts.
         discount_total:
           type: number
           title: discount_total
-          description: The total discount amount of the item.
+          description: The total amount of discounts applied to the line item, including the tax portion of discounts.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The total taxes applied on the discounted amount.
+          description: The total amount of discounts applied to the line item's tax. Represents the tax portion of discounts.
         refundable_total:
           type: number
           title: refundable_total
@@ -29546,6 +31066,11 @@ components:
           description: The custom display ID of the order.
           externalDocs:
             url: https://docs.medusajs.com/resources/commerce-modules/order/custom-display-id
+        locale:
+          type: string
+          title: locale
+          description: The order's locale in [BCP 47](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1) format.
+          example: en-US
     OrderAddress:
       type: object
       description: The address's details.
@@ -31305,59 +32830,59 @@ components:
         original_item_total:
           type: number
           title: original_item_total
-          description: The cart items' total including taxes, excluding promotions.
+          description: The sum of all line items' original totals before discounts, including taxes.
         original_item_subtotal:
           type: number
           title: original_item_subtotal
-          description: The cart items' total excluding taxes, including promotions.
+          description: The sum of all line items' original subtotals before discounts, excluding taxes.
         original_item_tax_total:
           type: number
           title: original_item_tax_total
-          description: The cart items' tax total excluding promotions.
+          description: The sum of all line items' original tax totals before discounts.
         item_total:
           type: number
           title: item_total
-          description: The cart items' total including taxes and promotions.
+          description: The sum of all line items' totals after discounts, including taxes.
         item_subtotal:
           type: number
           title: item_subtotal
-          description: The cart items' total excluding taxes, including promotions.
+          description: The sum of all line items' subtotals before discounts, excluding taxes.
         item_tax_total:
           type: number
           title: item_tax_total
-          description: The cart items' tax total including promotions.
+          description: The sum of all line items' tax totals after discounts.
         original_total:
           type: number
           title: original_total
-          description: The cart's total including taxes, excluding promotions.
+          description: The cart's total before discounts, including taxes. Calculated as the sum of `original_item_total` and `original_shipping_total`.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The cart's total excluding taxes, including promotions.
+          description: The cart's subtotal before discounts, excluding taxes. Calculated as the sum of `original_item_subtotal` and `original_shipping_subtotal`.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The cart's tax total excluding promotions.
+          description: The cart's tax total before discounts. Calculated as the sum of `original_item_tax_total` and `original_shipping_tax_total`.
         total:
           type: number
           title: total
-          description: The cart's total including taxes and promotions.
+          description: The cart's final total after discounts and credit lines, including taxes.
         subtotal:
           type: number
           title: subtotal
-          description: The cart's total excluding taxes, including promotions.
+          description: The cart's subtotal before discounts, excluding taxes. Calculated as the sum of `item_subtotal` and `shipping_subtotal`.
         tax_total:
           type: number
           title: tax_total
-          description: The cart's tax total including promotions.
+          description: The cart's tax total after discounts. Calculated as the sum of `item_tax_total` and `shipping_tax_total`.
         discount_total:
           type: number
           title: discount_total
-          description: The cart's discount total.
+          description: The total amount of discounts applied to the cart, including the tax portion of discounts.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The tax total applied on the discounted amount.
+          description: The total amount of discounts applied to the cart's tax. Represents the tax portion of discounts.
         gift_card_total:
           type: number
           title: gift_card_total
@@ -31369,32 +32894,37 @@ components:
         shipping_total:
           type: number
           title: shipping_total
-          description: The cart's shipping total including taxes and promotions.
+          description: The sum of all shipping methods' totals after discounts, including taxes.
         shipping_subtotal:
           type: number
           title: shipping_subtotal
-          description: The cart's shipping total excluding taxes, including promotions.
+          description: The sum of all shipping methods' subtotals before discounts, excluding taxes.
         shipping_tax_total:
           type: number
           title: shipping_tax_total
-          description: The total taxes applied on the cart's shipping amount.
+          description: The sum of all shipping methods' tax totals after discounts.
         original_shipping_total:
           type: number
           title: original_shipping_total
-          description: The cart's shipping total including taxes, excluding promotions.
+          description: The sum of all shipping methods' original totals before discounts, including taxes.
         original_shipping_subtotal:
           type: number
           title: original_shipping_subtotal
-          description: The cart's shipping total excluding taxes, including promotions.
+          description: The sum of all shipping methods' original subtotals before discounts, excluding taxes.
         original_shipping_tax_total:
           type: number
           title: original_shipping_tax_total
-          description: The total taxes applied on the cart's shipping amount.
+          description: The sum of all shipping methods' original tax totals before discounts.
         promotions:
           type: array
           description: The cart's promotions.
           items:
             $ref: '#/components/schemas/StoreCartPromotion'
+        completed_at:
+          type: string
+          title: completed_at
+          description: The date the cart was completed.
+          format: date-time
     StoreCartAddPromotion:
       type: object
       description: The promotion's details.
@@ -31777,47 +33307,47 @@ components:
         original_total:
           type: number
           title: original_total
-          description: The item's total including taxes, excluding promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's original total before discounts, including taxes. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The item's total excluding taxes, including promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's original subtotal before discounts, excluding taxes. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The total taxes of the item excluding promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's original tax total before discounts. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         item_total:
           type: number
-          title: original_tax_total
-          description: The item's total including taxes and promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          title: item_total
+          description: The line item's total after discounts, including taxes. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         item_subtotal:
           type: number
           title: item_subtotal
-          description: The item's total excluding taxes, including promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's subtotal before discounts, excluding taxes. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         item_tax_total:
           type: number
           title: item_tax_total
-          description: The total taxes of the item including promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's tax total after discounts. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         total:
           type: number
           title: total
-          description: The item's total including taxes and promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's total after discounts, including taxes. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         subtotal:
           type: number
           title: subtotal
-          description: The item's total excluding taxes, including promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's subtotal before discounts, excluding taxes. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         tax_total:
           type: number
           title: tax_total
-          description: The total taxes of the item including promotions. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The line item's tax total after discounts. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         discount_total:
           type: number
           title: discount_total
-          description: The total discount of the item. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The total amount of discounts applied to the line item, including the tax portion of discounts. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The total taxes applied on the discounted amount. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
+          description: The total amount of discounts applied to the line item's tax. Represents the tax portion of discounts. This field is only available if you expand the `items.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-cart-item-totals) guide.
     StoreCartPromotion:
       type: object
       description: The promotion's promotions.
@@ -32095,35 +33625,35 @@ components:
         original_total:
           type: number
           title: original_total
-          description: The shipping method's total including taxes, excluding promotions. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The shipping method's original total before discounts, including taxes. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The shipping method's total excluding taxes, including promotions. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The shipping method's original subtotal before discounts, excluding taxes. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The total taxes applied on the shipping method's amount including promotions. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The shipping method's original tax total before discounts. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
         total:
           type: number
           title: total
-          description: The shipping method's total amount including taxes and promotions. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The shipping method's total after discounts, including taxes. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
         subtotal:
           type: number
           title: subtotal
-          description: The shipping method's total amount excluding taxes, including promotions. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The shipping method's subtotal before discounts, excluding taxes. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
         tax_total:
           type: number
           title: tax_total
-          description: The total taxes applied on the shipping method's amount including promotions. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The shipping method's tax total after discounts. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
         discount_total:
           type: number
           title: discount_total
-          description: The total amount discounted. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The total amount of discounts applied to the shipping method, including the tax portion of discounts. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The taxes applied on the discounted amount. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
+          description: The total amount of discounts applied to the shipping method's tax. Represents the tax portion of discounts. This field is only available if you expand the `shipping_methods.*` relation. Learn more in the [Cart Totals](https://docs.medusajs.com/resources/storefront-development/cart/totals#retrieve-and-show-shipping-method-totals) guide.
     StoreCartShippingOption:
       type: object
       description: The shipping option's details.
@@ -32947,6 +34477,36 @@ components:
             url: https://docs.medusajs.com/resources/commerce-modules/payment/payment-session#data-property
             description: Learn more about the payment session's data property
       x-schemaName: StoreInitializePaymentSession
+    StoreLocale:
+      type: object
+      description: The store locale's details.
+      x-schemaName: StoreLocale
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          title: code
+          description: The locale's code in [BCP 47 format](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1).
+          example: en-US
+        name:
+          type: string
+          title: name
+          description: The locale's display name.
+          example: English (United States)
+    StoreLocaleListResponse:
+      type: object
+      description: The list of supported locales in the store.
+      x-schemaName: StoreLocaleListResponse
+      required:
+        - locales
+      properties:
+        locales:
+          type: array
+          description: The list of supported locales in the store.
+          items:
+            $ref: '#/components/schemas/StoreLocale'
     StoreOrder:
       type: object
       description: The order's details.
@@ -33093,59 +34653,59 @@ components:
         original_item_total:
           type: number
           title: original_item_total
-          description: The order items' total including taxes, excluding promotions.
+          description: The sum of all line items' original totals before discounts, including taxes.
         original_item_subtotal:
           type: number
           title: original_item_subtotal
-          description: The order items' total excluding taxes, including promotions.
+          description: The sum of all line items' original subtotals before discounts, excluding taxes.
         original_item_tax_total:
           type: number
           title: original_item_tax_total
-          description: The total taxes applied on the order items, excluding promotions.
+          description: The sum of all line items' original tax totals before discounts.
         item_total:
           type: number
           title: item_total
-          description: The order items' total including taxes and promotions.
+          description: The sum of all line items' totals after discounts, including taxes.
         item_subtotal:
           type: number
           title: item_subtotal
-          description: The order items' total excluding taxes, including promotions.
+          description: The sum of all line items' subtotals before discounts, excluding taxes.
         item_tax_total:
           type: number
           title: item_tax_total
-          description: The total taxes applied on the order's items, including promotions.
+          description: The sum of all line items' tax totals after discounts.
         original_total:
           type: number
           title: original_total
-          description: The order's total including taxes, excluding promotions.
+          description: The order's total before discounts, including taxes. Calculated as the sum of `original_item_total` and `original_shipping_total`.
         original_subtotal:
           type: number
           title: original_subtotal
-          description: The order's total excluding taxes, including promotions.
+          description: The order's subtotal before discounts, excluding taxes. Calculated as the sum of `original_item_subtotal` and `original_shipping_subtotal`.
         original_tax_total:
           type: number
           title: original_tax_total
-          description: The total taxes of the order excluding promotions.
+          description: The order's tax total before discounts. Calculated as the sum of `original_item_tax_total` and `original_shipping_tax_total`.
         total:
           type: number
           title: total
-          description: The order's total including taxes and promotions.
+          description: The order's final total after discounts and credit lines, including taxes.
         subtotal:
           type: number
           title: subtotal
-          description: The order's total excluding taxes, including promotions.
+          description: The order's subtotal before discounts, excluding taxes. Calculated as the sum of `item_subtotal` and `shipping_subtotal`.
         tax_total:
           type: number
           title: tax_total
-          description: The tax totals of the order including promotions.
+          description: The order's tax total after discounts. Calculated as the sum of `item_tax_total` and `shipping_tax_total`.
         discount_total:
           type: number
           title: discount_total
-          description: The order's discount total.
+          description: The total amount of discounts applied to the order, including the tax portion of discounts.
         discount_tax_total:
           type: number
           title: discount_tax_total
-          description: The total taxes applied on the discounted amount.
+          description: The total amount of discounts applied to the order's tax. Represents the tax portion of discounts.
         gift_card_total:
           type: number
           title: gift_card_total
@@ -33157,27 +34717,27 @@ components:
         shipping_total:
           type: number
           title: shipping_total
-          description: The order's shipping total including taxes and promotions.
+          description: The sum of all shipping methods' totals after discounts, including taxes.
         shipping_subtotal:
           type: number
           title: shipping_subtotal
-          description: The order's shipping total excluding taxes, including promotions.
+          description: The sum of all shipping methods' subtotals before discounts, excluding taxes.
         shipping_tax_total:
           type: number
           title: shipping_tax_total
-          description: The total taxes of the order's shipping including promotions.
+          description: The sum of all shipping methods' tax totals after discounts.
         original_shipping_total:
           type: number
           title: original_shipping_total
-          description: The order's shipping total including taxes, excluding promotions.
+          description: The sum of all shipping methods' original totals before discounts, including taxes.
         original_shipping_subtotal:
           type: number
           title: original_shipping_subtotal
-          description: The order's shipping total excluding taxes, including promotions.
+          description: The sum of all shipping methods' original subtotals before discounts, excluding taxes.
         original_shipping_tax_total:
           type: number
           title: original_shipping_tax_total
-          description: The total taxes of the order's shipping excluding promotions.
+          description: The sum of all shipping methods' original tax totals before discounts.
         customer:
           $ref: '#/components/schemas/StoreCustomer'
         transactions:
@@ -33192,15 +34752,15 @@ components:
         credit_line_total:
           type: number
           title: credit_line_total
-          description: The order's credit line total.
+          description: The total amount of credit lines applied to the order, including taxes. Subtracted from the final total.
         item_discount_total:
           type: number
           title: item_discount_total
-          description: The total discount amount applied on the order's items.
+          description: The sum of all discounts applied to line items, including the tax portion of discounts.
         shipping_discount_total:
           type: number
           title: shipping_discount_total
-          description: The total discount amount applied on the order's shipping.
+          description: The sum of all discounts applied to shipping methods, including the tax portion of discounts.
         custom_display_id:
           type: string
           title: custom_display_id
@@ -40125,8 +41685,8 @@ components:
             $ref: '#/components/schemas/BaseProductImage'
       required:
         - options
-        - length
         - title
+        - length
         - id
         - created_at
         - updated_at

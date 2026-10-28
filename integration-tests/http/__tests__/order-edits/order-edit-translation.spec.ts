@@ -33,6 +33,7 @@ medusaIntegrationTestRunner({
       let shippingProfile: { id: string }
       let stockLocation: { id: string }
       let shippingOption: { id: string }
+      let additionalShippingOption: { id: string }
       let inventoryItem: { id: string }
 
       beforeAll(async () => {
@@ -196,6 +197,27 @@ medusaIntegrationTestRunner({
           )
         ).data.shipping_option
 
+        additionalShippingOption = (
+          await api.post(
+            `/admin/shipping-options`,
+            {
+              name: "Additional shipping option",
+              service_zone_id: fulfillmentSet.service_zones[0].id,
+              shipping_profile_id: shippingProfile.id,
+              provider_id: "manual_test-provider",
+              price_type: "flat",
+              type: {
+                label: "Test type",
+                description: "Test description",
+                code: "test-code",
+              },
+              prices: [{ currency_code: "usd", amount: 500 }],
+              rules: [],
+            },
+            adminHeaders
+          )
+        ).data.shipping_option
+
         await api.post(
           "/admin/translations/batch",
           {
@@ -241,6 +263,38 @@ medusaIntegrationTestRunner({
                 reference: "product_variant",
                 locale_code: "de-DE",
                 translations: { title: "Mittel" },
+              },
+              {
+                reference_id: shippingOption.id,
+                reference: "shipping_option",
+                locale_code: "fr-FR",
+                translations: {
+                  name: "Option d'expédition de test",
+                },
+              },
+              {
+                reference_id: shippingOption.id,
+                reference: "shipping_option",
+                locale_code: "de-DE",
+                translations: {
+                  name: "Test-Versandoption",
+                },
+              },
+              {
+                reference_id: additionalShippingOption.id,
+                reference: "shipping_option",
+                locale_code: "fr-FR",
+                translations: {
+                  name: "Option d'expédition supplémentaire",
+                },
+              },
+              {
+                reference_id: additionalShippingOption.id,
+                reference: "shipping_option",
+                locale_code: "de-DE",
+                translations: {
+                  name: "Zusätzliche Versandoption",
+                },
               },
             ],
           },
@@ -411,6 +465,96 @@ medusaIntegrationTestRunner({
               product_description: "Ein bequemes Baumwoll-T-Shirt",
               variant_title: "Mittel",
             })
+          )
+        })
+      })
+
+      describe("POST /admin/order-edits/:id/shipping-method (add shipping method during order edit)", () => {
+        it("should translate shipping method added during order edit using order locale", async () => {
+          const order = await createOrderFromCart("fr-FR")
+
+          await api.post(
+            "/admin/order-edits",
+            { order_id: order.id },
+            adminHeaders
+          )
+
+          const previewResponse = await api.post(
+            `/admin/order-edits/${order.id}/shipping-method`,
+            { shipping_option_id: additionalShippingOption.id },
+            adminHeaders
+          )
+
+          expect(previewResponse.data.order_preview.shipping_methods).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                shipping_option_id: additionalShippingOption.id,
+                name: "Option d'expédition supplémentaire",
+              }),
+            ])
+          )
+
+          await api.post(
+            `/admin/order-edits/${order.id}/confirm`,
+            {},
+            adminHeaders
+          )
+
+          const updatedOrder = (
+            await api.get(`/admin/orders/${order.id}`, adminHeaders)
+          ).data.order
+
+          expect(updatedOrder.shipping_methods).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                shipping_option_id: additionalShippingOption.id,
+                name: "Option d'expédition supplémentaire",
+              }),
+            ])
+          )
+        })
+
+        it("should have original shipping method name when order has no locale", async () => {
+          const order = await createOrderFromCart()
+
+          await api.post(
+            "/admin/order-edits",
+            { order_id: order.id },
+            adminHeaders
+          )
+
+          const previewResponse = await api.post(
+            `/admin/order-edits/${order.id}/shipping-method`,
+            { shipping_option_id: additionalShippingOption.id },
+            adminHeaders
+          )
+
+          expect(previewResponse.data.order_preview.shipping_methods).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                shipping_option_id: additionalShippingOption.id,
+                name: "Additional shipping option",
+              }),
+            ])
+          )
+
+          await api.post(
+            `/admin/order-edits/${order.id}/confirm`,
+            {},
+            adminHeaders
+          )
+
+          const updatedOrder = (
+            await api.get(`/admin/orders/${order.id}`, adminHeaders)
+          ).data.order
+
+          expect(updatedOrder.shipping_methods).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                shipping_option_id: additionalShippingOption.id,
+                name: "Additional shipping option",
+              }),
+            ])
           )
         })
       })

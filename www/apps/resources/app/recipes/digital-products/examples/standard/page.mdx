@@ -1887,9 +1887,9 @@ Create the file `src/workflows/create-digital-product-order/steps/create-digital
 
 export const createDpoHighlights = [
   ["18", "InferTypeOf", "Infer the type of the `DigitalProduct` data model since it's a variable."],
-  ["33", "createDigitalProductOrders", "Create the digital product order."],
-  ["41", "digital_product_order", "Pass the created digital product order to the compensation function."],
-  ["51", "deleteDigitalProductOrders", "Delete the digital product order if an error occurs in the workflow."]
+  ["32", "createDigitalProductOrders", "Create the digital product order."],
+  ["40", "digital_product_order", "Pass the created digital product order to the compensation function."],
+  ["50", "deleteDigitalProductOrders", "Delete the digital product order if an error occurs in the workflow."]
 ]
 
 ```ts title="src/workflows/create-digital-product-order/steps/create-digital-product-order.ts" highlights={createDpoHighlights} collapsibleLines="1-14" expandMoreLabel="Show Imports"
@@ -2653,10 +2653,10 @@ Create the file `src/api/store/customers/me/digital-products/[mediaId]/download/
 
 export const downloadUrlHighlights = [
   ["20", "query.graph", "Get the customer's orders and linked digital orders."],
-  ["36", "query.graph", "Get the digital product orders of the customer and associated products and media."],
-  ["56", "foundMedia", "Set `foundMedia` if the media's ID is equal to the ID passed as a route parameter."],
-  ["65", "!foundMedia", "If `foundMedia` isn't set, throw an error."],
-  ["72", "retrieveFile", "Retrieve the details of the media's file."]
+  ["34", "query.graph", "Get the digital product orders of the customer and associated products and media."],
+  ["55", "foundMedia", "Set `foundMedia` if the media's ID is equal to the ID passed as a route parameter."],
+  ["61", "!foundMedia", "If `foundMedia` isn't set, throw an error."],
+  ["68", "retrieveFile", "Retrieve the details of the media's file."]
 ]
 
 ```ts title="src/api/store/customers/me/digital-products/[mediaId]/download/route.ts" highlights={downloadUrlHighlights} collapsibleLines="1-10" expandMoreLabel="Show Imports"

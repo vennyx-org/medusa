@@ -977,7 +977,7 @@ export const POST = async (
     } as CreateUserWorkflowInput,
   })
 
-  res.status(201).json({ user: result.user })
+  res.status(200).json({ user: result.user })
 }
 
 ```
@@ -1751,7 +1751,7 @@ Create the file `src/workflows/delivery/steps/notify-restaurant.ts` with the fol
 export const notifyRestaurantStepHighlights = [
   ["11", "async", "Set the step as async."],
   ["18", "graph", "Retrieve the delivery and its restaurant."],
-  ["30", "emit", "Emit a custom event that can be used to notify the restaurant that a new delivery is created."]
+  ["28", "emit", "Emit a custom event that can be used to notify the restaurant that a new delivery is created."]
 ]
 
 ```ts title="src/workflows/delivery/steps/notify-restaurant.ts" highlights={notifyRestaurantStepHighlights} collapsibleLines="1-6" expandButtonLabel="Show Imports"
@@ -1835,7 +1835,7 @@ This step is async and its only purpose is to wait until it’s marked as succes
 Create the file `src/workflows/delivery/steps/create-order.ts` with the following content:
 
 export const createOrderStepHighlights1 = [
-  ["16", "deliveryQuery", "Retrieve the delivery with its linked cart's details."]
+  ["15", "delivery", "Retrieve the delivery with its linked cart's details."]
 ]
 
 ```ts title="src/workflows/delivery/steps/create-order.ts" highlights={createOrderStepHighlights1} collapsibleLines="1-9" expandButtonLabel="Show Imports"

@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useMemo } from "react"
-import { useSiteConfig } from "../../../providers"
+import { useSiteConfig } from "@/providers/SiteConfig"
 import { products } from "../../../constants"
 import { Product } from "types"
 import { BorderedIcon } from "../../BorderedIcon"
@@ -43,6 +43,7 @@ export const ContentMenuProducts = () => {
           key={index}
           href={getProductUrl(product)}
           className="flex gap-docs_0.5 items-center group"
+          data-testid="product-link"
         >
           <BorderedIcon
             wrapperClassName={clsx("bg-medusa-bg-base")}

@@ -5,12 +5,40 @@
  * x-sidebar-summary: List Settings
  * description: Retrieve the list of translatable fields for all entities, such as products and collections.
  * x-authenticated: true
- * parameters: []
+ * parameters:
+ *   - name: entity_type
+ *     in: query
+ *     description: The entity to retrieve translation settings for.
+ *     required: false
+ *     schema:
+ *       type: string
+ *       title: entity_type
+ *       description: The entity to retrieve translation settings for.
+ *       example: product
  * security:
  *   - api_token: []
  *   - cookie_auth: []
  *   - jwt_token: []
  * x-codeSamples:
+ *   - lang: JavaScript
+ *     label: JS SDK
+ *     source: |-
+ *       import Medusa from "@medusajs/js-sdk"
+ * 
+ *       export const sdk = new Medusa({
+ *         baseUrl: import.meta.env.VITE_BACKEND_URL || "/",
+ *         debug: import.meta.env.DEV,
+ *         auth: {
+ *           type: "session",
+ *         },
+ *       })
+ * 
+ *       sdk.admin.translation.settings({
+ *         entity_type: "product"
+ *       })
+ *       .then(({ translatable_fields }) => {
+ *         console.log(translatable_fields)
+ *       })
  *   - lang: Shell
  *     label: cURL
  *     source: |-

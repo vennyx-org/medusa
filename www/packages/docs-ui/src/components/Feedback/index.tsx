@@ -3,19 +3,17 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 // @ts-expect-error can't install the types package because it doesn't support React v19
 import { CSSTransition, SwitchTransition } from "react-transition-group"
-import { Solutions } from "./Solutions"
+import { Solutions } from "@/components/Feedback/Solutions"
 import { ExtraData, useAnalytics } from "@/providers/Analytics"
 import clsx from "clsx"
-import {
-  Button,
-  TextArea,
-  Label,
-  DottedSeparator,
-  RadioItem,
-} from "@/components"
+import { Button } from "@/components/Button"
+import { TextArea } from "@/components/TextArea"
+import { Label } from "@/components/Label"
+import { DottedSeparator } from "@/components/DottedSeparator"
+import { RadioItem } from "@/components/RadioItem"
 import { ChatBubbleLeftRight, ThumbDown, ThumbUp } from "@medusajs/icons"
 import Link from "next/link"
-import { useSiteConfig } from "../../providers"
+import { useSiteConfig } from "@/providers/SiteConfig"
 import { RadioGroup } from "@medusajs/ui"
 
 export type FeedbackProps = {
@@ -135,7 +133,10 @@ export const Feedback = ({
   return (
     <div className={clsx(className)}>
       {showDottedSeparator && (
-        <DottedSeparator wrapperClassName="!px-0 !my-docs_2" />
+        <DottedSeparator
+          wrapperClassName="!px-0 !my-docs_2"
+          data-testid="dotted-separator"
+        />
       )}
       <SwitchTransition mode="out-in">
         <CSSTransition
@@ -165,8 +166,12 @@ export const Feedback = ({
                   vertical && "flex-col justify-center"
                 )}
                 ref={inlineFeedbackRef}
+                data-testid="feedback-form"
               >
-                <Label className={"text-compact-small text-medusa-fg-base"}>
+                <Label
+                  className={"text-compact-small text-medusa-fg-base"}
+                  data-testid="question-label"
+                >
                   {question}
                 </Label>
                 <div
@@ -182,6 +187,7 @@ export const Feedback = ({
                       "!px-docs_0.5 !py-docs_0.25 text-left md:text-center"
                     )}
                     variant="transparent-clear"
+                    data-testid="positive-button"
                   >
                     <ThumbUp className="text-medusa-fg-subtle" />
                     <span className="text-medusa-fg-base text-compact-small-plus flex-1">
@@ -195,6 +201,7 @@ export const Feedback = ({
                       "!px-docs_0.5 !py-docs_0.25 text-left md:text-center"
                     )}
                     variant="transparent-clear"
+                    data-testid="negative-button"
                   >
                     <ThumbDown className="text-medusa-fg-subtle" />
                     <span className="text-medusa-fg-base text-compact-small-plus flex-1">
@@ -210,6 +217,7 @@ export const Feedback = ({
                         "!justify-start md:!justify-center",
                         "text-left md:text-center"
                       )}
+                      data-testid="report-issue-button"
                     >
                       <ChatBubbleLeftRight className="text-medusa-fg-subtle" />
                       <span className="text-medusa-fg-base text-compact-small-plus flex-1">
@@ -226,7 +234,7 @@ export const Feedback = ({
             )}
             {showForm && !submittedFeedback && (
               <div className="flex flex-col gap-docs_1" ref={inlineQuestionRef}>
-                <Label>
+                <Label data-testid="submit-question-label">
                   {positiveFeedback ? positiveQuestion : negativeQuestion}
                 </Label>
                 <RadioGroup className="gap-docs_0.5">
@@ -247,6 +255,7 @@ export const Feedback = ({
                           feedbackOption !== option &&
                             "group-hover:bg-medusa-bg-component-hover"
                         )}
+                        data-testid="feedback-option"
                       />
                       <Label className="text-medusa-fg-base text-compact-small-plus">
                         {option}
@@ -265,6 +274,7 @@ export const Feedback = ({
                   disabled={loading}
                   className="w-fit"
                   variant="secondary"
+                  data-testid="submit-button"
                 >
                   {submitBtn}
                 </Button>
@@ -275,6 +285,7 @@ export const Feedback = ({
                 <div
                   className="text-compact-large-plus flex flex-col"
                   ref={inlineMessageRef}
+                  data-testid="submitted-message"
                 >
                   <span>{submitMessage}</span>
                   {showPossibleSolutions && (

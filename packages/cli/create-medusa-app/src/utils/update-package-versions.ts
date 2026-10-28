@@ -12,14 +12,14 @@ export function updatePackageVersions(
 
   if (packageJson.dependencies) {
     for (const dependency of Object.keys(packageJson.dependencies)) {
-      if (dependency.startsWith("@medusajs/")) {
+      if (shouldUpdateVersion(dependency)) {
         packageJson.dependencies[dependency] = version
       }
     }
   }
   if (packageJson.devDependencies) {
     for (const dependency of Object.keys(packageJson.devDependencies)) {
-      if (dependency.startsWith("@medusajs/")) {
+      if (shouldUpdateVersion(dependency)) {
         packageJson.devDependencies[dependency] = version
       }
     }
@@ -28,4 +28,10 @@ export function updatePackageVersions(
   if (applyChanges && typeof packageJsonOrPath === "string") {
     writeFileSync(packageJsonOrPath, JSON.stringify(packageJson, null, 2))
   }
+}
+
+function shouldUpdateVersion(dependency: string): boolean {
+  // UI package follows different versioning, so we can't update it following
+  // the same logic as other Medusa packages
+  return dependency.startsWith("@medusajs/") && dependency !== "@medusajs/ui"
 }

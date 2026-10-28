@@ -1,5 +1,21 @@
 # @medusajs/ui
 
+## 4.0.33
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @medusajs/icons@2.12.5
+
+## 4.0.32
+
+### Patch Changes
+
+- [#14464](https://github.com/medusajs/medusa/pull/14464) [`d54589751c7f929c173c500344ce5689b8a5dc15`](https://github.com/medusajs/medusa/commit/d54589751c7f929c173c500344ce5689b8a5dc15) Thanks [@adrien2p](https://github.com/adrien2p)! - feat(translation): Improve translation alert in empty languages state
+
+- Updated dependencies []:
+  - @medusajs/icons@2.12.4
+
 ## 4.0.31
 
 ### Patch Changes

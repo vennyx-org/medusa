@@ -216,6 +216,10 @@ export const storefront = [
     "path": "https://docs.medusajs.com/resources/references/js-sdk/store/fulfillment"
   },
   {
+    "title": "locale",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/store/locale"
+  },
+  {
     "title": "order",
     "path": "https://docs.medusajs.com/resources/references/js-sdk/store/order"
   },

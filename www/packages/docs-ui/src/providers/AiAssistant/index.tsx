@@ -12,7 +12,7 @@ import React, {
 } from "react"
 import type { Source } from "@kapaai/react-sdk"
 import useResizeObserver from "@react-hook/resize-observer"
-import { AiAssistantSearchWindow } from "../../components"
+import { AiAssistantSearchWindow } from "../../components/AiAssistant/SearchWindow"
 import { useIsBrowser } from "../BrowserProvider"
 
 export type AiAssistantChatType = "default" | "popover"
@@ -32,6 +32,7 @@ export type AiAssistantThreadItem = {
   content: string
   question_id?: string | null
   sources?: Source[]
+  isGenerationAborted?: boolean
 }
 
 const AiAssistantContext = createContext<AiAssistantContextType | null>(null)
@@ -76,6 +77,10 @@ const AiAssistantInnerProvider = ({
       return
     }
     const parent = contentRef.current?.parentElement as HTMLElement
+
+    if (!parent) {
+      return
+    }
 
     parent.scrollTop = parent.scrollHeight
   }

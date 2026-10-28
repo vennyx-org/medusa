@@ -164,6 +164,24 @@ const generatedgeneratedStoreSidebarSidebar = {
     },
     {
       "type": "category",
+      "title": "Locales",
+      "children": [
+        {
+          "type": "link",
+          "path": "locales_locale_schema",
+          "title": "Locale Object",
+          "loaded": true,
+          "badge": {
+            "variant": "neutral",
+            "text": "Schema"
+          }
+        }
+      ],
+      "loaded": false,
+      "showLoadingIfEmpty": true
+    },
+    {
+      "type": "category",
       "title": "Orders",
       "children": [
         {

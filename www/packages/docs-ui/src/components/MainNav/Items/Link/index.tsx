@@ -2,7 +2,7 @@
 
 import React from "react"
 import { NavigationItemLink } from "types"
-import { LinkButton } from "../../../.."
+import { LinkButton } from "../../../LinkButton"
 import clsx from "clsx"
 
 type MainNavItemLinkProps = {

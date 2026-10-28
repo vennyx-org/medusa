@@ -414,7 +414,7 @@
     "js-sdk": "sdk.admin.order.updateOrderChange(\n  \"ordch_123\",\n  {\n    carry_over_promotions: true\n  }\n)\n.then(({ order_change }) => {\n  console.log(order_change)\n})"
   },
   "POST /admin/orders/export": {
-    "js-sdk": "sdk.admin.order.export({})\n.then(({ transaction_id }) => {\n  console.log(transaction_id)\n})"
+    "js-sdk": "sdk.admin.order.export()\n.then(({ transaction_id }) => {\n  console.log(transaction_id)\n})"
   },
   "POST /admin/order-edits": {
     "js-sdk": "sdk.admin.orderEdit.initiateRequest({\n  order_id: \"order_123\"\n})\n.then(({ order_change }) => {\n  console.log(order_change)\n})"
@@ -970,6 +970,21 @@
   },
   "GET /admin/locales/{code}": {
     "js-sdk": "sdk.admin.locale.retrieve(\"en-US\")\n.then(({ locale }) => {\n  console.log(locale)\n})"
+  },
+  "GET /admin/translations": {
+    "js-sdk": "sdk.admin.translation.list()\n.then(({ translations, count, limit, offset }) => {\n  console.log(translations)\n})"
+  },
+  "POST /admin/translations/batch": {
+    "js-sdk": "sdk.admin.translation.batch({\n  create: [\n    {\n      reference_id: \"prod_123\",\n      reference: \"product\",\n      locale_code: \"en-US\",\n      translations: { title: \"Shirt\" }\n    }\n  ],\n  update: [\n    {\n      id: \"trans_123\",\n      translations: { title: \"Pants\" }\n    }\n  ],\n  delete: [\"trans_321\"]\n})\n.then(({ created, updated, deleted }) => {\n  console.log(created, updated, deleted)\n})\n```"
+  },
+  "GET /admin/translations/settings": {
+    "js-sdk": "sdk.admin.translation.settings({\n  entity_type: \"product\"\n})\n.then(({ translatable_fields }) => {\n  console.log(translatable_fields)\n})"
+  },
+  "GET /admin/translations/entities": {
+    "js-sdk": "sdk.admin.translation.entities({\n  type: \"product\"\n})\n.then(({ data, count, offset, limit }) => {\n  console.log(data)\n})"
+  },
+  "GET /admin/translations/statistics": {
+    "js-sdk": "sdk.admin.translation.statistics({\n  entity_type: \"product\"\n})\n.then(({ statistics }) => {\n  console.log(statistics)\n})"
   },
   "POST /auth/{actor}/{method}/register": {
     "js-sdk": "await sdk.auth.register(\n  \"customer\",\n  \"emailpass\",\n  {\n    email: \"customer@gmail.com\",\n    password: \"supersecret\"\n  }\n)\n\n// all subsequent requests will use the token in the header\nconst { customer } = await sdk.store.customer.create({\n  email: \"customer@gmail.com\",\n  password: \"supersecret\"\n})"

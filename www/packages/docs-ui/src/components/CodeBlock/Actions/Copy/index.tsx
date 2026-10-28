@@ -1,7 +1,9 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { CopyButton, DocsTrackingEvents, useAnalytics } from "../../../.."
+import { CopyButton } from "../../../CopyButton"
+import { DocsTrackingEvents } from "../../../../constants"
+import { useAnalytics } from "../../../../providers/Analytics"
 import clsx from "clsx"
 import { CheckMini, SquareTwoStack } from "@medusajs/icons"
 
@@ -18,11 +20,13 @@ export const CodeBlockCopyAction = ({
   const { track } = useAnalytics()
 
   useEffect(() => {
-    if (copied) {
-      setTimeout(() => {
-        setCopied(false)
-      }, 1000)
+    if (!copied) {
+      return
     }
+
+    setTimeout(() => {
+      setCopied(false)
+    }, 1000)
 
     track({
       event: {
@@ -50,8 +54,15 @@ export const CodeBlockCopyAction = ({
       )}
       onCopy={() => setCopied(true)}
     >
-      {!copied && <SquareTwoStack className={clsx(iconClassName)} />}
-      {copied && <CheckMini className={clsx(iconClassName)} />}
+      {!copied && (
+        <SquareTwoStack
+          className={clsx(iconClassName)}
+          data-testid="not-copied-icon"
+        />
+      )}
+      {copied && (
+        <CheckMini className={clsx(iconClassName)} data-testid="copied-icon" />
+      )}
     </CopyButton>
   )
 }

@@ -6,6 +6,7 @@ export const draftOrderFieldsForRefreshSteps = [
   "metadata",
   "sales_channel_id",
   "region_id",
+  "locale",
   "region.*",
   "items.*",
   "items.product.id",

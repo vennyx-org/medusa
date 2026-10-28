@@ -17,8 +17,21 @@
 			"reference_id": "The ID of the resource that this translation belongs to. For example, the product ID.",
 			"reference": "The name of the table that the resource belongs to. For example, `product`.",
 			"locale_code": "The translation's locale code in BCP 47 format. For example, `en-US`.",
-			"translations": "The key-value pairs of the translated fields. The key is a property in the referenced resource, and the value is the translated value for that property."
+			"translations": "The key-value pairs of the translated fields. The key is a property in the referenced resource, and the value is the translated value for that property.",
+			"translated_field_count": "The translated field count of the translation"
 		},
+		"deprecated": {
+			"is_deprecated": false
+		}
+	},
+	"TranslationSettings": {
+		"filePath": "packages/modules/translation/src/models/settings.ts",
+		"properties": {
+			"id": "The ID of the translation settings.",
+			"entity_type": "The entity type of the translation settings",
+			"fields": "The fields of the translation settings\n\n@example [\"title\", \"description\", \"material\"]"
+		},
+		"since": "2.12.4",
 		"deprecated": {
 			"is_deprecated": false
 		}

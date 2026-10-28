@@ -1,5 +1,43 @@
 # @medusajs/dashboard
 
+## 2.12.5
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @medusajs/js-sdk@2.12.5
+  - @medusajs/admin-shared@2.12.5
+  - @medusajs/icons@2.12.5
+  - @medusajs/ui@4.0.33
+
+## 2.12.4
+
+### Patch Changes
+
+- [#14369](https://github.com/medusajs/medusa/pull/14369) [`d06729d0d14d7f657a2cdeb958dd7ac6d3c6f199`](https://github.com/medusajs/medusa/commit/d06729d0d14d7f657a2cdeb958dd7ac6d3c6f199) Thanks [@fPolic](https://github.com/fPolic)! - fix(dashboard): form reset for across allocation
+
+- [#14394](https://github.com/medusajs/medusa/pull/14394) [`caa561badf960c076b4f564dadbbbb9e36d00a18`](https://github.com/medusajs/medusa/commit/caa561badf960c076b4f564dadbbbb9e36d00a18) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - feat(dashboard): Add first and last name inputs to update order shipping and billing address forms
+
+- [#14355](https://github.com/medusajs/medusa/pull/14355) [`b21a599d118f126e64d2993d46ba60f4a4e94545`](https://github.com/medusajs/medusa/commit/b21a599d118f126e64d2993d46ba60f4a4e94545) Thanks [@adrien2p](https://github.com/adrien2p)! - feat(): Translation settings + user configuration + js/admin
+
+- [#14453](https://github.com/medusajs/medusa/pull/14453) [`d9bc2767c1dd099844c54c3ef49d64e4135c117d`](https://github.com/medusajs/medusa/commit/d9bc2767c1dd099844c54c3ef49d64e4135c117d) Thanks [@adrien2p](https://github.com/adrien2p)! - feat(translation): Update wording in translation list for translation…
+
+- [#14330](https://github.com/medusajs/medusa/pull/14330) [`9f8da1e2e07ae1424e38b8bc61be465558e6980b`](https://github.com/medusajs/medusa/commit/9f8da1e2e07ae1424e38b8bc61be465558e6980b) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - fix(dashboard): Remove unused translation property
+
+- [#14464](https://github.com/medusajs/medusa/pull/14464) [`d54589751c7f929c173c500344ce5689b8a5dc15`](https://github.com/medusajs/medusa/commit/d54589751c7f929c173c500344ce5689b8a5dc15) Thanks [@adrien2p](https://github.com/adrien2p)! - feat(translation): Improve translation alert in empty languages state
+
+- [#14451](https://github.com/medusajs/medusa/pull/14451) [`0490a1c67fb6abd80b49a926c41c1f22eb759493`](https://github.com/medusajs/medusa/commit/0490a1c67fb6abd80b49a926c41c1f22eb759493) Thanks [@adrien2p](https://github.com/adrien2p)! - feat(translation): Order translastable entities ordered alphabetically
+
+- [#14413](https://github.com/medusajs/medusa/pull/14413) [`4ac7b72d10e1046100d6ad92c686e846e9635e77`](https://github.com/medusajs/medusa/commit/4ac7b72d10e1046100d6ad92c686e846e9635e77) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(dashboard): fix customer details page crashing when their order is refunded
+
+- [#14400](https://github.com/medusajs/medusa/pull/14400) [`242f1d7d7f96ec27f3d2c9aafa8324f2ee9b28fd`](https://github.com/medusajs/medusa/commit/242f1d7d7f96ec27f3d2c9aafa8324f2ee9b28fd) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - feat(dashboard,draft-order): Remove hardcoded strings and replace with translations in draft orders list page
+
+- Updated dependencies [[`ab7b04dbc9acfbad11bfaf66276a78ce57d34357`](https://github.com/medusajs/medusa/commit/ab7b04dbc9acfbad11bfaf66276a78ce57d34357), [`b21a599d118f126e64d2993d46ba60f4a4e94545`](https://github.com/medusajs/medusa/commit/b21a599d118f126e64d2993d46ba60f4a4e94545), [`d54589751c7f929c173c500344ce5689b8a5dc15`](https://github.com/medusajs/medusa/commit/d54589751c7f929c173c500344ce5689b8a5dc15)]:
+  - @medusajs/js-sdk@2.12.4
+  - @medusajs/ui@4.0.32
+  - @medusajs/admin-shared@2.12.4
+  - @medusajs/icons@2.12.4
+
 ## 2.12.3
 
 ### Patch Changes

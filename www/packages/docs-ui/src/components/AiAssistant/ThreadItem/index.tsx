@@ -1,15 +1,12 @@
 import clsx from "clsx"
 import React, { useMemo } from "react"
-import {
-  AiAssistantIcon,
-  CodeMdx,
-  CodeMdxProps,
-  DotsLoading,
-  MarkdownContent,
-  MDXComponents,
-} from "@/components"
+import { AiAssistantIcon } from "../../Icons/AiAssistant"
+import { CodeMdx, CodeMdxProps } from "../../CodeMdx"
+import { DotsLoading } from "../../Loading/Dots"
+import { MarkdownContent } from "../../MarkdownContent"
+import { MDXComponents } from "../../MDXComponents"
 import { AiAssistantThreadItemActions } from "./Actions"
-import { AiAssistantThreadItem as AiAssistantThreadItemType } from "../../../providers"
+import { AiAssistantThreadItem as AiAssistantThreadItemType } from "../../../providers/AiAssistant"
 import { useChat } from "@kapaai/react-sdk"
 
 export type AiAssistantThreadItemProps = {
@@ -25,6 +22,13 @@ export const AiAssistantThreadItem = ({ item }: AiAssistantThreadItemProps) => {
 
     return !item.question_id && item.content.length === 0
   }, [item, error])
+  if (
+    item.isGenerationAborted &&
+    item.type === "answer" &&
+    !item.content.length
+  ) {
+    return null
+  }
   return (
     <div
       className={clsx(

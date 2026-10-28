@@ -3,8 +3,7 @@
  * operationId: GetTranslationsStatistics
  * summary: Retrieve Translation Statistics
  * x-sidebar-summary: Get Statistics
- * description: Get statistics on translations for specified locales and entity types. This includes overall
- *   translation progress for each entity type, and statistics for each locale within those entity types.
+ * description: Get statistics on translations for specified locales and entity types. This includes overall translation progress for each entity type, and statistics for each locale within those entity types.
  * x-authenticated: true
  * parameters:
  *   - name: locales
@@ -18,7 +17,7 @@
  *         type: string
  *         title: locales
  *         description: A locale code in [BCP 47](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1) format.
- *         example: "fr-FR"
+ *         example: fr-FR
  *   - name: entity_types
  *     in: query
  *     description: The table names of entities to retrieve translation statistics for.
@@ -36,6 +35,25 @@
  *   - cookie_auth: []
  *   - jwt_token: []
  * x-codeSamples:
+ *   - lang: JavaScript
+ *     label: JS SDK
+ *     source: |-
+ *       import Medusa from "@medusajs/js-sdk"
+ * 
+ *       export const sdk = new Medusa({
+ *         baseUrl: import.meta.env.VITE_BACKEND_URL || "/",
+ *         debug: import.meta.env.DEV,
+ *         auth: {
+ *           type: "session",
+ *         },
+ *       })
+ * 
+ *       sdk.admin.translation.statistics({
+ *         entity_type: "product"
+ *       })
+ *       .then(({ statistics }) => {
+ *         console.log(statistics)
+ *       })
  *   - lang: Shell
  *     label: cURL
  *     source: |-

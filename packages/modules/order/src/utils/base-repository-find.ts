@@ -225,6 +225,10 @@ async function loadItemAdjustments(manager, orders) {
   const items = orders.flatMap((r) => [...(r.items ?? [])])
   const itemsIdMap = new Map<string, any>(items.map((i) => [i.item.id, i.item]))
 
+  if (!items.length) {
+    return
+  }
+
   const params = items.map((i) => {
     // preinitialise all items so an empty array is returned for ones without adjustments
     if (!i.item.adjustments.isInitialized()) {

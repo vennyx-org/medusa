@@ -143,6 +143,7 @@ export const cartFieldsForPricingContext = [
   "shipping_address.postal_code",
   "item_total",
   "total",
+  "locale",
   "customer.id",
   "email",
   "customer.groups.id",
@@ -190,6 +191,7 @@ export const productVariantsFields = [
 // ensure that at least these fields are present when fetching cart for caluclating shipping options prices
 export const cartFieldsForCalculateShippingOptionsPrices = [
   "id",
+  "locale",
   "items.*",
   "items.variant.id",
   "items.variant.product.id",

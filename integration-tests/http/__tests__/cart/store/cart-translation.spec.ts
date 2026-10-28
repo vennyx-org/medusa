@@ -515,6 +515,229 @@ medusaIntegrationTestRunner({
           expect(allItemsTranslated).toBe(true)
         })
       })
+
+      describe("POST /store/carts/:id/shipping-methods (shipping method translation)", () => {
+        let shippingOption
+
+        beforeEach(async () => {
+          const stockLocation = (
+            await api.post(
+              `/admin/stock-locations`,
+              { name: "translation test location" },
+              adminHeaders
+            )
+          ).data.stock_location
+
+          await api.post(
+            `/admin/stock-locations/${stockLocation.id}/sales-channels`,
+            { add: [salesChannel.id] },
+            adminHeaders
+          )
+
+          const fulfillmentSets = (
+            await api.post(
+              `/admin/stock-locations/${stockLocation.id}/fulfillment-sets?fields=*fulfillment_sets`,
+              {
+                name: `Translation-Test-${shippingProfile.id}`,
+                type: "test-type",
+              },
+              adminHeaders
+            )
+          ).data.stock_location.fulfillment_sets
+
+          const fulfillmentSet = (
+            await api.post(
+              `/admin/fulfillment-sets/${fulfillmentSets[0].id}/service-zones`,
+              {
+                name: `Translation-Test-${shippingProfile.id}`,
+                geo_zones: [{ type: "country", country_code: "US" }],
+              },
+              adminHeaders
+            )
+          ).data.fulfillment_set
+
+          await api.post(
+            `/admin/stock-locations/${stockLocation.id}/fulfillment-providers`,
+            { add: ["manual_test-provider"] },
+            adminHeaders
+          )
+
+          shippingOption = (
+            await api.post(
+              `/admin/shipping-options`,
+              {
+                name: "Standard Shipping",
+                service_zone_id: fulfillmentSet.service_zones[0].id,
+                shipping_profile_id: shippingProfile.id,
+                provider_id: "manual_test-provider",
+                price_type: "flat",
+                type: {
+                  label: "Standard",
+                  description: "Standard shipping option",
+                  code: "standard",
+                },
+                prices: [{ currency_code: "usd", amount: 1000 }],
+                rules: [],
+              },
+              adminHeaders
+            )
+          ).data.shipping_option
+
+          // Create translations for shipping option
+          await api.post(
+            "/admin/translations/batch",
+            {
+              create: [
+                {
+                  reference_id: shippingOption.id,
+                  reference: "shipping_option",
+                  locale_code: "fr-FR",
+                  translations: {
+                    name: "Expédition Standard",
+                  },
+                },
+                {
+                  reference_id: shippingOption.id,
+                  reference: "shipping_option",
+                  locale_code: "de-DE",
+                  translations: {
+                    name: "Standardversand",
+                  },
+                },
+              ],
+            },
+            adminHeaders
+          )
+        })
+
+        it("should add shipping method with translated name when cart has locale", async () => {
+          const cartResponse = await api.post(
+            `/store/carts`,
+            {
+              currency_code: "usd",
+              sales_channel_id: salesChannel.id,
+              region_id: region.id,
+              locale: "fr-FR",
+              shipping_address: shippingAddressData,
+              items: [{ variant_id: product.variants[0].id, quantity: 1 }],
+            },
+            storeHeaders
+          )
+
+          const cart = cartResponse.data.cart
+
+          await api.post(
+            `/store/carts/${cart.id}/shipping-methods`,
+            { option_id: shippingOption.id },
+            storeHeaders
+          )
+
+          const updatedCart = await api
+            .get(
+              `/store/carts/${cart.id}?fields=+shipping_methods.name`,
+              storeHeaders
+            )
+            .then((res) => res.data.cart)
+
+          expect(updatedCart.shipping_methods).toHaveLength(1)
+          expect(updatedCart.shipping_methods[0]).toEqual(
+            expect.objectContaining({
+              shipping_option_id: shippingOption.id,
+              name: "Expédition Standard",
+            })
+          )
+        })
+
+        it("should update shipping method name when cart locale changes", async () => {
+          const cartResponse = await api.post(
+            `/store/carts`,
+            {
+              currency_code: "usd",
+              sales_channel_id: salesChannel.id,
+              region_id: region.id,
+              locale: "fr-FR",
+              shipping_address: shippingAddressData,
+              items: [{ variant_id: product.variants[0].id, quantity: 1 }],
+            },
+            storeHeaders
+          )
+
+          const cart = cartResponse.data.cart
+
+          // Add shipping method with French locale
+          await api.post(
+            `/store/carts/${cart.id}/shipping-methods`,
+            { option_id: shippingOption.id },
+            storeHeaders
+          )
+
+          // Verify French translation
+          let cartResponseAfter = await api.get(
+            `/store/carts/${cart.id}?fields=+shipping_methods.name`,
+            storeHeaders
+          )
+
+          expect(cartResponseAfter.data.cart.shipping_methods[0].name).toEqual(
+            "Expédition Standard"
+          )
+
+          // Update cart locale to German
+          await api.post(
+            `/store/carts/${cart.id}`,
+            {
+              locale: "de-DE",
+            },
+            storeHeaders
+          )
+
+          // Verify German translation
+          cartResponseAfter = await api.get(
+            `/store/carts/${cart.id}?fields=+shipping_methods.name`,
+            storeHeaders
+          )
+
+          expect(cartResponseAfter.data.cart.shipping_methods[0].name).toEqual(
+            "Standardversand"
+          )
+        })
+
+        it("should use original shipping option name when no translation exists", async () => {
+          const cartResponse = await api.post(
+            `/store/carts`,
+            {
+              currency_code: "usd",
+              sales_channel_id: salesChannel.id,
+              region_id: region.id,
+              locale: "ja-JP",
+              shipping_address: shippingAddressData,
+              items: [{ variant_id: product.variants[0].id, quantity: 1 }],
+            },
+            storeHeaders
+          )
+
+          const cart = cartResponse.data.cart
+
+          await api.post(
+            `/store/carts/${cart.id}/shipping-methods`,
+            { option_id: shippingOption.id },
+            storeHeaders
+          )
+
+          const updatedCart = await api
+            .get(
+              `/store/carts/${cart.id}?fields=+shipping_methods.name`,
+              storeHeaders
+            )
+            .then((res) => res.data.cart)
+
+          expect(updatedCart.shipping_methods[0]).toEqual(
+            expect.objectContaining({
+              shipping_option_id: shippingOption.id,
+              name: "Standard Shipping",
+            })
+          )
+        })
+      })
     })
   },
 })

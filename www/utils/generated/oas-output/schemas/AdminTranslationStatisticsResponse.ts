@@ -29,8 +29,7 @@
  *       properties:
  *         by_locale:
  *           type: object
- *           description: The translation statistics of an entity type broken down by locale. The key is the locale code in BCP 47 format, and
- *             the value is an object containing the statistics for that locale.
+ *           description: The translation statistics of an entity type broken down by locale. The key is the locale code in BCP 47 format, and the value is an object containing the statistics for that locale.
  *           example:
  *             fr-FR:
  *               expected: 150

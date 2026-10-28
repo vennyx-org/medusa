@@ -172,6 +172,10 @@ export const remoteQuery = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/dismissItemReturnRequestWorkflow"
   },
   {
+    "title": "exportOrdersWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/exportOrdersWorkflow"
+  },
+  {
     "title": "getOrdersListWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/getOrdersListWorkflow"
   },

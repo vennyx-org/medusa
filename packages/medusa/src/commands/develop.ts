@@ -182,8 +182,8 @@ export default async function ({ types, directory }) {
           "dist",
           "static",
           "private",
-          "src/admin/**/*",
-          ".medusa/**/*",
+          "src/admin",
+          ".medusa",
         ],
       })
 

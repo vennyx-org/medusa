@@ -2,14 +2,14 @@
 
 import React, { useEffect } from "react"
 import { ToCItem, ToCItemUi } from "types"
+import { useScrollController } from "../../../hooks/use-scroll-utils"
 import {
   ActiveOnScrollItem,
   useActiveOnScroll,
-  useScrollController,
-} from "../../../hooks"
+} from "../../../hooks/use-active-on-scroll"
 import clsx from "clsx"
 import Link from "next/link"
-import { useSiteConfig } from "../../../providers"
+import { useSiteConfig } from "../../../providers/SiteConfig"
 import { Loading } from "../../Loading"
 
 export const ContentMenuToc = () => {
@@ -92,7 +92,7 @@ type TocListProps = {
 
 const TocList = ({ items, activeItemId, className }: TocListProps) => {
   return (
-    <ul className={className}>
+    <ul className={className} data-testid="toc-list">
       {items.map((item) => (
         <TocItem item={item} key={item.id} activeItemId={activeItemId} />
       ))}
@@ -108,7 +108,7 @@ type TocItemProps = {
 const TocItem = ({ item, activeItemId }: TocItemProps) => {
   const { scrollToElement } = useScrollController()
   return (
-    <li className="w-full pt-docs_0.5 toc-item">
+    <li className="w-full pt-docs_0.5 toc-item" data-testid="toc-item">
       <Link
         href={`#${item.id}`}
         className={clsx(
@@ -143,7 +143,7 @@ const TocItem = ({ item, activeItemId }: TocItemProps) => {
 
 const EmptyTocItems = () => {
   return (
-    <div className="animate-pulse">
+    <div className="animate-pulse" data-testid="empty-toc-items">
       <Loading count={5} className="pt-docs_0.5 px-docs_0.75 !my-0" />
     </div>
   )

@@ -9,6 +9,7 @@ import {
   crossProjectLinksPlugin,
   recmaInjectMdxDataPlugin,
   remarkAttachFrontmatterDataPlugin,
+  validateHighlightsPlugin,
 } from "remark-rehype-plugins"
 import path from "path"
 import redirects from "./utils/redirects.mjs"
@@ -78,6 +79,7 @@ const withMDX = mdx({
           tagName: "code",
         },
       ],
+      [validateHighlightsPlugin, { verbose: false }],
       [rehypeSlug],
       [
         cloudinaryImgRehypePlugin,

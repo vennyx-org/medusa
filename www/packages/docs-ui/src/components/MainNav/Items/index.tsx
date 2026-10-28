@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { useMainNav } from "../../.."
+import { useMainNav } from "../../../providers/MainNav"
 import clsx from "clsx"
 import { MainNavItemLink } from "./Link"
 import { MainNavItemDropdown } from "./Dropdown"

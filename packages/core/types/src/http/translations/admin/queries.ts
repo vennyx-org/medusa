@@ -61,3 +61,28 @@ export interface AdminTranslationSettingsParams {
    */
   entity_type?: string
 }
+
+/**
+ * Query parameters for translation entities endpoint.
+ */
+export interface AdminTranslationEntitiesParams extends FindParams {
+  /**
+   * The entity type to retrieve (e.g., "product", "product_variant").
+   * This determines which table to query and which translatable fields to return.
+   *
+   * @example
+   * "product"
+   */
+  type: string
+
+  /**
+   * Filter by entity ID(s). Can be a single ID or an array of IDs.
+   *
+   * @example
+   * "prod_123"
+   *
+   * @example
+   * ["prod_123", "prod_456"]
+   */
+  id?: string | string[]
+}

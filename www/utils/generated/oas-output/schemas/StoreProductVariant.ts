@@ -127,8 +127,8 @@
  *       $ref: "#/components/schemas/BaseProductImage"
  * required:
  *   - options
- *   - length
  *   - title
+ *   - length
  *   - id
  *   - created_at
  *   - updated_at

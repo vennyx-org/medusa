@@ -1,5 +1,37 @@
 # @medusajs/core-flows
 
+## 2.12.5
+
+### Patch Changes
+
+- Updated dependencies [[`233ec261be200fac83002415aa7c0df082339a3f`](https://github.com/medusajs/medusa/commit/233ec261be200fac83002415aa7c0df082339a3f)]:
+  - @medusajs/framework@2.12.5
+
+## 2.12.4
+
+### Patch Changes
+
+- [#14177](https://github.com/medusajs/medusa/pull/14177) [`a464e9d907e30bca86a1e8677f8ebf22c38638a2`](https://github.com/medusajs/medusa/commit/a464e9d907e30bca86a1e8677f8ebf22c38638a2) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - fix(core-flows): Avoid checking inventory items on fulfillment cancel for unmanaged inventory variants
+
+- [#14460](https://github.com/medusajs/medusa/pull/14460) [`60f68ff492bc98013fc2f6e0b0b252182a1ee59c`](https://github.com/medusajs/medusa/commit/60f68ff492bc98013fc2f6e0b0b252182a1ee59c) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(core-flows): export getTranslatedShippingOptionsStep
+
+- [#14454](https://github.com/medusajs/medusa/pull/14454) [`0ffd79010953315494c1b2ba1def477b7b1d9e4b`](https://github.com/medusajs/medusa/commit/0ffd79010953315494c1b2ba1def477b7b1d9e4b) Thanks [@adrien2p](https://github.com/adrien2p)! - feat(translation): Add support for locale to the graph query
+
+- [#14388](https://github.com/medusajs/medusa/pull/14388) [`bf4cc12545edc5bf249edc6ecec115c5f7a2b31f`](https://github.com/medusajs/medusa/commit/bf4cc12545edc5bf249edc6ecec115c5f7a2b31f) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - feat(core-flows,utils): Shipping options workflow events emission
+
+- [#14338](https://github.com/medusajs/medusa/pull/14338) [`c0ec54fc15fece373ac77f547706ab85eb5bc844`](https://github.com/medusajs/medusa/commit/c0ec54fc15fece373ac77f547706ab85eb5bc844) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(core-flows): fix type of getTranslatedLineItemsStep
+
+- [#14264](https://github.com/medusajs/medusa/pull/14264) [`8055a79c5268528261c88d5f6f245d1003d87a6d`](https://github.com/medusajs/medusa/commit/8055a79c5268528261c88d5f6f245d1003d87a6d) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - fix(core-flows): conditionally create customer on order email update if unset
+
+- [#14417](https://github.com/medusajs/medusa/pull/14417) [`43305a562cfba914654da056b0a7e03c40849678`](https://github.com/medusajs/medusa/commit/43305a562cfba914654da056b0a7e03c40849678) Thanks [@riqwan](https://github.com/riqwan)! - feat(medusa,utils,core-flows): add reset password metdata
+
+- [#14358](https://github.com/medusajs/medusa/pull/14358) [`11de7e3e3449f3a93724aaeed770a66840ffcaf9`](https://github.com/medusajs/medusa/commit/11de7e3e3449f3a93724aaeed770a66840ffcaf9) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - feat(translation,core-flows): translate remaining core entities and sync shipping option <> method translations
+
+- [#14356](https://github.com/medusajs/medusa/pull/14356) [`7e3ed913a6008a25974634d489f9339c40066125`](https://github.com/medusajs/medusa/commit/7e3ed913a6008a25974634d489f9339c40066125) Thanks [@olivermrbl](https://github.com/olivermrbl)! - chore: Create publishable API key in defaults
+
+- Updated dependencies [[`181d5fa67122e4e5f38b91f6b716d35f2d08a204`](https://github.com/medusajs/medusa/commit/181d5fa67122e4e5f38b91f6b716d35f2d08a204), [`d347e369ce555064e24f2dc3cd93b9e4e73a006d`](https://github.com/medusajs/medusa/commit/d347e369ce555064e24f2dc3cd93b9e4e73a006d)]:
+  - @medusajs/framework@2.12.4
+
 ## 2.12.3
 
 ### Patch Changes

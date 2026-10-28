@@ -1,32 +1,7 @@
-export const defaultAdminProductsVariantFields = [
-  "id",
-  "product_id",
-  "thumbnail",
-  "title",
-  "sku",
-  "allow_backorder",
-  "manage_inventory",
-  "hs_code",
-  "origin_country",
-  "mid_code",
-  "material",
-  "weight",
-  "length",
-  "height",
-  "width",
-  "created_at",
-  "updated_at",
-  "deleted_at",
-  "metadata",
-  "variant_rank",
-  "ean",
-  "upc",
-  "barcode",
-  "*prices",
-  "prices.price_rules.value",
-  "prices.price_rules.attribute",
-  "*options",
-]
+import { defaultAdminProductVariantFields } from "../product-variants/query-config"
+
+export const defaultAdminProductsVariantFields =
+  defaultAdminProductVariantFields.filter((field) => field !== "*product")
 
 export const retrieveVariantConfig = {
   defaults: defaultAdminProductsVariantFields,

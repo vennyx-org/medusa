@@ -6,7 +6,7 @@ import { SearchHitGroupName } from "../../Search/Hits/GroupName"
 import { SearchSuggestionItem } from "../../Search/Suggestions/Item"
 import { useChat } from "@kapaai/react-sdk"
 import { Link } from "../../Link"
-import { useSiteConfig } from "../../../providers"
+import { useSiteConfig } from "../../../providers/SiteConfig"
 
 type AiAssistantSuggestionsProps = React.AllHTMLAttributes<HTMLDivElement>
 

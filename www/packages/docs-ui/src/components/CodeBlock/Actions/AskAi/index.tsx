@@ -1,7 +1,8 @@
 "use client"
 
 import React from "react"
-import { useAiAssistant, useSiteConfig } from "../../../../providers"
+import { useAiAssistant } from "../../../../providers/AiAssistant"
+import { useSiteConfig } from "../../../../providers/SiteConfig"
 import clsx from "clsx"
 import { Tooltip } from "../../../Tooltip"
 import Image from "next/image"
