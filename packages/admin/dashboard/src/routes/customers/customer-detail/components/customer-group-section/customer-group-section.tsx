@@ -50,7 +50,6 @@ export const CustomerGroupSection = ({
     useCustomerGroups(
       {
         ...searchParams,
-        fields: "+customers.id",
         customers: { id: customer.id },
       },
       {
