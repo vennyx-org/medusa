@@ -11,6 +11,7 @@ import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
+import { CustomerGroupCustomerCount } from "../../../../../components/common/customer-group-customer-count"
 import { DataTable } from "../../../../../components/data-table"
 import { useDataTableDateFilters } from "../../../../../components/data-table/helpers/general/use-data-table-date-filters"
 import { SingleColumnPage } from "../../../../../components/layout/pages"
@@ -48,7 +49,7 @@ export const CustomerGroupListTable = () => {
         limit: PAGE_SIZE,
         created_at: created_at ? JSON.parse(created_at) : undefined,
         updated_at: updated_at ? JSON.parse(updated_at) : undefined,
-        fields: "id,name,created_at,updated_at,customers.id",
+        fields: "id,name,created_at,updated_at",
       },
       {
         placeholderData: keepPreviousData,
@@ -150,7 +151,9 @@ const useColumns = () => {
       columnHelper.accessor("customers", {
         header: t("customers.domain"),
         cell: ({ row }) => {
-          return <span>{row.original.customers?.length ?? 0}</span>
+          return (
+            <CustomerGroupCustomerCount customerGroupId={row.original.id} />
+          )
         },
       }),
       columnHelper.accessor("created_at", {

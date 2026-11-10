@@ -2,6 +2,7 @@ import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 
 import { useTranslation } from "react-i18next"
+import { CustomerGroupCustomerCount } from "../../../components/common/customer-group-customer-count"
 import {
   TextCell,
   TextHeader,
@@ -21,11 +22,9 @@ export const useCustomerGroupTableColumns = () => {
       }),
       columnHelper.accessor("customers", {
         header: () => <TextHeader text={t("customers.domain")} />,
-        cell: ({ getValue }) => {
-          const count = getValue()?.length ?? 0
-
-          return <TextCell text={count} />
-        },
+        cell: ({ row }) => (
+          <CustomerGroupCustomerCount customerGroupId={row.original.id} />
+        ),
       }),
     ],
     [t]

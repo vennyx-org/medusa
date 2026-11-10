@@ -77,10 +77,17 @@ export const AddCustomerGroupsForm = ({
     isPending: isLoading,
     isError,
     error,
-  } = useCustomerGroups({
-    fields: "*customers",
-    ...searchParams,
-  })
+  } = useCustomerGroups(searchParams)
+
+  const { customer_groups: memberGroups, isLoading: isMembershipLoading } =
+    useCustomerGroups(
+      {
+        id: customer_groups?.map((g) => g.id),
+        customers: { id: customerId },
+        fields: "id",
+      },
+      { enabled: !!customer_groups?.length }
+    )
 
   const updater: OnChangeFn<RowSelectionState> = (fn) => {
     const state = typeof fn === "function" ? fn(rowSelection) : fn
@@ -103,7 +110,7 @@ export const AddCustomerGroupsForm = ({
     count,
     enablePagination: true,
     enableRowSelection: (row) => {
-      return !row.original.customers?.map((c) => c.id).includes(customerId)
+      return !memberGroups?.some((g) => g.id === row.original.id)
     },
     getRowId: (row) => row.id,
     pageSize: PAGE_SIZE,
@@ -166,7 +173,7 @@ export const AddCustomerGroupsForm = ({
               { key: "created_at", label: t("fields.createdAt") },
               { key: "updated_at", label: t("fields.updatedAt") },
             ]}
-            isLoading={isLoading}
+            isLoading={isLoading || isMembershipLoading}
             layout="fill"
             search="autofocus"
             queryObject={raw}

@@ -8,7 +8,6 @@ import { customerGroupLoader } from "./loader"
 
 import { SingleColumnPageSkeleton } from "../../../components/common/skeleton"
 import { useExtension } from "../../../providers/extension-provider"
-import { CUSTOMER_GROUP_DETAIL_FIELDS } from "./constants"
 
 export const CustomerGroupDetail = () => {
   const initialData = useLoaderData() as Awaited<
@@ -18,9 +17,7 @@ export const CustomerGroupDetail = () => {
   const { id } = useParams()
   const { customer_group, isLoading, isError, error } = useCustomerGroup(
     id!,
-    {
-      fields: CUSTOMER_GROUP_DETAIL_FIELDS,
-    },
+    undefined,
     { initialData }
   )
 

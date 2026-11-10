@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
 import { ActionMenu } from "../../../../../components/common/action-menu"
+import { CustomerGroupCustomerCount } from "../../../../../components/common/customer-group-customer-count"
 import { useDeleteCustomerGroup } from "../../../../../hooks/api/customer-groups"
 
 type CustomerGroupGeneralSectionProps = {
@@ -82,7 +83,7 @@ export const CustomerGroupGeneralSection = ({
           {t("customers.domain")}
         </Text>
         <Text size="small" leading="compact">
-          {group.customers?.length || "-"}
+          <CustomerGroupCustomerCount customerGroupId={group.id} />
         </Text>
       </div>
     </Container>
