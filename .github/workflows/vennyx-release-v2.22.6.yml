@@ -271,7 +271,23 @@ jobs:
               return 1
             }
 
-            if npm publish --access restricted --tag "$PUBLISH_TAG" 2>&1; then
+            # Plugin packages rebuild themselves in `prepare` via `medusa plugin:build`.
+            # Since v2.22 the CLI exits unless package.json lists @medusajs/medusa or
+            # @medusajs/cli, which no longer holds after the rename to @vennyx-org/*.
+            # They were already built in "Build original packages", so publish the
+            # existing output and skip lifecycle scripts for them.
+            local PUBLISH_FLAGS=""
+            if jq -e '.scripts.prepare // "" | test("build:plugin")' package.json > /dev/null; then
+              if [ ! -d ".medusa/server" ]; then
+                echo "[Worker $pid] Missing .medusa/server build output for $PKG_NAME"
+                echo "$PKG_NAME@$PKG_VERSION (no build output)" >> "/tmp/publish-results/failed-$pid-$(date +%s%N)"
+                cd "$ORIGINAL_DIR" || return 1
+                return 1
+              fi
+              PUBLISH_FLAGS="--ignore-scripts"
+            fi
+
+            if npm publish $PUBLISH_FLAGS --access restricted --tag "$PUBLISH_TAG" 2>&1; then
               echo "[Worker $pid] Successfully published $PKG_NAME@$PKG_VERSION"
               echo "$PKG_NAME@$PKG_VERSION" >> "/tmp/publish-results/success-$pid-$(date +%s%N)"
             else
