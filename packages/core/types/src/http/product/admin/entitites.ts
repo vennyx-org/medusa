@@ -96,6 +96,11 @@ export interface AdminProduct extends Omit<
   "categories" | "variants"
 > {
   /**
+   * Whether the product prices include tax. `null` falls back to the
+   * price preference of the region or currency.
+   */
+  is_tax_inclusive?: boolean | null
+  /**
    * The product's collection.
    */
   collection?: AdminCollection | null

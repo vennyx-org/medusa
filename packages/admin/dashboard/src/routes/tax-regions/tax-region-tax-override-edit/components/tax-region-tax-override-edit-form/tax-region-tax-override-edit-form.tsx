@@ -369,11 +369,6 @@ export const TaxRegionTaxOverrideEditForm = ({
     (value) => !value
   )
 
-  const watchedIsCombinable = useWatch({
-    control: form.control,
-    name: "is_combinable",
-  })
-
   return (
     <RouteDrawer.Form form={form}>
       <KeyboundForm

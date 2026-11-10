@@ -208,6 +208,11 @@ export interface AdminCreateProduct {
    */
   discountable?: boolean
   /**
+   * Whether the product prices include tax. `null` falls back to the
+   * price preference of the region or currency.
+   */
+  is_tax_inclusive?: boolean | null
+  /**
    * The product's images.
    */
   images?: {
@@ -437,6 +442,11 @@ export interface AdminUpdateProduct {
    * Whether discounts can be applied on the product.
    */
   discountable?: boolean
+  /**
+   * Whether the product prices include tax. `null` falls back to the
+   * price preference of the region or currency.
+   */
+  is_tax_inclusive?: boolean | null
   /**
    * The product's images.
    */
