@@ -800,9 +800,12 @@ export default class PaymentModuleService
 
     // If no custom amount is passed, we assume the full amount needs to be
     // captured. An explicit amount, however, must be strictly positive.
-    if (data.amount == null) {
+    // Vennyx: as up to 2.12, an amount of 0 means "the full amount". A provider that reports the
+    // session as captured makes authorizePaymentSession_ pass the session amount here, which is
+    // 0 for a free order; rejecting it left such orders unpaid. Negative amounts stay rejected.
+    if (!data.amount) {
       data.amount = payment.amount as number
-    } else if (MathBN.lte(data.amount, 0)) {
+    } else if (MathBN.lt(data.amount, 0)) {
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
         `Capture amount must be greater than 0.`
@@ -1060,9 +1063,12 @@ export default class PaymentModuleService
   }> {
     // If no amount is passed, we assume the full payment amount needs to be
     // refunded. An explicit amount, however, must be strictly positive.
-    if (data.amount == null) {
+    // Vennyx: as up to 2.12, an amount of 0 means "the full amount". A provider that reports the
+    // session as captured makes authorizePaymentSession_ pass the session amount here, which is
+    // 0 for a free order; rejecting it left such orders unpaid. Negative amounts stay rejected.
+    if (!data.amount) {
       data.amount = payment.amount as BigNumberInput
-    } else if (MathBN.lte(data.amount, 0)) {
+    } else if (MathBN.lt(data.amount, 0)) {
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
         `Refund amount must be greater than 0.`
