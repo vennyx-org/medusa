@@ -1331,7 +1331,9 @@ describe("Total calculation", function () {
     expect(serializedTaxInclusive.items[0].refundable_total_per_unit).toBe(94)
   })
 
-  it("should not double-count tax on the discount when computing refundable_total for non-tax-inclusive items with a pending return", function () {
+  // Vennyx: skipped, the fork keeps the refundable total as it was up to 2.12 (see
+  // setRefundableTotal in ../line-item).
+  it.skip("should not double-count tax on the discount when computing refundable_total for non-tax-inclusive items with a pending return", function () {
     const cart = {
       items: [
         {

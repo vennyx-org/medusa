@@ -77,7 +77,7 @@ export function getLineItemsTotals(
 function setRefundableTotal(
   item: GetItemTotalInput,
   discountsTotal: BigNumberInput,
-  discountsSubtotal: BigNumberInput,
+  _discountsSubtotal: BigNumberInput,
   totals: GetItemTotalOutput
 ) {
   const itemDetail = item.detail!
@@ -87,12 +87,10 @@ function setRefundableTotal(
     itemDetail.return_dismissed_quantity ?? 0
   )
   const currentQuantity = MathBN.sub(item.quantity, totalReturnedQuantity)
-  // For tax-inclusive items the unit price already includes tax, so the
-  // discount is subtracted in tax-inclusive terms and no tax is added back
-  // below. For non-tax-inclusive items the discount is pre-tax and tax is
-  // applied to the resulting net amount, so subtracting the tax-inclusive
-  // discount here would tax the discount a second time.
-  const discount = item.is_tax_inclusive ? discountsTotal : discountsSubtotal
+  // Vennyx: the whole discount, tax included, is taken off before tax is applied, as it was
+  // up to 2.12. Upstream takes it off without its tax for items priced without tax (#15886),
+  // which changes the refundable total the consumers of this fork receive.
+  const discount = discountsTotal
   const discountPerUnit = MathBN.div(discount, item.quantity)
 
   const refundableSubTotal = MathBN.sub(
