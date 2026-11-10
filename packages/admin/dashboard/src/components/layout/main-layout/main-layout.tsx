@@ -1,12 +1,10 @@
 import {
-  BuildingStorefront,
   Buildings,
-  ChevronDownMini,
+  BuildingStorefront,
   CogSixTooth,
   CurrencyDollar,
   EllipsisHorizontal,
   MagnifyingGlass,
-  MinusMini,
   OpenRectArrowOut,
   ReceiptPercent,
   ShoppingCart,
@@ -14,13 +12,15 @@ import {
   Tag,
   Users,
 } from "@medusajs/icons"
-import { Avatar, Divider, DropdownMenu, Text, clx } from "@medusajs/ui"
-import { Collapsible as RadixCollapsible } from "radix-ui"
+import { CORE_LAYOUT_IDS } from "@medusajs/admin-shared"
+import { Avatar, clx, Divider, DropdownMenu, Text } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
 
 import { useStore } from "../../../hooks/api/store"
+import { LayoutComposer } from "../../layout-composer"
+import { PermissionGuard } from "../../common/permission-guard"
 import { Skeleton } from "../../common/skeleton"
-import { INavItem, NavItem } from "../../layout/nav-item"
+import { INavItem, NavItem, usePermittedNavItems } from "../../layout/nav-item"
 import { Shell } from "../../layout/shell"
 
 import { Link, useLocation, useNavigate } from "react-router-dom"
@@ -30,6 +30,21 @@ import { useExtension } from "../../../providers/extension-provider"
 import { useSearch } from "../../../providers/search-provider"
 import { UserMenu } from "../user-menu"
 import { useDocumentDirection } from "../../../hooks/use-document-direction"
+import {
+  useCampaignPermissions,
+  useCustomerGroupPermissions,
+  useCustomerPermissions,
+  useInventoryItemPermissions,
+  useOrderPermissions,
+  usePriceListPermissions,
+  useProductCategoryPermissions,
+  useProductCollectionPermissions,
+  useProductPermissions,
+  usePromotionPermissions,
+  useReservationItemPermissions,
+  useResourcePermissions,
+} from "../../../hooks/use-resource-permissions"
+import { CUSTOMIZE_IDS } from "../../layout-composer/constants"
 
 export const MainLayout = () => {
   return (
@@ -43,20 +58,21 @@ const MainSidebar = () => {
   return (
     <aside className="flex flex-1 flex-col justify-between overflow-y-auto">
       <div className="flex flex-1 flex-col">
-        <div className="bg-ui-bg-subtle sticky top-0">
-          <Header />
-          <div className="px-3">
-            <Divider variant="dashed" />
+        <PermissionGuard resource="store" operation="read">
+          <div className="sticky top-0 bg-ui-bg-subtle">
+            <Header />
+            <div className="px-3">
+              <Divider variant="dashed" />
+            </div>
           </div>
-        </div>
+        </PermissionGuard>
         <div className="flex flex-1 flex-col justify-between">
           <div className="flex flex-1 flex-col">
-            <CoreRouteSection />
-            <ExtensionRouteSection />
+            <SidebarRoutes />
           </div>
           <UtilitySection />
         </div>
-        <div className="bg-ui-bg-subtle sticky bottom-0">
+        <div className="sticky bottom-0 bg-ui-bg-subtle">
           <UserSection />
         </div>
       </div>
@@ -107,12 +123,11 @@ const Header = () => {
 
   return (
     <div className="w-full p-3">
-    <DropdownMenu
-          dir={direction}>
+      <DropdownMenu dir={direction}>
         <DropdownMenu.Trigger
           disabled={!isLoaded}
           className={clx(
-            "bg-ui-bg-subtle transition-fg grid w-full grid-cols-[24px_1fr_15px] items-center gap-x-3 rounded-md p-0.5 pe-2 outline-none",
+            "grid w-full grid-cols-[24px_1fr_15px] items-center gap-x-3 rounded-md bg-ui-bg-subtle p-0.5 pe-2 outline-none transition-fg",
             "hover:bg-ui-bg-subtle-hover",
             "data-[state=open]:bg-ui-bg-subtle-hover",
             "focus-visible:shadow-borders-focus"
@@ -179,78 +194,132 @@ const Header = () => {
 
 const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
   const { t } = useTranslation()
+  const { canRead: canReadCustomers } = useCustomerPermissions()
+  const { canRead: canReadCustomerGroups } = useCustomerGroupPermissions()
+  const { canRead: canReadOrders } = useOrderPermissions()
+  const { canRead: canReadInventory } = useInventoryItemPermissions()
+  const { canRead: canReadReservations } = useReservationItemPermissions()
+  const { canRead: canReadPromotions } = usePromotionPermissions()
+  const { canRead: canReadCampaigns } = useCampaignPermissions()
+  const { canRead: canReadPriceLists } = usePriceListPermissions()
+  const { canRead: canReadProducts } = useProductPermissions()
+  const { canRead: canReadProductCollections } =
+    useProductCollectionPermissions()
+  const { canRead: canReadProductCategories } = useProductCategoryPermissions()
+  const { canRead: canReadProductOptions } =
+    useResourcePermissions("product_option")
 
   return [
-    {
-      icon: <ShoppingCart />,
-      label: t("orders.domain"),
-      to: "/orders",
-      items: [
-        // TODO: Enable when domin is introduced
-        // {
-        //   label: t("draftOrders.domain"),
-        //   to: "/draft-orders",
-        // },
-      ],
-    },
-    {
-      icon: <Tag />,
-      label: t("products.domain"),
-      to: "/products",
-      items: [
-        {
-          label: t("collections.domain"),
-          to: "/collections",
-        },
-        {
-          label: t("categories.domain"),
-          to: "/categories",
-        },
-        // TODO: Enable when domin is introduced
-        // {
-        //   label: t("giftCards.domain"),
-        //   to: "/gift-cards",
-        // },
-      ],
-    },
-    {
-      icon: <Buildings />,
-      label: t("inventory.domain"),
-      to: "/inventory",
-      items: [
-        {
-          label: t("reservations.domain"),
-          to: "/reservations",
-        },
-      ],
-    },
-    {
-      icon: <Users />,
-      label: t("customers.domain"),
-      to: "/customers",
-      items: [
-        {
-          label: t("customerGroups.domain"),
-          to: "/customer-groups",
-        },
-      ],
-    },
-    {
-      icon: <ReceiptPercent />,
-      label: t("promotions.domain"),
-      to: "/promotions",
-      items: [
-        {
-          label: t("campaigns.domain"),
-          to: "/campaigns",
-        },
-      ],
-    },
-    {
-      icon: <CurrencyDollar />,
-      label: t("priceLists.domain"),
-      to: "/price-lists",
-    },
+    ...(canReadOrders
+      ? [
+          {
+            icon: <ShoppingCart />,
+            label: t("orders.domain"),
+            to: "/orders",
+          },
+        ]
+      : []),
+    ...(canReadProducts
+      ? [
+          {
+            icon: <Tag />,
+            label: t("products.domain"),
+            to: "/products",
+            items: [
+              ...(canReadProductCollections
+                ? [
+                    {
+                      label: t("collections.domain"),
+                      to: "/collections",
+                    },
+                  ]
+                : []),
+              ...(canReadProductCategories
+                ? [
+                    {
+                      label: t("categories.domain"),
+                      to: "/categories",
+                    },
+                  ]
+                : []),
+              ...(canReadProductOptions
+                ? [
+                    {
+                      label: t("productOptions.domain"),
+                      to: "/product-options",
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ]
+      : []),
+    ...(canReadInventory
+      ? [
+          {
+            icon: <Buildings />,
+            label: t("inventory.domain"),
+            to: "/inventory",
+            items: [
+              ...(canReadReservations
+                ? [
+                    {
+                      label: t("reservations.domain"),
+                      to: "/reservations",
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ]
+      : []),
+    ...(canReadCustomers
+      ? [
+          {
+            icon: <Users />,
+            label: t("customers.domain"),
+            to: "/customers",
+            items: [
+              ...(canReadCustomerGroups
+                ? [
+                    {
+                      label: t("customerGroups.domain"),
+                      to: "/customer-groups",
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ]
+      : []),
+    ...(canReadPromotions
+      ? [
+          {
+            icon: <ReceiptPercent />,
+            label: t("promotions.domain"),
+            to: "/promotions",
+            items: [
+              ...(canReadCampaigns
+                ? [
+                    {
+                      label: t("campaigns.domain"),
+                      to: "/campaigns",
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ]
+      : []),
+    ...(canReadPriceLists
+      ? [
+          {
+            icon: <CurrencyDollar />,
+            label: t("priceLists.domain"),
+            to: "/price-lists",
+          },
+        ]
+      : []),
   ]
 }
 
@@ -259,11 +328,11 @@ const Searchbar = () => {
   const { toggleSearch } = useSearch()
 
   return (
-    <div className="px-3">
+    <div>
       <button
         onClick={toggleSearch}
         className={clx(
-          "bg-ui-bg-subtle text-ui-fg-subtle flex w-full items-center gap-x-2.5 rounded-md px-2 py-1 outline-none",
+          "flex w-full items-center gap-x-2.5 rounded-md bg-ui-bg-subtle px-2 py-1 text-ui-fg-subtle outline-none",
           "hover:bg-ui-bg-subtle-hover",
           "focus-visible:shadow-borders-focus"
         )}
@@ -282,82 +351,72 @@ const Searchbar = () => {
   )
 }
 
-const CoreRouteSection = () => {
+/**
+ * The customizable nav. Every top-level route(core and extensions) is
+ * fed to the `LayoutComposer` as its own entry, so each can be reordered/hidden
+ * (and its children reordered) independently in edit mode.
+ */
+const SidebarRoutes = () => {
   const coreRoutes = useCoreRoutes()
 
   const { getMenu } = useExtension()
 
-  const menuItems = getMenu("coreExtensions")
+  const menuItems = usePermittedNavItems(getMenu("coreExtensions"))
 
   menuItems.forEach((item) => {
     if (item.nested) {
       const route = coreRoutes.find((route) => route.to === item.nested)
       if (route) {
-        route.items?.push(item)
+        route.items = [...(route.items ?? []), item]
       }
     }
   })
 
-  return (
-    <nav className="flex flex-col gap-y-1 py-3">
-      <Searchbar />
-      {coreRoutes.map((route) => {
-        return <NavItem key={route.to} {...route} />
-      })}
-    </nav>
-  )
-}
-
-const ExtensionRouteSection = () => {
-  const { t } = useTranslation()
-  const { getMenu } = useExtension()
-
-  const menuItems = getMenu("coreExtensions").filter((item) => !item.nested)
-
-  if (!menuItems.length) {
-    return null
-  }
+  const extensionItems = menuItems.filter((item) => !item.nested)
 
   return (
-    <div>
+    <nav className="py-3">
       <div className="px-3">
-        <Divider variant="dashed" />
+        <LayoutComposer
+          widgetsZonePrefix="sidebar"
+          preferredLayoutId={CORE_LAYOUT_IDS.SINGLE_COLUMN}
+          hasOutlet={false}
+          disableWidgets
+          customizeId={CUSTOMIZE_IDS.MAIN_SIDEBAR}
+          controlSize="small"
+          layoutProps={{
+            className: "gap-y-1",
+          }}
+          sections={{
+            main: (
+              <>
+                <LayoutComposer.Entry id="Searchbar">
+                  <Searchbar />
+                </LayoutComposer.Entry>
+                {coreRoutes.map((route) => (
+                  <LayoutComposer.Entry id={`nav:${route.to}`} key={route.to}>
+                    <NavItem key={route.to} {...route} />
+                  </LayoutComposer.Entry>
+                ))}
+                {extensionItems.map((item) => (
+                  <LayoutComposer.Entry id={`nav:${item.to}`} key={item.to}>
+                    <NavItem
+                      key={item.to}
+                      to={item.to}
+                      label={item.label}
+                      icon={item.icon ? item.icon : <SquaresPlus />}
+                      items={item.items}
+                      translationNs={item.translationNs}
+                      type="extension"
+                    />
+                  </LayoutComposer.Entry>
+                ))}
+              </>
+            ),
+          }}
+        />
       </div>
-      <div className="flex flex-col gap-y-1 py-3">
-        <RadixCollapsible.Root defaultOpen>
-          <div className="px-4">
-            <RadixCollapsible.Trigger asChild className="group/trigger">
-              <button className="text-ui-fg-subtle flex w-full items-center justify-between px-2">
-                <Text size="xsmall" weight="plus" leading="compact">
-                  {t("app.nav.common.extensions")}
-                </Text>
-                <div className="text-ui-fg-muted">
-                  <ChevronDownMini className="group-data-[state=open]/trigger:hidden" />
-                  <MinusMini className="group-data-[state=closed]/trigger:hidden" />
-                </div>
-              </button>
-            </RadixCollapsible.Trigger>
-          </div>
-          <RadixCollapsible.Content>
-            <nav className="flex flex-col gap-y-0.5 py-1 pb-4">
-              {menuItems.map((item, i) => {
-                return (
-                  <NavItem
-                    key={i}
-                    to={item.to}
-                    label={item.label}
-                    icon={item.icon ? item.icon : <SquaresPlus />}
-                    items={item.items}
-                    translationNs={item.translationNs}
-                    type="extension"
-                  />
-                )
-              })}
-            </nav>
-          </RadixCollapsible.Content>
-        </RadixCollapsible.Root>
-      </div>
-    </div>
+    </nav>
   )
 }
 
@@ -366,7 +425,7 @@ const UtilitySection = () => {
   const { t } = useTranslation()
 
   return (
-    <div className="flex flex-col gap-y-0.5 py-3">
+    <div className="flex flex-col gap-y-0.5 px-3 py-3">
       <NavItem
         label={t("app.nav.settings.header")}
         to="/settings"

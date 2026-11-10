@@ -100,7 +100,7 @@ To reflect the `Custom` data model in the database, generate a migration that de
 
 Run the following command in your Medusa project's root:
 
-```bash
+```bash npx2yarn
 npx medusa db:generate helloModuleService
 ```
 
@@ -108,7 +108,7 @@ Where `helloModuleService` is your module's name.
 
 Then, run the `db:migrate` command to run the migrations and create a table in the database for the link between the `Cart` and `Custom` data models:
 
-```bash
+```bash npx2yarn
 npx medusa db:migrate
 ```
 
@@ -120,7 +120,7 @@ A table for the link is now created in the database. You can now retrieve and ma
 
 When a cart is created, you also want to create a `Custom` record and set the `custom_name` property, then create a link between the `Cart` and `Custom` records.
 
-To do that, you'll consume the [cartCreated](/references/medusa-workflows/createCartWorkflow#cartcreated) hook of the [createCartWorkflow](/references/medusa-workflows/createCartWorkflow). This workflow is executed in the [Create Cart API Route](!api!/store#carts_postcarts).
+To do that, you'll consume the [cartCreated](/references/medusa-workflows/createCartWorkflow#cartcreated) hook of the [createCartWorkflow](/references/medusa-workflows/createCartWorkflow). This workflow is executed in the [Create Cart API Route](!api!/store/carts/create-cart).
 
 <Note title="Tip">
 
@@ -136,9 +136,15 @@ To pass the `custom_name` in the `additional_data` parameter, you must add a val
 
 Create the file `src/api/middlewares.ts` with the following content:
 
+<Note>
+
+As of [Medusa v2.13.0](https://github.com/medusajs/medusa/releases/tag/v2.13.0), Zod should be imported from `@medusajs/framework/zod`.
+
+</Note>
+
 ```ts title="src/api/middlewares.ts"
 import { defineMiddlewares } from "@medusajs/framework/http"
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 
 export default defineMiddlewares({
   routes: [
@@ -326,13 +332,51 @@ The request will return the cart's details. You'll learn how to retrieve the `cu
 
 When you extend an existing data model through links, you also want to retrieve the custom properties with the data model.
 
+### Allow Retrieving Custom Fields in API Routes
+
+The Store API routes only return the fields that they allow in the `fields` query parameter. Since the `custom` link isn't part of the Store Cart routes' allowed fields, Medusa removes it from the response without an error.
+
+So, before you can retrieve the linked `Custom` record through the Store Cart API routes, you must add `custom` to the allowed fields of those routes.
+
+To do that, add a new route middleware configuration object in `src/api/middlewares.ts`:
+
+```ts title="src/api/middlewares.ts"
+import { allowFields } from "@medusajs/framework/http"
+
+export default defineMiddlewares({
+  routes: [
+    // ...
+    {
+      matcher: "/store/carts",
+      middlewares: [allowFields("custom")],
+    },
+  ],
+})
+```
+
+<Note>
+
+`allowFields` is available since Medusa [v2.21.0](https://github.com/medusajs/medusa/releases/tag/v2.21.0). In earlier versions, write the middleware yourself, as explained in the [Allowed Fields](!docs!/learn/fundamentals/api-routes/allowed-fields#how-to-override-allowed-fields-of-medusas-api-routes) documentation.
+
+</Note>
+
+This middleware pushes `custom` to the allowed fields of the Store Cart API routes, so Medusa keeps the field when a request asks for it.
+
+<Note title="Important">
+
+The middleware must be global, so don't set a `method` property in the route object, even though some of the Store Cart API routes accept `POST` requests. Medusa runs a middleware scoped to a method after it validates the `fields` query parameter, so it has no effect.
+
+</Note>
+
+Learn more in the [Allowed Fields](!docs!/learn/fundamentals/api-routes/allowed-fields) documentation.
+
 ### Retrieve in API Routes
 
-To retrieve the `custom_name` property when you're retrieving the cart through API routes, such as the [Get Cart API Route](!api!/store#carts_getcartsid), pass in the `fields` query parameter `+custom.*`, which retrieves the linked `Custom` record's details.
+After you allow the `custom` field, you can retrieve the `custom_name` property when you're retrieving the cart through API routes, such as the [Get Cart API Route](!api!/store/carts/get-a-cart). To do that, pass in the `fields` query parameter `+custom.*`, which retrieves the linked `Custom` record's details.
 
 <Note title="Tip">
 
-The `+` prefix in `+custom.*` indicates that the relation should be retrieved with the default cart fields. Learn more about selecting fields and relations in the [API reference](!api!/store#select-fields-and-relations).
+The `+` prefix in `+custom.*` indicates that the relation should be retrieved with the default cart fields. Learn more about selecting fields and relations in the [API reference](!api!/store/select-fields-and-relations).
 
 </Note>
 
@@ -364,7 +408,7 @@ Among the returned `cart` object, you'll find a `custom` property which holds th
 
 ### Retrieve using Query
 
-You can also retrieve the `Custom` record linked to a cart in your code using [Query](!docs!/learn/fundamentals/module-links/query).
+You can also retrieve the `Custom` record linked to a cart in your code using [Query](!docs!/learn/fundamentals/query).
 
 For example:
 
@@ -378,7 +422,7 @@ const { data: [cart] } = await query.graph({
 })
 ```
 
-Learn more about how to use Query in [this guide](!docs!/learn/fundamentals/module-links/query).
+Learn more about how to use Query in [this guide](!docs!/learn/fundamentals/query).
 
 ---
 
@@ -386,15 +430,21 @@ Learn more about how to use Query in [this guide](!docs!/learn/fundamentals/modu
 
 Similar to the `cartCreated` hook, you'll consume the [cartUpdated](/references/medusa-workflows/updateCartWorkflow#cartupdated) hook of the [updateCartWorkflow](/references/medusa-workflows/updateCartWorkflow) to update `custom_name` when the cart is updated.
 
-The `updateCartWorkflow` is executed by the [Update Cart API route](!api!/store#carts_postcartsid), which accepts the `additional_data` parameter to pass custom data to the hook.
+The `updateCartWorkflow` is executed by the [Update Cart API route](!api!/store/carts/update-a-cart), which accepts the `additional_data` parameter to pass custom data to the hook.
 
 ### Add custom_name to Additional Data Validation
 
 To allow passing `custom_name` in the `additional_data` parameter of the update cart route, add in `src/api/middlewares.ts` a new route middleware configuration object:
 
+<Note>
+
+As of [Medusa v2.13.0](https://github.com/medusajs/medusa/releases/tag/v2.13.0), Zod should be imported from `@medusajs/framework/zod`.
+
+</Note>
+
 ```ts title="src/api/middlewares.ts"
 import { defineMiddlewares } from "@medusajs/framework/http"
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 
 export default defineMiddlewares({
   routes: [
@@ -657,7 +707,7 @@ In the workflow hook handler, you execute the workflow, passing it the hook's in
 
 ### Test it Out
 
-To test it out, send a `POST` request to `/store/carts/:id` to update a cart, passing `custom_name` in `additional_data`:
+To test it out, send a `POST` request to `/store/carts/:id` to update a cart, passing `custom_name` in `additional_data`. The request also passes `+custom.*` in the `fields` query parameter, which the [middleware you added earlier](#allow-retrieving-custom-fields-in-api-routes) allows:
 
 ```bash
 curl -X POST 'localhost:9000/store/carts/{cart_id}?fields=+custom.*' \

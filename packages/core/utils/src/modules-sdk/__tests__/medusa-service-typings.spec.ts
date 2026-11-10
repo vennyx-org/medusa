@@ -86,7 +86,7 @@ describe("Medusa Service typings", () => {
               tags: string[] | undefined
               description: string | null | undefined
             }>,
-            ...rest: any[]
+            ...rest: any[],
           ]
         | [
             Partial<{
@@ -96,7 +96,7 @@ describe("Medusa Service typings", () => {
               tags: string[] | undefined
               description: string | null | undefined
             }>[],
-            ...rest: any[]
+            ...rest: any[],
           ]
       >()
       expectTypeOf(blogService.createBlogs).returns.toEqualTypeOf<
@@ -113,7 +113,7 @@ describe("Medusa Service typings", () => {
               author_id: string | undefined
               description: string | null | undefined
             }>,
-            ...rest: any[]
+            ...rest: any[],
           ]
         | [
             Partial<{
@@ -124,7 +124,7 @@ describe("Medusa Service typings", () => {
               author_id: string | undefined
               description: string | null | undefined
             }>[],
-            ...rest: any[]
+            ...rest: any[],
           ]
       >()
       expectTypeOf(blogService.createBlogs).returns.toEqualTypeOf<
@@ -198,7 +198,17 @@ describe("Medusa Service typings", () => {
               tags: string[] | undefined
               description: string | null | undefined
             }>,
-            ...rest: any[]
+            ...rest: any[],
+          ]
+        | [
+            Partial<{
+              id: string | undefined
+              title: string | undefined
+              comments: string[] | undefined
+              tags: string[] | undefined
+              description: string | null | undefined
+            }>[],
+            ...rest: any[],
           ]
         | [
             (
@@ -246,7 +256,7 @@ describe("Medusa Service typings", () => {
                       }>[]
                 }[]
             ),
-            ...rest: any[]
+            ...rest: any[],
           ]
       >()
       expectTypeOf(blogService.updateBlogs).returns.toEqualTypeOf<
@@ -262,6 +272,7 @@ describe("Medusa Service typings", () => {
 
       expectTypeOf(blogService.updateBlogs).parameters.toEqualTypeOf<
         | [Partial<BlogDTO>, ...rest: any[]]
+        | [Partial<BlogDTO>[], ...rest: any[]]
         | [
             (
               | Partial<BlogDTO>[]
@@ -274,12 +285,46 @@ describe("Medusa Service typings", () => {
                   data: Partial<BlogDTO> | Partial<BlogDTO>[]
                 }[]
             ),
-            ...rest: any[]
+            ...rest: any[],
           ]
       >()
       expectTypeOf(blogService.updateBlogs).returns.toEqualTypeOf<
         Promise<BlogDTO> | Promise<BlogDTO[]>
       >()
+    })
+
+    test("keeps every documented call shape compiling", () => {
+      class BlogService extends MedusaService<{ Blog: { dto: BlogDTO } }>({
+        Blog,
+      }) {}
+
+      // type-only: never executed, asserts overload resolution per call shape
+      const assertCallShapes = (
+        blogService: InstanceType<typeof BlogService>
+      ) => {
+        expectTypeOf(blogService.updateBlogs({ id: 1 })).toEqualTypeOf<
+          Promise<BlogDTO>
+        >()
+        expectTypeOf(blogService.updateBlogs([{ id: 1 }])).toEqualTypeOf<
+          Promise<BlogDTO[]>
+        >()
+        expectTypeOf(
+          blogService.updateBlogs({ selector: {}, data: { title: "t" } })
+        ).toEqualTypeOf<Promise<BlogDTO[]>>()
+        expectTypeOf(
+          blogService.updateBlogs([{ selector: {}, data: { title: "t" } }])
+        ).toEqualTypeOf<Promise<BlogDTO[]>>()
+
+        // a union-typed argument must keep matching the catch-all overload
+        const dataOrSelector = [] as
+          | Partial<BlogDTO>[]
+          | { selector: Record<string, any>; data: Partial<BlogDTO> }
+        expectTypeOf(blogService.updateBlogs(dataOrSelector)).toEqualTypeOf<
+          Promise<BlogDTO[]>
+        >()
+      }
+
+      expect(assertCallShapes).toBeInstanceOf(Function)
     })
 
     test("type-hint force overridden properties", () => {
@@ -311,6 +356,7 @@ describe("Medusa Service typings", () => {
 
       expectTypeOf(blogService.updateBlogs).parameters.toEqualTypeOf<
         | [Partial<{ title: string | undefined }>, ...rest: any[]]
+        | [Partial<{ title: string | undefined }>[], ...rest: any[]]
         | [
             (
               | Partial<{ title: string | undefined }>[]
@@ -327,7 +373,7 @@ describe("Medusa Service typings", () => {
                     | Partial<{ title: string | undefined }>[]
                 }[]
             ),
-            ...rest: any[]
+            ...rest: any[],
           ]
       >()
       expectTypeOf(blogService.createBlogs).returns.toEqualTypeOf<

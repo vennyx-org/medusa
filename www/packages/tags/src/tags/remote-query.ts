@@ -1,15 +1,19 @@
 export const remoteQuery = [
   {
-    "title": "generateResetPasswordTokenWorkflow",
-    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/generateResetPasswordTokenWorkflow"
-  },
-  {
     "title": "updateCartPromotionsStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/updateCartPromotionsStep"
   },
   {
+    "title": "addGiftCardToCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addGiftCardToCartWorkflow"
+  },
+  {
     "title": "addShippingMethodToCartWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addShippingMethodToCartWorkflow"
+  },
+  {
+    "title": "addStoreCreditsToCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addStoreCreditsToCartWorkflow"
   },
   {
     "title": "addToCartWorkflow",
@@ -26,6 +30,10 @@ export const remoteQuery = [
   {
     "title": "refreshCartItemsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/refreshCartItemsWorkflow"
+  },
+  {
+    "title": "removeGiftCardFromCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/removeGiftCardFromCartWorkflow"
   },
   {
     "title": "transferCartCustomerWorkflow",
@@ -46,10 +54,6 @@ export const remoteQuery = [
   {
     "title": "useRemoteQueryStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/useRemoteQueryStep"
-  },
-  {
-    "title": "removeCustomerAccountWorkflow",
-    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/removeCustomerAccountWorkflow"
   },
   {
     "title": "setShippingOptionsPricesStep",
@@ -300,10 +304,6 @@ export const remoteQuery = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updatePriceListPricesWorkflow"
   },
   {
-    "title": "getAllProductsStep",
-    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/getAllProductsStep"
-  },
-  {
     "title": "batchProductVariantsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/batchProductVariantsWorkflow"
   },
@@ -314,10 +314,6 @@ export const remoteQuery = [
   {
     "title": "createProductsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createProductsWorkflow"
-  },
-  {
-    "title": "exportProductsWorkflow",
-    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/exportProductsWorkflow"
   },
   {
     "title": "updateProductsWorkflow",
@@ -338,9 +334,5 @@ export const remoteQuery = [
   {
     "title": "updateRegionsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateRegionsWorkflow"
-  },
-  {
-    "title": "removeUserAccountWorkflow",
-    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/removeUserAccountWorkflow"
   }
 ]

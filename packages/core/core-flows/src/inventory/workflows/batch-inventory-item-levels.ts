@@ -11,6 +11,8 @@ import {
   InventoryLevelDTO,
   InventoryTypes,
 } from "@medusajs/framework/types"
+import { InventoryLevelWorkflowEvents } from "@medusajs/framework/utils"
+import { emitEventStep } from "../../common"
 import { createInventoryLevelsStep, updateInventoryLevelsStep } from "../steps"
 import { deleteInventoryLevelsWorkflow } from "./delete-inventory-levels"
 
@@ -21,11 +23,10 @@ import { deleteInventoryLevelsWorkflow } from "./delete-inventory-levels"
  * @property update - The inventory levels to update.
  * @property delete - The IDs of inventory levels to delete.
  */
-export interface BatchInventoryItemLevelsWorkflowInput
-  extends BatchWorkflowInput<
-    InventoryTypes.CreateInventoryLevelInput,
-    InventoryTypes.UpdateInventoryLevelInput
-  > {
+export interface BatchInventoryItemLevelsWorkflowInput extends BatchWorkflowInput<
+  InventoryTypes.CreateInventoryLevelInput,
+  InventoryTypes.UpdateInventoryLevelInput
+> {
   /**
    * If true, the workflow will force the deletion of the inventory levels, even
    * if they have a non-zero stocked quantity. If false, the workflow will
@@ -46,8 +47,7 @@ export interface BatchInventoryItemLevelsWorkflowInput
  * @property updated - The inventory levels that were updated.
  * @property deleted - The IDs of the inventory levels that were deleted.
  */
-export interface BatchInventoryItemLevelsWorkflowOutput
-  extends BatchWorkflowOutput<InventoryLevelDTO> {}
+export interface BatchInventoryItemLevelsWorkflowOutput extends BatchWorkflowOutput<InventoryLevelDTO> {}
 
 export const batchInventoryItemLevelsWorkflowId =
   "batch-inventory-item-levels-workflow"
@@ -107,6 +107,25 @@ export const batchInventoryItemLevelsWorkflow = createWorkflow(
       deleteInventoryLevelsWorkflow.runAsStep({
         input: deleteInput,
       })
+    )
+
+    const { createdEvents, updatedEvents } = transform({ res }, ({ res }) => {
+      return {
+        createdEvents: (res[0] || []).map((level) => ({ id: level.id })),
+        updatedEvents: (res[1] || []).map((level) => ({ id: level.id })),
+      }
+    })
+
+    // Delete event is emitted by the deleteInventoryLevelsWorkflow, so we don't need to emit it here.
+    parallelize(
+      emitEventStep({
+        eventName: InventoryLevelWorkflowEvents.CREATED,
+        data: createdEvents,
+      }).config({ name: "emit-inventory-level-created" }),
+      emitEventStep({
+        eventName: InventoryLevelWorkflowEvents.UPDATED,
+        data: updatedEvents,
+      }).config({ name: "emit-inventory-level-updated" })
     )
 
     return new WorkflowResponse(

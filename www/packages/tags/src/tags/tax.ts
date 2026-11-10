@@ -16,8 +16,16 @@ export const tax = [
     "path": "https://docs.medusajs.com/resources/storefront-development/products/price/examples/tax-price"
   },
   {
+    "title": "addGiftCardToCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addGiftCardToCartWorkflow"
+  },
+  {
     "title": "addShippingMethodToCartWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addShippingMethodToCartWorkflow"
+  },
+  {
+    "title": "addStoreCreditsToCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addStoreCreditsToCartWorkflow"
   },
   {
     "title": "addToCartWorkflow",
@@ -30,6 +38,10 @@ export const tax = [
   {
     "title": "refreshCartItemsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/refreshCartItemsWorkflow"
+  },
+  {
+    "title": "removeGiftCardFromCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/removeGiftCardFromCartWorkflow"
   },
   {
     "title": "transferCartCustomerWorkflow",
@@ -48,6 +60,10 @@ export const tax = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateTaxLinesWorkflow"
   },
   {
+    "title": "upsertTaxLinesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/upsertTaxLinesWorkflow"
+  },
+  {
     "title": "addDraftOrderItemsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addDraftOrderItemsWorkflow"
   },
@@ -56,8 +72,40 @@ export const tax = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addDraftOrderShippingMethodsWorkflow"
   },
   {
+    "title": "confirmDraftOrderEditWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/confirmDraftOrderEditWorkflow"
+  },
+  {
+    "title": "convertDraftOrderWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/convertDraftOrderWorkflow"
+  },
+  {
+    "title": "refreshConfirmedDraftOrderShippingMethodsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/refreshConfirmedDraftOrderShippingMethodsWorkflow"
+  },
+  {
+    "title": "refreshPendingDraftOrderShippingMethodsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/refreshPendingDraftOrderShippingMethodsWorkflow"
+  },
+  {
+    "title": "removeDraftOrderActionItemWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/removeDraftOrderActionItemWorkflow"
+  },
+  {
+    "title": "updateDraftOrderActionItemWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateDraftOrderActionItemWorkflow"
+  },
+  {
+    "title": "updateDraftOrderItemWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateDraftOrderItemWorkflow"
+  },
+  {
     "title": "updateDraftOrderShippingMethodWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateDraftOrderShippingMethodWorkflow"
+  },
+  {
+    "title": "updateDraftOrderWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateDraftOrderWorkflow"
   },
   {
     "title": "deleteLineItemsWorkflow",

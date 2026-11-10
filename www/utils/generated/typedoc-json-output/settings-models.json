@@ -1,0 +1,1319 @@
+{
+	"schemaVersion": "2.0",
+	"id": 17564,
+	"name": "settings-models",
+	"variant": "project",
+	"kind": 1,
+	"flags": {},
+	"children": [
+		{
+			"id": 17586,
+			"name": "LayoutConfiguration",
+			"variant": "declaration",
+			"kind": 32,
+			"flags": {
+				"isConst": true
+			},
+			"sources": [
+				{
+					"fileName": "layout-configuration.ts",
+					"line": 3,
+					"character": 13,
+					"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/layout-configuration.ts#L3"
+				}
+			],
+			"type": {
+				"type": "reference",
+				"target": {
+					"packageName": "@medusajs/utils",
+					"packagePath": "src/dml/entity.ts",
+					"qualifiedName": "DmlEntity"
+				},
+				"typeArguments": [
+					{
+						"type": "reference",
+						"target": {
+							"packageName": "@medusajs/utils",
+							"packagePath": "src/dml/entity.ts",
+							"qualifiedName": "DMLEntitySchemaBuilder"
+						},
+						"typeArguments": [
+							{
+								"type": "reflection",
+								"declaration": {
+									"id": 17587,
+									"name": "__type",
+									"variant": "declaration",
+									"kind": 65536,
+									"flags": {},
+									"children": [
+										{
+											"id": 17588,
+											"name": "id",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The ID of the layout configuration."
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "layout-configuration.ts",
+													"line": 5,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/layout-configuration.ts#L5"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/primary-key.ts",
+													"qualifiedName": "PrimaryKeyModifier"
+												},
+												"typeArguments": [
+													{
+														"type": "reference",
+														"target": {
+															"packageName": "@medusajs/utils",
+															"packagePath": "src/dml/properties/id.ts",
+															"qualifiedName": "IdProperty"
+														},
+														"name": "IdProperty",
+														"package": "@medusajs/utils"
+													}
+												],
+												"name": "PrimaryKeyModifier",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17589,
+											"name": "zone",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The zone of the layout configuration"
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "layout-configuration.ts",
+													"line": 6,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/layout-configuration.ts#L6"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
+													"qualifiedName": "TextProperty"
+												},
+												"name": "TextProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17590,
+											"name": "user_id",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {
+												"isOptional": true
+											},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The user ID of the layout configuration"
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "layout-configuration.ts",
+													"line": 7,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/layout-configuration.ts#L7"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
+													"qualifiedName": "TextProperty"
+												},
+												"name": "TextProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17591,
+											"name": "is_system_default",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "Whether the layout configuration is system default."
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "layout-configuration.ts",
+													"line": 8,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/layout-configuration.ts#L8"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/boolean.ts",
+													"qualifiedName": "BooleanProperty"
+												},
+												"name": "BooleanProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17592,
+											"name": "configuration",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The configuration of the layout."
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "layout-configuration.ts",
+													"line": 9,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/layout-configuration.ts#L9"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/json.ts",
+													"qualifiedName": "JSONProperty"
+												},
+												"typeArguments": [
+													{
+														"type": "reference",
+														"target": {
+															"packageName": "typescript",
+															"packagePath": "lib/lib.es5.d.ts",
+															"qualifiedName": "NoInfer"
+														},
+														"typeArguments": [
+															{
+																"type": "reference",
+																"target": {
+																	"packageName": "typescript",
+																	"packagePath": "lib/lib.es5.d.ts",
+																	"qualifiedName": "Record"
+																},
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "string"
+																	},
+																	{
+																		"type": "intrinsic",
+																		"name": "unknown"
+																	}
+																],
+																"name": "Record",
+																"package": "typescript"
+															}
+														],
+														"name": "NoInfer",
+														"package": "typescript"
+													}
+												],
+												"name": "JSONProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										}
+									],
+									"groups": [
+										{
+											"title": "Properties",
+											"children": [
+												17588,
+												17589,
+												17590,
+												17591,
+												17592
+											]
+										}
+									]
+								}
+							}
+						],
+						"name": "DMLEntitySchemaBuilder",
+						"package": "@medusajs/utils"
+					},
+					{
+						"type": "literal",
+						"value": "layout_configuration"
+					}
+				],
+				"name": "DmlEntity",
+				"package": "@medusajs/utils"
+			},
+			"defaultValue": "..."
+		},
+		{
+			"id": 17579,
+			"name": "PropertyLabel",
+			"variant": "declaration",
+			"kind": 32,
+			"flags": {
+				"isConst": true
+			},
+			"comment": {
+				"summary": [
+					{
+						"kind": "text",
+						"text": "PropertyLabel stores custom display labels for entity properties.\nLabels are global (shared across all admin users) and provide\nconsistent terminology throughout the admin interface."
+					}
+				]
+			},
+			"sources": [
+				{
+					"fileName": "property-label.ts",
+					"line": 8,
+					"character": 13,
+					"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/property-label.ts#L8"
+				}
+			],
+			"type": {
+				"type": "reference",
+				"target": {
+					"packageName": "@medusajs/utils",
+					"packagePath": "src/dml/entity.ts",
+					"qualifiedName": "DmlEntity"
+				},
+				"typeArguments": [
+					{
+						"type": "reference",
+						"target": {
+							"packageName": "@medusajs/utils",
+							"packagePath": "src/dml/entity.ts",
+							"qualifiedName": "DMLEntitySchemaBuilder"
+						},
+						"typeArguments": [
+							{
+								"type": "reflection",
+								"declaration": {
+									"id": 17580,
+									"name": "__type",
+									"variant": "declaration",
+									"kind": 65536,
+									"flags": {},
+									"children": [
+										{
+											"id": 17581,
+											"name": "id",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The ID of the property label."
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "property-label.ts",
+													"line": 10,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/property-label.ts#L10"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/primary-key.ts",
+													"qualifiedName": "PrimaryKeyModifier"
+												},
+												"typeArguments": [
+													{
+														"type": "reference",
+														"target": {
+															"packageName": "@medusajs/utils",
+															"packagePath": "src/dml/properties/id.ts",
+															"qualifiedName": "IdProperty"
+														},
+														"name": "IdProperty",
+														"package": "@medusajs/utils"
+													}
+												],
+												"name": "PrimaryKeyModifier",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17582,
+											"name": "entity",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The entity this label applies to (e.g., \"Order\", \"Product\")"
+													},
+													{
+														"kind": "text",
+														"text": "The entity of the property label"
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "property-label.ts",
+													"line": 14,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/property-label.ts#L14"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
+													"qualifiedName": "TextProperty"
+												},
+												"name": "TextProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17583,
+											"name": "property",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The property path (e.g., \"display_id\", \"customer.email\")"
+													},
+													{
+														"kind": "text",
+														"text": "The property of the property label"
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "property-label.ts",
+													"line": 18,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/property-label.ts#L18"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
+													"qualifiedName": "TextProperty"
+												},
+												"name": "TextProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17584,
+											"name": "label",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "Custom display name for the property"
+													},
+													{
+														"kind": "text",
+														"text": "The label of the property label"
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "property-label.ts",
+													"line": 22,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/property-label.ts#L22"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
+													"qualifiedName": "TextProperty"
+												},
+												"name": "TextProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17585,
+											"name": "description",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {
+												"isOptional": true
+											},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "Optional description providing context about the property"
+													},
+													{
+														"kind": "text",
+														"text": "The description of the property label"
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "property-label.ts",
+													"line": 26,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/property-label.ts#L26"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
+													"qualifiedName": "TextProperty"
+												},
+												"name": "TextProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										}
+									],
+									"groups": [
+										{
+											"title": "Properties",
+											"children": [
+												17581,
+												17582,
+												17583,
+												17584,
+												17585
+											]
+										}
+									]
+								}
+							}
+						],
+						"name": "DMLEntitySchemaBuilder",
+						"package": "@medusajs/utils"
+					},
+					{
+						"type": "literal",
+						"value": "property_label"
+					}
+				],
+				"name": "DmlEntity",
+				"package": "@medusajs/utils"
+			},
+			"defaultValue": "..."
+		},
+		{
+			"id": 17573,
+			"name": "UserPreference",
+			"variant": "declaration",
+			"kind": 32,
+			"flags": {
+				"isConst": true
+			},
+			"sources": [
+				{
+					"fileName": "user-preference.ts",
+					"line": 3,
+					"character": 13,
+					"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/user-preference.ts#L3"
+				}
+			],
+			"type": {
+				"type": "reference",
+				"target": {
+					"packageName": "@medusajs/utils",
+					"packagePath": "src/dml/entity.ts",
+					"qualifiedName": "DmlEntity"
+				},
+				"typeArguments": [
+					{
+						"type": "reference",
+						"target": {
+							"packageName": "@medusajs/utils",
+							"packagePath": "src/dml/entity.ts",
+							"qualifiedName": "DMLEntitySchemaBuilder"
+						},
+						"typeArguments": [
+							{
+								"type": "reflection",
+								"declaration": {
+									"id": 17574,
+									"name": "__type",
+									"variant": "declaration",
+									"kind": 65536,
+									"flags": {},
+									"children": [
+										{
+											"id": 17575,
+											"name": "id",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The ID of the user preference."
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "user-preference.ts",
+													"line": 5,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/user-preference.ts#L5"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/primary-key.ts",
+													"qualifiedName": "PrimaryKeyModifier"
+												},
+												"typeArguments": [
+													{
+														"type": "reference",
+														"target": {
+															"packageName": "@medusajs/utils",
+															"packagePath": "src/dml/properties/id.ts",
+															"qualifiedName": "IdProperty"
+														},
+														"name": "IdProperty",
+														"package": "@medusajs/utils"
+													}
+												],
+												"name": "PrimaryKeyModifier",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17576,
+											"name": "user_id",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The user id of the user preference"
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "user-preference.ts",
+													"line": 6,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/user-preference.ts#L6"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
+													"qualifiedName": "TextProperty"
+												},
+												"name": "TextProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17577,
+											"name": "key",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The key of the user preference"
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "user-preference.ts",
+													"line": 7,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/user-preference.ts#L7"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
+													"qualifiedName": "TextProperty"
+												},
+												"name": "TextProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17578,
+											"name": "value",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The value of the user preference"
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "user-preference.ts",
+													"line": 8,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/user-preference.ts#L8"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/json.ts",
+													"qualifiedName": "JSONProperty"
+												},
+												"typeArguments": [
+													{
+														"type": "reference",
+														"target": {
+															"packageName": "typescript",
+															"packagePath": "lib/lib.es5.d.ts",
+															"qualifiedName": "NoInfer"
+														},
+														"typeArguments": [
+															{
+																"type": "reference",
+																"target": {
+																	"packageName": "typescript",
+																	"packagePath": "lib/lib.es5.d.ts",
+																	"qualifiedName": "Record"
+																},
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "string"
+																	},
+																	{
+																		"type": "intrinsic",
+																		"name": "unknown"
+																	}
+																],
+																"name": "Record",
+																"package": "typescript"
+															}
+														],
+														"name": "NoInfer",
+														"package": "typescript"
+													}
+												],
+												"name": "JSONProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										}
+									],
+									"groups": [
+										{
+											"title": "Properties",
+											"children": [
+												17575,
+												17576,
+												17577,
+												17578
+											]
+										}
+									]
+								}
+							}
+						],
+						"name": "DMLEntitySchemaBuilder",
+						"package": "@medusajs/utils"
+					},
+					{
+						"type": "literal",
+						"value": "user_preference"
+					}
+				],
+				"name": "DmlEntity",
+				"package": "@medusajs/utils"
+			},
+			"defaultValue": "..."
+		},
+		{
+			"id": 17565,
+			"name": "ViewConfiguration",
+			"variant": "declaration",
+			"kind": 32,
+			"flags": {
+				"isConst": true
+			},
+			"sources": [
+				{
+					"fileName": "view-configuration.ts",
+					"line": 3,
+					"character": 13,
+					"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/view-configuration.ts#L3"
+				}
+			],
+			"type": {
+				"type": "reference",
+				"target": {
+					"packageName": "@medusajs/utils",
+					"packagePath": "src/dml/entity.ts",
+					"qualifiedName": "DmlEntity"
+				},
+				"typeArguments": [
+					{
+						"type": "reference",
+						"target": {
+							"packageName": "@medusajs/utils",
+							"packagePath": "src/dml/entity.ts",
+							"qualifiedName": "DMLEntitySchemaBuilder"
+						},
+						"typeArguments": [
+							{
+								"type": "reflection",
+								"declaration": {
+									"id": 17566,
+									"name": "__type",
+									"variant": "declaration",
+									"kind": 65536,
+									"flags": {},
+									"children": [
+										{
+											"id": 17567,
+											"name": "id",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The ID of the view configuration."
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "view-configuration.ts",
+													"line": 5,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/view-configuration.ts#L5"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/primary-key.ts",
+													"qualifiedName": "PrimaryKeyModifier"
+												},
+												"typeArguments": [
+													{
+														"type": "reference",
+														"target": {
+															"packageName": "@medusajs/utils",
+															"packagePath": "src/dml/properties/id.ts",
+															"qualifiedName": "IdProperty"
+														},
+														"name": "IdProperty",
+														"package": "@medusajs/utils"
+													}
+												],
+												"name": "PrimaryKeyModifier",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17568,
+											"name": "entity",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The entity of the view configuration"
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "view-configuration.ts",
+													"line": 6,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/view-configuration.ts#L6"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
+													"qualifiedName": "TextProperty"
+												},
+												"name": "TextProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17569,
+											"name": "name",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {
+												"isOptional": true
+											},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The name of the view configuration"
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "view-configuration.ts",
+													"line": 7,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/view-configuration.ts#L7"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
+													"qualifiedName": "TextProperty"
+												},
+												"name": "TextProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17570,
+											"name": "user_id",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {
+												"isOptional": true
+											},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The user ID of the view configuration"
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "view-configuration.ts",
+													"line": 8,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/view-configuration.ts#L8"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
+													"qualifiedName": "TextProperty"
+												},
+												"name": "TextProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17571,
+											"name": "is_system_default",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "Whether the view configuration is system default."
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "view-configuration.ts",
+													"line": 9,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/view-configuration.ts#L9"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/boolean.ts",
+													"qualifiedName": "BooleanProperty"
+												},
+												"name": "BooleanProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 17572,
+											"name": "configuration",
+											"variant": "declaration",
+											"kind": 1024,
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "The configuration of the view configuration"
+													}
+												]
+											},
+											"sources": [
+												{
+													"fileName": "view-configuration.ts",
+													"line": 10,
+													"character": 4,
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/settings/src/models/view-configuration.ts#L10"
+												}
+											],
+											"type": {
+												"type": "reference",
+												"target": {
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/json.ts",
+													"qualifiedName": "JSONProperty"
+												},
+												"typeArguments": [
+													{
+														"type": "reference",
+														"target": {
+															"packageName": "typescript",
+															"packagePath": "lib/lib.es5.d.ts",
+															"qualifiedName": "NoInfer"
+														},
+														"typeArguments": [
+															{
+																"type": "reference",
+																"target": {
+																	"packageName": "typescript",
+																	"packagePath": "lib/lib.es5.d.ts",
+																	"qualifiedName": "Record"
+																},
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "string"
+																	},
+																	{
+																		"type": "intrinsic",
+																		"name": "unknown"
+																	}
+																],
+																"name": "Record",
+																"package": "typescript"
+															}
+														],
+														"name": "NoInfer",
+														"package": "typescript"
+													}
+												],
+												"name": "JSONProperty",
+												"package": "@medusajs/utils"
+											},
+											"defaultValue": "..."
+										}
+									],
+									"groups": [
+										{
+											"title": "Properties",
+											"children": [
+												17567,
+												17568,
+												17569,
+												17570,
+												17571,
+												17572
+											]
+										}
+									]
+								}
+							}
+						],
+						"name": "DMLEntitySchemaBuilder",
+						"package": "@medusajs/utils"
+					},
+					{
+						"type": "literal",
+						"value": "view_configuration"
+					}
+				],
+				"name": "DmlEntity",
+				"package": "@medusajs/utils"
+			},
+			"defaultValue": "..."
+		}
+	],
+	"groups": [
+		{
+			"title": "Variables",
+			"children": [
+				17586,
+				17579,
+				17573,
+				17565
+			]
+		}
+	],
+	"packageName": "@medusajs/settings",
+	"symbolIdMap": {
+		"17564": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/index.ts",
+			"qualifiedName": ""
+		},
+		"17565": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/view-configuration.ts",
+			"qualifiedName": "ViewConfiguration"
+		},
+		"17566": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/view-configuration.ts",
+			"qualifiedName": "__object"
+		},
+		"17567": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/view-configuration.ts",
+			"qualifiedName": "__object.id"
+		},
+		"17568": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/view-configuration.ts",
+			"qualifiedName": "__object.entity"
+		},
+		"17569": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/view-configuration.ts",
+			"qualifiedName": "__object.name"
+		},
+		"17570": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/view-configuration.ts",
+			"qualifiedName": "__object.user_id"
+		},
+		"17571": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/view-configuration.ts",
+			"qualifiedName": "__object.is_system_default"
+		},
+		"17572": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/view-configuration.ts",
+			"qualifiedName": "__object.configuration"
+		},
+		"17573": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/user-preference.ts",
+			"qualifiedName": "UserPreference"
+		},
+		"17574": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/user-preference.ts",
+			"qualifiedName": "__object"
+		},
+		"17575": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/user-preference.ts",
+			"qualifiedName": "__object.id"
+		},
+		"17576": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/user-preference.ts",
+			"qualifiedName": "__object.user_id"
+		},
+		"17577": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/user-preference.ts",
+			"qualifiedName": "__object.key"
+		},
+		"17578": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/user-preference.ts",
+			"qualifiedName": "__object.value"
+		},
+		"17579": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/property-label.ts",
+			"qualifiedName": "PropertyLabel"
+		},
+		"17580": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/property-label.ts",
+			"qualifiedName": "__object"
+		},
+		"17581": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/property-label.ts",
+			"qualifiedName": "__object.id"
+		},
+		"17582": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/property-label.ts",
+			"qualifiedName": "__object.entity"
+		},
+		"17583": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/property-label.ts",
+			"qualifiedName": "__object.property"
+		},
+		"17584": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/property-label.ts",
+			"qualifiedName": "__object.label"
+		},
+		"17585": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/property-label.ts",
+			"qualifiedName": "__object.description"
+		},
+		"17586": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/layout-configuration.ts",
+			"qualifiedName": "LayoutConfiguration"
+		},
+		"17587": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/layout-configuration.ts",
+			"qualifiedName": "__object"
+		},
+		"17588": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/layout-configuration.ts",
+			"qualifiedName": "__object.id"
+		},
+		"17589": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/layout-configuration.ts",
+			"qualifiedName": "__object.zone"
+		},
+		"17590": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/layout-configuration.ts",
+			"qualifiedName": "__object.user_id"
+		},
+		"17591": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/layout-configuration.ts",
+			"qualifiedName": "__object.is_system_default"
+		},
+		"17592": {
+			"packageName": "@medusajs/settings",
+			"packagePath": "src/models/layout-configuration.ts",
+			"qualifiedName": "__object.configuration"
+		}
+	},
+	"files": {
+		"entries": {
+			"1": "../../../../packages/modules/settings/src/models/index.ts"
+		},
+		"reflections": {
+			"1": 17564
+		}
+	}
+}

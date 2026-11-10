@@ -55,12 +55,9 @@ export function registerInternalServiceEventSubscriber(
     context.manager) as EntityManager
   if (manager && subscriber) {
     const subscriberInstance = new subscriber(context)
-    // There is no public API to unregister subscribers or check if a subscriber is already
-    // registered. This means that we need to manually check if the subscriber is already
-    // registered, otherwise we will register the same subscriber twice.
-    const hasListeners = (manager.getEventManager() as any).subscribers.some(
-      (s) => s.constructor.name === subscriberInstance.constructor.name
-    )
+    const hasListeners = Array.from(
+      manager.getEventManager().getSubscribers()
+    ).some((s) => s.constructor.name === subscriberInstance.constructor.name)
     if (!hasListeners) {
       manager.getEventManager().registerSubscriber(subscriberInstance)
     }
@@ -84,7 +81,7 @@ export function isMedusaInternalService(value: any): value is InternalService {
 
 export function MedusaInternalService<
   TContainer extends object = object,
-  TEntity extends object = any
+  TEntity extends object = any,
 >(rawModel: any): InternalService {
   const model = DmlEntity.isDmlEntity(rawModel)
     ? toMikroORMEntity(rawModel)
@@ -93,9 +90,10 @@ export function MedusaInternalService<
   const injectedRepositoryName = `${lowerCaseFirst(model.name)}Repository`
   const propertyRepositoryName = `__${injectedRepositoryName}__`
 
-  class AbstractService_
-    implements ModulesSdkTypes.IMedusaInternalService<TEntity, TContainer>
-  {
+  class AbstractService_ implements ModulesSdkTypes.IMedusaInternalService<
+    TEntity,
+    TContainer
+  > {
     [MedusaInternalServiceSymbol] = true
 
     #eventSubscriber?: MedusaMikroOrmEventSubscriber
@@ -210,8 +208,8 @@ export function MedusaInternalService<
                   [isString(v) ? v : Object.values(v)].join(", ")
                 )
               : isObject(idOrObject)
-              ? Object.values(idOrObject).join(", ")
-              : idOrObject
+                ? Object.values(idOrObject).join(", ")
+                : idOrObject
           } was not found`
         )
       }
@@ -269,8 +267,7 @@ export function MedusaInternalService<
     ): Promise<InferEntityType<TEntity> | InferEntityType<TEntity>[]> {
       if (!isDefined(data) || (Array.isArray(data) && data.length === 0)) {
         return (Array.isArray(data) ? [] : void 0) as
-          | InferEntityType<TEntity>
-          | InferEntityType<TEntity>[]
+          InferEntityType<TEntity> | InferEntityType<TEntity>[]
       }
 
       registerInternalServiceEventSubscriber(
@@ -311,8 +308,7 @@ export function MedusaInternalService<
     ): Promise<InferEntityType<TEntity> | InferEntityType<TEntity>[]> {
       if (!isDefined(input) || (Array.isArray(input) && input.length === 0)) {
         return (Array.isArray(input) ? [] : void 0) as
-          | InferEntityType<TEntity>
-          | InferEntityType<TEntity>[]
+          InferEntityType<TEntity> | InferEntityType<TEntity>[]
       }
 
       registerInternalServiceEventSubscriber(
@@ -420,8 +416,7 @@ export function MedusaInternalService<
 
       if (!toUpdateData.length) {
         return (shouldReturnArray ? [] : void 0) as
-          | InferEntityType<TEntity>
-          | InferEntityType<TEntity>[]
+          InferEntityType<TEntity> | InferEntityType<TEntity>[]
       }
 
       // Manage metadata if needed
@@ -449,16 +444,28 @@ export function MedusaInternalService<
       return shouldReturnArray ? entities : entities[0]
     }
 
-    delete(idOrSelector: string, sharedContext?: Context): Promise<string[]>
-    delete(idOrSelector: string[], sharedContext?: Context): Promise<string[]>
-    delete(idOrSelector: object, sharedContext?: Context): Promise<string[]>
-    delete(idOrSelector: object[], sharedContext?: Context): Promise<string[]>
+    delete(
+      idOrSelector: string,
+      sharedContext?: Context
+    ): Promise<string[] | Record<string, any>[]>
+    delete(
+      idOrSelector: string[],
+      sharedContext?: Context
+    ): Promise<string[] | Record<string, any>[]>
+    delete(
+      idOrSelector: object,
+      sharedContext?: Context
+    ): Promise<string[] | Record<string, any>[]>
+    delete(
+      idOrSelector: object[],
+      sharedContext?: Context
+    ): Promise<string[] | Record<string, any>[]>
     delete(
       idOrSelector: {
         selector: FilterQuery<any> | BaseFilterable<FilterQuery<any>>
       },
       sharedContext?: Context
-    ): Promise<string[]>
+    ): Promise<string[] | Record<string, any>[]>
 
     @InjectTransactionManager(propertyRepositoryName)
     async delete(
@@ -471,7 +478,7 @@ export function MedusaInternalService<
             selector: FilterQuery<any> | BaseFilterable<FilterQuery<any>>
           },
       @MedusaContext() sharedContext: Context = {}
-    ): Promise<string[]> {
+    ): Promise<string[] | Record<string, any>[]> {
       if (
         !isDefined(idOrSelector) ||
         (Array.isArray(idOrSelector) && !idOrSelector.length)
@@ -544,11 +551,21 @@ export function MedusaInternalService<
           sharedContext.manager) as EntityManager
         const eventManager = manager.getEventManager()
 
-        deletedIds.forEach((id) => {
+        deletedIds.forEach((deletedId) => {
+          // `delete` returns a flat primary key value for single primary keys
+          // and an object keyed by the primary key property names for composite
+          // keys. Build the event payload using the model's real primary key(s)
+          // rather than a hardcoded `id`, so models with a custom (non-id) or
+          // composite primary key emit the correct identifier.
+          const entity = isObject(deletedId)
+            ? deletedId
+            : { [primaryKeys[0]]: deletedId }
+
           eventManager.dispatchEvent(EventType.afterDelete, {
-            entity: { id },
+            entity,
             meta: {
               className: model.name,
+              primaryKeys,
             } as Parameters<typeof eventManager.dispatchEvent>[2],
           })
         })
@@ -560,10 +577,7 @@ export function MedusaInternalService<
     @InjectTransactionManager(propertyRepositoryName)
     async softDelete(
       idsOrFilter:
-        | string
-        | string[]
-        | InternalFilterQuery
-        | InternalFilterQuery[],
+        string | string[] | InternalFilterQuery | InternalFilterQuery[],
       @MedusaContext() sharedContext: Context = {}
     ): Promise<[InferEntityType<TEntity>[], Record<string, unknown[]>]> {
       if (

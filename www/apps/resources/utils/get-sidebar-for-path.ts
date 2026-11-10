@@ -24,13 +24,7 @@ const sidebarMappings: {
       import("@/generated/generated-how-to-tutorials-sidebar.mjs") as Promise<{
         default: Sidebar.Sidebar
       }>,
-    paths: [
-      "/how-to-tutorials",
-      "/examples",
-      "/admin-components",
-      "/plugins/guides",
-      "/deployment",
-    ],
+    paths: ["/how-to-tutorials", "/examples", "/plugins/guides", "/deployment"],
   },
   {
     module: async () =>
@@ -56,8 +50,11 @@ const sidebarMappings: {
       "/create-medusa-app",
       "/medusa-cli",
       "/js-sdk",
+      "/instantsearch",
       "/nextjs-starter",
       "/references/js-sdk",
+      "/lint",
+      "/admin-components",
     ],
   },
   {
@@ -79,6 +76,7 @@ const sidebarMappings: {
       "/references/analytics",
       "/references/caching-service",
       "/references/caching-module-provider",
+      "/references/search",
     ],
   },
   {
@@ -107,7 +105,17 @@ const sidebarMappings: {
       "/references/tax",
       "/references/translation",
       "/references/user",
+      "/references/loyalty",
+      "/references/store-credit",
+      "/references/settings",
     ],
+  },
+  {
+    module: async () =>
+      import("@/generated/generated-enterprise-sidebar.mjs") as Promise<{
+        default: Sidebar.Sidebar
+      }>,
+    paths: ["/enterprise", "/references/rbac"],
   },
   {
     module: async () =>

@@ -4,6 +4,14 @@ export const server = [
     "path": "https://docs.medusajs.com/resources/commerce-modules/auth/create-actor-type"
   },
   {
+    "title": "Send Email Verification",
+    "path": "https://docs.medusajs.com/resources/commerce-modules/auth/email-verification"
+  },
+  {
+    "title": "Link Auth Provider to Existing Actor",
+    "path": "https://docs.medusajs.com/resources/commerce-modules/auth/link-provider-identity"
+  },
+  {
     "title": "Reset Password Email",
     "path": "https://docs.medusajs.com/resources/commerce-modules/auth/reset-password"
   },
@@ -16,6 +24,10 @@ export const server = [
     "path": "https://docs.medusajs.com/resources/commerce-modules/cart/extend"
   },
   {
+    "title": "Enforce Sales Channel Availability",
+    "path": "https://docs.medusajs.com/resources/commerce-modules/cart/sales-channel-availability"
+  },
+  {
     "title": "Extend Customer",
     "path": "https://docs.medusajs.com/resources/commerce-modules/customer/extend"
   },
@@ -24,8 +36,20 @@ export const server = [
     "path": "https://docs.medusajs.com/resources/commerce-modules/order/order-totals"
   },
   {
+    "title": "Restrict Order Retrieval",
+    "path": "https://docs.medusajs.com/resources/commerce-modules/order/secure-order-retrieval"
+  },
+  {
+    "title": "Restrict Return Creation",
+    "path": "https://docs.medusajs.com/resources/commerce-modules/order/secure-return-creation"
+  },
+  {
     "title": "Extend Product",
     "path": "https://docs.medusajs.com/resources/commerce-modules/product/extend"
+  },
+  {
+    "title": "Filter Products",
+    "path": "https://docs.medusajs.com/resources/commerce-modules/product/guides/filter-products"
   },
   {
     "title": "Get Variant Prices",
@@ -44,8 +68,16 @@ export const server = [
     "path": "https://docs.medusajs.com/resources/commerce-modules/promotion/extend"
   },
   {
+    "title": "Configure View Configurations",
+    "path": "https://docs.medusajs.com/resources/commerce-modules/settings/configure-view-configurations"
+  },
+  {
     "title": "Invite User Email",
     "path": "https://docs.medusajs.com/resources/commerce-modules/user/invite-user-subscriber"
+  },
+  {
+    "title": "Define Custom Policies",
+    "path": "https://docs.medusajs.com/resources/enterprise/rbac/define-policies"
   },
   {
     "title": "Implement Custom Line Item Pricing in Medusa",
@@ -224,6 +256,14 @@ export const server = [
     "path": "https://docs.medusajs.com/resources/references/locking-module-provider"
   },
   {
+    "title": "Create MFA Provider",
+    "path": "https://docs.medusajs.com/resources/references/auth/mfa-module-provider"
+  },
+  {
+    "title": "Create Recovery Code MFA Provider",
+    "path": "https://docs.medusajs.com/resources/references/auth/recovery-code-mfa-module-provider"
+  },
+  {
     "title": "Create Notification Provider",
     "path": "https://docs.medusajs.com/resources/references/notification-provider-module"
   },
@@ -234,6 +274,10 @@ export const server = [
   {
     "title": "Create Payment Provider",
     "path": "https://docs.medusajs.com/resources/references/payment/provider"
+  },
+  {
+    "title": "Use Search Module",
+    "path": "https://docs.medusajs.com/resources/references/search/service"
   },
   {
     "title": "Create Tax Provider",

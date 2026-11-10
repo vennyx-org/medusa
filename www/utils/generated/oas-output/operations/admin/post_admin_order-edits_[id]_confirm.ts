@@ -7,7 +7,7 @@
  * parameters:
  *   - name: id
  *     in: path
- *     description: The order edit's ID.
+ *     description: The ID of the order that is being edited.
  *     required: true
  *     schema:
  *       type: string
@@ -29,7 +29,7 @@
  *         },
  *       })
  * 
- *       sdk.admin.orderEdit.confirm("ordch_123")
+ *       sdk.admin.orderEdit.confirm("order_123")
  *       .then(({ order_preview }) => {
  *         console.log(order_preview)
  *       })
@@ -67,11 +67,34 @@
  *       {
  *         order_id, // The ID of the order
  *         actions, // (array) The [actions](https://docs.medusajs.com/resources/references/fulfillment/interfaces/fulfillment.OrderChangeActionDTO) to edit the order
+ *         no_notification, // (boolean) Whether the customer shouldn't be notified of the order edit, as stored on the order change when the edit was requested. Available since v2.19.0.
  *       }
  *       ```
  *     description: Emitted when an order edit request is confirmed.
  *     deprecated: false
  *     since: 2.8.0
+ *   - name: reservation-item.created
+ *     payload: |-
+ *       ```ts
+ *       {
+ *         id, // The ID of the reservation
+ *         order_id, // (optional) The ID of the order, if the reservation was created by an order flow
+ *       }
+ *       ```
+ *     description: Emitted when reservations are created.
+ *     deprecated: false
+ *     since: 2.18.0
+ *   - name: reservation-item.deleted
+ *     payload: |-
+ *       ```ts
+ *       {
+ *         id, // The ID of the reservation
+ *         order_id, // (optional) The ID of the order, if the reservation was deleted by an order flow
+ *       }
+ *       ```
+ *     description: Emitted when reservations are deleted.
+ *     deprecated: false
+ *     since: 2.18.0
  * 
 */
 

@@ -4,6 +4,7 @@ import {
   ContainerRegistrationKeys,
   Modules,
   OrderChangeStatus,
+  OrderEditWorkflowEvents,
   ProductStatus,
   PromotionStatus,
   PromotionType,
@@ -20,7 +21,7 @@ import { medusaTshirtProduct } from "../../__fixtures__/product"
 jest.setTimeout(300000)
 
 medusaIntegrationTestRunner({
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
     let order
     let taxLine
     let shippingOption
@@ -38,7 +39,7 @@ medusaIntegrationTestRunner({
 
     const shippingProviderId = "manual_test-provider"
 
-    beforeEach(async () => {
+    beforeAll(async () => {
       container = getContainer()
       await createAdminUser(dbConnection, adminHeaders, container)
 
@@ -46,6 +47,7 @@ medusaIntegrationTestRunner({
         await api.post(
           "/admin/regions",
           {
+            payment_providers: ["pp_system_default"],
             name: "test-region",
             currency_code: "usd",
           },
@@ -371,6 +373,8 @@ medusaIntegrationTestRunner({
           adminHeaders
         )
       ).data.shipping_option
+
+      await dbUtils.snapshot()
     })
 
     describe("Order Edits lifecycle", () => {
@@ -578,6 +582,7 @@ medusaIntegrationTestRunner({
       let inventoryItemLarge
       let inventoryItemMedium
       let inventoryItemSmall
+      let inventoryOrder
 
       beforeEach(async () => {
         const container = getContainer()
@@ -732,6 +737,7 @@ medusaIntegrationTestRunner({
           await api.post(
             "/admin/regions",
             {
+              payment_providers: ["pp_system_default"],
               name: "test-region",
               currency_code: "usd",
             },
@@ -787,7 +793,7 @@ medusaIntegrationTestRunner({
 
         const orderModule = container.resolve(Modules.ORDER)
 
-        order = await orderModule.createOrders({
+        inventoryOrder = await orderModule.createOrders({
           region_id: region.id,
           email: "foo@bar.com",
           items: [
@@ -864,14 +870,14 @@ medusaIntegrationTestRunner({
         let edit = (
           await api.post(
             `/admin/order-edits`,
-            { order_id: order.id },
+            { order_id: inventoryOrder.id },
             adminHeaders
           )
         ).data.order_change
 
         // Add item
         await api.post(
-          `/admin/order-edits/${order.id}/items`,
+          `/admin/order-edits/${inventoryOrder.id}/items`,
           {
             items: [
               {
@@ -886,8 +892,8 @@ medusaIntegrationTestRunner({
 
         // Remove item
         await api.post(
-          `/admin/order-edits/${order.id}/items/item/${
-            order.items.find((i) => i.subtitle === "M shirt").id
+          `/admin/order-edits/${inventoryOrder.id}/items/item/${
+            inventoryOrder.items.find((i) => i.subtitle === "M shirt").id
           }`,
           { quantity: 0 },
           adminHeaders
@@ -895,8 +901,8 @@ medusaIntegrationTestRunner({
 
         // Update item
         await api.post(
-          `/admin/order-edits/${order.id}/items/item/${
-            order.items.find((i) => i.subtitle === "L shirt").id
+          `/admin/order-edits/${inventoryOrder.id}/items/item/${
+            inventoryOrder.items.find((i) => i.subtitle === "L shirt").id
           }`,
           { quantity: 2 },
           adminHeaders
@@ -904,7 +910,7 @@ medusaIntegrationTestRunner({
 
         edit = (
           await api.post(
-            `/admin/order-edits/${order.id}/request`,
+            `/admin/order-edits/${inventoryOrder.id}/request`,
             {},
             adminHeaders
           )
@@ -912,17 +918,18 @@ medusaIntegrationTestRunner({
 
         edit = (
           await api.post(
-            `/admin/order-edits/${order.id}/confirm`,
+            `/admin/order-edits/${inventoryOrder.id}/confirm`,
             {},
             adminHeaders
           )
         ).data.order_change
 
-        order = (await api.get(`/admin/orders/${order.id}`, adminHeaders)).data
-          .order
+        inventoryOrder = (
+          await api.get(`/admin/orders/${inventoryOrder.id}`, adminHeaders)
+        ).data.order
 
-        expect(order.items.length).toBe(2)
-        expect(order.items).toEqual(
+        expect(inventoryOrder.items.length).toBe(2)
+        expect(inventoryOrder.items).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
               subtitle: "L shirt",
@@ -956,14 +963,14 @@ medusaIntegrationTestRunner({
         let edit = (
           await api.post(
             `/admin/order-edits`,
-            { order_id: order.id },
+            { order_id: inventoryOrder.id },
             adminHeaders
           )
         ).data.order_change
 
         // Add item
         await api.post(
-          `/admin/order-edits/${order.id}/items`,
+          `/admin/order-edits/${inventoryOrder.id}/items`,
           {
             items: [
               {
@@ -978,7 +985,7 @@ medusaIntegrationTestRunner({
 
         edit = (
           await api.post(
-            `/admin/order-edits/${order.id}/request`,
+            `/admin/order-edits/${inventoryOrder.id}/request`,
             {},
             adminHeaders
           )
@@ -986,17 +993,18 @@ medusaIntegrationTestRunner({
 
         edit = (
           await api.post(
-            `/admin/order-edits/${order.id}/confirm`,
+            `/admin/order-edits/${inventoryOrder.id}/confirm`,
             {},
             adminHeaders
           )
         ).data.order_change
 
-        order = (await api.get(`/admin/orders/${order.id}`, adminHeaders)).data
-          .order
+        inventoryOrder = (
+          await api.get(`/admin/orders/${inventoryOrder.id}`, adminHeaders)
+        ).data.order
 
-        expect(order.items.length).toBe(3)
-        expect(order.items).toEqual(
+        expect(inventoryOrder.items.length).toBe(3)
+        expect(inventoryOrder.items).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
               subtitle: "L shirt",
@@ -1004,6 +1012,57 @@ medusaIntegrationTestRunner({
             }),
           ])
         )
+      })
+
+      it("should confirm an order edit with an out-of-stock item added with allow_backorder", async () => {
+        await api.post(
+          `/admin/order-edits`,
+          { order_id: inventoryOrder.id },
+          adminHeaders
+        )
+
+        await api.post(
+          `/admin/order-edits/${inventoryOrder.id}/items`,
+          {
+            items: [
+              {
+                variant_id: product.variants.find((v) => v.title === "S shirt")
+                  .id,
+                quantity: 15,
+                allow_backorder: true,
+              },
+            ],
+          },
+          adminHeaders
+        )
+
+        await api.post(
+          `/admin/order-edits/${inventoryOrder.id}/request`,
+          {},
+          adminHeaders
+        )
+
+        const response = await api.post(
+          `/admin/order-edits/${inventoryOrder.id}/confirm`,
+          {},
+          adminHeaders
+        )
+
+        expect(response.status).toBe(200)
+
+        const reservations = (
+          await api.get(
+            `/admin/reservations?inventory_item_id[]=${inventoryItemSmall.id}`,
+            adminHeaders
+          )
+        ).data.reservations
+
+        expect(reservations).toEqual([
+          expect.objectContaining({
+            inventory_item_id: inventoryItemSmall.id,
+            quantity: 15,
+          }),
+        ])
       })
     })
 
@@ -1078,6 +1137,81 @@ medusaIntegrationTestRunner({
           OrderChangeStatus.CONFIRMED
         )
       })
+
+      it("should store no_notification on the order change and pass it to the order edit events", async () => {
+        const eventBus = container.resolve(Modules.EVENT_BUS)
+        const requestedSubscriber = jest.fn()
+        const confirmedSubscriber = jest.fn()
+
+        eventBus.subscribe(
+          OrderEditWorkflowEvents.REQUESTED,
+          requestedSubscriber
+        )
+        eventBus.subscribe(
+          OrderEditWorkflowEvents.CONFIRMED,
+          confirmedSubscriber
+        )
+
+        const orderId = order.id
+
+        await api.post(
+          "/admin/order-edits",
+          { order_id: orderId, description: "Test" },
+          adminHeaders
+        )
+
+        await api.post(
+          `/admin/order-edits/${orderId}/shipping-method`,
+          { shipping_option_id: shippingOption.id, custom_amount: 5 },
+          adminHeaders
+        )
+
+        const requestResult = await api.post(
+          `/admin/order-edits/${orderId}/request`,
+          { no_notification: true },
+          adminHeaders
+        )
+
+        expect(requestResult.data.order_preview.order_change).toEqual(
+          expect.objectContaining({ no_notification: true })
+        )
+
+        await api.post(
+          `/admin/order-edits/${orderId}/confirm`,
+          {},
+          adminHeaders
+        )
+
+        const orderChangesResult = await api.get(
+          `/admin/orders/${orderId}/changes?change_type=edit`,
+          adminHeaders
+        )
+
+        expect(orderChangesResult.data.order_changes[0]).toEqual(
+          expect.objectContaining({ no_notification: true })
+        )
+
+        await new Promise((resolve) => setTimeout(resolve, 100))
+
+        expect(requestedSubscriber.mock.calls[0][0].data).toMatchObject({
+          order_id: orderId,
+          no_notification: true,
+        })
+
+        expect(confirmedSubscriber.mock.calls[0][0].data).toMatchObject({
+          order_id: orderId,
+          no_notification: true,
+        })
+
+        eventBus.unsubscribe(
+          OrderEditWorkflowEvents.REQUESTED,
+          requestedSubscriber
+        )
+        eventBus.unsubscribe(
+          OrderEditWorkflowEvents.CONFIRMED,
+          confirmedSubscriber
+        )
+      })
     })
 
     describe("Order Edit Payment Collection", () => {
@@ -1105,7 +1239,12 @@ medusaIntegrationTestRunner({
         region = (
           await api.post(
             "/admin/regions",
-            { name: "US", currency_code: "usd", countries: ["us"] },
+            {
+              payment_providers: ["pp_system_default"],
+              name: "US",
+              currency_code: "usd",
+              countries: ["us"],
+            },
             adminHeaders
           )
         ).data.region
@@ -1396,6 +1535,172 @@ medusaIntegrationTestRunner({
 
         expect(orderResult2.total).toEqual(21.78)
         expect(orderResult2.original_total).toEqual(24.2)
+      })
+
+      it("should apply customer group and collection rules on new items", async () => {
+        const customerGroup = (
+          await api.post(
+            "/admin/customer-groups",
+            {
+              name: "VIP Customers",
+            },
+            adminHeaders
+          )
+        ).data.customer_group
+
+        const customer = (
+          await api.post(
+            "/admin/customers",
+            {
+              first_name: "Group",
+              last_name: "Customer",
+              email: "group.customer@admin.com",
+            },
+            adminHeaders
+          )
+        ).data.customer
+
+        await api.post(
+          `/admin/customer-groups/${customerGroup.id}/customers`,
+          { add: [customer.id] },
+          adminHeaders
+        )
+
+        const collection = (
+          await api.post(
+            "/admin/collections",
+            {
+              title: "Promo Collection",
+            },
+            adminHeaders
+          )
+        ).data.collection
+
+        await api.post(
+          `/admin/products/${productExtra.id}`,
+          {
+            collection_id: collection.id,
+          },
+          adminHeaders
+        )
+
+        const promotion = (
+          await api.post(
+            "/admin/promotions",
+            {
+              code: "GROUP_COLLECTION_RULE",
+              type: PromotionType.STANDARD,
+              status: PromotionStatus.ACTIVE,
+              application_method: {
+                type: "fixed",
+                target_type: "items",
+                allocation: "each",
+                value: 5,
+                max_quantity: 10,
+                currency_code: "usd",
+                target_rules: [
+                  {
+                    attribute: "items.product.collection_id",
+                    operator: RuleOperator.IN,
+                    values: [collection.id],
+                  },
+                ],
+              },
+              rules: [
+                {
+                  attribute: "customer.groups.id",
+                  operator: RuleOperator.IN,
+                  values: [customerGroup.id],
+                },
+              ],
+            },
+            adminHeaders
+          )
+        ).data.promotion
+
+        const orderForPromotion = await orderModule.createOrders({
+          email: "group.customer@admin.com",
+          region_id: region.id,
+          sales_channel_id: salesChannel.id,
+          items: [
+            {
+              variant_id: buyRuleProduct.variants[0].id,
+              title: "original item",
+              quantity: 1,
+              unit_price: 10,
+            },
+          ],
+          shipping_address: {
+            first_name: "Group",
+            last_name: "Customer",
+            address_1: "Test",
+            city: "Test",
+            country_code: "US",
+            postal_code: "12345",
+          },
+          billing_address: {
+            first_name: "Group",
+            last_name: "Customer",
+            address_1: "Test",
+            city: "Test",
+            country_code: "US",
+            postal_code: "12345",
+          },
+          currency_code: "usd",
+          customer_id: customer.id,
+        })
+
+        await remoteLink.create({
+          [Modules.ORDER]: { order_id: orderForPromotion.id },
+          [Modules.PROMOTION]: { promotion_id: promotion.id },
+        })
+
+        let result = await api.post(
+          "/admin/order-edits",
+          {
+            order_id: orderForPromotion.id,
+            description: "Test",
+          },
+          adminHeaders
+        )
+
+        const orderChangeId = result.data.order_change.id
+        await api.post(
+          `/admin/order-changes/${orderChangeId}`,
+          {
+            carry_over_promotions: true,
+          },
+          adminHeaders
+        )
+
+        result = (
+          await api.post(
+            `/admin/order-edits/${orderForPromotion.id}/items`,
+            {
+              items: [
+                {
+                  variant_id: productExtra.variants[0].id,
+                  quantity: 1,
+                },
+              ],
+            },
+            adminHeaders
+          )
+        ).data.order_preview
+
+        const collectionItem = result.items.find(
+          (item) => item.variant_id === productExtra.variants[0].id
+        )
+        const nonCollectionItem = result.items.find(
+          (item) => item.variant_id === buyRuleProduct.variants[0].id
+        )
+
+        expect(collectionItem.adjustments).toEqual([
+          expect.objectContaining({
+            amount: 5,
+          }),
+        ])
+        expect(nonCollectionItem.adjustments).toEqual([])
       })
 
       it("should update adjustments when updating an item", async () => {
@@ -2491,6 +2796,186 @@ medusaIntegrationTestRunner({
 
         expect(orderResult2.total).toEqual(20)
         expect(orderResult2.original_total).toEqual(20)
+      })
+
+      it("should maintain shipping method adjustments when adding a new item with promotion targeting shipping methods", async () => {
+        // Create a promotion that targets shipping methods
+        const shippingPromotion = await promotionModule.createPromotions({
+          code: "SHIPPING_PROMO",
+          type: PromotionType.STANDARD,
+          status: PromotionStatus.ACTIVE,
+          application_method: {
+            type: "fixed",
+            target_type: "shipping_methods",
+            allocation: "each",
+            value: 2,
+            max_quantity: 1,
+            currency_code: "usd",
+            target_rules: [
+              {
+                attribute: "name",
+                operator: "in",
+                values: ["Test shipping method"],
+              },
+            ],
+          },
+        })
+
+        // Create an order with shipping method
+        // @ts-ignore
+        const orderWithShipping = await orderModule.createOrders({
+          email: "foo@bar.com",
+          region_id: region.id,
+          sales_channel_id: salesChannel.id,
+          items: [
+            {
+              // @ts-ignore
+              id: "item-shipping-1",
+              title: "Custom Item",
+              quantity: 1,
+              unit_price: 10,
+            },
+          ],
+          shipping_address: {
+            first_name: "Test",
+            last_name: "Test",
+            address_1: "Test",
+            city: "Test",
+            country_code: "US",
+            postal_code: "12345",
+            phone: "12345",
+          },
+          billing_address: {
+            first_name: "Test",
+            last_name: "Test",
+            address_1: "Test",
+            city: "Test",
+            country_code: "US",
+            postal_code: "12345",
+          },
+          shipping_methods: [
+            {
+              name: "Test shipping method",
+              amount: 5,
+            },
+          ],
+          currency_code: "usd",
+        })
+
+        // Create shipping method adjustment for the promotion
+        if (orderWithShipping.shipping_methods?.[0]) {
+          await orderModule.createOrderShippingMethodAdjustments(
+            orderWithShipping.id,
+            [
+              {
+                shipping_method_id: orderWithShipping.shipping_methods[0].id,
+                code: shippingPromotion.code!,
+                amount: 2,
+              },
+            ]
+          )
+        }
+
+        // Link promotion to order
+        await remoteLink.create({
+          [Modules.ORDER]: { order_id: orderWithShipping.id },
+          [Modules.PROMOTION]: { promotion_id: shippingPromotion.id },
+        })
+
+        // Create order edit
+        let result = await api.post(
+          "/admin/order-edits",
+          {
+            order_id: orderWithShipping.id,
+            description: "Test shipping promotion",
+          },
+          adminHeaders
+        )
+
+        const orderChangeId = result.data.order_change.id
+        const orderId = result.data.order_change.order_id
+
+        // Enable carry over promotions
+        await api.post(
+          `/admin/order-changes/${orderChangeId}`,
+          {
+            carry_over_promotions: true,
+          },
+          adminHeaders
+        )
+
+        result = (await api.get(`/admin/orders/${orderId}`, adminHeaders)).data
+          .order
+
+        // Original order: $10 item + $5 shipping - $2 shipping discount = $13
+        expect(result.total).toEqual(13)
+        expect(result.shipping_methods[0].adjustments).toEqual([
+          expect.objectContaining({
+            code: shippingPromotion.code!,
+            amount: 2,
+          }),
+        ])
+
+        // Add item with price $12
+        result = (
+          await api.post(
+            `/admin/order-edits/${orderId}/items`,
+            {
+              items: [
+                {
+                  variant_id: productExtra.variants[0].id,
+                  quantity: 1,
+                },
+              ],
+            },
+            adminHeaders
+          )
+        ).data.order_preview
+
+        // After adding item: $22 items + $5 shipping - $2 shipping discount + $1.2 tax = $26.2
+        expect(result.total).toEqual(26.2)
+        expect(result.original_total).toEqual(28.2) // +$2 shipping discount
+
+        // Shipping method adjustment should still be present
+        expect(result.shipping_methods[0].adjustments).toEqual([
+          expect.objectContaining({
+            code: shippingPromotion.code!,
+            amount: 2,
+          }),
+        ])
+
+        // Confirm original order is not updated
+        const orderResult = (
+          await api.get(`/admin/orders/${orderId}`, adminHeaders)
+        ).data.order
+
+        expect(orderResult.total).toEqual(13)
+        expect(orderResult.shipping_methods[0].adjustments).toEqual([
+          expect.objectContaining({
+            code: shippingPromotion.code!,
+            amount: 2,
+          }),
+        ])
+
+        // Confirm the order edit
+        await api.post(
+          `/admin/order-edits/${orderId}/confirm`,
+          {},
+          adminHeaders
+        )
+
+        const orderResult2 = (
+          await api.get(`/admin/orders/${orderId}`, adminHeaders)
+        ).data.order
+
+        expect(orderResult2.total).toEqual(26.2)
+        expect(orderResult2.original_total).toEqual(28.2)
+        expect(orderResult2.shipping_methods[0].adjustments).toEqual([
+          expect.objectContaining({
+            code: shippingPromotion.code!,
+            amount: 2,
+          }),
+        ])
       })
     })
   },

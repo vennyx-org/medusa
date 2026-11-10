@@ -1,15 +1,40 @@
-import { ArrowUturnLeft, MinusMini } from "@medusajs/icons"
-import { clx, Divider, IconButton, Text } from "@medusajs/ui"
-import { Collapsible as RadixCollapsible } from "radix-ui"
-import { Fragment, useEffect, useMemo, useState } from "react"
+import { CORE_LAYOUT_IDS } from "@medusajs/admin-shared"
+import { ArrowUturnLeft } from "@medusajs/icons"
+import { clx, Divider, Text } from "@medusajs/ui"
+import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useLocation } from "react-router-dom"
 
+import {
+  RBAC_MODULE_KEY,
+  useIsModuleInstalled,
+} from "../../../hooks/api/modules"
+import { useSearchIndexes } from "../../../hooks/api/search-indexes"
+import { useFeatureFlag } from "../../../providers/feature-flag-provider"
 import { useExtension } from "../../../providers/extension-provider"
-import { INavItem, NavItem } from "../nav-item"
+import { LayoutComposer } from "../../layout-composer"
+import { CUSTOMIZE_IDS } from "../../layout-composer/constants"
+import { INavItem, NavItem, usePermittedNavItems } from "../nav-item"
 import { Shell } from "../shell"
 import { UserMenu } from "../user-menu"
-import { useFeatureFlag } from "../../../providers/feature-flag-provider"
+import {
+  useApiKeyPermissions,
+  useProductTagPermissions,
+  useProductTypePermissions,
+  useRbacPolicyPermissions,
+  useRbacRolePermissions,
+  useRefundReasonPermissions,
+  useRegionPermissions,
+  useResourcePermissions,
+  useReturnReasonPermissions,
+  useSalesChannelPermissions,
+  useStockLocationPermissions,
+  useStorePermissions,
+  useTaxRegionPermissions,
+  useTranslationPermissions,
+  useUserPermissions,
+  useWorkflowExecutionPermissions,
+} from "../../../hooks/use-resource-permissions"
 
 export const SettingsLayout = () => {
   return (
@@ -21,51 +46,136 @@ export const SettingsLayout = () => {
 
 const useSettingRoutes = (): INavItem[] => {
   const isTranslationsEnabled = useFeatureFlag("translation")
+  const { isInstalled: isRbacEnabled } = useIsModuleInstalled(RBAC_MODULE_KEY)
+  const isViewConfigEnabled = useFeatureFlag("view_configurations")
   const { t } = useTranslation()
+
+  const { canRead: canReadRbacRoles } = useRbacRolePermissions()
+  const { canRead: canReadRbacPolicies } = useRbacPolicyPermissions()
+  const { canRead: canReadProductTags } = useProductTagPermissions()
+  const { canRead: canReadProductTypes } = useProductTypePermissions()
+  const { canRead: canReadRegions } = useRegionPermissions()
+  const { canRead: canReadReturnReasons } = useReturnReasonPermissions()
+  const { canRead: canReadRefundReasons } = useRefundReasonPermissions()
+  const { canRead: canReadSalesChannels } = useSalesChannelPermissions()
+  const { canRead: canReadTaxRegions } = useTaxRegionPermissions()
+  const { canRead: canReadStockLocations } = useStockLocationPermissions()
+  const { canRead: canReadPropertyLabels } =
+    useResourcePermissions("property_label")
+  const { canRead: canReadStore } = useStorePermissions()
+  const { canRead: canReadUsers } = useUserPermissions()
+  const { canRead: canReadTranslations } = useTranslationPermissions()
+
+  const canReadRoles = isRbacEnabled && canReadRbacRoles
+  const canReadPolicies = isRbacEnabled && canReadRbacPolicies
 
   return useMemo(
     () => [
-      {
-        label: t("store.domain"),
-        to: "/settings/store",
-      },
-      {
-        label: t("users.domain"),
-        to: "/settings/users",
-      },
-      {
-        label: t("regions.domain"),
-        to: "/settings/regions",
-      },
-      {
-        label: t("taxRegions.domain"),
-        to: "/settings/tax-regions",
-      },
-      {
-        label: t("returnReasons.domain"),
-        to: "/settings/return-reasons",
-      },
-      {
-        label: t("refundReasons.domain"),
-        to: "/settings/refund-reasons",
-      },
-      {
-        label: t("salesChannels.domain"),
-        to: "/settings/sales-channels",
-      },
-      {
-        label: t("productTypes.domain"),
-        to: "/settings/product-types",
-      },
-      {
-        label: t("productTags.domain"),
-        to: "/settings/product-tags",
-      },
-      {
-        label: t("stockLocations.domain"),
-        to: "/settings/locations",
-      },
-      ...(isTranslationsEnabled
+      ...(canReadStore
+        ? [
+            {
+              label: t("store.domain"),
+              to: "/settings/store",
+            },
+          ]
+        : []),
+      ...(canReadUsers
+        ? [
+            {
+              label: t("users.domain"),
+              to: "/settings/users",
+            },
+          ]
+        : []),
+      ...(canReadRoles
+        ? [
+            {
+              label: t("roles.domain"),
+              to: "/settings/roles",
+            },
+          ]
+        : []),
+      ...(canReadPolicies
+        ? [
+            {
+              label: t("policies.domain"),
+              to: "/settings/policies",
+            },
+          ]
+        : []),
+      ...(canReadRegions
+        ? [
+            {
+              label: t("regions.domain"),
+              to: "/settings/regions",
+            },
+          ]
+        : []),
+      ...(canReadTaxRegions
+        ? [
+            {
+              label: t("taxRegions.domain"),
+              to: "/settings/tax-regions",
+            },
+          ]
+        : []),
+      ...(canReadReturnReasons
+        ? [
+            {
+              label: t("returnReasons.domain"),
+              to: "/settings/return-reasons",
+            },
+          ]
+        : []),
+      ...(canReadRefundReasons
+        ? [
+            {
+              label: t("refundReasons.domain"),
+              to: "/settings/refund-reasons",
+            },
+          ]
+        : []),
+      ...(canReadSalesChannels
+        ? [
+            {
+              label: t("salesChannels.domain"),
+              to: "/settings/sales-channels",
+            },
+          ]
+        : []),
+      ...(canReadProductTypes
+        ? [
+            {
+              label: t("productTypes.domain"),
+              to: "/settings/product-types",
+            },
+          ]
+        : []),
+      ...(canReadProductTags
+        ? [
+            {
+              label: t("productTags.domain"),
+              to: "/settings/product-tags",
+            },
+          ]
+        : []),
+      ...(canReadStockLocations
+        ? [
+            {
+              label: t("stockLocations.domain"),
+              to: "/settings/locations",
+            },
+          ]
+        : []),
+      ...(isViewConfigEnabled && canReadPropertyLabels
+        ? [
+            {
+              label: t("propertyLabels.domain", "Property Labels"),
+              to: "/settings/property-labels",
+            },
+          ]
+        : []),
+      ...(isTranslationsEnabled && canReadTranslations
         ? [
             {
               label: t("translations.domain"),
@@ -74,29 +184,67 @@ const useSettingRoutes = (): INavItem[] => {
           ]
         : []),
     ],
-    [t, isTranslationsEnabled]
+    [
+      t,
+      isTranslationsEnabled,
+      canReadTranslations,
+      canReadRoles,
+      canReadPolicies,
+      canReadProductTags,
+      canReadProductTypes,
+      canReadRegions,
+      canReadReturnReasons,
+      canReadRefundReasons,
+      canReadSalesChannels,
+      canReadTaxRegions,
+      canReadStockLocations,
+      canReadPropertyLabels,
+      canReadStore,
+      canReadUsers,
+      isViewConfigEnabled,
+    ]
   )
 }
 
 const useDeveloperRoutes = (): INavItem[] => {
   const { t } = useTranslation()
+  const { enabled: isSearchEnabled } = useSearchIndexes()
+
+  const { canRead: canReadApiKeys } = useApiKeyPermissions()
+  const { canRead: canReadWorkflows } = useWorkflowExecutionPermissions()
 
   return useMemo(
     () => [
-      {
-        label: t("apiKeyManagement.domain.publishable"),
-        to: "/settings/publishable-api-keys",
-      },
-      {
-        label: t("apiKeyManagement.domain.secret"),
-        to: "/settings/secret-api-keys",
-      },
-      {
-        label: t("workflowExecutions.domain"),
-        to: "/settings/workflows",
-      },
+      ...(canReadApiKeys
+        ? [
+            {
+              label: t("apiKeyManagement.domain.publishable"),
+              to: "/settings/publishable-api-keys",
+            },
+            {
+              label: t("apiKeyManagement.domain.secret"),
+              to: "/settings/secret-api-keys",
+            },
+          ]
+        : []),
+      ...(canReadWorkflows
+        ? [
+            {
+              label: t("workflowExecutions.domain"),
+              to: "/settings/workflows",
+            },
+          ]
+        : []),
+      ...(isSearchEnabled
+        ? [
+            {
+              label: t("searchIndexes.domain"),
+              to: "/settings/search",
+            },
+          ]
+        : []),
     ],
-    [t]
+    [t, canReadApiKeys, canReadWorkflows, isSearchEnabled]
   )
 }
 
@@ -126,19 +274,24 @@ const getSafeFromValue = (from: string) => {
   return from
 }
 
+const toNavEntries = (items: INavItem[]) =>
+  items.map((item) => (
+    <LayoutComposer.Entry id={`settings-nav:${item.to}`} key={item.to}>
+      <NavItem key={item.to} type="setting" {...item} />
+    </LayoutComposer.Entry>
+  ))
+
 const SettingsSidebar = () => {
   const { getMenu } = useExtension()
 
   const routes = useSettingRoutes()
   const developerRoutes = useDeveloperRoutes()
   const myAccountRoutes = useMyAccountRoutes()
-  const extensionRoutes = getMenu("settingsExtensions")
-
-  const { t } = useTranslation()
+  const extensionRoutes = usePermittedNavItems(getMenu("settingsExtensions"))
 
   return (
     <aside className="relative flex flex-1 flex-col justify-between overflow-y-auto">
-      <div className="bg-ui-bg-subtle sticky top-0">
+      <div className="sticky top-0 bg-ui-bg-subtle">
         <Header />
         <div className="flex items-center justify-center px-3">
           <Divider variant="dashed" />
@@ -146,37 +299,22 @@ const SettingsSidebar = () => {
       </div>
       <div className="flex flex-1 flex-col">
         <div className="flex flex-1 flex-col overflow-y-auto">
-          <RadixCollapsibleSection
-            label={t("app.nav.settings.general")}
-            items={routes}
+          <LayoutComposer
+            widgetsZonePrefix="settings.sidebar"
+            preferredLayoutId={CORE_LAYOUT_IDS.SETTINGS_SIDEBAR}
+            hasOutlet={false}
+            disableWidgets
+            customizeId={CUSTOMIZE_IDS.SETTINGS_SIDEBAR}
+            controlSize="small"
+            sections={{
+              general: toNavEntries(routes),
+              developer: toNavEntries(developerRoutes),
+              myAccount: toNavEntries(myAccountRoutes),
+              extensions: toNavEntries(extensionRoutes),
+            }}
           />
-          <div className="flex items-center justify-center px-3">
-            <Divider variant="dashed" />
-          </div>
-          <RadixCollapsibleSection
-            label={t("app.nav.settings.developer")}
-            items={developerRoutes}
-          />
-          <div className="flex items-center justify-center px-3">
-            <Divider variant="dashed" />
-          </div>
-          <RadixCollapsibleSection
-            label={t("app.nav.settings.myAccount")}
-            items={myAccountRoutes}
-          />
-          {extensionRoutes.length > 0 && (
-            <Fragment>
-              <div className="flex items-center justify-center px-3">
-                <Divider variant="dashed" />
-              </div>
-              <RadixCollapsibleSection
-                label={t("app.nav.common.extensions")}
-                items={extensionRoutes}
-              />
-            </Fragment>
-          )}
         </div>
-        <div className="bg-ui-bg-subtle sticky bottom-0">
+        <div className="sticky bottom-0 bg-ui-bg-subtle">
           <UserSection />
         </div>
       </div>
@@ -202,7 +340,7 @@ const Header = () => {
         to={from}
         replace
         className={clx(
-          "bg-ui-bg-subtle transition-fg flex items-center rounded-md outline-none",
+          "flex items-center rounded-md bg-ui-bg-subtle outline-none transition-fg",
           "hover:bg-ui-bg-subtle-hover",
           "focus-visible:shadow-borders-focus"
         )}
@@ -217,40 +355,6 @@ const Header = () => {
         </div>
       </Link>
     </div>
-  )
-}
-
-const RadixCollapsibleSection = ({
-  label,
-  items,
-}: {
-  label: string
-  items: INavItem[]
-}) => {
-  return (
-    <RadixCollapsible.Root defaultOpen className="py-3">
-      <div className="px-3">
-        <div className="text-ui-fg-muted flex h-7 items-center justify-between px-2">
-          <Text size="small" leading="compact">
-            {label}
-          </Text>
-          <RadixCollapsible.Trigger asChild>
-            <IconButton size="2xsmall" variant="transparent" className="static">
-              <MinusMini className="text-ui-fg-muted" />
-            </IconButton>
-          </RadixCollapsible.Trigger>
-        </div>
-      </div>
-      <RadixCollapsible.Content>
-        <div className="pt-0.5">
-          <nav className="flex flex-col gap-y-0.5">
-            {items.map((setting) => (
-              <NavItem key={setting.to} type="setting" {...setting} />
-            ))}
-          </nav>
-        </div>
-      </RadixCollapsible.Content>
-    </RadixCollapsible.Root>
   )
 }
 

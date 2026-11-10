@@ -15,11 +15,11 @@ export const metadata = {
 
 # {metadata.title}
 
-The `create-medusa-app` CLI tool simplifies the process of creating a new Medusa project. It also allows you to setup a [Medusa plugin project](#create-a-medusa-plugin-project).
+The `create-medusa-app` CLI tool simplifies the process of creating a new Medusa project. It creates a monorepo containing your Medusa backend application and, optionally, a storefront. It also allows you to setup a [Medusa plugin project](#create-a-medusa-plugin-project).
 
 <Prerequisites items={[
   {
-    text: "Node.js v20+",
+    text: "Node.js v22.22.0+",
     link: "https://nodejs.org/en/download"
   },
   {
@@ -34,17 +34,23 @@ The `create-medusa-app` CLI tool simplifies the process of creating a new Medusa
 
 ## Usage
 
-```bash
+```bash npx2yarnExec
 npx create-medusa-app@latest [project-name]
 ```
+
+The command will use the package manager you run it with to create a new Medusa project in a directory named after the provided `project-name`.
 
 ### Arguments
 
 <Table>
   <Table.Header>
     <Table.Row>
-      <Table.HeaderCell>Option</Table.HeaderCell>
-      <Table.HeaderCell>Description</Table.HeaderCell>
+      <Table.HeaderCell>
+        Option
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Description
+      </Table.HeaderCell>
     </Table.Row>
   </Table.Header>
   <Table.Body>
@@ -66,9 +72,15 @@ npx create-medusa-app@latest [project-name]
 <Table>
   <Table.Header>
     <Table.Row>
-      <Table.HeaderCell>Option</Table.HeaderCell>
-      <Table.HeaderCell>Description</Table.HeaderCell>
-      <Table.HeaderCell>Default</Table.HeaderCell>
+      <Table.HeaderCell>
+        Option
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Description
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Default
+      </Table.HeaderCell>
     </Table.Row>
   </Table.Header>
   <Table.Body>
@@ -83,7 +95,7 @@ npx create-medusa-app@latest [project-name]
       </Table.Cell>
       <Table.Cell>
       
-      `https://github.com/medusajs/medusa-starter-default`
+      `https://github.com/medusajs/dtc-starter`
 
       </Table.Cell>
     </Table.Row>
@@ -180,7 +192,7 @@ npx create-medusa-app@latest [project-name]
       </Table.Cell>
       <Table.Cell>
 
-        Installs the Next.js Starter storefront under the `{project-name}-storefront` directory, where `{project-name}` is the name of the project you enter in the first question. If the `{project-name}-storefront` directory already exists, random characters are added at the end of it.
+        Installs the storefront in the `apps/storefront` directory within your project monorepo. If this option is not specified, the storefront directory is removed from the project.
 
       </Table.Cell>
       <Table.Cell>
@@ -231,12 +243,63 @@ npx create-medusa-app@latest [project-name]
       </Table.Cell>
       <Table.Cell>
 
-        Specify the Medusa version to install in the project. The specified version will be used for every `@medusajs/*` package in the Medusa and Next.js Starter projects.
+        Specify the Medusa version to install in the project. The specified version will be used for every `@medusajs/*` package in the Medusa and storefront projects. When used with the `--plugin` option, the specified version is used for the plugin's `@medusajs/*` dependencies and peer dependencies.
 
       </Table.Cell>
       <Table.Cell>
       
         The latest version of Medusa at the time of running the command.
+
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell>
+
+        `--use-npm`
+
+      </Table.Cell>
+      <Table.Cell>
+
+        Uses `npm` as the package manager to create the project, regardless of the package manager used to run the command.
+
+      </Table.Cell>
+      <Table.Cell>
+      
+        The package manager used to run the command.
+
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell>
+
+        `--use-yarn`
+
+      </Table.Cell>
+      <Table.Cell>
+
+        Uses `yarn` as the package manager to create the project, regardless of the package manager used to run the command.
+
+      </Table.Cell>
+      <Table.Cell>
+      
+        The package manager used to run the command.
+
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell>
+
+        `--use-pnpm`
+
+      </Table.Cell>
+      <Table.Cell>
+
+        Uses `pnpm` as the package manager to create the project, regardless of the package manager used to run the command.
+
+      </Table.Cell>
+      <Table.Cell>
+      
+        The package manager used to run the command.
 
       </Table.Cell>
     </Table.Row>
@@ -249,7 +312,7 @@ npx create-medusa-app@latest [project-name]
 
 To use a PostgreSQL database hosted on Vercel, use the `--db-url` option and add to the end of your connection URL `?sslmode=require`. For example:
 
-```bash
+```bash npx2yarnExec
 npx create-medusa-app@latest --db-url "postgres://default:<password><host-region>.postgres.vercel-storage.com:5432/verceldb?sslmode=require"
 ```
 
@@ -263,7 +326,7 @@ If the database already has the necessary migrations and you don't need the comm
 
 To connect to a Supabase database, use the `--db-url` option with its value being the connection URL to your Supabase database. For example:
 
-```bash
+```bash npx2yarnExec
 npx create-medusa-app@latest --db-url "postgres://postgres.<host>:<password>@aws-0-eu-central-1.pooler.supabase.com:5432/postgres"
 ```
 
@@ -275,11 +338,34 @@ If the database already has the necessary migrations and you don't need the comm
 
 ---
 
+## Project Structure
+
+The `create-medusa-app` tool creates a monorepo project with the following structure:
+
+```
+my-medusa-store/
+├── apps/
+│   ├── backend/          # Your Medusa backend application
+│   │   ├── src/
+│   │   ├── package.json
+│   │   └── medusa-config.ts
+│   └── storefront/       # Storefront (if --with-nextjs-starter is used)
+│       ├── src/
+│       ├── package.json
+│       └── next.config.js
+├── package.json          # Root package.json for workspace management
+└── pnpm-workspace.yaml   # Workspace configuration
+```
+
+Your Medusa backend will be located in the `apps/backend` directory, and the optional storefront in `apps/storefront`.
+
+---
+
 ## Create a Medusa Plugin Project
 
 The `create-medusa-app` tool can also be used to create a Medusa Plugin Project. You can do that by passing the `--plugin` option:
 
-```bash
+```bash npx2yarnExec
 npx create-medusa-app@latest my-plugin --plugin
 ```
 
@@ -289,13 +375,19 @@ Learn more about how to create a plugin in [this documentation](!docs!/learn/fun
 
 ## Install a Specific Medusa Version
 
-To install a specific version of Medusa, use the `--version` option. This will install the specified version for every `@medusajs/*` package in the Medusa and Next.js Starter projects. For example:
+To install a specific version of Medusa, use the `--version` option. This will install the specified version for every `@medusajs/*` package in the Medusa and storefront projects. For example:
 
-```bash
+```bash npx2yarnExec
 npx create-medusa-app@latest my-medusa-store --version 2.3.0
 ```
 
 This will create a new Medusa project with the `2.3.0` version.
+
+You can also pass the `--version` option when creating a plugin project. The tool then sets the specified version for every `@medusajs/*` package in the plugin's `dependencies`, `devDependencies`, and `peerDependencies`. For example:
+
+```bash npx2yarnExec
+npx create-medusa-app@latest my-plugin --plugin --version 2.3.0
+```
 
 ---
 

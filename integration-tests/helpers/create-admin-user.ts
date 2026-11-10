@@ -5,13 +5,14 @@ import {
   IUserModuleService,
   MedusaContainer,
 } from "@medusajs/framework/types"
+import { MedusaModule } from "@medusajs/framework/modules-sdk"
 import {
   ApiKeyType,
   ContainerRegistrationKeys,
+  generateJwtToken,
   Modules,
   PUBLISHABLE_KEY_HEADER,
 } from "@medusajs/framework/utils"
-import jwt from "jsonwebtoken"
 import Scrypt from "scrypt-kdf"
 import { getContainer } from "../environment-helpers/use-container"
 
@@ -23,50 +24,104 @@ export const createAdminUser = async (
   dbConnection,
   adminHeaders,
   container?,
-  options?: { email?: string }
+  options?: { email?: string; roles?: string[] }
 ) => {
   const appContainer = container ?? getContainer()!
   const email = options?.email ?? "admin@medusa.js"
 
   const userModule: IUserModuleService = appContainer.resolve(Modules.USER)
   const authModule: IAuthModuleService = appContainer.resolve(Modules.AUTH)
-  const user = await userModule.createUsers({
-    first_name: "Admin",
-    last_name: "User",
-    email,
-  })
 
-  const hashConfig = { logN: 15, r: 8, p: 1 }
-  const passwordHash = await Scrypt.kdf("somepassword", hashConfig)
+  const rbacEnabled = MedusaModule.isInstalled(Modules.RBAC)
 
-  const authIdentity = await authModule.createAuthIdentities({
-    provider_identities: [
+  let userRoles = options?.roles
+
+  // If RBAC is enabled and no roles provided, assign super admin role
+  if (rbacEnabled && !userRoles) {
+    const rbacModule = appContainer.resolve(Modules.RBAC)
+    const superAdminRoles = await rbacModule.listRbacRoles({
+      id: "role_super_admin",
+    })
+
+    userRoles = [superAdminRoles[0].id]
+  }
+
+  const [existingUser] = await userModule.listUsers({ email })
+
+  let user
+  let authIdentity
+
+  if (existingUser) {
+    user = existingUser
+
+    const existingAuthIdentities = await authModule.listAuthIdentities(
       {
-        provider: "emailpass",
-        entity_id: email,
-        provider_metadata: {
-          password: passwordHash.toString("base64"),
+        provider_identities: {
+          entity_id: email,
+          provider: "emailpass",
         },
       },
-    ],
-    app_metadata: {
-      user_id: user.id,
-    },
-  })
+      { relations: ["provider_identities"] }
+    )
 
-  const config = container.resolve(ContainerRegistrationKeys.CONFIG_MODULE)
+    authIdentity = existingAuthIdentities[0]
+  } else {
+    user = await userModule.createUsers({
+      first_name: "Admin",
+      last_name: "User",
+      email,
+    })
+
+    // Assign RBAC roles to the user
+    if (rbacEnabled && userRoles?.length) {
+      const rbacModule = appContainer.resolve(Modules.RBAC)
+
+      await rbacModule.createRbacRoleAssignments(
+        userRoles.map((role_id) => ({
+          role_id,
+          reference: "user",
+          reference_id: user.id,
+        }))
+      )
+    }
+
+    const hashConfig = { logN: 15, r: 8, p: 1 }
+    const passwordHash = Buffer.from(await Scrypt.kdf("somepassword", hashConfig))
+
+    authIdentity = await authModule.createAuthIdentities({
+      provider_identities: [
+        {
+          provider: "emailpass",
+          entity_id: email,
+          provider_metadata: {
+            password: passwordHash.toString("base64"),
+          },
+        },
+      ],
+      app_metadata: {
+        user_id: user.id,
+      },
+    })
+  }
+
+  const config = appContainer.resolve(ContainerRegistrationKeys.CONFIG_MODULE)
   const { projectConfig } = config
   const { jwtSecret, jwtOptions } = projectConfig.http
-  const token = jwt.sign(
+  const token = generateJwtToken(
     {
       actor_id: user.id,
       actor_type: "user",
       auth_identity_id: authIdentity.id,
+      auth_provider: "emailpass",
+      app_metadata: {
+        user: user.id,
+        roles: userRoles,
+      },
     },
-    jwtSecret,
     {
+      secret: jwtSecret,
       expiresIn: "1d",
-      ...jwtOptions,
+      jwtOptions,
     }
   )
 

@@ -5,13 +5,12 @@ import {
   UpdateLineItemWithoutSelectorDTO,
   UpdateLineItemWithSelectorDTO,
 } from "@medusajs/framework/types"
-import {
-  MathBN,
-  Modules,
-  deepEqualObj,
-  isPresent,
-} from "@medusajs/framework/utils"
+import { MathBN, Modules } from "@medusajs/framework/utils"
 import { StepResponse, createStep } from "@medusajs/framework/workflows-sdk"
+import {
+  findMatchingLineItem,
+  lineItemFieldsForMerging,
+} from "../utils/find-matching-line-item"
 
 /**
  * The details of the line items to create or update.
@@ -36,8 +35,7 @@ export interface GetLineItemActionsStepOutput {
    * The line items to update.
    */
   itemsToUpdate:
-    | UpdateLineItemWithSelectorDTO[]
-    | UpdateLineItemWithoutSelectorDTO[]
+    UpdateLineItemWithSelectorDTO[] | UpdateLineItemWithoutSelectorDTO[]
 }
 
 export const getLineItemActionsStepId = "get-line-item-actions-step"
@@ -72,44 +70,54 @@ export const getLineItemActionsStep = createStep(
         variant_id: variantIds,
       },
       {
-        select: [
-          "id",
-          "metadata",
-          "variant_id",
-          "quantity",
-          "unit_price",
-          "compare_at_unit_price",
-        ],
+        select: lineItemFieldsForMerging,
       }
     )
 
-    const variantItemMap = new Map<string, CartLineItemDTO>(
-      existingVariantItems.map((item) => [item.variant_id!, item])
+    const variantItemsMap = existingVariantItems.reduce(
+      (result, variantItem) => {
+        if (!result.has(variantItem.variant_id!)) {
+          result.set(variantItem.variant_id!, [])
+        }
+        result.get(variantItem.variant_id!)!.push(variantItem)
+        return result
+      },
+      new Map<string, CartLineItemDTO[]>()
     )
 
     const itemsToCreate: CreateLineItemForCartDTO[] = []
     const itemsToUpdate: UpdateLineItemWithSelectorDTO["data"][] = []
 
     for (const item of data.items) {
-      const existingItem = variantItemMap.get(item.variant_id!)
-      const metadataMatches =
-        (!isPresent(existingItem?.metadata) && !isPresent(item.metadata)) ||
-        deepEqualObj(existingItem?.metadata, item.metadata)
+      const variantItems = variantItemsMap.get(item.variant_id!)
 
-      if (existingItem && metadataMatches) {
+      const existingItem = findMatchingLineItem(variantItems, item)
+
+      if (existingItem) {
         const quantity = MathBN.sum(
           existingItem.quantity as number,
           item.quantity ?? 1
         )
 
-        itemsToUpdate.push({
-          id: existingItem.id,
-          quantity: quantity,
-          variant_id: item.variant_id!,
-          unit_price: item.unit_price ?? existingItem.unit_price,
-          compare_at_unit_price:
-            item.compare_at_unit_price ?? existingItem.compare_at_unit_price,
-        })
+        // In case of multiple items with the same variant_id, metadata and custom price, we accumulate the quantity.
+        existingItem.quantity = quantity
+
+        const existingUpdate = itemsToUpdate.find(
+          (u) => u.id === existingItem.id
+        )
+
+        if (existingUpdate) {
+          existingUpdate.quantity = quantity
+        } else {
+          itemsToUpdate.push({
+            id: existingItem.id,
+            quantity: quantity,
+            variant_id: item.variant_id!,
+            unit_price: item.unit_price ?? existingItem.unit_price,
+            compare_at_unit_price:
+              item.compare_at_unit_price ?? existingItem.compare_at_unit_price,
+          })
+        }
       } else {
         itemsToCreate.push(item)
       }

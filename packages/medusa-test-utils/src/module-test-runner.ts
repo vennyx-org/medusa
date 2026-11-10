@@ -11,6 +11,7 @@ import {
 } from "@medusajs/framework/utils"
 import * as fs from "fs"
 import { getDatabaseURL, getMikroOrmWrapper, TestDatabase } from "./database"
+import { formatError } from "./medusa-test-runner-utils"
 import { initModules, InitModulesOptions } from "./init-modules"
 import { default as MockEventBusService } from "./mock-event-bus-service"
 import { ulid } from "ulid"
@@ -30,13 +31,18 @@ interface ModuleTestRunnerConfig<TService = any> {
   moduleModels?: any[]
   moduleOptions?: Record<string, any>
   moduleDependencies?: string[]
-  joinerConfig?: any[]
   schema?: string
   dbName?: string
   injectedDependencies?: Record<string, any>
   resolve?: string
   debug?: boolean
   cwd?: string
+  /**
+   * Migration directories to apply instead of deriving the schema from the
+   * module models. Needed when the schema under test spans more than one
+   * package, e.g. a module and the provider being tested.
+   */
+  pathToMigrations?: string | string[]
   hooks?: {
     beforeModuleInit?: () => Promise<void>
     afterModuleInit?: (medusaApp: any, service: TService) => Promise<void>
@@ -48,6 +54,7 @@ function createMikroOrmWrapper(options: {
   resolve?: string
   dbConfig: any
   cwd?: string
+  pathToMigrations?: string | string[]
 }): {
   MikroOrmWrapper: TestDatabase
   models: (Function | DmlEntity<any, any>)[]
@@ -63,8 +70,8 @@ function createMikroOrmWrapper(options: {
     const modelsPath = fs.existsSync(`${basePath}/dist/models`)
       ? "/dist/models"
       : fs.existsSync(`${basePath}/models`)
-      ? "/models"
-      : ""
+        ? "/models"
+        : ""
 
     if (modelsPath) {
       moduleModels = loadModels(`${basePath}${modelsPath}`)
@@ -77,6 +84,7 @@ function createMikroOrmWrapper(options: {
 
   const MikroOrmWrapper = getMikroOrmWrapper({
     mikroOrmEntities: moduleModels,
+    pathToMigrations: options.pathToMigrations,
     clientUrl: options.dbConfig.clientUrl,
     schema: options.dbConfig.schema,
   })
@@ -98,8 +106,8 @@ class ModuleTestRunner<TService = any> {
   private cwd?: string
   private moduleOptions: Record<string, any>
   private moduleDependencies?: string[]
-  private joinerConfig: any[]
   private injectedDependencies: Record<string, any>
+  private pathToMigrations?: string | string[]
   private hooks: ModuleTestRunnerConfig<TService>["hooks"] = {}
 
   private connection: any = null
@@ -125,8 +133,8 @@ class ModuleTestRunner<TService = any> {
     this.cwd = config.cwd
     this.moduleOptions = config.moduleOptions ?? {}
     this.moduleDependencies = config.moduleDependencies
-    this.joinerConfig = config.joinerConfig ?? []
     this.injectedDependencies = config.injectedDependencies ?? {}
+    this.pathToMigrations = config.pathToMigrations
     this.hooks = config.hooks ?? {}
 
     this.dbConfig = {
@@ -162,6 +170,7 @@ class ModuleTestRunner<TService = any> {
       resolve: this.resolve,
       dbConfig: this.dbConfig,
       cwd: this.cwd,
+      pathToMigrations: this.pathToMigrations,
     })
 
     this.MikroOrmWrapper = MikroOrmWrapper
@@ -192,7 +201,6 @@ class ModuleTestRunner<TService = any> {
       },
       modulesConfig: this.modulesConfig,
       databaseConfig: this.dbConfig,
-      joinerConfig: this.joinerConfig,
       preventConnectionDestroyWarning: true,
       cwd: this.cwd,
     }
@@ -249,8 +257,10 @@ class ModuleTestRunner<TService = any> {
         await this.hooks.afterModuleInit(this.medusaApp, this.moduleService)
       }
     } catch (error) {
-      logger.error("Error in beforeEach:", error?.message)
-      await this.cleanup()
+      // Deliberately not cleaning up: the shared connection lives for the whole
+      // suite, so destroying it here would replace every later failure with an
+      // unrelated "Unable to acquire a connection". `afterAll` still cleans up.
+      logger.error(`Error in beforeEach:\n${formatError(error)}`)
       throw error
     }
   }
@@ -264,7 +274,7 @@ class ModuleTestRunner<TService = any> {
       this.moduleService = {}
       this.medusaApp = {}
     } catch (error) {
-      logger.error("Error in afterEach:", error?.message)
+      logger.error(`Error in afterEach:\n${formatError(error)}`)
       throw error
     }
   }
@@ -285,7 +295,7 @@ class ModuleTestRunner<TService = any> {
         global.gc()
       }
     } catch (error) {
-      logger.error("Error during cleanup:", error?.message)
+      logger.error(`Error during cleanup:\n${formatError(error)}`)
     }
   }
 
@@ -307,7 +317,6 @@ export function moduleIntegrationTestRunner<TService = any>({
   moduleModels,
   moduleOptions = {},
   moduleDependencies,
-  joinerConfig = [],
   schema = "public",
   dbName,
   debug = false,
@@ -316,12 +325,12 @@ export function moduleIntegrationTestRunner<TService = any>({
   injectedDependencies = {},
   cwd,
   hooks,
+  pathToMigrations,
 }: {
   moduleName: string
   moduleModels?: any[]
   moduleOptions?: Record<string, any>
   moduleDependencies?: string[]
-  joinerConfig?: any[]
   schema?: string
   dbName?: string
   injectedDependencies?: Record<string, any>
@@ -329,6 +338,7 @@ export function moduleIntegrationTestRunner<TService = any>({
   debug?: boolean
   cwd?: string
   hooks?: ModuleTestRunnerConfig<TService>["hooks"]
+  pathToMigrations?: string | string[]
   testSuite: (options: SuiteOptions<TService>) => void
 }) {
   const runner = new ModuleTestRunner<TService>({
@@ -336,7 +346,6 @@ export function moduleIntegrationTestRunner<TService = any>({
     moduleModels,
     moduleOptions,
     moduleDependencies,
-    joinerConfig,
     schema,
     dbName,
     debug,
@@ -344,6 +353,7 @@ export function moduleIntegrationTestRunner<TService = any>({
     injectedDependencies,
     cwd,
     hooks,
+    pathToMigrations,
   })
 
   return describe("", () => {

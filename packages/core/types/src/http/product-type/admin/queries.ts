@@ -2,8 +2,7 @@ import { BaseFilterable, OperatorMap } from "../../../dal"
 import { FindParams, SelectParams } from "../../common"
 
 export interface AdminProductTypeListParams
-  extends FindParams,
-    BaseFilterable<AdminProductTypeListParams> {
+  extends FindParams, BaseFilterable<AdminProductTypeListParams> {
   /**
    * Query or keywords to apply filters on the type's searchable fields.
    */
@@ -16,6 +15,10 @@ export interface AdminProductTypeListParams
    * Filter by value(s).
    */
   value?: string | string[]
+  /**
+   * Filter by external ID(s).
+   */
+  external_id?: string | string[]
   /**
    * Apply filters on the creation date.
    */

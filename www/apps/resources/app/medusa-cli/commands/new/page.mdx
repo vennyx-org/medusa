@@ -11,10 +11,10 @@ export const metadata = {
 
 # {metadata.title}
 
-Create a new Medusa application. Unlike the `create-medusa-app` CLI tool, this command provides more flexibility for experienced Medusa developers in creating and configuring their project.
+Create a new Medusa application. Unlike the `create-medusa-app` CLI tool, this command provides more flexibility for experienced Medusa developers in creating and configuring their project. It creates a monorepo structure with your Medusa backend in the `apps/backend` directory.
 
 ```bash
-medusa new [<dir_name> [<starter_url>]]
+medusa new [<dir_name>]
 ```
 
 ## Arguments
@@ -22,10 +22,18 @@ medusa new [<dir_name> [<starter_url>]]
 <Table>
   <Table.Header>
     <Table.Row>
-      <Table.HeaderCell>Argument</Table.HeaderCell>
-      <Table.HeaderCell>Description</Table.HeaderCell>
-      <Table.HeaderCell>Required</Table.HeaderCell>
-      <Table.HeaderCell>Default</Table.HeaderCell>
+      <Table.HeaderCell>
+        Argument
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Description
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Required
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Default
+      </Table.HeaderCell>
     </Table.Row>
   </Table.Header>
   <Table.Body>
@@ -37,29 +45,7 @@ medusa new [<dir_name> [<starter_url>]]
       </Table.Cell>
       <Table.Cell>
 
-      The name of the directory to create the Medusa application in.
-      
-      </Table.Cell>
-      <Table.Cell>
-
-      Yes
-
-      </Table.Cell>
-      <Table.Cell>
-
-      \-
-
-      </Table.Cell>
-    </Table.Row>
-    <Table.Row>
-      <Table.Cell>
-      
-      `starter_url`
-      
-      </Table.Cell>
-      <Table.Cell>
-
-      The URL of the starter repository to create the project from.
+      The name of the directory to create the Medusa application in. If not provided, you'll be prompted to enter a project name.
       
       </Table.Cell>
       <Table.Cell>
@@ -69,7 +55,7 @@ medusa new [<dir_name> [<starter_url>]]
       </Table.Cell>
       <Table.Cell>
 
-      `https://github.com/medusajs/medusa-starter-default`
+      \-
 
       </Table.Cell>
     </Table.Row>
@@ -81,8 +67,12 @@ medusa new [<dir_name> [<starter_url>]]
 <Table>
   <Table.Header>
     <Table.Row>
-      <Table.HeaderCell>Option</Table.HeaderCell>
-      <Table.HeaderCell>Description</Table.HeaderCell>
+      <Table.HeaderCell>
+        Option
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Description
+      </Table.HeaderCell>
     </Table.Row>
   </Table.Header>
   <Table.Body>
@@ -182,5 +172,42 @@ medusa new [<dir_name> [<starter_url>]]
       
       </Table.Cell>
     </Table.Row>
+    <Table.Row>
+      <Table.Cell>
+      
+      `--skip-migrations`
+      
+      </Table.Cell>
+      <Table.Cell>
+
+      Skip running migrations and seeding.
+      
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell>
+      
+      `--branch <branch>`
+      
+      </Table.Cell>
+      <Table.Cell>
+
+      The branch to clone from the starter repository.
+      
+      </Table.Cell>
+    </Table.Row>
   </Table.Body>
 </Table>
+
+## Example
+
+```bash
+medusa new my-medusa-store
+```
+
+After running the command, navigate to your project directory and start the development server:
+
+```bash npm2yarn
+cd my-medusa-store
+npm run dev
+```

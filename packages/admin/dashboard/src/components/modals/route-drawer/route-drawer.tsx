@@ -7,7 +7,7 @@ import { RouteModalProvider } from "../route-modal-provider/route-provider"
 import { StackedModalProvider } from "../stacked-modal-provider"
 
 type RouteDrawerProps = PropsWithChildren<{
-  prev?: string | Partial<Path>
+  prev?: string | Partial<Path> | number
 }>
 
 const Root = ({ prev = "..", children }: RouteDrawerProps) => {
@@ -33,7 +33,11 @@ const Root = ({ prev = "..", children }: RouteDrawerProps) => {
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       document.body.style.pointerEvents = "auto"
-      navigate(to, { replace: true })
+      if (typeof to === "number") {
+        navigate(to)
+      } else {
+        navigate(to, { replace: true })
+      }
       return
     }
 
@@ -47,7 +51,7 @@ const Root = ({ prev = "..", children }: RouteDrawerProps) => {
           <Drawer.Content
             aria-describedby={undefined}
             className={clx({
-              "!bg-ui-bg-disabled !inset-y-5 !right-5": stackedModalOpen,
+              "!inset-y-5 !right-5 !bg-ui-bg-disabled": stackedModalOpen,
             })}
           >
             {children}
@@ -71,7 +75,17 @@ const Form = RouteModalForm
  *
  * Typically used for forms editing a resource.
  */
-export const RouteDrawer = Object.assign(Root, {
+type RouteDrawerComponent = typeof Root & {
+  Header: typeof Drawer.Header
+  Title: typeof Drawer.Title
+  Body: typeof Drawer.Body
+  Description: typeof Drawer.Description
+  Footer: typeof Drawer.Footer
+  Close: typeof Drawer.Close
+  Form: typeof RouteModalForm
+}
+
+export const RouteDrawer: RouteDrawerComponent = Object.assign(Root, {
   Header,
   Title,
   Body,

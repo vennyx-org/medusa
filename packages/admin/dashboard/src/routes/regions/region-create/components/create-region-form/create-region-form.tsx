@@ -17,8 +17,6 @@ import { useForm, useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import * as zod from "zod"
 
-import { RegionCountryDTO } from "@medusajs/types"
-
 import { Form } from "../../../../../components/common/form"
 import { Combobox } from "../../../../../components/inputs/combobox"
 import {
@@ -31,7 +29,10 @@ import { _DataTable } from "../../../../../components/table/data-table"
 import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
 import { useCreateRegion } from "../../../../../hooks/api/regions"
 import { useDataTable } from "../../../../../hooks/use-data-table"
-import { countries as staticCountries } from "../../../../../lib/data/countries"
+import {
+  countries as staticCountries,
+  StaticCountry,
+} from "../../../../../lib/data/countries"
 import { CurrencyInfo } from "../../../../../lib/data/currencies"
 import { formatProvider } from "../../../../../lib/format-provider"
 import { useCountries } from "../../../common/hooks/use-countries"
@@ -46,12 +47,14 @@ type CreateRegionFormProps = {
 }
 
 const CreateRegionSchema = zod.object({
-  name: zod.string().min(1),
+  name: zod.string().min(1, "Enter a name for the region"),
   currency_code: zod.string().min(2, "Select a currency"),
   automatic_taxes: zod.boolean(),
   is_tax_inclusive: zod.boolean(),
   countries: zod.array(zod.object({ code: zod.string(), name: zod.string() })),
-  payment_providers: zod.array(zod.string()).min(1),
+  payment_providers: zod
+    .array(zod.string())
+    .min(1, "Select at least one payment provider"),
 })
 
 const PREFIX = "cr"
@@ -319,7 +322,7 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
                 }}
               />
 
-              <div className="bg-ui-border-base h-px w-full" />
+              <div className="h-px w-full bg-ui-border-base" />
               <div className="flex flex-col gap-y-4">
                 <div>
                   <Text size="small" leading="compact" weight="plus">
@@ -372,7 +375,7 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
                           count={count}
                           pageSize={PAGE_SIZE}
                           orderBy={[
-                            { key: "display_name", label: t("fields.name") },
+                            { key: "name", label: t("fields.name") },
                             { key: "iso_2", label: t("fields.code") },
                           ]}
                           pagination
@@ -402,7 +405,7 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
                   </StackedFocusModal.Content>
                 </StackedFocusModal>
               </div>
-              <div className="bg-ui-border-base h-px w-full" />
+              <div className="h-px w-full bg-ui-border-base" />
               <div className="flex flex-col gap-y-4">
                 <div>
                   <Text size="small" leading="compact" weight="plus">
@@ -455,7 +458,7 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
   )
 }
 
-const columnHelper = createColumnHelper<RegionCountryDTO>()
+const columnHelper = createColumnHelper<StaticCountry>()
 
 const useColumns = () => {
   const base = useCountryTableColumns()
@@ -507,14 +510,14 @@ const CountryTag = ({
   onRemove: (code: string) => void
 }) => {
   return (
-    <div className="bg-ui-bg-field shadow-borders-base transition-fg hover:bg-ui-bg-field-hover flex h-7 items-center overflow-hidden rounded-md">
+    <div className="flex h-7 items-center overflow-hidden rounded-md bg-ui-bg-field shadow-borders-base transition-fg hover:bg-ui-bg-field-hover">
       <div className="txt-compact-small-plus flex h-full select-none items-center justify-center px-2 py-0.5">
         {country.name}
       </div>
       <button
         type="button"
         onClick={() => onRemove(country.code)}
-        className="focus-visible:bg-ui-bg-field-hover transition-fg hover:bg-ui-bg-field-hover flex h-full w-7 items-center justify-center border-l outline-none"
+        className="flex h-full w-7 items-center justify-center border-l outline-none transition-fg hover:bg-ui-bg-field-hover focus-visible:bg-ui-bg-field-hover"
       >
         <XMarkMini className="text-ui-fg-muted" />
       </button>

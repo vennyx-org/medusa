@@ -4,8 +4,12 @@ import { IconButton, Input, Text } from "@medusajs/ui"
 import { UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { ActionMenu } from "../../../../../components/common/action-menu"
+import {
+  Action,
+  ActionMenu,
+} from "../../../../../components/common/action-menu"
 import { Form } from "../../../../../components/common/form"
+import { getReturnableQuantity } from "../../../../../lib/rma"
 import { Thumbnail } from "../../../../../components/common/thumbnail"
 import { Combobox } from "../../../../../components/inputs/combobox"
 import { MoneyAmountCell } from "../../../../../components/table/table-cells/common/money-amount-cell"
@@ -13,7 +17,9 @@ import { useReturnReasons } from "../../../../../hooks/api/return-reasons"
 
 type OrderEditItemProps = {
   item: AdminOrderLineItem
-  previewItem: AdminOrderLineItem
+  previewItem: AdminOrderLineItem & {
+    return_requested_total: number
+  }
   currencyCode: string
   index: number
 
@@ -40,7 +46,7 @@ function ClaimInboundItem({
   const showNote = typeof formItem.note === "string"
 
   return (
-    <div className="bg-ui-bg-subtle shadow-elevation-card-rest my-2 rounded-xl ">
+    <div className="my-2 rounded-xl bg-ui-bg-subtle shadow-elevation-card-rest">
       <div className="flex flex-col items-center gap-x-2 gap-y-2 border-b p-3 text-sm md:flex-row">
         <div className="flex flex-1 items-center gap-x-3">
           <Thumbnail src={item.thumbnail} />
@@ -53,7 +59,7 @@ function ClaimInboundItem({
 
               {item.variant_sku && <span>({item.variant_sku})</span>}
             </div>
-            <Text as="div" className="text-ui-fg-subtle txt-small">
+            <Text as="div" className="txt-small text-ui-fg-subtle">
               {item.product_title}
             </Text>
           </div>
@@ -70,9 +76,9 @@ function ClaimInboundItem({
                     <Form.Control>
                       <Input
                         {...field}
-                        className="bg-ui-bg-base txt-small w-[67px] rounded-lg"
+                        className="txt-small w-[67px] rounded-lg bg-ui-bg-base"
                         min={1}
-                        max={item.quantity}
+                        max={getReturnableQuantity(item)}
                         type="number"
                         onBlur={(e) => {
                           const val = e.target.value
@@ -96,7 +102,7 @@ function ClaimInboundItem({
             </Text>
           </div>
 
-          <div className="text-ui-fg-subtle txt-small mr-2 flex flex-shrink-0">
+          <div className="txt-small mr-2 flex flex-shrink-0 text-ui-fg-subtle">
             <MoneyAmountCell
               currencyCode={currencyCode}
               amount={previewItem.return_requested_total}
@@ -124,14 +130,14 @@ function ClaimInboundItem({
                     onClick: onRemove,
                     icon: <XCircle />,
                   },
-                ].filter(Boolean),
+                ].filter(Boolean) as Action[],
               },
             ]}
           />
         </div>
       </div>
       <>
-        {/*REASON*/}
+        {/* REASON*/}
         {showReturnReason && (
           <div className="grid grid-cols-1 gap-2 p-3 md:grid-cols-2">
             <div>
@@ -186,7 +192,7 @@ function ClaimInboundItem({
           </div>
         )}
 
-        {/*NOTE*/}
+        {/* NOTE*/}
         {showNote && (
           <div className="grid grid-cols-1 gap-2 p-3 md:grid-cols-2">
             <div>

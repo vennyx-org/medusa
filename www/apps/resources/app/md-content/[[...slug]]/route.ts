@@ -1,9 +1,7 @@
-import { getCleanMd } from "docs-utils"
-import { existsSync } from "fs"
+import { addExtraToMd, docPageToMarkdown, getCleanMd } from "docs-utils"
 import { unstable_cache } from "next/cache"
 import { notFound } from "next/navigation"
 import { NextRequest, NextResponse } from "next/server"
-import path from "path"
 import {
   addUrlToRelativeLink,
   crossProjectLinksPlugin,
@@ -12,76 +10,182 @@ import {
 import type { Plugin } from "unified"
 import { filesMap } from "../../../generated/files-map.mjs"
 import { slugChanges } from "../../../generated/slug-changes.mjs"
+import { PostHog } from "posthog-node"
+import { fetchMdxContent } from "../../../utils/fetch-mdx-content"
+import { getSidebarForPath } from "../../../utils/get-sidebar-for-path"
 
 type Params = {
-  params: Promise<{ slug: string[] }>
+  params: Promise<{ slug?: string[] }>
 }
 
 export async function GET(req: NextRequest, { params }: Params) {
-  const { slug = ["/"] } = await params
+  const { slug: rawSlug } = await params
+  const slug = rawSlug?.filter(Boolean) ?? []
+  const origin = process.env.NEXT_PUBLIC_BASE_URL || new URL(req.url).origin
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ""
 
-  // keep this so that Vercel keeps the files in deployment
-  path.join(process.cwd(), "app")
-  path.join(process.cwd(), "references")
+  const filePathFromMap = await getFileFromMaps(`/${slug.join("/")}`)
 
-  const filePathFromMap = await getFileFromMaps(
-    `/${slug.join("/")}`.replace("//", "/")
-  )
   if (!filePathFromMap) {
     return notFound()
   }
 
-  const filePath = path.join(process.cwd(), "..", "..", "..", filePathFromMap)
+  // An `_md-content.mdx` file next to the page overrides it for this route,
+  // so a page can serve agents different content than it renders.
+  const overrideContent = filePathFromMap.endsWith("page.mdx")
+    ? await fetchMdxContent(
+        `${origin}${basePath}`,
+        filePathFromMap.replace(/page\.mdx$/, "_md-content.mdx")
+      )
+    : null
 
-  if (!existsSync(filePath)) {
+  const fileContent =
+    overrideContent ??
+    (await fetchMdxContent(`${origin}${basePath}`, filePathFromMap))
+  if (!fileContent) {
     return notFound()
   }
 
-  const cleanMdContent = await getCleanMd_(filePath, {
-    before: [
-      [
-        crossProjectLinksPlugin,
-        {
-          baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
-          projectUrls: {
-            docs: {
-              url: process.env.NEXT_PUBLIC_DOCS_URL,
-              path: "",
-            },
-            "user-guide": {
-              url: process.env.NEXT_PUBLIC_USER_GUIDE_URL,
-            },
-            ui: {
-              url: process.env.NEXT_PUBLIC_UI_URL,
-            },
-            api: {
-              url: process.env.NEXT_PUBLIC_API_URL,
-            },
-          },
-          useBaseUrl:
-            process.env.NODE_ENV === "production" ||
-            process.env.VERCEL_ENV === "production",
-        },
-      ],
-      [localLinksRehypePlugin],
-    ] as unknown as Plugin[],
-    after: [
-      [addUrlToRelativeLink, { url: process.env.NEXT_PUBLIC_BASE_URL }],
-    ] as unknown as Plugin[],
-  })
+  const isOverride = !!overrideContent
 
-  return new NextResponse(cleanMdContent, {
-    headers: {
-      "Content-Type": "text/markdown",
-    },
-    status: 200,
-  })
+  // Reference pages are the JSON doc-model (page.json) — convert the DocPage to
+  // Markdown directly rather than running the MDX cleaner over it.
+  // the app directory that holds the source MDX pages, used to resolve
+  // relative `page.mdx` links against the current page's path
+  const appDir = filePathFromMap.replace(/\/app\/.*$/, "/app")
+
+  const cleanMdContent = filePathFromMap.endsWith("page.json")
+    ? await docPageToMarkdown_(fileContent)
+    : await getCleanMd_(fileContent, `/${slug.join("/")}`, {
+        before: [
+          [
+            crossProjectLinksPlugin,
+            {
+              baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
+              projectUrls: {
+                docs: {
+                  url: process.env.NEXT_PUBLIC_DOCS_URL,
+                  path: "",
+                },
+                "user-guide": {
+                  url: process.env.NEXT_PUBLIC_USER_GUIDE_URL,
+                },
+                ui: {
+                  url: process.env.NEXT_PUBLIC_UI_URL,
+                },
+                api: {
+                  url: process.env.NEXT_PUBLIC_API_URL,
+                },
+              },
+              useBaseUrl:
+                process.env.NODE_ENV === "production" ||
+                process.env.VERCEL_ENV === "production" ||
+                !!process.env.CLOUDFLARE_ENV,
+            },
+          ],
+          // in "content" mode there is no vfile path, so pass the current
+          // page's file path explicitly to resolve relative `page.mdx` links
+          [
+            localLinksRehypePlugin,
+            { filePath: filePathFromMap, basePath: appDir },
+          ],
+        ] as unknown as Plugin[],
+        after: [
+          // links in the doc are app-relative (without the base path), so
+          // prepend both the base URL and the base path to make them absolute
+          [
+            addUrlToRelativeLink,
+            { url: `${process.env.NEXT_PUBLIC_BASE_URL || ""}${basePath}` },
+          ],
+        ] as unknown as Plugin[],
+      })
+
+  const acceptHeader = req.headers.get("accept") || ""
+  if (
+    acceptHeader.includes("text/plain") ||
+    acceptHeader.includes("text/markdown")
+  ) {
+    const client = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+      host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    })
+
+    const urlObj = new URL(req.url)
+    const url = `${process.env.NEXT_PUBLIC_BASE_URL || ""}${process.env.NEXT_PUBLIC_BASE_PATH || ""}${urlObj.pathname}`
+
+    client.capture({
+      distinctId: "anonymous",
+      event: "md_content_requested_agents",
+      properties: {
+        $current_url: url,
+        $raw_user_agent: req.headers.get("user-agent") || undefined,
+        $ip:
+          req.headers.get("cf-connecting-ip") ||
+          req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+          undefined,
+      },
+    })
+
+    await client.shutdown()
+  }
+
+  return new NextResponse(
+    isOverride
+      ? cleanMdContent
+      : addExtraToMd(cleanMdContent, {
+          baseUrl: process.env.NEXT_PUBLIC_BASE_URL || "",
+          basePath: process.env.NEXT_PUBLIC_BASE_PATH || "",
+        }),
+    {
+      headers: {
+        "Content-Type": "text/markdown",
+        "Cache-Control": "public, max-age=3600, must-revalidate",
+      },
+      status: 200,
+    }
+  )
 }
 
 const getCleanMd_ = unstable_cache(
-  async (filePath: string, plugins?: { before?: Plugin[]; after?: Plugin[] }) =>
-    getCleanMd({ file: filePath, plugins }),
+  async (
+    content: string,
+    currentPath: string,
+    plugins?: { before?: Plugin[]; after?: Plugin[] }
+  ) => {
+    // `ChildDocs` renders the child items of the current sidebar, so resolve
+    // the sidebar for this path and pass it (along with the path and base path)
+    // to the parser that reproduces the component's output as Markdown.
+    const sidebar = await getSidebarForPath(currentPath)
+    return getCleanMd({
+      file: content,
+      type: "content",
+      plugins,
+      parserOptions: {
+        ChildDocs: {
+          sidebar,
+          activePath: currentPath,
+        },
+      },
+    })
+  },
   ["clean-md"],
+  {
+    revalidate: 3600,
+  }
+)
+
+/** Converts a reference DocPage JSON string to Markdown. */
+const docPageToMarkdown_ = unstable_cache(
+  async (content: string): Promise<string> => {
+    try {
+      return docPageToMarkdown(JSON.parse(content), {
+        // doc-model links are app-relative, so the base path is needed too
+        baseUrl: `${process.env.NEXT_PUBLIC_BASE_URL || ""}${process.env.NEXT_PUBLIC_BASE_PATH || ""}`,
+      })
+    } catch {
+      return ""
+    }
+  },
+  ["doc-page-md"],
   {
     revalidate: 3600,
   }

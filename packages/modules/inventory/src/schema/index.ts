@@ -9,6 +9,7 @@ type InventoryItem {
   hs_code: String
   mid_code: String
   material: String
+  unit_of_measure: String
   weight: Int
   length: Int
   height: Int
@@ -19,6 +20,9 @@ type InventoryItem {
   thumbnail: String
   metadata: JSON
   location_levels: [InventoryLevel]
+  reservation_items: [ReservationItem]
+  reserved_quantity: Float!
+  stocked_quantity: Float!
 }
 
 type InventoryLevel {
@@ -29,10 +33,11 @@ type InventoryLevel {
   inventory_item_id: String!
   inventory_item: InventoryItem!
   location_id: String!
-  stocked_quantity: Int!
-  reserved_quantity: Int!
-  incoming_quantity: Int!
+  stocked_quantity: Float!
+  reserved_quantity: Float!
+  incoming_quantity: Float!
   metadata: JSON
+  available_quantity: Float!
 }
 
 type ReservationItem {
@@ -41,10 +46,11 @@ type ReservationItem {
   updated_at: DateTime!
   deleted_at: DateTime
   line_item_id: String
+  allow_backorder: Boolean!
   inventory_item_id: String!
   inventory_item: InventoryItem!
   location_id: String!
-  quantity: Int!
+  quantity: Float!
   external_id: String
   description: String
   created_by: String

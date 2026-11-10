@@ -1,3 +1,9 @@
+export enum Entities {
+  stock_location = "stock_location",
+  fulfillment_set = "fulfillment_set",
+  sales_channel = "sales_channel",
+}
+
 export const defaultAdminStockLocationFields = [
   "id",
   "name",
@@ -18,9 +24,11 @@ export const defaultAdminStockLocationFields = [
 export const retrieveTransformQueryConfig = {
   defaults: defaultAdminStockLocationFields,
   isList: false,
+  entity: Entities.stock_location,
 }
 
 export const listTransformQueryConfig = {
   ...retrieveTransformQueryConfig,
   isList: true,
+  entity: Entities.stock_location,
 }

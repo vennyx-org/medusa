@@ -135,6 +135,16 @@ export interface TaxLineDTO {
   provider_id?: string
 
   /**
+   * Holds data returned by the tax provider in key-value pairs.
+   */
+  data?: Record<string, unknown> | null
+
+  /**
+   * Holds custom data in key-value pairs.
+   */
+  metadata?: Record<string, unknown> | null
+
+  /**
    * When the tax line was created.
    */
   created_at: Date | string
@@ -1068,8 +1078,7 @@ export interface CartDTO {
 /**
  * The filters to apply on the retrieved carts.
  */
-export interface FilterableCartProps
-  extends BaseFilterable<FilterableCartProps> {
+export interface FilterableCartProps extends BaseFilterable<FilterableCartProps> {
   /**
    * The IDs to filter the carts by.
    */
@@ -1099,15 +1108,19 @@ export interface FilterableCartProps
    * Filter the carts by their update date.
    */
   updated_at?: OperatorMap<string>
+
+  /**
+   * Filter the carts by their completion date.
+   */
+  completed_at?: OperatorMap<string>
 }
 
 /**
- * The filters to apply on the retrieved addresss.
+ * The filters to apply on the retrieved address.
  */
-export interface FilterableAddressProps
-  extends BaseFilterable<FilterableAddressProps> {
+export interface FilterableAddressProps extends BaseFilterable<FilterableAddressProps> {
   /**
-   * The IDs to filter the addresss by.
+   * The IDs to filter the address by.
    */
   id?: string | string[]
 }
@@ -1115,8 +1128,7 @@ export interface FilterableAddressProps
 /**
  * The filters to apply on the retrieved line items.
  */
-export interface FilterableLineItemProps
-  extends BaseFilterable<FilterableLineItemProps> {
+export interface FilterableLineItemProps extends BaseFilterable<FilterableLineItemProps> {
   /**
    * The IDs to filter the line items by.
    */
@@ -1146,8 +1158,7 @@ export interface FilterableLineItemProps
 /**
  * The filters to apply on the retrieved line item adjustments.
  */
-export interface FilterableLineItemAdjustmentProps
-  extends BaseFilterable<FilterableLineItemAdjustmentProps> {
+export interface FilterableLineItemAdjustmentProps extends BaseFilterable<FilterableLineItemAdjustmentProps> {
   /**
    * The IDs to filter the line item adjustments by.
    */
@@ -1177,8 +1188,7 @@ export interface FilterableLineItemAdjustmentProps
 /**
  * The filters to apply on the retrieved shipping methods.
  */
-export interface FilterableShippingMethodProps
-  extends BaseFilterable<FilterableShippingMethodProps> {
+export interface FilterableShippingMethodProps extends BaseFilterable<FilterableShippingMethodProps> {
   /**
    * The IDs to filter the shipping methods by.
    */
@@ -1203,8 +1213,7 @@ export interface FilterableShippingMethodProps
 /**
  * The filters to apply on the retrieved shipping method adjustments.
  */
-export interface FilterableShippingMethodAdjustmentProps
-  extends BaseFilterable<FilterableShippingMethodAdjustmentProps> {
+export interface FilterableShippingMethodAdjustmentProps extends BaseFilterable<FilterableShippingMethodAdjustmentProps> {
   /**
    * The IDs to filter the shipping method adjustments by.
    */
@@ -1234,8 +1243,7 @@ export interface FilterableShippingMethodAdjustmentProps
 /**
  * The filters to apply on the retrieved line item tax lines.
  */
-export interface FilterableLineItemTaxLineProps
-  extends BaseFilterable<FilterableLineItemTaxLineProps> {
+export interface FilterableLineItemTaxLineProps extends BaseFilterable<FilterableLineItemTaxLineProps> {
   /**
    * The IDs to filter the line item tax lines by.
    */
@@ -1275,8 +1283,7 @@ export interface FilterableLineItemTaxLineProps
 /**
  * The filters to apply on the retrieved shipping method tax lines.
  */
-export interface FilterableShippingMethodTaxLineProps
-  extends BaseFilterable<FilterableShippingMethodTaxLineProps> {
+export interface FilterableShippingMethodTaxLineProps extends BaseFilterable<FilterableShippingMethodTaxLineProps> {
   /**
    * The IDs to filter the shipping method tax lines by.
    */

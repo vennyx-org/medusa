@@ -1,7 +1,9 @@
+import { FulfillmentModule } from "../__mocks__/fulfillment-module"
 import { InventoryModule } from "../__mocks__/inventory-module"
 import { InventoryStockLocationLink } from "../__mocks__/inventory-stock-location-link"
 import { ProductInventoryLinkModule } from "../__mocks__/product-inventory-link"
 import { ProductModule } from "../__mocks__/product-module"
+import { StockLocationFulfillmentSetLink } from "../__mocks__/stock-location-fulfillment-set-link"
 import { StockLocationModule } from "../__mocks__/stock-location-module"
 
 import { Link } from "../link"
@@ -11,9 +13,11 @@ const allModules = [
   ProductModule,
   InventoryModule,
   StockLocationModule,
+  FulfillmentModule,
   // links
   ProductInventoryLinkModule,
   InventoryStockLocationLink,
+  StockLocationFulfillmentSetLink,
 ]
 describe("Remote Link", function () {
   it("Should get all loaded modules and compose their relationships", async function () {
@@ -83,6 +87,88 @@ describe("Remote Link", function () {
     )
   })
 
+  it("Should throw when creating the same hasMany: false link twice across separate calls", async function () {
+    const remoteLink = new Link(allModules as any)
+
+    await remoteLink.create({
+      productService: {
+        variant_id: "var_999",
+      },
+      inventoryService: {
+        inventory_item_id: "inv_999",
+      },
+    })
+
+    ProductInventoryLinkModule.list.mockResolvedValueOnce([{}] as any)
+
+    await expect(
+      remoteLink.create({
+        productService: {
+          variant_id: "var_999",
+        },
+        inventoryService: {
+          inventory_item_id: "inv_888",
+        },
+      })
+    ).rejects.toThrow(
+      "Cannot create multiple links between 'productService' and 'inventoryService'"
+    )
+  })
+
+  it("Should throw when a single create() call contains two links targeting the same hasMany: false entity", async function () {
+    const remoteLink = new Link(allModules as any)
+
+    await expect(
+      remoteLink.create([
+        {
+          productService: {
+            variant_id: "var_111",
+          },
+          inventoryService: {
+            inventory_item_id: "inv_111",
+          },
+        },
+        {
+          productService: {
+            variant_id: "var_222",
+          },
+          inventoryService: {
+            inventory_item_id: "inv_111",
+          },
+        },
+      ])
+    ).rejects.toThrow(
+      "Cannot create multiple links between 'productService' and 'inventoryService'"
+    )
+  })
+
+  it("Should throw when a single create() call links a hasMany: false entity to two different entities on the hasMany: true side", async function () {
+    const remoteLink = new Link(allModules as any)
+
+    await expect(
+      remoteLink.create([
+        {
+          stockLocationService: {
+            stock_location_id: "loc_111",
+          },
+          fulfillmentService: {
+            fulfillment_set_id: "fset_111",
+          },
+        },
+        {
+          stockLocationService: {
+            stock_location_id: "loc_222",
+          },
+          fulfillmentService: {
+            fulfillment_set_id: "fset_111",
+          },
+        },
+      ])
+    ).rejects.toThrow(
+      "Cannot create multiple links between 'stockLocationService' and 'fulfillmentService'"
+    )
+  })
+
   it("Should call the correct link module to create relation between 2 keys", async function () {
     const remoteLink = new Link(allModules as any)
 
@@ -113,7 +199,7 @@ describe("Remote Link", function () {
       },
     ])
 
-    expect(ProductInventoryLinkModule.create).toBeCalledWith(
+    expect(ProductInventoryLinkModule.create).toHaveBeenCalledWith(
       [
         ["var_123", "inv_123"],
         ["var_abc", "inv_abc"],
@@ -122,7 +208,7 @@ describe("Remote Link", function () {
       undefined,
       {}
     )
-    expect(InventoryStockLocationLink.create).toBeCalledWith(
+    expect(InventoryStockLocationLink.create).toHaveBeenCalledWith(
       [["ilev_123", "loc_123"]],
       undefined,
       undefined,
@@ -167,10 +253,10 @@ describe("Remote Link", function () {
       },
     })
 
-    expect(ProductInventoryLinkModule.softDelete).toBeCalledTimes(2)
-    expect(ProductModule.softDelete).toBeCalledTimes(1)
-    expect(InventoryModule.softDelete).toBeCalledTimes(1)
-    expect(InventoryStockLocationLink.softDelete).toBeCalledTimes(1)
+    expect(ProductInventoryLinkModule.softDelete).toHaveBeenCalledTimes(2)
+    expect(ProductModule.softDelete).toHaveBeenCalledTimes(1)
+    expect(InventoryModule.softDelete).toHaveBeenCalledTimes(1)
+    expect(InventoryStockLocationLink.softDelete).toHaveBeenCalledTimes(1)
 
     expect(ProductInventoryLinkModule.softDelete).toHaveBeenNthCalledWith(
       1,
@@ -186,13 +272,13 @@ describe("Remote Link", function () {
       {}
     )
 
-    expect(ProductModule.softDelete).toBeCalledWith(
+    expect(ProductModule.softDelete).toHaveBeenCalledWith(
       { id: ["var_123"] },
       { returnLinkableKeys: ["product_id", "variant_id"] },
       {}
     )
 
-    expect(InventoryModule.softDelete).toBeCalledWith(
+    expect(InventoryModule.softDelete).toHaveBeenCalledWith(
       { id: ["inv_123"] },
       {
         returnLinkableKeys: [
@@ -204,7 +290,7 @@ describe("Remote Link", function () {
       {}
     )
 
-    expect(InventoryStockLocationLink.softDelete).toBeCalledWith(
+    expect(InventoryStockLocationLink.softDelete).toHaveBeenCalledWith(
       {
         inventory_level_id: ["ilev_123"],
       },

@@ -30,7 +30,7 @@ This tutorial is divided into two parts: this part that covers the backend and a
 
 When you install a Medusa application, you get a fully-fledged commerce platform with a Framework for customization. The Medusa application's commerce features are built around [Commerce Modules](../../../commerce-modules/page.mdx) that are available out-of-the-box.
 
-Medusa's [Framework](!docs!/learn/fundamentals/framework) facilitates customizing Medusa's core features for your specific use case, such as ticket booking.
+The Medusa [Framework](!docs!/learn/fundamentals/framework) facilitates customizing Medusa's core features for your specific use case, such as ticket booking.
 
 <Note>
 
@@ -72,7 +72,7 @@ By following this tutorial, you will learn how to:
 
 <Prerequisites items={[
   {
-    text: "Node.js v20+",
+    text: "Node.js v20.19.0+ or v22.12.0+",
     link: "https://nodejs.org/en/download"
   },
   {
@@ -87,25 +87,25 @@ By following this tutorial, you will learn how to:
 
 Start by installing the Medusa application on your machine with the following command:
 
-```bash
+```bash npx2yarnExec
 npx create-medusa-app@latest
 ```
 
 You'll first be asked for the project's name. Then, when asked whether you want to install the [Next.js Starter Storefront](../../../nextjs-starter/page.mdx), choose Yes.
 
-Afterward, the installation process will start, which will install the Medusa application in a directory with your project's name, and the Next.js Starter Storefront in a separate directory with the `{project-name}-storefront` name.
-
-<Note title="Why is the storefront installed separately?">
-
-The Medusa application is composed of a headless Node.js server and an admin dashboard. The storefront is installed or custom-built separately and connects to the Medusa application through its REST endpoints, called [API routes](!docs!/learn/fundamentals/api-routes). Learn more in [Medusa's Architecture documentation](!docs!/learn/introduction/architecture).
-
-</Note>
+the installation process will start, which will install the Medusa application as a monorepository in a directory with your project's name. The backend is installed in the `apps/backend` directory, and the Next.js Starter Storefront is installed in the `apps/storefront` directory.
 
 Once the installation finishes successfully, the Medusa Admin dashboard will open with a form to create a new user. Enter the user's credentials and submit the form. Afterward, you can log in with the new user and explore the dashboard.
 
 <Note title="Ran into Errors?">
 
 Check out the [troubleshooting guides](../../../troubleshooting/create-medusa-app-errors/page.mdx) for help.
+
+</Note>
+
+<Note>
+
+In this guide, all file paths of backend customizations are relative to the `apps/backend` directory of your Medusa project.
 
 </Note>
 
@@ -462,7 +462,7 @@ Refer to the [Migrations documentation](!docs!/learn/fundamentals/modules#5-gene
 
 Medusa's CLI tool can generate the migrations for you. To generate a migration for the Ticket Booking Module, run the following command in your Medusa application's directory:
 
-```bash
+```bash npx2yarn
 npx medusa db:generate ticketBooking
 ```
 
@@ -470,7 +470,7 @@ The `db:generate` command of the Medusa CLI accepts the name of the module to ge
 
 Then, to reflect these migrations on the database, run the following command:
 
-```bash
+```bash npx2yarn
 npx medusa db:migrate
 ```
 
@@ -572,7 +572,7 @@ After defining links, you need to sync them to the database. This creates the ne
 
 To sync the links to the database, run the migrations command again in the Medusa application's directory:
 
-```bash
+```bash npx2yarn
 npx medusa db:migrate
 ```
 
@@ -807,7 +807,7 @@ In the workflow, you:
 2. Prepare the data to create the venue's rows.
 3. Create the venue's rows using the `createVenueRowsStep`.
 4. Retrieve the created venue with its rows using the `useQueryGraphStep`.
-    - This step uses [Query](!docs!/learn/fundamentals/module-links/query) under the hood. It allows you to retrieve data across modules.
+    - This step uses [Query](!docs!/learn/fundamentals/query) under the hood. It allows you to retrieve data across modules.
 
 A workflow must return an instance of `WorkflowResponse` that accepts the data to return to the workflow's executor. You return the created venue with its rows.
 
@@ -831,18 +831,24 @@ Refer to the [API routes](!docs!/learn/fundamentals/api-routes) documentation to
 
 Create the file `src/api/admin/venues/route.ts` with the following content:
 
+<Note>
+
+As of [Medusa v2.13.0](https://github.com/medusajs/medusa/releases/tag/v2.13.0), Zod should be imported from `@medusajs/framework/zod`.
+
+</Note>
+
 ```ts title="src/api/admin/venues/route.ts"
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { createVenueWorkflow } from "../../../workflows/create-venue"
 import { RowType } from "../../../modules/ticket-booking/models/venue-row"
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 
 export const CreateVenueSchema = z.object({
   name: z.string(),
   address: z.string().optional(),
   rows: z.array(z.object({
     row_number: z.string(),
-    row_type: z.nativeEnum(RowType),
+    row_type: z.enum(RowType),
     seat_count: z.number(),
   })),
 })
@@ -882,7 +888,7 @@ import {
   defineMiddlewares, 
   validateAndTransformBody,
 } from "@medusajs/framework/http"
-import { CreateTicketProductSchema } from "./admin/ticket-products/route"
+import { CreateVenueSchema } from "./admin/venues/route"
 
 export default defineMiddlewares({
   routes: [
@@ -920,7 +926,9 @@ export async function GET(
   req: MedusaRequest,
   res: MedusaResponse
 ) {
-  const query = req.scope.resolve("query")
+  const query = req.scope.resolve(
+    ContainerRegistrationKeys.QUERY
+  )
 
   const { 
     data: venues,
@@ -991,7 +999,7 @@ The middleware function accepts two parameters:
 
 <Note title="Tip">
 
-Refer to the [Query](!docs!/learn/fundamentals/module-links/query#request-query-configurations) documentation to learn more about query request configurations.
+Refer to the [Query](!docs!/learn/fundamentals/query#request-query-configurations) documentation to learn more about query request configurations.
 
 </Note>
 
@@ -2307,14 +2315,14 @@ import {
   createTicketProductWorkflow,
 } from "../../../workflows/create-ticket-product"
 import { RowType } from "../../../modules/ticket-booking/models/venue-row"
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 
 export const CreateTicketProductSchema = z.object({
   name: z.string().min(1, "Name is required"),
   venue_id: z.string().min(1, "Venue ID is required"),
   dates: z.array(z.string()).min(1, "At least one date is required"),
   variants: z.array(z.object({
-    row_type: z.nativeEnum(RowType),
+    row_type: z.enum(RowType),
     seat_count: z.number().min(1, "Seat count must be at least 1"),
     prices: z.array(z.object({
       currency_code: z.string().min(1, "Currency code is required"),
@@ -2389,7 +2397,9 @@ export async function GET(
   req: MedusaRequest,
   res: MedusaResponse
 ) {
-  const query = req.scope.resolve("query")
+  const query = req.scope.resolve(
+    ContainerRegistrationKeys.QUERY
+  )
 
   const {
     data: ticketProducts,
@@ -3511,13 +3521,18 @@ To consume the `validate` hook of the `addToCartWorkflow` that holds the add-to-
 
 ```ts title="src/workflows/hooks/add-to-cart-validation.ts"
 import { addToCartWorkflow } from "@medusajs/medusa/core-flows"
-import { MedusaError } from "@medusajs/framework/utils"
+import {
+  MedusaError,
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 // Hook for addToCartWorkflow to validate seat availability
 addToCartWorkflow.hooks.validate(
   async ({ input }, { container }) => {
     const items = input.items
-    const query = container.resolve("query")
+    const query = container.resolve(
+      ContainerRegistrationKeys.QUERY
+    )
 
     // Get the product variant to check if it's a ticket product variant
     const { data: productVariants } = await query.graph({
@@ -4095,11 +4110,16 @@ Create the file `src/api/store/ticket-products/[id]/availability/route.ts` with 
 
 ```ts title="src/api/store/ticket-products/[id]/availability/route.ts"
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { MedusaError } from "@medusajs/framework/utils"
+import {
+  MedusaError,
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   const { id } = req.params
-  const query = req.scope.resolve("query")
+  const query = req.scope.resolve(
+    ContainerRegistrationKeys.QUERY
+  )
 
   const { data: [ticketProduct] } = await query.graph({
     entity: "ticket_product",
@@ -4216,8 +4236,11 @@ Create the file `src/api/store/ticket-products/[id]/seats/route.ts` with the fol
 
 ```ts title="src/api/store/ticket-products/[id]/seats/route.ts"
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { MedusaError } from "@medusajs/framework/utils"
-import { z } from "zod"
+import {
+  MedusaError,
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
+import { z } from "@medusajs/framework/zod"
 
 export const GetTicketProductSeatsSchema = z.object({
   date: z.string(),
@@ -4226,7 +4249,9 @@ export const GetTicketProductSeatsSchema = z.object({
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   const { id } = req.params
   const { date } = req.validatedQuery
-  const query = req.scope.resolve("query")
+  const query = req.scope.resolve(
+    ContainerRegistrationKeys.QUERY
+  )
 
   const { data: [ticketProduct] } = await query.graph({
     entity: "ticket_product",
@@ -4564,13 +4589,21 @@ To create a subscriber that sends a notification to the customer when an order i
 ```ts title="src/subscribers/order-placed.ts"
 import { SubscriberArgs, type SubscriberConfig } from "@medusajs/medusa"
 import { TICKET_BOOKING_MODULE } from "../modules/ticket-booking"
+import {
+  Modules,
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 export default async function handleOrderPlaced({
   event: { data },
   container,
 }: SubscriberArgs<{ id: string }>) {
-  const query = container.resolve("query")
-  const notificationModuleService = container.resolve("notification")
+  const query = container.resolve(
+    ContainerRegistrationKeys.QUERY
+  )
+  const notificationModuleService = container.resolve(
+    Modules.NOTIFICATION
+  )
   const ticketBookingModuleService = container.resolve(TICKET_BOOKING_MODULE)
 
   const { data: [order] } = await query.graph({

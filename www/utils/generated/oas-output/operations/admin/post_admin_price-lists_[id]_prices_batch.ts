@@ -12,6 +12,18 @@
  *     required: true
  *     schema:
  *       type: string
+ *   - name: fields
+ *     in: query
+ *     description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default
+ *       fields. Without prefix it will replace the entire default fields.
+ *     required: false
+ *     schema:
+ *       type: string
+ *       title: fields
+ *       description: Comma-separated fields that should be included in the returned data. If a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default
+ *         fields. Without prefix it will replace the entire default fields.
+ *       externalDocs:
+ *         url: "#select-fields-and-relations"
  * security:
  *   - api_token: []
  *   - cookie_auth: []
@@ -31,8 +43,8 @@
  *               description: A price's details.
  *               required:
  *                 - currency_code
- *                 - variant_id
  *                 - amount
+ *                 - variant_id
  *               properties:
  *                 currency_code:
  *                   type: string
@@ -165,7 +177,40 @@
  *   "500":
  *     $ref: "#/components/responses/500_error"
  * x-workflow: batchPriceListPricesWorkflow
- * x-events: []
+ * x-events:
+ *   - name: price-list.prices_added
+ *     payload: |-
+ *       ```ts
+ *       {
+ *         id, // The ID of the price list
+ *         price_set_ids, // The IDs of the price sets whose prices were added
+ *       }
+ *       ```
+ *     description: Emitted when prices are added to a price list.
+ *     deprecated: false
+ *     since: 2.21.3
+ *   - name: price-list.prices_updated
+ *     payload: |-
+ *       ```ts
+ *       {
+ *         id, // The ID of the price list
+ *         price_set_ids, // The IDs of the price sets whose prices were updated
+ *       }
+ *       ```
+ *     description: Emitted when prices in a price list are updated.
+ *     deprecated: false
+ *     since: 2.21.3
+ *   - name: price-list.prices_removed
+ *     payload: |-
+ *       ```ts
+ *       {
+ *         id, // The ID of the price list
+ *         price_set_ids, // The IDs of the price sets whose prices were removed
+ *       }
+ *       ```
+ *     description: Emitted when prices are removed from a price list.
+ *     deprecated: false
+ *     since: 2.21.3
  * 
 */
 

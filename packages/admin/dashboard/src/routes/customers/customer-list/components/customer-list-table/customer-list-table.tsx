@@ -1,24 +1,25 @@
-import { PencilSquare } from "@medusajs/icons"
 import { Button, Container, Heading } from "@medusajs/ui"
 import { keepPreviousData } from "@tanstack/react-query"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 
 import { HttpTypes } from "@medusajs/types"
-import { ActionMenu } from "../../../../../components/common/action-menu"
+import { PermissionGuard } from "../../../../../components/common/permission-guard"
 import { _DataTable } from "../../../../../components/table/data-table"
 import { useCustomers } from "../../../../../hooks/api/customers"
 import { useCustomerTableColumns } from "../../../../../hooks/table/columns/use-customer-table-columns"
 import { useCustomerTableFilters } from "../../../../../hooks/table/filters/use-customer-table-filters"
 import { useCustomerTableQuery } from "../../../../../hooks/table/query/use-customer-table-query"
 import { useDataTable } from "../../../../../hooks/use-data-table"
+import { CustomerActions } from "./customer-list-table-actions"
 
 const PAGE_SIZE = 20
 
 export const CustomerListTable = () => {
   const { t } = useTranslation()
+  const location = useLocation()
 
   const { searchParams, raw } = useCustomerTableQuery({ pageSize: PAGE_SIZE })
   const { customers, count, isLoading, isError, error } = useCustomers(
@@ -50,11 +51,18 @@ export const CustomerListTable = () => {
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
         <Heading>{t("customers.domain")}</Heading>
-        <Link to="/customers/create">
-          <Button size="small" variant="secondary">
-            {t("actions.create")}
+        <div className="flex items-center gap-x-2">
+          <Button size="small" variant="secondary" asChild>
+            <Link to={`export${location.search}`}>{t("actions.export")}</Link>
           </Button>
-        </Link>
+          <PermissionGuard resource="customer" operation="create">
+            <Link to="/customers/create">
+              <Button size="small" variant="secondary">
+                {t("actions.create")}
+              </Button>
+            </Link>
+          </PermissionGuard>
+        </div>
       </div>
       <_DataTable
         table={table}
@@ -79,30 +87,6 @@ export const CustomerListTable = () => {
         }}
       />
     </Container>
-  )
-}
-
-const CustomerActions = ({
-  customer,
-}: {
-  customer: HttpTypes.AdminCustomer
-}) => {
-  const { t } = useTranslation()
-
-  return (
-    <ActionMenu
-      groups={[
-        {
-          actions: [
-            {
-              icon: <PencilSquare />,
-              label: t("actions.edit"),
-              to: `/customers/${customer.id}/edit`,
-            },
-          ],
-        },
-      ]}
-    />
   )
 }
 

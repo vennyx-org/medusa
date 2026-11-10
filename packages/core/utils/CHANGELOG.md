@@ -1,5 +1,518 @@
 # @medusajs/utils
 
+## 2.22.6
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @medusajs/deps@2.22.6
+
+## 2.22.5
+
+### Patch Changes
+
+- [#17563](https://github.com/medusajs/medusa/pull/17563) [`a639480`](https://github.com/medusajs/medusa/commit/a63948083a6281465d5cf8c66308a1325001b760) Thanks [@kristianjakschnltg](https://github.com/kristianjakschnltg)! - feat(promotion,utils,types,medusa,dashboard): add target selection strategy for buy-get promotions
+
+  Adds `application_method.target_selection_strategy` to choose which eligible items a Buy X Get Y promotion discounts. The default, `most_expensive_first`, keeps the current behaviour. `cheapest_first` discounts the cheapest eligible units across the cart: for "buy 3, get 1 free" with eight units priced 100 to 800, the 100 and 200 units are discounted instead of 100 and 500. The option is available in the admin promotion create and edit forms.
+
+- [#17693](https://github.com/medusajs/medusa/pull/17693) [`9bee47a`](https://github.com/medusajs/medusa/commit/9bee47a20d9d2ee9e1c59f0bf5cf94e1dc745609) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(utils): update dotenv-expand to 13.0.0
+
+- [#17712](https://github.com/medusajs/medusa/pull/17712) [`7dd3c28`](https://github.com/medusajs/medusa/commit/7dd3c28fba6b74aaab84612b696cab597e12c667) Thanks [@medusa-os-bot](https://github.com/apps/medusa-os-bot)! - fix(utils, query, framework): harden dotted field/filter path handling when building queries
+- Updated dependencies []:
+  - @medusajs/deps@2.22.5
+
+## 2.22.4
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @medusajs/deps@2.22.4
+
+## 2.22.3
+
+### Patch Changes
+
+- [#17613](https://github.com/medusajs/medusa/pull/17613) [`f0697e1`](https://github.com/medusajs/medusa/commit/f0697e19c8705dd4390a5484abc2bbba2cf516e7) Thanks [@medusa-os-bot](https://github.com/apps/medusa-os-bot)! - fix(utils,dashboard,loyalty-plugin): add the Aruban Florin (AWG) currency
+
+- [#17619](https://github.com/medusajs/medusa/pull/17619) [`4df78b3`](https://github.com/medusajs/medusa/commit/4df78b31e1367874e264e7888117f18250cf6828) Thanks [@sradevski](https://github.com/sradevski)! - feat(auth,types,utils): read the Medusa Cloud OAuth client secret from MEDUSA_CLOUD_OAUTH_CLIENT_SECRET, falling back to the API key
+
+- [#17574](https://github.com/medusajs/medusa/pull/17574) [`9692b99`](https://github.com/medusajs/medusa/commit/9692b996485e6fc6e7cb7f6d18ab730962b9727e) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(deps,caching,framework,types,utils): update awilix to 13.0.5
+
+- [#17592](https://github.com/medusajs/medusa/pull/17592) [`12a5580`](https://github.com/medusajs/medusa/commit/12a55804efc97a0d685fc9e69ca005b9f44d3761) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(utils): update graphql to v17, graphql-tools and graphql-codegen to latest majors
+
+- [#17609](https://github.com/medusajs/medusa/pull/17609) [`39fb481`](https://github.com/medusajs/medusa/commit/39fb48168d4d63306623cb39f6973bc534a9c59a) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(cli,orchestration,utils,workflows-sdk,test-utils,file-s3,workflow-engine-inmemory,workflow-engine-redis): update ulid to v3.0.2
+
+- [#17618](https://github.com/medusajs/medusa/pull/17618) [`385c4ff`](https://github.com/medusajs/medusa/commit/385c4ff75f4fada544b6384779a0ede21b66c741) Thanks [@shahednasser](https://github.com/shahednasser)! - chore: update jest to v30.5.2 and use the `--testPathPatterns` flag in test scripts
+
+- [#15620](https://github.com/medusajs/medusa/pull/15620) [`a6a4254`](https://github.com/medusajs/medusa/commit/a6a4254fb804ae671b778df15c1a5977826930b8) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - feat(dashboard,medusa,core-flows,framework,js-sdk,modules-sdk,types,utils,link-modules,rbac): end to end RBAC implementation
+
+- [#17619](https://github.com/medusajs/medusa/pull/17619) [`4df78b3`](https://github.com/medusajs/medusa/commit/4df78b31e1367874e264e7888117f18250cf6828) Thanks [@sradevski](https://github.com/sradevski)! - chore(auth,notification,payment,types,utils): remove the unused Medusa Cloud sandbox handle
+
+- [#17608](https://github.com/medusajs/medusa/pull/17608) [`2e3b55d`](https://github.com/medusajs/medusa/commit/2e3b55d8914dbe9724cfa0076c1a1be91b42ab95) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(core-flows,utils): skip customer account email validation when the auth identity has no email, and add a validate hook to createCustomerAccountWorkflow
+
+- Updated dependencies [[`9692b99`](https://github.com/medusajs/medusa/commit/9692b996485e6fc6e7cb7f6d18ab730962b9727e), [`b1632c1`](https://github.com/medusajs/medusa/commit/b1632c158acd23b845e83e3b3cc682e90e977912)]:
+  - @medusajs/deps@2.22.3
+
+## 2.22.2
+
+### Patch Changes
+
+- [#17527](https://github.com/medusajs/medusa/pull/17527) [`9d55082`](https://github.com/medusajs/medusa/commit/9d55082bf9706e45b148100808f4d4550b9105bc) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(utils): update graphql to ^16.14.2
+
+- [#17533](https://github.com/medusajs/medusa/pull/17533) [`26e5807`](https://github.com/medusajs/medusa/commit/26e58070c1661c14aedc02ee6cfb0b2bb28d497b) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(utils): update pg-connection-string to ^2.14.1
+
+- [#17575](https://github.com/medusajs/medusa/pull/17575) [`2f0b2e9`](https://github.com/medusajs/medusa/commit/2f0b2e94d6fa7193386d83b1e72bb0fc65caeddf) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(types,utils,dashboard): update bignumber.js to 11.1.5
+
+- [#17567](https://github.com/medusajs/medusa/pull/17567) [`52caddd`](https://github.com/medusajs/medusa/commit/52cadddcf34fdbbc70be34aecd036d6885e8fa5d) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(deps): update development and test tooling (cross-env 10.1.0, esbuild 0.28.2, tsup 9.0.0, expect-type 1.4.0, @faker-js/faker 10.6.0, jsdom 30.1.3, @types/jsonwebtoken 9.0.10, msw 3.0.3, rimraf 6.1.3, Testing Library, turbo 2.11.10, @types/node 22, boxen 9.0.0, chalk 6.0.1, ci-info 4.4.0, commander 15.0.0, configstore 8.0.0, dotenv 18.0.9, execa 10.2.1, get-port 7.2.0, inquirer 14.2.4, @inquirer/checkbox 5.2.7, @inquirer/confirm 6.3.4, @inquirer/input 5.1.8, is-docker 4.0.0, meant 2.0.1, open 11.0.4, openapi3-ts 4.6.2, ora 9.4.1, @readme/openapi-parser 10.0.0, @redocly/cli 2.71.0, stack-trace 1.0.0, swagger-inline 8.1.0, yargs 18.2.0) and remove unused development dependencies; drop hosted-git-info from @medusajs/cli; fix the medusa-oas-cli circular patch recommendation crashing on references nested in inline schemas; `medusa-oas docs --preview` now serves a static Redoc 3 build since Redocly removed `preview-docs`; replace chalk with Node's built-in `util.styleText` in CommonJS packages; replace uuid with Node's built-in `crypto.randomUUID`; replace get-port with a built-in free-port helper in @medusajs/test-utils
+
+- Updated dependencies [[`26e5807`](https://github.com/medusajs/medusa/commit/26e58070c1661c14aedc02ee6cfb0b2bb28d497b), [`7b34df3`](https://github.com/medusajs/medusa/commit/7b34df35bf8e57ce0d2ab2373a624dc2cc573ca5)]:
+  - @medusajs/deps@2.22.2
+
+## 2.22.1
+
+### Patch Changes
+
+- [#17459](https://github.com/medusajs/medusa/pull/17459) [`3a3207347379b065142895fb0740442fea5f4033`](https://github.com/medusajs/medusa/commit/3a3207347379b065142895fb0740442fea5f4033) Thanks [@medusa-os-bot](https://github.com/apps/medusa-os-bot)! - fix(utils,dashboard,loyalty-plugin): add the Haitian Gourde (HTG) currency
+
+- [#17441](https://github.com/medusajs/medusa/pull/17441) [`d731a694cdb83c158fb78b5d85ecba8909150945`](https://github.com/medusajs/medusa/commit/d731a694cdb83c158fb78b5d85ecba8909150945) Thanks [@medusa-os-bot](https://github.com/apps/medusa-os-bot)! - fix(utils): don't create module migration folders when running migrations
+
+- [#17440](https://github.com/medusajs/medusa/pull/17440) [`ccee953690a41e14e7520e7e2d97272f25d1ff69`](https://github.com/medusajs/medusa/commit/ccee953690a41e14e7520e7e2d97272f25d1ff69) Thanks [@medusa-os-bot](https://github.com/apps/medusa-os-bot)! - fix(utils): copy null-prototype objects and objects with a hasOwnProperty key
+
+- [#17464](https://github.com/medusajs/medusa/pull/17464) [`c959d5e3e7d4b482d0784eef67ef8ef766442d5e`](https://github.com/medusajs/medusa/commit/c959d5e3e7d4b482d0784eef67ef8ef766442d5e) Thanks [@medusa-os-bot](https://github.com/apps/medusa-os-bot)! - fix(utils,core-flows): import region price columns written by the product export
+
+- [#17451](https://github.com/medusajs/medusa/pull/17451) [`3a4fa0cc36a82dba9481e87c20e423cb65c2ee91`](https://github.com/medusajs/medusa/commit/3a4fa0cc36a82dba9481e87c20e423cb65c2ee91) Thanks [@medusa-os-bot](https://github.com/apps/medusa-os-bot)! - fix(utils): ignore non-string ids from linked services when applying translations
+
+- Updated dependencies []:
+  - @medusajs/deps@2.22.1
+
+## 2.22.0
+
+### Minor Changes
+
+- [#17089](https://github.com/medusajs/medusa/pull/17089) [`d249d29ddef76d0bde0b68899b9fe5f9faa1ef6a`](https://github.com/medusajs/medusa/commit/d249d29ddef76d0bde0b68899b9fe5f9faa1ef6a) Thanks [@shahednasser](https://github.com/shahednasser)! - chore: drop Node.js 20 support and require Node.js v22.22.0 or later
+
+### Patch Changes
+
+- [#17153](https://github.com/medusajs/medusa/pull/17153) [`f104453af2c5b235dfdbdaa271c9f8a18195de69`](https://github.com/medusajs/medusa/commit/f104453af2c5b235dfdbdaa271c9f8a18195de69) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(utils): bump `@graphql-tools/merge` and `@graphql-tools/schema` to pull patched `@graphql-tools/utils`
+
+- [#17099](https://github.com/medusajs/medusa/pull/17099) [`dab83ec94a8d60446e15eb982617b7c1cc7589a2`](https://github.com/medusajs/medusa/commit/dab83ec94a8d60446e15eb982617b7c1cc7589a2) Thanks [@sradevski](https://github.com/sradevski)! - feat(payment): register a Medusa Payments provider per Medusa Cloud payment account
+
+- [#17048](https://github.com/medusajs/medusa/pull/17048) [`e6510b1f51170834f136e927c3d30e463da32750`](https://github.com/medusajs/medusa/commit/e6510b1f51170834f136e927c3d30e463da32750) Thanks [@fadiroot](https://github.com/fadiroot)! - fix(utils): aggregate promise rejections whose reason is not an Error instead of throwing a TypeError
+
+- [#17067](https://github.com/medusajs/medusa/pull/17067) [`fdac7de4c3268ccf0f86c47c140662d84c141832`](https://github.com/medusajs/medusa/commit/fdac7de4c3268ccf0f86c47c140662d84c141832) Thanks [@sradevski](https://github.com/sradevski)! - feat(core-flows,utils): emit events for price list changes and product link, variant price and variant image workflows
+
+- [#16964](https://github.com/medusajs/medusa/pull/16964) [`780a69aad3ea20beadf82e9c5351a6633de45b64`](https://github.com/medusajs/medusa/commit/780a69aad3ea20beadf82e9c5351a6633de45b64) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(payment,core-flows,medusa,types,utils): let refunds be retried safely with an idempotency key
+
+- [#16678](https://github.com/medusajs/medusa/pull/16678) [`44db0ca6357ab4d4681a8004e869fde339c3117a`](https://github.com/medusajs/medusa/commit/44db0ca6357ab4d4681a8004e869fde339c3117a) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - chore(medusa,framework,utils,modules-sdk,test-utils): add license key checks
+
+- [#17382](https://github.com/medusajs/medusa/pull/17382) [`1db74006ede40300afe64970024688a1a9c2a936`](https://github.com/medusajs/medusa/commit/1db74006ede40300afe64970024688a1a9c2a936) Thanks [@shahednasser](https://github.com/shahednasser)! - chore: ship AGENTS.md in published packages and add agent discovery fields to package.json
+
+- Updated dependencies [[`d249d29ddef76d0bde0b68899b9fe5f9faa1ef6a`](https://github.com/medusajs/medusa/commit/d249d29ddef76d0bde0b68899b9fe5f9faa1ef6a), [`14499a2e9309d653c0e4ec6aec3f88079751b4d2`](https://github.com/medusajs/medusa/commit/14499a2e9309d653c0e4ec6aec3f88079751b4d2), [`1db74006ede40300afe64970024688a1a9c2a936`](https://github.com/medusajs/medusa/commit/1db74006ede40300afe64970024688a1a9c2a936)]:
+  - @medusajs/deps@2.22.0
+
+## 2.21.2
+
+### Patch Changes
+
+- [#16568](https://github.com/medusajs/medusa/pull/16568) [`1ba69082ceb941d47cfe390212f400e39a7166dd`](https://github.com/medusajs/medusa/commit/1ba69082ceb941d47cfe390212f400e39a7166dd) Thanks [@wakqasahmed](https://github.com/wakqasahmed)! - fix(utils): strip g/y flags in buildRegexpIfValid for CORS origins
+
+- [#16908](https://github.com/medusajs/medusa/pull/16908) [`989880a6c51f3659453473b2a5b068e83ce4fc78`](https://github.com/medusajs/medusa/commit/989880a6c51f3659453473b2a5b068e83ce4fc78) Thanks [@Dextheking1](https://github.com/Dextheking1)! - fix(@medusajs/utils, @medusajs/medusa): correct misspelled parameter name in getSetDifference
+
+- Updated dependencies []:
+  - @medusajs/deps@2.21.2
+
+## 2.21.1
+
+### Patch Changes
+
+- [#16816](https://github.com/medusajs/medusa/pull/16816) [`1c1607cced6c1e552e9e800cf571a2235098d0fd`](https://github.com/medusajs/medusa/commit/1c1607cced6c1e552e9e800cf571a2235098d0fd) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(medusa, utils): apply default http.authMethodsPerActor and gate `/auth/:auth_provider/user` by config
+
+- [#16749](https://github.com/medusajs/medusa/pull/16749) [`3538aab7bc5fcff61591a83bb98e6643823cb947`](https://github.com/medusajs/medusa/commit/3538aab7bc5fcff61591a83bb98e6643823cb947) Thanks [@yfwmaniish](https://github.com/yfwmaniish)! - fix(utils): compare Date values by time in deepEqualObj
+
+- [#16467](https://github.com/medusajs/medusa/pull/16467) [`893d96850320f8f00c623c66f46e9fcde5ab1cdf`](https://github.com/medusajs/medusa/commit/893d96850320f8f00c623c66f46e9fcde5ab1cdf) Thanks [@tushardev-365](https://github.com/tushardev-365)! - fix(utils): make the migration skip flag actually skip migrations
+
+- [#16903](https://github.com/medusajs/medusa/pull/16903) [`75f3d03b84b1404cc05b9f5f15c6be4a2c2f1d18`](https://github.com/medusajs/medusa/commit/75f3d03b84b1404cc05b9f5f15c6be4a2c2f1d18) Thanks [@sradevski](https://github.com/sradevski)! - feat(utils): extend the `graphSeed` and `graphConsume` search helpers so an index whose documents need more than one `query.graph` read can use them instead of a hand-written `seed` and `consume`: a `context` option forwarded to every read including the catch-up pass (e.g. the pricing context `variants.calculated_price` needs), and a `transform` that receives the whole page, may be async, and marks a row as leaving the index by returning no document for it — so enrichment such as prices in several currencies costs a fixed number of reads per page, and an awaited `resolve_ids` that receives the ingestion context, so an event about a related entity can be mapped to the documents it affects
+
+- Updated dependencies []:
+  - @medusajs/deps@2.21.1
+
+## 2.21.0
+
+### Patch Changes
+
+- [#16762](https://github.com/medusajs/medusa/pull/16762) [`cbd48e2e0169ef9c016fb25703ae08d70827ff34`](https://github.com/medusajs/medusa/commit/cbd48e2e0169ef9c016fb25703ae08d70827ff34) Thanks [@sradevski](https://github.com/sradevski)! - Add search helpers for better DX
+
+- [#16674](https://github.com/medusajs/medusa/pull/16674) [`ebc8aeea3880dd2531c2536b7e2c762ff7ca2c17`](https://github.com/medusajs/medusa/commit/ebc8aeea3880dd2531c2536b7e2c762ff7ca2c17) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(product, utils, medusa): return published products only for tags, collections, categories, and type store routes
+
+- [#16342](https://github.com/medusajs/medusa/pull/16342) [`b650b6c9a486f50ac437614ba36c7f42a203a458`](https://github.com/medusajs/medusa/commit/b650b6c9a486f50ac437614ba36c7f42a203a458) Thanks [@Arunendra21](https://github.com/Arunendra21)! - fix(utils): honor decimalPlaces of 0 in MathBN.convert
+
+  `MathBN.convert(value, decimalPlaces)` guarded the rounding step with `if (decimalPlaces)`, so passing `0` (round to an integer, e.g. for zero-decimal currencies) was treated the same as omitting the argument and no rounding was applied. It now checks `decimalPlaces != null` so `0` rounds as expected while an omitted argument still skips rounding.
+
+- [#16456](https://github.com/medusajs/medusa/pull/16456) [`bda24b9725ac697ec5e8f706b503013e20babf12`](https://github.com/medusajs/medusa/commit/bda24b9725ac697ec5e8f706b503013e20babf12) Thanks [@tushardev-365](https://github.com/tushardev-365)! - fix(utils): title-case script subtags in two-segment locales
+
+- Updated dependencies []:
+  - @medusajs/deps@2.21.0
+
+## 2.20.1
+
+### Patch Changes
+
+- [#16703](https://github.com/medusajs/medusa/pull/16703) [`75c26e85f3bebc0c921064e9aa37987a76cc24ae`](https://github.com/medusajs/medusa/commit/75c26e85f3bebc0c921064e9aa37987a76cc24ae) Thanks [@sradevski](https://github.com/sradevski)! - Remove correlated flag on search until supported
+
+- Updated dependencies []:
+  - @medusajs/deps@2.20.1
+
+## 2.20.0
+
+### Patch Changes
+
+- [#16545](https://github.com/medusajs/medusa/pull/16545) [`4857d15bdcaf5a0648e7adc5b0b40312e23b5c02`](https://github.com/medusajs/medusa/commit/4857d15bdcaf5a0648e7adc5b0b40312e23b5c02) Thanks [@sradevski](https://github.com/sradevski)! - Remove the in-memory local search provider. Indexes are created only by `db:migrate`, never at application start.
+
+- [#16361](https://github.com/medusajs/medusa/pull/16361) [`51c48dcb472c3b232b88337030945b2b651e90f8`](https://github.com/medusajs/medusa/commit/51c48dcb472c3b232b88337030945b2b651e90f8) Thanks [@sradevski](https://github.com/sradevski)! - Add a postgres search provider
+
+- [#16559](https://github.com/medusajs/medusa/pull/16559) [`4528357cfe3c3bcf76a20b2ac2fe3637fb649a9d`](https://github.com/medusajs/medusa/commit/4528357cfe3c3bcf76a20b2ac2fe3637fb649a9d) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - feat(core-flows,utils): add setCalculatedShippingPricingContext hook
+
+- [#16457](https://github.com/medusajs/medusa/pull/16457) [`693310310610cf439fabb73230187028f2755696`](https://github.com/medusajs/medusa/commit/693310310610cf439fabb73230187028f2755696) Thanks [@sradevski](https://github.com/sradevski)! - Implement Medusa Cloud as a built-in search provider
+
+- [`b9f3d12440a7f02ec3b68443934195193e4ecba8`](undefined) - fix(utils): compare the credit line total against the currency epsilon by absolute value so a net negative total is not zeroed
+
+- [`7f5bc532f92cd2cacea4c4750f64bc5b337f6f36`](undefined) - fix(utils): add overload for better type check error messages
+
+- [#16541](https://github.com/medusajs/medusa/pull/16541) [`c1e5a8f63988698df7f92b8f1e75f63ab8fdee64`](https://github.com/medusajs/medusa/commit/c1e5a8f63988698df7f92b8f1e75f63ab8fdee64) Thanks [@sradevski](https://github.com/sradevski)! - Drop the previous search provider's indexes when `db:migrate` switches engines.
+
+  Log seed/reindex progress (count, rate, last key) so large catalogs can be followed.
+
+- [#16533](https://github.com/medusajs/medusa/pull/16533) [`f7317903600e5b64f06c21c29a73e0e569d2fe3a`](https://github.com/medusajs/medusa/commit/f7317903600e5b64f06c21c29a73e0e569d2fe3a) Thanks [@leobenzol](https://github.com/leobenzol)! - fix(workflow-engine-redis,link-modules,orchestration,utils): fix most flaky tests
+
+- [#16429](https://github.com/medusajs/medusa/pull/16429) [`2a5dd813a7e1d5094cb81f688e2e9e7cc8fd3543`](https://github.com/medusajs/medusa/commit/2a5dd813a7e1d5094cb81f688e2e9e7cc8fd3543) Thanks [@shahednasser](https://github.com/shahednasser)! - feat(core-flows,utils): emit product-option-value.updated/deleted events
+
+- [#16643](https://github.com/medusajs/medusa/pull/16643) [`e01b039f256cb8224dd70a99662a49d0e8cf65d1`](https://github.com/medusajs/medusa/commit/e01b039f256cb8224dd70a99662a49d0e8cf65d1) Thanks [@sradevski](https://github.com/sradevski)! - Add multiple query support in query.search, move searchMany to provider
+
+- Updated dependencies []:
+  - @medusajs/deps@2.20.0
+
+## 2.19.0
+
+### Patch Changes
+
+- [#16192](https://github.com/medusajs/medusa/pull/16192) [`b31b64270e19a785ee1d396766a0e0c0a37f8354`](https://github.com/medusajs/medusa/commit/b31b64270e19a785ee1d396766a0e0c0a37f8354) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(utils): show helpful error message when a module's resolve isn't set
+
+- [#16308](https://github.com/medusajs/medusa/pull/16308) [`be4ccf3f6a5ae40eff1ed55743d3518bdefeb07d`](https://github.com/medusajs/medusa/commit/be4ccf3f6a5ae40eff1ed55743d3518bdefeb07d) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(test-utils, modules-sdk, utils, medusa): fix plugin:add for monorepo projects
+
+- [#16315](https://github.com/medusajs/medusa/pull/16315) [`c13aaa96b3968b7f021131529f630b1de7bd6970`](https://github.com/medusajs/medusa/commit/c13aaa96b3968b7f021131529f630b1de7bd6970) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(product, types, utils, medusa): optimize migration script for product options
+
+- [#16354](https://github.com/medusajs/medusa/pull/16354) [`372a1ab8fa4c8415f1eda294e3c4c5d9dbee4a30`](https://github.com/medusajs/medusa/commit/372a1ab8fa4c8415f1eda294e3c4c5d9dbee4a30) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - fix(caching,core-flows,framework,query,types,utils): pass non automatically computed tags to various cached queries.
+
+- [#16238](https://github.com/medusajs/medusa/pull/16238) [`18e02fb06f5c925c0b3ebc1943407bf58f83e7b7`](https://github.com/medusajs/medusa/commit/18e02fb06f5c925c0b3ebc1943407bf58f83e7b7) Thanks [@shahednasser](https://github.com/shahednasser)! - feat(core-flows,dashboard,js-sdk, medusa,types,utils): support notification preferences for order edits
+
+- [#16298](https://github.com/medusajs/medusa/pull/16298) [`5f4d93c374b0ad0b0a31e75de98c7557e0415677`](https://github.com/medusajs/medusa/commit/5f4d93c374b0ad0b0a31e75de98c7557e0415677) Thanks [@sradevski](https://github.com/sradevski)! - Add the Search Module: provider-backed search with an in-memory (Orama) provider, the `query.search` primitive, index definition discovery from `search/`, index migrations through `db:migrate`, event-driven ingestion, and an `/admin/search` endpoint
+
+- [#16236](https://github.com/medusajs/medusa/pull/16236) [`1fb31df2728659578b2aab697322b80b7501b66b`](https://github.com/medusajs/medusa/commit/1fb31df2728659578b2aab697322b80b7501b66b) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(utils): support array and dynamic types for `.json` fields in DML
+
+- [#16139](https://github.com/medusajs/medusa/pull/16139) [`9fa4bd9eb941a266c560b35683e8230af33a3352`](https://github.com/medusajs/medusa/commit/9fa4bd9eb941a266c560b35683e8230af33a3352) Thanks [@shahednasser](https://github.com/shahednasser)! - feat(fulfillment, core-flows, types, utils, medusa): support custom delivery address + pass additional data to createFulfillment
+
+- Updated dependencies []:
+  - @medusajs/deps@2.19.0
+
+## 2.18.0
+
+### Minor Changes
+
+- [#15989](https://github.com/medusajs/medusa/pull/15989) [`0e7973e2fc3c45da39136cf3f66c90358571ffc5`](https://github.com/medusajs/medusa/commit/0e7973e2fc3c45da39136cf3f66c90358571ffc5) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(utils): fix delete operation when primary key is not `id`
+
+- [#16137](https://github.com/medusajs/medusa/pull/16137) [`7d7edad6fdf47ae36c06cd5f5b71232c9d51c70b`](https://github.com/medusajs/medusa/commit/7d7edad6fdf47ae36c06cd5f5b71232c9d51c70b) Thanks [@sradevski](https://github.com/sradevski)! - Use a BALANCED load strategy for the data
+
+### Patch Changes
+
+- [#15948](https://github.com/medusajs/medusa/pull/15948) [`b83aeae9b03e52dedbf3cd37be5f838e23875014`](https://github.com/medusajs/medusa/commit/b83aeae9b03e52dedbf3cd37be5f838e23875014) Thanks [@KMLnk](https://github.com/KMLnk)! - feat(dashboard,utils,loyalty-plugin): Add Iranian Toman (IRT) to the default currency list
+
+- [#16100](https://github.com/medusajs/medusa/pull/16100) [`1621e14330fe64a968510991408ace8fdac84ce9`](https://github.com/medusajs/medusa/commit/1621e14330fe64a968510991408ace8fdac84ce9) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(modules-sdk, framework): fail early when can't connect to the database
+
+- [#15797](https://github.com/medusajs/medusa/pull/15797) [`6d1622265c96e2417b64aa69fd867a89522e6b76`](https://github.com/medusajs/medusa/commit/6d1622265c96e2417b64aa69fd867a89522e6b76) Thanks [@BIGSUS24](https://github.com/BIGSUS24)! - feat(dashboard,utils,loyalty-plugin): Add AOA (Angolan Kwanza) to the default currency list and stop the admin region editor from crashing on unknown currency codes
+
+- [#15834](https://github.com/medusajs/medusa/pull/15834) [`04daac9a7639435a89446578b9012ad0a673ac6b`](https://github.com/medusajs/medusa/commit/04daac9a7639435a89446578b9012ad0a673ac6b) Thanks [@leobenzol](https://github.com/leobenzol)! - fix(medusa,utils): defineConfig typed modules
+
+- [#15806](https://github.com/medusajs/medusa/pull/15806) [`45646168b9769a306c3783fa605a7109f9df4ee9`](https://github.com/medusajs/medusa/commit/45646168b9769a306c3783fa605a7109f9df4ee9) Thanks [@dosacha](https://github.com/dosacha)! - Prevent nested MikroORM serialization from mutating parent key iteration state.
+
+- [#15694](https://github.com/medusajs/medusa/pull/15694) [`b18d4de91c2c229ba7a03a9d541e1b8de71f52a9`](https://github.com/medusajs/medusa/commit/b18d4de91c2c229ba7a03a9d541e1b8de71f52a9) Thanks [@sawirricardo](https://github.com/sawirricardo)! - fix(utils): apply MikroORM onUpdate hooks before native batch updates
+
+- [#15968](https://github.com/medusajs/medusa/pull/15968) [`a48e78b953943efd11204f48890608020f7949e0`](https://github.com/medusajs/medusa/commit/a48e78b953943efd11204f48890608020f7949e0) Thanks [@peterlgh7](https://github.com/peterlgh7)! - join only with link table if only filtering on target key
+
+- [#16013](https://github.com/medusajs/medusa/pull/16013) [`af4ab2f5f7721f8b99c80158c78fba3b5c4db64d`](https://github.com/medusajs/medusa/commit/af4ab2f5f7721f8b99c80158c78fba3b5c4db64d) Thanks [@Venkat-jaswanth](https://github.com/Venkat-jaswanth)! - fix(utils): assign per-adjustment subtotal/total instead of the cumulative running sum
+
+  `calculateAdjustmentTotal` wrote the plural running accumulators (`adjustmentsSubtotal`/`adjustmentsTotal`) onto each adjustment's own `subtotal`/`total`, instead of the singular per-adjustment values. Every adjustment after the first was inflated to the cumulative total; the bug was masked for lines with a single adjustment. The aggregate return values were unaffected.
+
+- [#16014](https://github.com/medusajs/medusa/pull/16014) [`f85473ca88249bed7bfed81b01326a7abc46ac12`](https://github.com/medusajs/medusa/commit/f85473ca88249bed7bfed81b01326a7abc46ac12) Thanks [@Venkat-jaswanth](https://github.com/Venkat-jaswanth)! - fix(utils): add `BigNumber.toString()` to avoid `"[object Object]"` coercion
+
+  `BigNumber` implemented `valueOf`, `toJSON`, and `[Symbol.toPrimitive]` but not `toString()`, so an explicit `bn.toString()` fell through to `Object.prototype.toString` and returned `"[object Object]"`. This silently broke callers such as `parseFloat(bn.toString())` (returned `NaN`). `toString()` is now the single source of truth for string coercion, returning the same value as the `[Symbol.toPrimitive]` string hint, which delegates to it so the two stay consistent.
+
+- [#16141](https://github.com/medusajs/medusa/pull/16141) [`7c0f94c207796bc443fd36d3999f1533bba255be`](https://github.com/medusajs/medusa/commit/7c0f94c207796bc443fd36d3999f1533bba255be) Thanks [@peterlgh7](https://github.com/peterlgh7)! - Always use left joins to avoid entities being hidden in query by a soft-deleted related entity
+
+- [#15614](https://github.com/medusajs/medusa/pull/15614) [`3382c8189bfc9f44e86123496ef3665e92ac91c9`](https://github.com/medusajs/medusa/commit/3382c8189bfc9f44e86123496ef3665e92ac91c9) Thanks [@shahednasser](https://github.com/shahednasser)! - feat(core-flows,types,utils,medusa): support global product options in imports
+
+- [#15990](https://github.com/medusajs/medusa/pull/15990) [`935a14c0098580a2b6ef8af11321e931c8ac80da`](https://github.com/medusajs/medusa/commit/935a14c0098580a2b6ef8af11321e931c8ac80da) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(utils): apply select in strategy for single entity fetches
+
+- [#15991](https://github.com/medusajs/medusa/pull/15991) [`e78ef6ce51a00e6b303b654c5046cd1e60c8dc68`](https://github.com/medusajs/medusa/commit/e78ef6ce51a00e6b303b654c5046cd1e60c8dc68) Thanks [@shahednasser](https://github.com/shahednasser)! - feat(core-flows, utils): emit inventory-related events
+
+- [#15686](https://github.com/medusajs/medusa/pull/15686) [`99f2ea9c85a64a08c56196ba963db2c8dd0b7923`](https://github.com/medusajs/medusa/commit/99f2ea9c85a64a08c56196ba963db2c8dd0b7923) Thanks [@mrpackethead](https://github.com/mrpackethead)! - feat(utils): support dynamic password function in createPgConnection for RDS IAM auth
+
+  Pass `driverOptions.dynamicPassword` and `driverOptions.expirationChecker` through to the Knex connection config, enabling AWS RDS IAM authentication and other rotating-credential patterns.
+
+- [#15886](https://github.com/medusajs/medusa/pull/15886) [`9cd0501b26c401431a11e0d7f4ae6719100b9296`](https://github.com/medusajs/medusa/commit/9cd0501b26c401431a11e0d7f4ae6719100b9296) Thanks [@shafi-VM](https://github.com/shafi-VM)! - fix(utils): do not double-count tax on discounts in refundable_total for non-tax-inclusive items
+
+  `refundable_total` / `refundable_total_per_unit` were understated for a non-tax-inclusive line item that carries a discount (adjustment) and has a pending or partially received return. `setRefundableTotal` subtracted the tax-inclusive discount (`adjustmentsTotal`) and then applied tax to the remaining amount, which taxed the discount a second time.
+
+  The discount basis now follows the item's tax inclusivity: tax-inclusive items keep using the tax-inclusive discount (the unit price already includes tax, and no tax is added back), while non-tax-inclusive items subtract the pre-tax discount before tax is applied once. For example, a non-tax-inclusive item at `unit_price 100`, `quantity 2`, `10%` tax, a `20` discount, with `1` unit requested for return now reports `refundable_total` `99` instead of `97.9`.
+
+- [#16123](https://github.com/medusajs/medusa/pull/16123) [`70c122753875f3cca03ff49b8a0ea9fe2c5e1165`](https://github.com/medusajs/medusa/commit/70c122753875f3cca03ff49b8a0ea9fe2c5e1165) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(framework, utils): defensive handling of dotted path segments
+
+- [#15968](https://github.com/medusajs/medusa/pull/15968) [`a48e78b953943efd11204f48890608020f7949e0`](https://github.com/medusajs/medusa/commit/a48e78b953943efd11204f48890608020f7949e0) Thanks [@peterlgh7](https://github.com/peterlgh7)! - skip self-joins for read-only links in cross-module filters
+
+- Updated dependencies [[`d6b2a87da1dbfd065336c80e41cb7c086dc2a340`](https://github.com/medusajs/medusa/commit/d6b2a87da1dbfd065336c80e41cb7c086dc2a340)]:
+  - @medusajs/deps@2.18.0
+
+## 2.17.2
+
+### Patch Changes
+
+- [#15701](https://github.com/medusajs/medusa/pull/15701) [`8f2c71222afb2bcd1268438fc5fe9da6a63d7af2`](https://github.com/medusajs/medusa/commit/8f2c71222afb2bcd1268438fc5fe9da6a63d7af2) Thanks [@kowalski21](https://github.com/kowalski21)! - fix(utils): add `alias` to `InputOptions` in `defineLink` so two links from the same source module to the same target module can be differentiated
+
+- [#15683](https://github.com/medusajs/medusa/pull/15683) [`de58ec503bcd82aae3fe576f9a404c36e2525f4c`](https://github.com/medusajs/medusa/commit/de58ec503bcd82aae3fe576f9a404c36e2525f4c) Thanks [@Floofy6](https://github.com/Floofy6)! - chore: add package bugs metadata
+
+- [#15085](https://github.com/medusajs/medusa/pull/15085) [`b50a9dbaf3eeb29753fa28afbc1b529c44ec5a51`](https://github.com/medusajs/medusa/commit/b50a9dbaf3eeb29753fa28afbc1b529c44ec5a51) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - feat(payment,payment-stripe,core-flows,medusa,dashboard,js-sdk,utils,types): introduce async payment methods support
+
+- Updated dependencies [[`de58ec503bcd82aae3fe576f9a404c36e2525f4c`](https://github.com/medusajs/medusa/commit/de58ec503bcd82aae3fe576f9a404c36e2525f4c)]:
+  - @medusajs/deps@2.17.2
+
+## 2.17.1
+
+### Patch Changes
+
+- [#15814](https://github.com/medusajs/medusa/pull/15814) [`4f5e1cc97f4511f43cf4790af412781dafb2ba86`](https://github.com/medusajs/medusa/commit/4f5e1cc97f4511f43cf4790af412781dafb2ba86) Thanks [@peterlgh7](https://github.com/peterlgh7)! - add created_at and published_at to EventMetadata
+
+- Updated dependencies []:
+  - @medusajs/deps@2.17.1
+
+## 2.17.0
+
+### Minor Changes
+
+- [#13817](https://github.com/medusajs/medusa/pull/13817) [`6eff86709de4dddc359f35fa84a2462fed85b753`](https://github.com/medusajs/medusa/commit/6eff86709de4dddc359f35fa84a2462fed85b753) Thanks [@willbouch](https://github.com/willbouch)! - feat(): allow linking a subset of an option's values to the product
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @medusajs/deps@2.17.0
+
+## 2.16.0
+
+### Patch Changes
+
+- [#15600](https://github.com/medusajs/medusa/pull/15600) [`8a6664d6d445f875f56078fad21fe12a185b9627`](https://github.com/medusajs/medusa/commit/8a6664d6d445f875f56078fad21fe12a185b9627) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(framework, utils, medusa): centralize NODE_ENV production check and tighten secret defaults
+
+- [`34450089041ee90ebbeca40ad7977e945a53a7b7`](undefined) - fix(utils): InjectManager error message shows "undefined" instead of "baseRepository\_"
+
+- [#15266](https://github.com/medusajs/medusa/pull/15266) [`735e0aa51ef64274257057a59046776af54203f4`](https://github.com/medusajs/medusa/commit/735e0aa51ef64274257057a59046776af54203f4) Thanks [@kzroo](https://github.com/kzroo)! - feat(utils, dashboard, loyalty-plugin): add GMD (Gambian Dalasi) to default currency lists
+
+  Adds a `GMD` entry to the hardcoded currency maps in `packages/core/utils/src/defaults/currencies.ts`, `packages/admin/dashboard/src/lib/data/currencies.ts`, and `packages/plugins/loyalty/src/admin/lib/currencies.ts`. Without it, admin pages that map over `store.supported_currencies` and look each one up — most notably the Regions create/edit form — crash with `TypeError: Cannot read properties of undefined (reading 'code')` when a store has GMD as a supported currency.
+
+- [`dc3e213a3be9d5ae8637863461eab0404bbc0e16`](undefined) - fix(utils): preserve Medusa context indexes on overridden service methods
+
+- [`9f5194267fc5abdece31531af3822b0d05ed1fcc`](undefined) - fix(utils, workflows-sdk, create-medusa-app): correct "occured" -> "occurred" typo in error messages and docs
+
+- [`8b3b9f7dc97731688e4a5f1c0bb2714e00483bc6`](undefined) - fix(product, utils): Support non-Latin characters in product handles
+
+- [`801dbdb2ae70152aaa5917590885bd36bd44efc4`](undefined) - fix(utils,product): handle array of mikroORM entities serialization and fix variant image assignment serialization issue
+
+- [#15595](https://github.com/medusajs/medusa/pull/15595) [`beb1b5e6bcbfeda02659cbaa0e04d5dbc1ba64cd`](https://github.com/medusajs/medusa/commit/beb1b5e6bcbfeda02659cbaa0e04d5dbc1ba64cd) Thanks [@leobenzol](https://github.com/leobenzol)! - feat(medusa,utils): plugin type augmentations
+
+- [`1c5ce279aaf792789be371fae70ca304f710cb73`](undefined) - fix(promotion): prevent negative taxable base when stacking tax-inclusive and non-tax-inclusive promotions
+
+  The applied-promotions accumulator stored adjustment amounts in each promotion's own tax base, so a tax-inclusive promotion compared its remaining applicable amount (incl-tax) against amounts a previous non-tax-inclusive promotion recorded excl-tax. The mismatched bases let the combined discount exceed the line item value and drive the taxable base negative. Applied amounts are now tracked tax-exclusively and converted to the promotion's base before being subtracted, for both `each` and `across` allocations.
+
+- [`18474de124868370298addf195e5229ca6792f81`](undefined) - chore(product, order, utils, deps, index): update MikroORM to v6.6.14
+
+- [`14af163eae35be9a204f37c5a87d0b2b59b14054`](undefined) - fix(utils): preserve auth MFA defaults when auth options are customized
+
+- Updated dependencies [[`456813f8b36ab1086dec09c6a89655d7ab0bae5b`](undefined), [`18474de124868370298addf195e5229ca6792f81`](undefined)]:
+  - @medusajs/deps@2.16.0
+
+## 2.15.5
+
+### Patch Changes
+
+- [#15496](https://github.com/medusajs/medusa/pull/15496) [`ace1822bccbb21afa533665937460140e36aa995`](https://github.com/medusajs/medusa/commit/ace1822bccbb21afa533665937460140e36aa995) Thanks [@christiananese](https://github.com/christiananese)! - Add auth verification primitives for emailpass.
+
+- [#15493](https://github.com/medusajs/medusa/pull/15493) [`c8e37903177c2551ec27ba5f881804e351e819c4`](https://github.com/medusajs/medusa/commit/c8e37903177c2551ec27ba5f881804e351e819c4) Thanks [@christiananese](https://github.com/christiananese)! - Prepare new Medusa apps for admin MFA
+
+- [#15495](https://github.com/medusajs/medusa/pull/15495) [`8122633a8b33164a6094f5a39896e356efde1747`](https://github.com/medusajs/medusa/commit/8122633a8b33164a6094f5a39896e356efde1747) Thanks [@christiananese](https://github.com/christiananese)! - feat(auth): emit MFA lifecycle events
+
+- [#15518](https://github.com/medusajs/medusa/pull/15518) [`c7258f2ca2da8c09df430d81121ea8eae7f75cd9`](https://github.com/medusajs/medusa/commit/c7258f2ca2da8c09df430d81121ea8eae7f75cd9) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - fix(utils): add mfa to inline snapshot test assertion
+
+- [#14593](https://github.com/medusajs/medusa/pull/14593) [`538f98da78ae2d741f1182e6ef315ba8efac6911`](https://github.com/medusajs/medusa/commit/538f98da78ae2d741f1182e6ef315ba8efac6911) Thanks [@fPolic](https://github.com/fPolic)! - feat(dashboard,framework,rbac,js-sdk,types,utils,medusa): rbac admin dashboard utils
+
+- Updated dependencies []:
+  - @medusajs/deps@2.15.5
+
+## 2.15.4
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @medusajs/deps@2.15.4
+
+## 2.15.3
+
+### Patch Changes
+
+- [#15275](https://github.com/medusajs/medusa/pull/15275) [`3063ea20314843c23ad8077ce5e2f5c01ce2c54c`](https://github.com/medusajs/medusa/commit/3063ea20314843c23ad8077ce5e2f5c01ce2c54c) Thanks [@Suh0161](https://github.com/Suh0161)! - fix(utils): implement tokenized free text search to support multi-word queries across different columns (e.g. first + last name)
+
+- Updated dependencies []:
+  - @medusajs/deps@2.15.3
+
+## 2.15.2
+
+### Patch Changes
+
+- [#15382](https://github.com/medusajs/medusa/pull/15382) [`9990b69ab76f1a575c6a68875627d16764cc1564`](https://github.com/medusajs/medusa/commit/9990b69ab76f1a575c6a68875627d16764cc1564) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(utils): disable generating snapshots on running migrations
+
+- Updated dependencies []:
+  - @medusajs/deps@2.15.2
+
+## 2.15.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @medusajs/deps@2.15.1
+
+## 2.15.0
+
+### Patch Changes
+
+- [#15293](https://github.com/medusajs/medusa/pull/15293) [`75b23ffcdf5afeedb5321689cbd844342f218846`](https://github.com/medusajs/medusa/commit/75b23ffcdf5afeedb5321689cbd844342f218846) Thanks [@Chicolll](https://github.com/Chicolll)! - fix(utils): preserve casing in toCamelCase for PascalCase identifiers with digits
+
+- [#15013](https://github.com/medusajs/medusa/pull/15013) [`667f3e213d847e2a44ba486522f9fb7b36c69e9a`](https://github.com/medusajs/medusa/commit/667f3e213d847e2a44ba486522f9fb7b36c69e9a) Thanks [@asynchroza](https://github.com/asynchroza)! - fix(utils): skip empty string translations when applying locale
+
+- Updated dependencies []:
+  - @medusajs/deps@2.15.0
+
+## 2.14.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @medusajs/deps@2.14.2
+
+## 2.14.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @medusajs/deps@2.14.1
+
+## 2.14.0
+
+### Patch Changes
+
+- [#14309](https://github.com/medusajs/medusa/pull/14309) [`843dbfe7c8f27b732486c7a8da7b6d63f2fdf967`](https://github.com/medusajs/medusa/commit/843dbfe7c8f27b732486c7a8da7b6d63f2fdf967) Thanks [@adrien2p](https://github.com/adrien2p)! - chore(): upgrade zod to latest
+
+- [#13975](https://github.com/medusajs/medusa/pull/13975) [`67499a8aa6b3b53cbdecb5be9fcc358b4e466696`](https://github.com/medusajs/medusa/commit/67499a8aa6b3b53cbdecb5be9fcc358b4e466696) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - fix(currency,payment,pricing,region,order,store,cart,core-flows,medusa,utils): repo wide currency_code normalization
+
+- [#14650](https://github.com/medusajs/medusa/pull/14650) [`965adfe2fc15a024270ac384f819479e8b274e10`](https://github.com/medusajs/medusa/commit/965adfe2fc15a024270ac384f819479e8b274e10) Thanks [@adrien2p](https://github.com/adrien2p)! - Feat(view configuration): Generic introspection and generation
+
+- [#14711](https://github.com/medusajs/medusa/pull/14711) [`9e145bfb27cb5792f7b8d1331f2b076fb00355d9`](https://github.com/medusajs/medusa/commit/9e145bfb27cb5792f7b8d1331f2b076fb00355d9) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - feat(loyalty-plugin,medusa,utils): open source loyalty plugin
+
+- [#14436](https://github.com/medusajs/medusa/pull/14436) [`32533eb829d904d4c1a89c841f06d9c209460ac7`](https://github.com/medusajs/medusa/commit/32533eb829d904d4c1a89c841f06d9c209460ac7) Thanks [@bhagwatiprasad](https://github.com/bhagwatiprasad)! - fix(medusa, utils): add delay between module migrations to prevent timestamp collision
+
+- Updated dependencies []:
+  - @medusajs/deps@2.14.0
+
+## 2.13.6
+
+### Patch Changes
+
+- [#15018](https://github.com/medusajs/medusa/pull/15018) [`62e0760a2ad032c9f7ef219968d667193bf3c4a1`](https://github.com/medusajs/medusa/commit/62e0760a2ad032c9f7ef219968d667193bf3c4a1) Thanks [@shahednasser](https://github.com/shahednasser)! - chore: update mikro-orm to 6.6.10
+
+- Updated dependencies [[`62e0760a2ad032c9f7ef219968d667193bf3c4a1`](https://github.com/medusajs/medusa/commit/62e0760a2ad032c9f7ef219968d667193bf3c4a1)]:
+  - @medusajs/deps@2.13.6
+
+## 2.13.5
+
+### Patch Changes
+
+- [#14932](https://github.com/medusajs/medusa/pull/14932) [`4eee16b932f4b532f81db2739194ed5d2b47f3ea`](https://github.com/medusajs/medusa/commit/4eee16b932f4b532f81db2739194ed5d2b47f3ea) Thanks [@peterlgh7](https://github.com/peterlgh7)! - use in-memory modules if REDIS_URL unset
+
+- Updated dependencies []:
+  - @medusajs/deps@2.13.5
+
+## 2.13.4
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @medusajs/deps@2.13.4
+
+## 2.13.3
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @medusajs/deps@2.13.3
+
+## 2.13.2
+
+### Patch Changes
+
+- [#14720](https://github.com/medusajs/medusa/pull/14720) [`f37f029799cad7ee0337aeab625df5e272de2363`](https://github.com/medusajs/medusa/commit/f37f029799cad7ee0337aeab625df5e272de2363) Thanks [@arjusmoon860](https://github.com/arjusmoon860)! - feat(dashboard, admin-bundler, utils, types): add configurable maximum file upload size
+
+- [#14565](https://github.com/medusajs/medusa/pull/14565) [`d0e6f710c3f8305b58ac39131a125274987cae05`](https://github.com/medusajs/medusa/commit/d0e6f710c3f8305b58ac39131a125274987cae05) Thanks [@Mohammed-AlSharafi](https://github.com/Mohammed-AlSharafi)! - fix: Prevent translation crash when entity contains arrays of primitive values (e.g. strings)
+
+- [#14665](https://github.com/medusajs/medusa/pull/14665) [`77d899e135ed75668ca7d7b01a8ed4f0c1fe0ac8`](https://github.com/medusajs/medusa/commit/77d899e135ed75668ca7d7b01a8ed4f0c1fe0ac8) Thanks [@carlos-r-l-rodrigues](https://github.com/carlos-r-l-rodrigues)! - feat: add forbidden error 403
+
+- Updated dependencies []:
+  - @medusajs/deps@2.13.2
+
+## 2.13.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @medusajs/deps@2.13.1
+
+## 2.13.0
+
+### Minor Changes
+
+- [`a31e72c31c5235240cead2d04e39e5927688eec7`](https://github.com/medusajs/medusa/commit/a31e72c31c5235240cead2d04e39e5927688eec7) Thanks [@olivermrbl](https://github.com/olivermrbl)! - chore: Minor bump
+
+### Patch Changes
+
+- Updated dependencies [[`a31e72c31c5235240cead2d04e39e5927688eec7`](https://github.com/medusajs/medusa/commit/a31e72c31c5235240cead2d04e39e5927688eec7)]:
+  - @medusajs/deps@2.13.0
+
+## 2.12.6
+
+### Patch Changes
+
+- [#14478](https://github.com/medusajs/medusa/pull/14478) [`13476988763368b3b333fa5bc3f613e8eb174fdf`](https://github.com/medusajs/medusa/commit/13476988763368b3b333fa5bc3f613e8eb174fdf) Thanks [@adrien2p](https://github.com/adrien2p)! - Feat/enable event configuration in medusa config
+  enables event priority configuration through the Medusa config, allowing users to configure event processing options (like priority) for specific events at the module level.
+
+- [#14477](https://github.com/medusajs/medusa/pull/14477) [`55d2a704700433c34edd0f7f10dfd042d2f9333a`](https://github.com/medusajs/medusa/commit/55d2a704700433c34edd0f7f10dfd042d2f9333a) Thanks [@adrien2p](https://github.com/adrien2p)! - feat(config): Default event worker concurrency to 3 on cloud
+
+- [#14595](https://github.com/medusajs/medusa/pull/14595) [`39b9f84affcdda267bca0ee486825daca2e4a896`](https://github.com/medusajs/medusa/commit/39b9f84affcdda267bca0ee486825daca2e4a896) Thanks [@adrien2p](https://github.com/adrien2p)! - Chore/reset event worker concurrency to 1
+
+- [#14519](https://github.com/medusajs/medusa/pull/14519) [`41e1d5e5066719569d4f639415d3d1fdae1ddc0b`](https://github.com/medusajs/medusa/commit/41e1d5e5066719569d4f639415d3d1fdae1ddc0b) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(utils): fix import of caching and translation modules
+
+- [#14359](https://github.com/medusajs/medusa/pull/14359) [`cec8b8e428131d4743d6da98cd5fa0974b8ab9e1`](https://github.com/medusajs/medusa/commit/cec8b8e428131d4743d6da98cd5fa0974b8ab9e1) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - feat(core-flows,types,utils,medusa): Translate tax lines
+
+- [#14576](https://github.com/medusajs/medusa/pull/14576) [`95e9dfdcaf008b86e2ed3d1ad273b369776bc90e`](https://github.com/medusajs/medusa/commit/95e9dfdcaf008b86e2ed3d1ad273b369776bc90e) Thanks [@riqwan](https://github.com/riqwan)! - fix(utils): support both path and parentPath in migration file
+
+- [#14441](https://github.com/medusajs/medusa/pull/14441) [`1ca3516a5cbb059ad79fe483cd8e1d6a7ebca23b`](https://github.com/medusajs/medusa/commit/1ca3516a5cbb059ad79fe483cd8e1d6a7ebca23b) Thanks [@shahednasser](https://github.com/shahednasser)! - feat(deps,framework): add zod as framework dependency
+
+- Updated dependencies [[`1ca3516a5cbb059ad79fe483cd8e1d6a7ebca23b`](https://github.com/medusajs/medusa/commit/1ca3516a5cbb059ad79fe483cd8e1d6a7ebca23b)]:
+  - @medusajs/deps@2.12.6
+
 ## 2.12.5
 
 ### Patch Changes

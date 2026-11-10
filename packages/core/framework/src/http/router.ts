@@ -1,5 +1,6 @@
 import {
   ContainerRegistrationKeys,
+  DEFAULT_RBAC_ACTOR_TYPES,
   FeatureFlag,
   isFileDisabled,
   parseCorsOrigins,
@@ -32,7 +33,7 @@ import { applyLocale, authenticate, AuthType } from "./middlewares"
 import { createBodyParserMiddlewaresStack } from "./middlewares/bodyparser"
 import { ensurePublishableApiKeyMiddleware } from "./middlewares/ensure-publishable-api-key"
 import { errorHandler } from "./middlewares/error-handler"
-import { RoutesFinder } from "./routes-finder"
+import { preloadPathToRegexp, RoutesFinder } from "./routes-finder"
 import { RoutesLoader } from "./routes-loader"
 import { RoutesSorter } from "./routes-sorter"
 import { RestrictedFields } from "./utils/restricted-fields"
@@ -71,20 +72,27 @@ export class ApiLoader {
 
   readonly #logger: Logger
 
+  readonly #baseRestrictedFields: string[]
+
+  readonly #storeRelationsLimit?: number
+
   constructor({
     app,
     sourceDir,
     baseRestrictedFields = [],
+    storeRelationsLimit,
     container,
   }: {
     app: Express
     sourceDir: string | string[]
     baseRestrictedFields?: string[]
+    storeRelationsLimit?: number
     container: MedusaContainer
   }) {
     this.#app = app
     this.#sourceDirs = Array.isArray(sourceDir) ? sourceDir : [sourceDir]
-    this.#assignRestrictedFields(baseRestrictedFields ?? [])
+    this.#baseRestrictedFields = baseRestrictedFields ?? []
+    this.#storeRelationsLimit = storeRelationsLimit
     this.#logger = container.resolve(ContainerRegistrationKeys.LOGGER)
   }
 
@@ -107,8 +115,7 @@ export class ApiLoader {
       routesFinder: new RoutesFinder<RouteDescriptor>(),
       middlewares: middlewareLoader.getMiddlewares(),
       errorHandler: middlewareLoader.getErrorHandler() as
-        | ErrorRequestHandler
-        | undefined,
+        ErrorRequestHandler | undefined,
       bodyParserConfigRoutes: middlewareLoader.getBodyParserConfigRoutes(),
       additionalDataValidatorRoutes:
         middlewareLoader.getAdditionalDataValidatorRoutes(),
@@ -119,7 +126,15 @@ export class ApiLoader {
    * Checks if a route file is disabled for a given matcher and method
    * by trying to find the corresponding route file path
    */
-  #isRouteFileDisabled(matcher: string): boolean {
+  #isRouteFileDisabled(matcher: string | RegExp): boolean {
+    /**
+     * A regular expression matcher does not map to a single route file on the
+     * filesystem, so there is nothing to check for being disabled.
+     */
+    if (matcher instanceof RegExp) {
+      return false
+    }
+
     const routePathSegments = matcher
       .split("/")
       .filter(Boolean)
@@ -169,9 +184,10 @@ export class ApiLoader {
 
     if (!route.methods) {
       this.#logger.debug(`registering global middleware for ${route.matcher}`)
+
       const handler = ApiLoader.traceMiddleware
         ? (ApiLoader.traceMiddleware(route.handler, {
-            route: route.matcher,
+            route: String(route.matcher),
           }) as RequestHandler)
         : (route.handler as RequestHandler)
 
@@ -194,9 +210,10 @@ export class ApiLoader {
       this.#logger.debug(
         `registering route middleware ${method} ${route.matcher}`
       )
+
       const handler = ApiLoader.traceMiddleware
         ? (ApiLoader.traceMiddleware(wrapHandler(route.handler), {
-            route: route.matcher,
+            route: String(route.matcher),
             method: method,
           }) as RequestHandler)
         : wrapHandler(route.handler)
@@ -208,7 +225,19 @@ export class ApiLoader {
   /**
    * Registers the middleware for restricted fields
    */
-  #assignRestrictedFields(baseRestrictedFields: string[]) {
+  #assignRestrictedFields(
+    baseRestrictedFields: string[],
+    storeRelationsLimit?: number
+  ) {
+    this.#app.use(((
+      req: MedusaRequest,
+      _: MedusaResponse,
+      next: MedusaNextFunction
+    ) => {
+      req.allowed = []
+      next()
+    }) as unknown as RequestHandler)
+
     this.#app.use("/store", ((
       req: MedusaRequest,
       _: MedusaResponse,
@@ -216,10 +245,20 @@ export class ApiLoader {
     ) => {
       req.restrictedFields = new RestrictedFields()
       req.restrictedFields.add(baseRestrictedFields)
+      req.storeRelationsLimit = storeRelationsLimit
       next()
     }) as unknown as RequestHandler)
 
     this.#app.use("/admin", ((
+      req: MedusaRequest,
+      _: MedusaResponse,
+      next: MedusaNextFunction
+    ) => {
+      req.restrictedFields = new RestrictedFields()
+      next()
+    }) as unknown as RequestHandler)
+
+    this.#app.use("/rbac", ((
       req: MedusaRequest,
       _: MedusaResponse,
       next: MedusaNextFunction
@@ -249,7 +288,8 @@ export class ApiLoader {
     toggleKey:
       | "shouldAppendAdminCors"
       | "shouldAppendAuthCors"
-      | "shouldAppendStoreCors",
+      | "shouldAppendStoreCors"
+      | "shouldAppendRbacCors",
     corsOptions: CorsOptions
   ) {
     const logger = this.#logger
@@ -397,7 +437,7 @@ export class ApiLoader {
     this.#logger.debug(
       `Registering publishable key middleware for namespace ${namespace}`
     )
-    let middleware = ApiLoader.traceMiddleware
+    const middleware = ApiLoader.traceMiddleware
       ? ApiLoader.traceMiddleware(ensurePublishableApiKeyMiddleware, {
           route: namespace,
         })
@@ -410,7 +450,7 @@ export class ApiLoader {
     this.#logger.debug(
       `Registering locale middleware for namespace ${namespace}`
     )
-    let middleware = ApiLoader.traceMiddleware
+    const middleware = ApiLoader.traceMiddleware
       ? ApiLoader.traceMiddleware(applyLocale, {
           route: namespace,
         })
@@ -422,6 +462,13 @@ export class ApiLoader {
     if (FeatureFlag.isFeatureEnabled("backend_hmr")) {
       ;(global as any).__MEDUSA_HMR_API_LOADER__ = this
     }
+
+    this.#assignRestrictedFields(
+      this.#baseRestrictedFields,
+      this.#storeRelationsLimit
+    )
+
+    await preloadPathToRegexp()
 
     const {
       errorHandler: sourceErrorHandler,
@@ -482,6 +529,33 @@ export class ApiLoader {
       "session",
       "api-key",
     ])
+
+    /**
+     * CORS and Auth setup for the RBAC routes. They are not admin routes, but
+     * they are consumed by the admin dashboard and therefore fall back to its
+     * CORS origins. "http.rbacCors" replaces them for other clients.
+     *
+     * Unlike the admin routes, the allowed actor types are configurable via
+     * "http.rbacActorTypes" (defaults to ["user"]). Secret API keys are not
+     * accepted: "authenticate" only supports them when the actor types are
+     * exactly ["user"]
+     */
+    this.#applyCorsMiddleware(
+      routesFinder,
+      "/rbac",
+      "shouldAppendRbacCors",
+      this.#createCorsOptions(
+        configManager.config.projectConfig.http.rbacCors ||
+          configManager.config.projectConfig.http.adminCors
+      )
+    )
+    this.#applyAuthMiddleware(
+      routesFinder,
+      "/rbac",
+      configManager.config.projectConfig.http.rbacActorTypes ??
+        DEFAULT_RBAC_ACTOR_TYPES,
+      ["bearer", "session"]
+    )
 
     this.#applyCorsMiddleware(
       routesFinder,

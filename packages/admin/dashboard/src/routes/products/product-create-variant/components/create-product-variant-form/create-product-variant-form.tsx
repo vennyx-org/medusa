@@ -102,12 +102,12 @@ export const CreateProductVariantForm = ({
 
   const inventoryTabEnabled = isManageInventoryEnabled && isInventoryKitEnabled
 
-  const tabOrder = useMemo(() => {
+  const tabOrder: Tab[] = useMemo(() => {
     if (inventoryTabEnabled) {
-      return [Tab.DETAIL, Tab.PRICE, Tab.INVENTORY] as const
+      return [Tab.DETAIL, Tab.PRICE, Tab.INVENTORY]
     }
 
-    return [Tab.DETAIL, Tab.PRICE] as const
+    return [Tab.DETAIL, Tab.PRICE]
   }, [inventoryTabEnabled])
 
   useEffect(() => {
@@ -219,7 +219,7 @@ export const CreateProductVariantForm = ({
               return undefined
             }
 
-            const ret: AdminCreateProductVariantPrice = {}
+            const ret: Partial<AdminCreateProductVariantPrice> = {}
             const amount = castNumber(value)
 
             if (currencyOrRegion.startsWith("reg_")) {
@@ -231,9 +231,9 @@ export const CreateProductVariantForm = ({
 
             ret.amount = amount
 
-            return ret
+            return ret as AdminCreateProductVariantPrice
           })
-          .filter(Boolean),
+          .filter(Boolean) as AdminCreateProductVariantPrice[],
         inventory_items: (data.inventory || [])
           .map((i) => {
             if (!i.required_quantity || !i.inventory_item_id) {

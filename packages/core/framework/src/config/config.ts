@@ -1,4 +1,4 @@
-import { deepCopy, isDefined } from "@medusajs/utils"
+import { deepCopy, isDefined, isProduction } from "@medusajs/utils"
 import { logger } from "../logger"
 import { ConfigModule } from "./types"
 
@@ -14,7 +14,7 @@ export class ConfigManager {
    * @private
    */
   get #isProduction(): boolean {
-    return ["production", "prod"].includes(process.env.NODE_ENV || "")
+    return isProduction()
   }
 
   /**
@@ -70,8 +70,12 @@ export class ConfigManager {
    * @protected
    */
   protected buildHttpConfig(
-    projectConfig: Partial<ConfigModule["projectConfig"]>
+    projectConfig: Partial<ConfigModule["projectConfig"]>,
+    options?: {
+      throwOnValidationError?: boolean
+    }
   ): ConfigModule["projectConfig"]["http"] {
+    const { throwOnValidationError = true } = options ?? {}
     const http = (projectConfig.http ??
       {}) as ConfigModule["projectConfig"]["http"]
 
@@ -79,14 +83,18 @@ export class ConfigManager {
     http.authCors = http.authCors ?? ""
     http.storeCors = http.storeCors ?? ""
     http.adminCors = http.adminCors ?? ""
+    http.storeRelationsLimit = http.storeRelationsLimit ?? 3
 
     http.jwtOptions ??= {}
-    http.jwtOptions.expiresIn = http.jwtExpiresIn
+    http.jwtOptions.expiresIn = http.jwtExpiresIn as NonNullable<
+      ConfigModule["projectConfig"]["http"]["jwtOptions"]
+    >["expiresIn"]
 
     http.jwtSecret = http?.jwtSecret ?? process.env.JWT_SECRET
     http.jwtPublicKey = http?.jwtPublicKey ?? process.env.JWT_PUBLIC_KEY
 
     if (
+      throwOnValidationError &&
       http?.jwtPublicKey &&
       ((http.jwtVerifyOptions && !http.jwtVerifyOptions.algorithms?.length) ||
         (http.jwtOptions && !http.jwtOptions.algorithm))
@@ -97,11 +105,13 @@ export class ConfigManager {
     }
 
     if (!http.jwtSecret) {
-      this.rejectErrors(
-        `http.jwtSecret not found.${
-          this.#isProduction ? "" : "Using default 'supersecret'."
-        }`
-      )
+      if (throwOnValidationError) {
+        this.rejectErrors(
+          `http.jwtSecret not found.${
+            this.#isProduction ? "" : "Using default 'supersecret'."
+          }`
+        )
+      }
 
       http.jwtSecret = "supersecret"
     }
@@ -110,11 +120,13 @@ export class ConfigManager {
       process.env.COOKIE_SECRET)!
 
     if (!http.cookieSecret) {
-      this.rejectErrors(
-        `http.cookieSecret not found.${
-          this.#isProduction ? "" : " Using default 'supersecret'."
-        }`
-      )
+      if (throwOnValidationError) {
+        this.rejectErrors(
+          `http.cookieSecret not found.${
+            this.#isProduction ? "" : " Using default 'supersecret'."
+          }`
+        )
+      }
 
       http.cookieSecret = "supersecret"
     }
@@ -128,7 +140,10 @@ export class ConfigManager {
    * @protected
    */
   protected normalizeProjectConfig(
-    config: Partial<ConfigModule>
+    config: Partial<ConfigModule>,
+    options?: {
+      throwOnValidationError?: boolean
+    }
   ): ConfigModule["projectConfig"] {
     const projConfig = config?.projectConfig ?? {}
     const outputConfig = deepCopy(projConfig) as ConfigModule["projectConfig"]
@@ -140,7 +155,9 @@ export class ConfigManager {
       )
     }
 
-    outputConfig.http = this.buildHttpConfig(projConfig)
+    outputConfig.http = this.buildHttpConfig(projConfig, {
+      throwOnValidationError: options?.throwOnValidationError,
+    })
 
     let workerMode = outputConfig?.workerMode!
 
@@ -168,13 +185,17 @@ export class ConfigManager {
   loadConfig({
     projectConfig = {},
     baseDir,
+    throwOnValidationError = true,
   }: {
     projectConfig: Partial<ConfigModule>
     baseDir: string
+    throwOnValidationError?: boolean
   }): ConfigModule {
     this.#baseDir = baseDir
 
-    const normalizedProjectConfig = this.normalizeProjectConfig(projectConfig)
+    const normalizedProjectConfig = this.normalizeProjectConfig(projectConfig, {
+      throwOnValidationError,
+    })
 
     this.#config = {
       projectConfig: normalizedProjectConfig,

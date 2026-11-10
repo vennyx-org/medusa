@@ -40,6 +40,9 @@ module.exports = defineConfig({
       resolve: "@medusajs/medusa/auth",
       dependencies: [Modules.CACHE, ContainerRegistrationKeys.LOGGER],
       options: {
+        mfa: {
+          encryption_key: process.env.AUTH_MFA_ENCRYPTION_KEY,
+        },
         providers: [
           // other providers...
           {
@@ -77,9 +80,15 @@ GOOGLE_CALLBACK_URL=<YOUR_GOOGLE_CALLBACK_URL>
 <Table>
   <Table.Header>
     <Table.Row>
-      <Table.HeaderCell>Configuration</Table.HeaderCell>
-      <Table.HeaderCell>Description</Table.HeaderCell>
-      <Table.HeaderCell className="w-1/5">Required</Table.HeaderCell>
+      <Table.HeaderCell>
+        Configuration
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Description
+      </Table.HeaderCell>
+      <Table.HeaderCell className="w-1/5">
+        Required
+      </Table.HeaderCell>
     </Table.Row>
   </Table.Header>
   <Table.Body>

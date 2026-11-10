@@ -24,7 +24,7 @@ export const inventoryItemLevelsQueryKeys = queryKeysFactory(
 )
 
 export const useInventoryItems = (
-  query?: HttpTypes.AdminInventoryItemParams,
+  query?: HttpTypes.AdminInventoryItemsParams,
   options?: Omit<
     UseQueryOptions<
       HttpTypes.AdminInventoryItemListResponse,
@@ -59,11 +59,31 @@ export const useInventoryItem = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () => sdk.admin.inventoryItem.retrieve(id, query),
-    queryKey: inventoryItemsQueryKeys.detail(id),
+    queryKey: inventoryItemsQueryKeys.detail(id, query),
     ...options,
   })
 
   return { ...data, ...rest }
+}
+
+export const useExportInventoryItems = (
+  options?: UseMutationOptions<
+    HttpTypes.AdminExportInventoryItemResponse,
+    FetchError,
+    {
+      payload?: HttpTypes.AdminExportInventoryItemRequest
+      query?: HttpTypes.AdminInventoryItemsParams
+    }
+  >
+) => {
+  return useMutation({
+    mutationFn: ({ payload = {}, query }) =>
+      sdk.admin.inventoryItem.export(payload, query),
+    onSuccess: (data, variables, context) => {
+      options?.onSuccess?.(data, variables, context)
+    },
+    ...options,
+  })
 }
 
 export const useCreateInventoryItem = (

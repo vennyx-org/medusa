@@ -1,32 +1,48 @@
-import { getCleanMd } from "docs-utils"
-import { existsSync } from "fs"
+import { addExtraToMd, getCleanMd } from "docs-utils"
 import { unstable_cache } from "next/cache"
 import { notFound } from "next/navigation"
 import { NextRequest, NextResponse } from "next/server"
 import path from "path"
+import { PostHog } from "posthog-node"
 import {
   addUrlToRelativeLink,
   crossProjectLinksPlugin,
   localLinksRehypePlugin,
 } from "remark-rehype-plugins"
 import type { Plugin } from "unified"
+import { fetchRawMdx } from "../../../utils/fetch-raw-mdx"
+import { getChangelogMarkdown } from "../../../utils/changelog"
+import { getPricingMarkdown } from "../../../utils/pricing"
 
 type Params = {
-  params: Promise<{ slug: string[] }>
+  params: Promise<{ slug?: string[] }>
 }
 
 export async function GET(req: NextRequest, { params }: Params) {
-  const { slug = ["/"] } = await params
+  const { slug: rawSlug } = await params
+  const slug = rawSlug?.filter(Boolean) ?? []
+  const origin = process.env.NEXT_PUBLIC_BASE_URL || new URL(req.url).origin
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ""
+  const appDir = path.join(process.cwd(), "app")
+  const isCloudflare = !!process.env.CLOUDFLARE_ENV
 
-  // keep this so that Vercel keeps the files in deployment
-  const basePath = path.join(process.cwd(), "app")
-  const filePath = path.join(basePath, ...slug, "page.mdx")
+  const result = await fetchRawMdx(origin, basePath, slug)
 
-  if (!existsSync(filePath)) {
+  if (!result) {
     return notFound()
   }
 
-  const cleanMdContent = await getCleanMd_(filePath, {
+  const { content: fileContent, isOverride } = result
+
+  // The changelog and pricing pages render their content from generated files
+  // and Sanity, so their Markdown must be built here rather than read from the
+  // MDX file.
+  const parserOptions = await getParserOptions(
+    slug,
+    process.env.NEXT_PUBLIC_BASE_URL || origin
+  )
+
+  const cleanMdContent = await getCleanMd_(fileContent, parserOptions, {
     before: [
       [
         crossProjectLinksPlugin,
@@ -52,27 +68,97 @@ export async function GET(req: NextRequest, { params }: Params) {
           },
           useBaseUrl:
             process.env.NODE_ENV === "production" ||
-            process.env.VERCEL_ENV === "production",
+            process.env.VERCEL_ENV === "production" ||
+            isCloudflare,
         },
       ],
-      [localLinksRehypePlugin],
+      [
+        localLinksRehypePlugin,
+        {
+          filePath: path.join(appDir, ...slug, "page.mdx"),
+          basePath: appDir,
+        },
+      ],
     ] as unknown as Plugin[],
     after: [
-      [addUrlToRelativeLink, { url: process.env.NEXT_PUBLIC_BASE_URL }],
+      [
+        addUrlToRelativeLink,
+        { url: `${process.env.NEXT_PUBLIC_BASE_URL || ""}${basePath}` },
+      ],
     ] as unknown as Plugin[],
   })
 
-  return new NextResponse(cleanMdContent, {
-    headers: {
-      "Content-Type": "text/markdown",
-    },
-    status: 200,
-  })
+  const acceptHeader = req.headers.get("accept") || ""
+  if (
+    acceptHeader.includes("text/plain") ||
+    acceptHeader.includes("text/markdown")
+  ) {
+    const client = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+      host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    })
+
+    const urlObj = new URL(req.url)
+    const url = `${process.env.NEXT_PUBLIC_BASE_URL || ""}${process.env.NEXT_PUBLIC_BASE_PATH || ""}${urlObj.pathname}`
+
+    client.capture({
+      distinctId: "anonymous",
+      event: "md_content_requested_agents",
+      properties: {
+        $current_url: url,
+        $raw_user_agent: req.headers.get("user-agent") || undefined,
+        $ip:
+          req.headers.get("cf-connecting-ip") ||
+          req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+          undefined,
+      },
+    })
+
+    await client.shutdown()
+  }
+
+  return new NextResponse(
+    isOverride
+      ? cleanMdContent
+      : addExtraToMd(cleanMdContent, {
+          baseUrl: process.env.NEXT_PUBLIC_BASE_URL || "",
+          basePath: process.env.NEXT_PUBLIC_BASE_PATH || "",
+        }),
+    {
+      headers: {
+        "Content-Type": "text/markdown",
+        "Cache-Control": "public, max-age=3600, must-revalidate",
+      },
+      status: 200,
+    }
+  )
+}
+
+const getParserOptions = async (
+  slug: string[],
+  baseUrl: string
+): Promise<Record<string, unknown> | undefined> => {
+  if (slug.length !== 1) {
+    return
+  }
+
+  switch (slug[0]) {
+    case "changelog":
+      return {
+        ChangelogList: { content: await getChangelogMarkdown(baseUrl) },
+      }
+    case "pricing":
+      return {
+        PricingContent: { content: await getPricingMarkdown(baseUrl) },
+      }
+  }
 }
 
 const getCleanMd_ = unstable_cache(
-  async (filePath: string, plugins?: { before?: Plugin[]; after?: Plugin[] }) =>
-    getCleanMd({ file: filePath, plugins }),
+  async (
+    content: string,
+    parserOptions?: Record<string, unknown>,
+    plugins?: { before?: Plugin[]; after?: Plugin[] }
+  ) => getCleanMd({ file: content, type: "content", parserOptions, plugins }),
   ["clean-md"],
   {
     revalidate: 3600,

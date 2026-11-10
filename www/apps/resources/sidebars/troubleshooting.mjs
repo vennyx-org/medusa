@@ -49,6 +49,18 @@ export const troubleshootingSidebar = [
   },
   {
     type: "category",
+    title: "Build and Deployment",
+    initialOpen: true,
+    children: [
+      {
+        type: "link",
+        path: "/troubleshooting/esm-syntax-error",
+        title: "Unexpected token 'export' Error",
+      },
+    ],
+  },
+  {
+    type: "category",
     title: "Framework",
     initialOpen: true,
     children: [
@@ -65,6 +77,11 @@ export const troubleshootingSidebar = [
             type: "link",
             title: "Middleware Registration",
             path: "/troubleshooting/api-routes/middleware-registration",
+          },
+          {
+            type: "link",
+            title: "Route Registration Error",
+            path: "/troubleshooting/api-routes/route-registration-error",
           },
         ],
       },
@@ -84,6 +101,11 @@ export const troubleshootingSidebar = [
         title: "Importing from /dist",
       },
       {
+        type: "link",
+        path: "/troubleshooting/modules/resolve-path",
+        title: "Module Provider Resolve Path Error",
+      },
+      {
         type: "sub-category",
         title: "Query",
         children: [
@@ -96,6 +118,16 @@ export const troubleshootingSidebar = [
             type: "link",
             path: "/troubleshooting/query/filter-linked",
             title: "Not Existing Property",
+          },
+          {
+            type: "link",
+            path: "/troubleshooting/query/metadata-filtering",
+            title: "Metadata Filtering",
+          },
+          {
+            type: "link",
+            path: "/troubleshooting/query/not-assignable-type",
+            title: "Not Assignable to Custom Type",
           },
           {
             type: "link",
@@ -204,8 +236,18 @@ export const troubleshootingSidebar = [
         children: [
           {
             type: "link",
+            path: "/troubleshooting/nextjs-node-25",
+            title: "Errors with Node v25+",
+          },
+          {
+            type: "link",
             path: "/troubleshooting/nextjs-starter-rewrites",
             title: "Google Cloud Run Error",
+          },
+          {
+            type: "link",
+            path: "/troubleshooting/nextjs-build-404",
+            title: "Dynamic Routes 404 During Build",
           },
         ],
       },

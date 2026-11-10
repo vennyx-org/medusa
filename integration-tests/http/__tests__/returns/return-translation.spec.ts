@@ -10,7 +10,7 @@ jest.setTimeout(60000)
 process.env.MEDUSA_FF_TRANSLATION = "true"
 
 medusaIntegrationTestRunner({
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
     let order
     let returnShippingOption
     let shippingProfile
@@ -20,9 +20,12 @@ medusaIntegrationTestRunner({
     let salesChannel
     let product
 
-    beforeEach(async () => {
+    beforeAll(async () => {
       const container = getContainer()
       await createAdminUser(dbConnection, adminHeaders, container)
+
+      const translationModule = container.resolve(Modules.TRANSLATION)
+      await translationModule.__hooks?.onApplicationStart?.().catch(() => {})
 
       // Set up supported locales in the store
       const storeModule = container.resolve(Modules.STORE)
@@ -206,6 +209,8 @@ medusaIntegrationTestRunner({
         },
         adminHeaders
       )
+
+      await dbUtils.snapshot()
     })
 
     const createOrderWithLocale = async (locale?: string) => {

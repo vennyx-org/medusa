@@ -1,7 +1,9 @@
 import type { LinkWorkflowInput } from "@medusajs/framework/types"
+import { ProductWorkflowEvents } from "@medusajs/framework/utils"
 import { WorkflowData, createWorkflow } from "@medusajs/framework/workflows-sdk"
 import { associateProductsWithSalesChannelsStep } from "../steps/associate-products-with-channels"
 import { transform } from "@medusajs/framework/workflows-sdk"
+import { emitEventStep } from "../../common"
 import { detachProductsFromSalesChannelsStep } from "../steps"
 
 /**
@@ -17,7 +19,7 @@ export const linkProductsToSalesChannelWorkflowId =
   "link-products-to-sales-channel"
 /**
  * This workflow manages the products available in a sales channel. It's used by the
- * [Manage Products Admin API Route](https://docs.medusajs.com/api/admin#sales-channels_postsaleschannelsidproducts).
+ * [Manage Products Admin API Route](https://docs.medusajs.com/api/admin/sales-channels/manage-products).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to
  * manage the products available in a sales channel within your custom flows.
@@ -57,5 +59,16 @@ export const linkProductsToSalesChannelWorkflow = createWorkflow(
 
     associateProductsWithSalesChannelsStep({ links: toAdd })
     detachProductsFromSalesChannelsStep({ links: toRemove })
+
+    const eventData = transform({ input }, ({ input }) =>
+      [...new Set([...(input.add ?? []), ...(input.remove ?? [])])].map(
+        (id) => ({ id })
+      )
+    )
+
+    emitEventStep({
+      eventName: ProductWorkflowEvents.UPDATED,
+      data: eventData,
+    })
   }
 )

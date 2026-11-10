@@ -21,6 +21,7 @@ export const sidebar = [
         type: "category",
         title: "Tips",
         autogenerate_path: "/tips",
+        initialOpen: true,
       },
       {
         type: "category",
@@ -138,6 +139,11 @@ export const sidebar = [
           },
           {
             type: "link",
+            title: "Manage Product Options",
+            path: "/products/options",
+          },
+          {
+            type: "link",
             title: "Import Products",
             path: "/products/import",
           },
@@ -166,6 +172,11 @@ export const sidebar = [
             type: "link",
             title: "Manage Reservations",
             path: "/inventory/reservations",
+          },
+          {
+            type: "link",
+            title: "Export Inventory Items",
+            path: "/inventory/export",
           },
         ],
       },
@@ -239,6 +250,53 @@ export const sidebar = [
       },
       {
         type: "category",
+        title: "Loyalty",
+        children: [
+          {
+            type: "link",
+            title: "Overview",
+            path: "/loyalty",
+          },
+          {
+            type: "link",
+            title: "Gift Cards",
+            path: "/loyalty/gift-cards",
+            children: [
+              {
+                type: "link",
+                title: "Manage Gift Cards",
+                path: "/loyalty/gift-cards/manage",
+              },
+            ],
+          },
+          {
+            type: "link",
+            title: "Gift Card Products",
+            path: "/loyalty/gift-card-products",
+            children: [
+              {
+                type: "link",
+                title: "Manage Gift Card Products",
+                path: "/loyalty/gift-card-products/manage",
+              },
+            ],
+          },
+          {
+            type: "link",
+            title: "Store Credits",
+            path: "/loyalty/store-credits",
+            children: [
+              {
+                type: "link",
+                title: "Manage Store Credits",
+                path: "/loyalty/store-credits/manage",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "category",
         title: "Settings",
         children: [
           {
@@ -262,6 +320,23 @@ export const sidebar = [
                 path: "/settings/users/invites",
               },
             ],
+          },
+          {
+            type: "link",
+            title: "Roles",
+            path: "/settings/roles",
+            children: [
+              {
+                type: "link",
+                title: "Common Roles",
+                path: "/settings/roles/common-roles",
+              },
+            ],
+          },
+          {
+            type: "link",
+            title: "Policies",
+            path: "/settings/policies",
           },
           {
             type: "link",
@@ -297,6 +372,11 @@ export const sidebar = [
             type: "link",
             title: "Product Tags",
             path: "/settings/product-tags",
+          },
+          {
+            type: "link",
+            title: "Property Labels",
+            path: "/settings/property-labels",
           },
           {
             type: "link",
@@ -351,6 +431,11 @@ export const sidebar = [
             type: "link",
             title: "Profile",
             path: "/settings/profile",
+          },
+          {
+            type: "link",
+            title: "Search Indexes",
+            path: "/settings/search",
           },
         ],
       },

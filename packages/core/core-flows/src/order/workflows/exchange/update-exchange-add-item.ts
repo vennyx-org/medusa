@@ -7,7 +7,7 @@ import {
   OrderPreviewDTO,
   OrderWorkflow,
 } from "@medusajs/framework/types"
-import { ChangeActionType, OrderChangeStatus } from "@medusajs/framework/utils"
+import { ChangeActionType, OrderChangeStatus, MedusaError } from "@medusajs/framework/utils"
 import {
   WorkflowData,
   WorkflowResponse,
@@ -26,6 +26,7 @@ import {
 } from "../../utils/order-validation"
 import { refreshExchangeShippingWorkflow } from "./refresh-shipping"
 import { computeAdjustmentsForPreviewWorkflow } from "../compute-adjustments-for-preview"
+import { fieldsToComputeAdjustmentsForPreview } from "../order-edit/utils/fields"
 
 /**
  * The data to validate that an outbound or new item in an exchange can be updated.
@@ -104,19 +105,29 @@ export const updateExchangeAddItemValidationStep = createStep(
     ) as OrderChangeActionDTO
 
     if (!associatedAction) {
-      throw new Error(
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA, 
         `No request to add item for exchange ${input.exchange_id} in order change ${orderChange.id}`
       )
     } else if (associatedAction.action !== ChangeActionType.ITEM_ADD) {
-      throw new Error(`Action ${associatedAction.id} is not adding an item`)
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        `Action ${associatedAction.id} is not adding an item`
+      )
     }
   }
 )
 
+const orderFields = [
+  ...fieldsToComputeAdjustmentsForPreview,
+  "status",
+  "canceled_at",
+]
+
 export const updateExchangeAddItemWorkflowId = "update-exchange-add-item"
 /**
  * This workflow updates an outbound or new item in the exchange. It's used by the
- * [Update Outbound Item Admin API Route](https://docs.medusajs.com/api/admin#exchanges_postexchangesidoutbounditemsaction_id).
+ * [Update Outbound Item Admin API Route](https://docs.medusajs.com/api/admin/exchanges/update-outbound-item).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to update an outbound or new item
  * in an exchange in your custom flow.
@@ -152,7 +163,7 @@ export const updateExchangeAddItemWorkflow = createWorkflow(
 
     const order: OrderDTO = useRemoteQueryStep({
       entry_point: "orders",
-      fields: ["id", "status", "canceled_at", "items.*", "promotions.*"],
+      fields: orderFields,
       variables: { id: orderExchange.order_id },
       list: false,
       throw_if_key_not_found: true,

@@ -1,4 +1,3 @@
-import React from "react"
 import { z } from "zod"
 import { useFieldArray, UseFormReturn } from "react-hook-form"
 import { Button, Heading, IconButton, Input, Label } from "@medusajs/ui"
@@ -9,6 +8,7 @@ import { useTranslation } from "react-i18next"
 
 import { useComboboxData } from "../../../../../hooks/use-combobox-data"
 import { sdk } from "../../../../../lib/client"
+import { castNumber } from "../../../../../lib/cast-number"
 import { Form } from "../../../../../components/common/form"
 import { Combobox } from "../../../../../components/inputs/combobox"
 
@@ -31,7 +31,7 @@ function InventoryKitTab({ form }: InventoryKitTabProps) {
     queryFn: (params) => sdk.admin.inventoryItem.list(params),
     getOptions: (data) =>
       data.inventory_items.map((item) => ({
-        label: item.title,
+        label: item.title ?? "",
         value: item.id,
       })),
   })
@@ -80,7 +80,7 @@ function InventoryKitTab({ form }: InventoryKitTabProps) {
             {inventory.fields.map((inventoryItem, inventoryIndex) => (
               <li
                 key={inventoryItem.id}
-                className="bg-ui-bg-component shadow-elevation-card-rest grid grid-cols-[1fr_28px] items-center gap-1.5 rounded-xl p-1.5"
+                className="grid grid-cols-[1fr_28px] items-center gap-1.5 rounded-xl bg-ui-bg-component p-1.5 shadow-elevation-card-rest"
               >
                 <div className="grid grid-cols-[min-content,1fr] items-center gap-1.5">
                   <div className="flex items-center px-2 py-1.5">
@@ -145,6 +145,7 @@ function InventoryKitTab({ form }: InventoryKitTabProps) {
                               type="number"
                               className="bg-ui-bg-field-component"
                               min={0}
+                              step="any"
                               value={value}
                               onChange={(e) => {
                                 const value = e.target.value
@@ -152,7 +153,7 @@ function InventoryKitTab({ form }: InventoryKitTabProps) {
                                 if (value === "") {
                                   onChange(null)
                                 } else {
-                                  onChange(Number(value))
+                                  onChange(castNumber(value))
                                 }
                               }}
                               {...field}

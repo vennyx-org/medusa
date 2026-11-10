@@ -8,15 +8,17 @@ import { HttpTypes } from "@medusajs/types"
 import { Form } from "../../../../../components/common/form/index"
 import { Thumbnail } from "../../../../../components/common/thumbnail/index"
 import { useProductVariant } from "../../../../../hooks/api/products"
+import { divideDecimal } from "../../../../../lib/number-helper"
 import { getFulfillableQuantity } from "../../../../../lib/order-item"
 import { CreateFulfillmentSchema } from "./constants"
 import { InformationCircleSolid } from "@medusajs/icons"
+import { ExtendedVariant } from "../../../../product-variants/product-variant-detail/constants"
 
 type OrderEditItemProps = {
   item: HttpTypes.AdminOrderLineItem
-  currencyCode: string
+  currencyCode?: string
   locationId?: string
-  onItemRemove: (itemId: string) => void
+  onItemRemove?: (itemId: string) => void
   reservations: HttpTypes.AdminReservation[]
   form: UseFormReturn<zod.infer<typeof CreateFulfillmentSchema>>
   disabled: boolean
@@ -32,15 +34,15 @@ export function OrderCreateFulfillmentItem({
   const { t } = useTranslation()
 
   const { variant } = useProductVariant(
-    item.product_id,
-    item.variant_id,
+    item.product_id ?? "",
+    item.variant_id ?? "",
     {
       fields: "*inventory,*inventory.location_levels,*inventory_items",
     },
     {
       enabled: !!item.variant,
     }
-  )
+  ) as { variant: ExtendedVariant }
 
   const { availableQuantity, inStockQuantity } = useMemo(() => {
     if (
@@ -73,7 +75,7 @@ export function OrderCreateFulfillmentItem({
 
     const reservedQuantityForItem = !reservation
       ? 0
-      : reservation?.quantity / (iitemRequiredQuantity || 1)
+      : divideDecimal(reservation.quantity, iitemRequiredQuantity ?? 1)
 
     const locationInventoryLevels = inventory.map((i) => {
       const level = i.location_levels?.find(
@@ -89,8 +91,14 @@ export function OrderCreateFulfillmentItem({
         }
       }
 
-      const availableQuantity = level.available_quantity / requiredQuantity
-      const stockedQuantity = level.stocked_quantity / requiredQuantity
+      const availableQuantity = divideDecimal(
+        level.available_quantity ?? 0,
+        requiredQuantity
+      )
+      const stockedQuantity = divideDecimal(
+        level.stocked_quantity,
+        requiredQuantity
+      )
 
       return {
         availableQuantity,
@@ -128,7 +136,7 @@ export function OrderCreateFulfillmentItem({
   )
 
   return (
-    <div className="bg-ui-bg-subtle shadow-elevation-card-rest my-2 rounded-xl">
+    <div className="my-2 rounded-xl bg-ui-bg-subtle shadow-elevation-card-rest">
       <div className="flex flex-row items-center">
         {disabled && (
           <div className="ml-4 inline-flex items-center">
@@ -156,7 +164,7 @@ export function OrderCreateFulfillmentItem({
                 </Text>
                 {item.variant_sku && <span>({item.variant_sku})</span>}
               </div>
-              <Text as="div" className="text-ui-fg-subtle txt-small">
+              <Text as="div" className="txt-small text-ui-fg-subtle">
                 {item.variant_title}
               </Text>
             </div>
@@ -166,7 +174,7 @@ export function OrderCreateFulfillmentItem({
             <div className="mr-2 block h-[16px] w-[2px] bg-gray-200" />
 
             <div className="text-small flex flex-1 flex-col">
-              <span className="text-ui-fg-subtle font-medium">
+              <span className="font-medium text-ui-fg-subtle">
                 {t("orders.fulfillment.available")}
               </span>
               <span className="text-ui-fg-subtle">
@@ -178,7 +186,7 @@ export function OrderCreateFulfillmentItem({
               <div className="mr-2 block h-[16px] w-[2px] bg-gray-200" />
 
               <div className="flex flex-col">
-                <span className="text-ui-fg-subtle font-medium">
+                <span className="font-medium text-ui-fg-subtle">
                   {t("orders.fulfillment.inStock")}
                 </span>
                 <span className="text-ui-fg-subtle">
@@ -202,7 +210,7 @@ export function OrderCreateFulfillmentItem({
                     <Form.Item>
                       <Form.Control>
                         <Input
-                          className="bg-ui-bg-base txt-small w-[50px] rounded-lg text-right [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                          className="txt-small w-[50px] rounded-lg bg-ui-bg-base text-right [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                           type="number"
                           {...field}
                           onChange={(e) => {
@@ -213,7 +221,7 @@ export function OrderCreateFulfillmentItem({
 
                             field.onChange(val)
 
-                            if (!isNaN(val)) {
+                            if (val !== null && !isNaN(val)) {
                               if (val < minValue || val > maxValue) {
                                 form.setError(`quantity.${item.id}`, {
                                   type: "manual",

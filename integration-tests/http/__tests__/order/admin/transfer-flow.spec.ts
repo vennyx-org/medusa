@@ -10,19 +10,27 @@ import { createOrderSeeder } from "../../fixtures/order"
 
 jest.setTimeout(300000)
 
+const adminTemplateName = "transfer-flow-admin-template"
+
 medusaIntegrationTestRunner({
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
+    let user
+
+    beforeAll(async () => {
+      user = (await createAdminUser(dbConnection, adminHeaders, getContainer()))
+        .user
+
+      await dbUtils.snapshot({ templateName: adminTemplateName })
+    })
+
     describe("Transfer Order flow (Admin)", () => {
       let order
       let customer
-      let user
       let storeHeaders
 
-      beforeEach(async () => {
+      beforeAll(async () => {
         const container = getContainer()
 
-        user = (await createAdminUser(dbConnection, adminHeaders, container))
-          .user
         const publishableKey = await generatePublishableKey(container)
         storeHeaders = generateStoreHeaders({ publishableKey })
 
@@ -51,6 +59,8 @@ medusaIntegrationTestRunner({
         ).data.customer
 
         order = seeders.order
+
+        await dbUtils.snapshot()
       })
 
       it("should pass order transfer flow from admin successfully", async () => {
@@ -59,6 +69,7 @@ medusaIntegrationTestRunner({
           `/admin/orders/${order.id}/transfer`,
           {
             customer_id: customer.id,
+            update_order_email: true,
           },
           adminHeaders
         )
@@ -112,6 +123,7 @@ medusaIntegrationTestRunner({
                 details: expect.objectContaining({
                   token: expect.any(String),
                   original_email: "tony@stark-industries.com",
+                  new_email: "test@email.com",
                 }),
               }),
             ]),
@@ -136,8 +148,8 @@ medusaIntegrationTestRunner({
           )
         ).data.order
 
-        expect(finalOrderResult.email).toEqual("tony@stark-industries.com")
-        // 4. Customer account is now associated with the order (email on the order is still as original, guest email)
+        // 4. Customer account is now associated with the order and email is updated to the customer's email
+        expect(finalOrderResult.email).toEqual("test@email.com")
         expect(finalOrderResult.customer_id).toEqual(customer.id)
       })
 
@@ -209,7 +221,7 @@ medusaIntegrationTestRunner({
             },
             adminHeaders
           )
-          .catch((e) => e)
+          .catch((e: any) => e)
 
         expect(err.response.status).toBe(400)
         expect(err.response.data).toEqual(
@@ -268,7 +280,7 @@ medusaIntegrationTestRunner({
               },
             }
           )
-          .catch((e) => e)
+          .catch((e: any) => e)
 
         expect(err.response.status).toBe(400)
         expect(err.response.data).toEqual(
@@ -286,7 +298,9 @@ medusaIntegrationTestRunner({
       let storeHeaders
       let signInToken
 
-      beforeEach(async () => {
+      beforeAll(async () => {
+        await dbUtils.restore({ templateName: adminTemplateName })
+
         const container = getContainer()
 
         const publishableKey = await generatePublishableKey(container)
@@ -324,6 +338,8 @@ medusaIntegrationTestRunner({
         ).data.token
 
         order = seeders.order
+
+        await dbUtils.snapshot()
       })
 
       it("should pass order transfer flow from storefront successfully", async () => {
@@ -368,10 +384,10 @@ medusaIntegrationTestRunner({
                 action: "TRANSFER_CUSTOMER",
                 reference: "customer",
                 reference_id: customer.id,
-                details: expect.objectContaining({
+                details: {
                   token: expect.any(String),
                   original_email: "tony@stark-industries.com",
-                }),
+                },
               }),
             ]),
           })
@@ -386,8 +402,8 @@ medusaIntegrationTestRunner({
           )
         ).data.order
 
+        // 4. Customer account is now associated with the order and email is still the original email, since update_order_email is not true on the request
         expect(finalOrder.email).toEqual("tony@stark-industries.com")
-        // 4. Customer account is now associated with the order (email on the order is still as original, guest email)
         expect(finalOrder.customer_id).toEqual(customer.id)
       })
 
@@ -641,7 +657,7 @@ medusaIntegrationTestRunner({
               },
             }
           )
-          .catch((e) => e)
+          .catch((e: any) => e)
 
         expect(error.response.status).toBe(400)
         expect(error.response.data).toEqual(
@@ -663,6 +679,212 @@ medusaIntegrationTestRunner({
             declined_at: null,
           })
         )
+      })
+    })
+
+    describe("Transfer Order to Guest flow (Admin)", () => {
+      let container: ReturnType<typeof getContainer>
+
+      beforeEach(async () => {
+        await dbUtils.restore({ templateName: adminTemplateName })
+        container = getContainer()
+      })
+
+      it("should transfer an order to a new guest customer, creating it and updating the order email immediately", async () => {
+        const { order } = await createOrderSeeder({ api, container })
+        const email = "new-guest@medusajs.com"
+
+        await api.post(
+          `/admin/orders/${order.id}/transfer/guest`,
+          { email },
+          adminHeaders
+        )
+
+        // A guest customer is created for the email
+        const [guest] = (
+          await api.get(`/admin/customers?email=${email}`, adminHeaders)
+        ).data.customers
+
+        expect(guest).toEqual(
+          expect.objectContaining({ email, has_account: false })
+        )
+
+        const orderResult = (
+          await api.get(
+            `/admin/orders/${order.id}?fields=+customer_id,+email`,
+            adminHeaders
+          )
+        ).data.order
+
+        // Applied immediately (no accept step): order now belongs to the new
+        // guest and the email is updated to the guest's email
+        expect(orderResult.email).toEqual(email)
+        expect(orderResult.customer_id).toEqual(guest.id)
+        expect(orderResult.customer_id).not.toEqual(order.customer_id)
+
+        const orderChangesResult = (
+          await api.get(`/admin/orders/${order.id}/changes`, adminHeaders)
+        ).data.order_changes
+
+        expect(orderChangesResult.length).toEqual(1)
+        expect(orderChangesResult[0]).toEqual(
+          expect.objectContaining({
+            change_type: "transfer",
+            status: "confirmed",
+            created_by: user.id,
+            confirmed_by: user.id,
+            actions: expect.arrayContaining([
+              expect.objectContaining({
+                action: "TRANSFER_CUSTOMER",
+                reference: "customer",
+                reference_id: guest.id,
+                details: expect.objectContaining({
+                  original_email: "tony@stark-industries.com",
+                  new_email: email,
+                }),
+              }),
+            ]),
+          })
+        )
+      })
+
+      it("should transfer an order to an existing guest customer", async () => {
+        const { order } = await createOrderSeeder({ api, container })
+
+        const existingGuest = (
+          await api.post(
+            "/admin/customers",
+            { first_name: "guest", email: "existing-guest@medusajs.com" },
+            adminHeaders
+          )
+        ).data.customer
+
+        expect(existingGuest.has_account).toBe(false)
+
+        await api.post(
+          `/admin/orders/${order.id}/transfer/guest`,
+          { email: existingGuest.email },
+          adminHeaders
+        )
+
+        const orderResult = (
+          await api.get(
+            `/admin/orders/${order.id}?fields=+customer_id,+email`,
+            adminHeaders
+          )
+        ).data.order
+
+        expect(orderResult.customer_id).toEqual(existingGuest.id)
+        expect(orderResult.email).toEqual(existingGuest.email)
+
+        const orderChangesResult = (
+          await api.get(`/admin/orders/${order.id}/changes`, adminHeaders)
+        ).data.order_changes
+
+        expect(orderChangesResult.length).toEqual(1)
+        expect(orderChangesResult[0]).toEqual(
+          expect.objectContaining({
+            change_type: "transfer",
+            status: "confirmed",
+            created_by: user.id,
+            confirmed_by: user.id,
+            actions: expect.arrayContaining([
+              expect.objectContaining({
+                action: "TRANSFER_CUSTOMER",
+                reference: "customer",
+                reference_id: existingGuest.id,
+                details: expect.objectContaining({
+                  original_email: "tony@stark-industries.com",
+                  new_email: existingGuest.email,
+                }),
+              }),
+            ]),
+          })
+        )
+      })
+
+      it("should fail to transfer an order to a registered customer", async () => {
+        const { order } = await createOrderSeeder({ api, container })
+
+        const registeredCustomerToken = (
+          await api.post("/auth/customer/emailpass/register", {
+            email: "registered@email.com",
+            password: "password",
+          })
+        ).data.token
+
+        const publishableKey = await generatePublishableKey(container)
+        const storeHeaders = generateStoreHeaders({ publishableKey })
+
+        const registeredCustomer = (
+          await api.post(
+            "/store/customers",
+            { email: "registered@email.com" },
+            {
+              headers: {
+                Authorization: `Bearer ${registeredCustomerToken}`,
+                ...storeHeaders.headers,
+              },
+            }
+          )
+        ).data.customer
+
+        const err = await api
+          .post(
+            `/admin/orders/${order.id}/transfer/guest`,
+            { email: registeredCustomer.email },
+            adminHeaders
+          )
+          .catch((e: any) => e)
+
+        expect(err.response.status).toBe(400)
+        expect(err.response.data).toEqual(
+          expect.objectContaining({
+            type: "invalid_data",
+            message: `Cannot transfer order: ${order.id} to registered customer account: ${registeredCustomer.email}. Only guest customers are allowed.`,
+          })
+        )
+      })
+
+      it("should fail to transfer an order to the customer it already belongs to", async () => {
+        const { order } = await createOrderSeeder({ api, container })
+
+        const currentOrder = (
+          await api.get(
+            `/admin/orders/${order.id}?fields=+customer_id,+email`,
+            adminHeaders
+          )
+        ).data.order
+
+        const err = await api
+          .post(
+            `/admin/orders/${order.id}/transfer/guest`,
+            { email: currentOrder.email },
+            adminHeaders
+          )
+          .catch((e: any) => e)
+
+        expect(err.response.status).toBe(400)
+        expect(err.response.data).toEqual(
+          expect.objectContaining({
+            type: "invalid_data",
+            message: `Order: ${order.id} already belongs to customer: ${currentOrder.customer_id}`,
+          })
+        )
+      })
+
+      it("should fail to transfer an order with an invalid email", async () => {
+        const { order } = await createOrderSeeder({ api, container })
+
+        const err = await api
+          .post(
+            `/admin/orders/${order.id}/transfer/guest`,
+            { email: "not-an-email" },
+            adminHeaders
+          )
+          .catch((e: any) => e)
+
+        expect(err.response.status).toBe(400)
       })
     })
   },

@@ -34,8 +34,12 @@ At the top of the order details page, you can see the payment status of the orde
 <Table>
   <Table.Header>
     <Table.Row>
-      <Table.HeaderCell>Status</Table.HeaderCell>
-      <Table.HeaderCell>Description</Table.HeaderCell>
+      <Table.HeaderCell>
+        Status
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Description
+      </Table.HeaderCell>
     </Table.Row>
   </Table.Header>
   <Table.Body>
@@ -70,6 +74,8 @@ At the top of the order details page, you can see the payment status of the orde
 
 ## Capture Payment
 
+<PermissionsBadge permissions={["capture:create", "order:update", "payment:read"]} />
+
 Unless the payment provider that the customer chose is configured to automatically capture an order's payment, you need to manually capture the payment.
 
 Capturing an order's payment triggers its processing with the chosen payment provider, such as Stripe.
@@ -92,6 +98,8 @@ To capture an order’s payment:
 ---
 
 ## Refund Payment
+
+<PermissionsBadge permissions={["refund:create", "order:update", "payment:read"]} />
 
 You can refund a payment either partially or in full. This can be done for various reasons, such as when a customer returns an item or if there was an error in the order.
 
@@ -116,9 +124,14 @@ To refund an order's captured payment:
 3. Click on the <InlineIcon Icon={EllipsisHorizontal} alt="three-dots" /> icon at the end of the payment to refund.
 4. Choose "Refund" from the dropdown.
 5. In the side window that opens, fill out the following fields:
+    - **Settlement type:** If you have the [Loyalty Plugin](!resources!/commerce-modules/loyalty#1-install-the-loyalty-plugin) installed, you can choose how to refund the payment:
+        - **Payment method:** Refund the payment using the same payment method the customer used for the order. This is the default option.
+        - **Store credit:** Refund the payment to the customer's [store credit account](../../loyalty/store-credits/page.mdx). The customer can then use the store credit balance for future purchases. You can only choose this option if the customer is a registered customer.
     - **Amount**: Enter the amount to refund.
     - **Refund Reason**: Select a reason for the refund from the dropdown. You can [manage refund reasons in the settings](../../settings/refund-reasons/page.mdx).
+        - This field doesn't show if you selected to refund to store credit.
     - **Note**: Enter a note that the customer can see in the notification they receive.
+        - This field doesn't show if you selected to refund to store credit.
 6. Once you’re done, click on the Save button.
 
 Once the payment is refunded, the customer will receive a notification about the refund and you can view the refund as part of the order's activity.
@@ -142,6 +155,8 @@ You can handle it by either:
 
 ### Mark Outstanding Amount as Paid
 
+<PermissionsBadge permissions={["payment_collection:update", "order:update"]} />
+
 By marking a positive outstanding amount as paid, you're capturing the payment without processing it through the associated payment provider. Instead, you handle capturing the payment outside of Medusa.
 
 To mark a positive outstanding amount as paid:
@@ -151,6 +166,8 @@ To mark a positive outstanding amount as paid:
 3. Confirm marking the payment as paid by clicking the "Confirm" button in the pop-up.
 
 ### Copy Payment Link for Additional Payment
+
+<PermissionsBadge permissions={["payment_collection:update", "order:update"]} />
 
 Another way you can handle a positive outstanding amount is by sharing a payment link with the customer to authorize the payment. The payment link is a link in the storefront that the customer can use to pay for the additional amount.
 

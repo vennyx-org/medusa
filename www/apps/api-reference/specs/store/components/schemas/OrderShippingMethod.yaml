@@ -7,6 +7,7 @@ required:
   - name
   - amount
   - is_tax_inclusive
+  - is_custom_amount
   - created_at
   - updated_at
   - original_total
@@ -52,8 +53,7 @@ properties:
       The shipping method's data, useful for the fulfillment provider handling
       the fulfillment.
     externalDocs:
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/order/concepts#data-property
+      url: https://docs.medusajs.com/resources/commerce-modules/order/concepts#data-property
   metadata:
     type: object
     description: The shipping method's metadata, can hold custom key-value pairs.
@@ -112,3 +112,7 @@ properties:
     type: number
     title: discount_tax_total
     description: The total taxes of the discount amount.
+  is_custom_amount:
+    type: boolean
+    title: is_custom_amount
+    description: Whether the shipping method price is custom amount or not.

@@ -25,6 +25,7 @@ import { createOrderChangeActionsWorkflow } from "../create-order-change-actions
 import { computeAdjustmentsForPreviewWorkflow } from "../compute-adjustments-for-preview"
 import { updateOrderTaxLinesWorkflow } from "../update-tax-lines"
 import { refreshExchangeShippingWorkflow } from "./refresh-shipping"
+import { fieldsToComputeAdjustmentsForPreview } from "../order-edit/utils/fields"
 
 /**
  * The data to validate that new or outbound items can be added to an exchange.
@@ -84,10 +85,16 @@ export const exchangeAddNewItemValidationStep = createStep(
   }
 )
 
+const orderFields = [
+  ...fieldsToComputeAdjustmentsForPreview,
+  "status",
+  "canceled_at",
+]
+
 export const orderExchangeAddNewItemWorkflowId = "exchange-add-new-item"
 /**
  * This workflow adds new or outbound items to an exchange. It's used by the
- * [Add Outbound Items Admin API Route](https://docs.medusajs.com/api/admin#exchanges_postexchangesidoutbounditems).
+ * [Add Outbound Items Admin API Route](https://docs.medusajs.com/api/admin/exchanges/add-outbound-items-to-exchange).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to add new or outbound items
  * to an exchange in your custom flow.
@@ -125,14 +132,7 @@ export const orderExchangeAddNewItemWorkflow = createWorkflow(
 
     const order: OrderDTO = useRemoteQueryStep({
       entry_point: "orders",
-      fields: [
-        "id",
-        "status",
-        "canceled_at",
-        "currency_code",
-        "items.*",
-        "promotions.*",
-      ],
+      fields: orderFields,
       variables: { id: orderExchange.order_id },
       list: false,
       throw_if_key_not_found: true,

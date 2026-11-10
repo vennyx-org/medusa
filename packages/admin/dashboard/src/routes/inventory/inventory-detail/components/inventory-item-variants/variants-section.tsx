@@ -32,20 +32,20 @@ export const InventoryItemVariantsSection = ({
             : null
 
           const Inner = (
-            <div className="shadow-elevation-card-rest bg-ui-bg-component rounded-md px-4 py-2 transition-colors">
+            <div className="rounded-md bg-ui-bg-component px-4 py-2 shadow-elevation-card-rest transition-colors">
               <div className="flex items-center gap-3">
-                <div className="shadow-elevation-card-rest rounded-md">
+                <div className="rounded-md shadow-elevation-card-rest">
                   <Thumbnail src={variant.product?.thumbnail} />
                 </div>
                 <div className="flex flex-1 flex-col">
-                  <span className="text-ui-fg-base font-medium">
+                  <span className="font-medium text-ui-fg-base">
                     {variant.title}
                   </span>
                   <span className="text-ui-fg-subtle">
                     {variant.options.map((o) => o.value).join(" ⋅ ")}
                   </span>
                 </div>
-                <div className="size-7 flex items-center justify-center">
+                <div className="flex size-7 items-center justify-center">
                   <TriangleRightMini className="text-ui-fg-muted rtl:rotate-180" />
                 </div>
               </div>
@@ -60,7 +60,7 @@ export const InventoryItemVariantsSection = ({
             <Link
               to={link}
               key={variant.id}
-              className="outline-none focus-within:shadow-borders-interactive-with-focus rounded-md [&:hover>div]:bg-ui-bg-component-hover"
+              className="rounded-md outline-none focus-within:shadow-borders-interactive-with-focus [&:hover>div]:bg-ui-bg-component-hover"
             >
               {Inner}
             </Link>

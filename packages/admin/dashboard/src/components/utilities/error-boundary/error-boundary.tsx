@@ -1,9 +1,12 @@
-import { ExclamationCircle } from "@medusajs/icons"
-import { Text } from "@medusajs/ui"
+import { ExclamationCircle, SquareTwoStack } from "@medusajs/icons"
+import { toast, Text, IconButton, Tooltip } from "@medusajs/ui"
+import copy from "copy-to-clipboard"
 import { useTranslation } from "react-i18next"
 import { Navigate, useLocation, useRouteError } from "react-router-dom"
 
+import { isPermissionError } from "../../../lib/permissions"
 import { isFetchError } from "../../../lib/is-fetch-error"
+import { AccessDenied } from "../../authentication/route-permission-guard"
 
 export const ErrorBoundary = () => {
   const error = useRouteError()
@@ -12,13 +15,37 @@ export const ErrorBoundary = () => {
 
   let code: number | null = null
 
+  // A guarded loader throws this before fetching when the user lacks the
+  // required permission, carrying the permission so we can name it.
+  if (isPermissionError(error)) {
+    return (
+      <AccessDenied
+        requirement={{
+          permissions: error.permissions,
+          requireAll: error.requireAll,
+        }}
+      />
+    )
+  }
+
   if (isFetchError(error)) {
     if (error.status === 401) {
       return <Navigate to="/login" state={{ from: location }} replace />
     }
 
+    // Fallback for a 403 that escaped a guarded loader (e.g. a sub-resource
+    // fetch); the required permission isn't known here.
+    if (error.status === 403) {
+      return <AccessDenied />
+    }
+
     code = error.status ?? null
   }
+
+  // In development mode, show detailed error information
+  const isDevelopment = process.env.NODE_ENV === "development"
+  const errorMessage = error instanceof Error ? error.message : String(error)
+  const errorStack = error instanceof Error ? error.stack : undefined
 
   /**
    * Log error in development mode.
@@ -28,6 +55,28 @@ export const ErrorBoundary = () => {
    */
   if (process.env.NODE_ENV === "development") {
     console.error(error)
+    const fileDetails = errorStack?.split("\n")[1]?.trim()
+    const filename =
+      fileDetails?.match(/([^/\\?]+)(?:\?[^:]*)?:\d+:\d+\)/)?.[1] || "unknown"
+    const lineno =
+      fileDetails?.match(/(?:\?[^:]*)?:(\d+):\d+\)/)?.[1] || "unknown"
+    const colno =
+      fileDetails?.match(/(?:\?[^:]*)?:\d+:(\d+)\)/)?.[1] || "unknown"
+    window.parent.postMessage(
+      {
+        data: {
+          type: "RUNTIME_ERROR",
+          level: "error",
+          message: errorMessage,
+          stack: errorStack,
+          logged_at: new Date().toISOString(),
+          filename,
+          lineno,
+          colno,
+        },
+      },
+      "*"
+    )
   }
 
   let title: string
@@ -52,10 +101,23 @@ export const ErrorBoundary = () => {
       break
   }
 
+  const handleCopyError = async () => {
+    const errorText = `Error: ${errorMessage}\n\n${
+      errorStack || "No stack trace available"
+    }`
+    const success = await copy(errorText)
+
+    if (success) {
+      toast.success("Error details copied to clipboard")
+    } else {
+      toast.error("Failed to copy error details")
+    }
+  }
+
   return (
     <div className="flex size-full min-h-[calc(100vh-57px-24px)] items-center justify-center">
       <div className="flex flex-col gap-y-6">
-        <div className="text-ui-fg-subtle flex flex-col items-center gap-y-3">
+        <div className="flex flex-col items-center gap-y-3 text-ui-fg-subtle">
           <ExclamationCircle />
           <div className="flex flex-col items-center justify-center gap-y-1">
             <Text size="small" leading="compact" weight="plus">
@@ -63,12 +125,50 @@ export const ErrorBoundary = () => {
             </Text>
             <Text
               size="small"
-              className="text-ui-fg-muted text-balance text-center"
+              className="text-balance text-center text-ui-fg-muted"
             >
               {message}
             </Text>
           </div>
         </div>
+        {isDevelopment && errorMessage && (
+          <div className="border-ui-border-subtle max-h-[400px] max-w-3xl overflow-scroll rounded-lg border bg-ui-bg-disabled p-4">
+            <div className="flex flex-col gap-y-4">
+              <div className="flex items-center justify-between">
+                <Text size="small" weight="plus" className="text-ui-fg-base">
+                  Error Details (Development Mode)
+                </Text>
+                <Tooltip content="Copy error details">
+                  <IconButton onClick={handleCopyError} variant="transparent">
+                    <SquareTwoStack className="text-ui-fg-muted" />
+                  </IconButton>
+                </Tooltip>
+              </div>
+              <div>
+                <Text
+                  size="xsmall"
+                  className="break-words font-mono text-ui-fg-subtle"
+                >
+                  {errorMessage}
+                </Text>
+              </div>
+              {errorStack && (
+                <div>
+                  <Text
+                    size="small"
+                    weight="plus"
+                    className="mb-2 text-ui-fg-base"
+                  >
+                    Stack Trace
+                  </Text>
+                  <pre className="overflow-auto whitespace-pre-wrap break-words text-xs text-ui-fg-subtle">
+                    {errorStack}
+                  </pre>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

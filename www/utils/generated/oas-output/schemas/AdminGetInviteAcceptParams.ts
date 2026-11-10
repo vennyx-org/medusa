@@ -1,0 +1,22 @@
+/**
+ * @schema AdminGetInviteAcceptParams
+ * type: object
+ * description: The details of the user to be created.
+ * properties:
+ *   email:
+ *     type: string
+ *     title: email
+ *     description: The invite's email.
+ *     format: email
+ *   first_name:
+ *     type: string
+ *     title: first_name
+ *     description: The invited user's first name.
+ *   last_name:
+ *     type: string
+ *     title: last_name
+ *     description: The invited user's last name.
+ * x-schemaName: AdminGetInviteAcceptParams
+ * 
+*/
+

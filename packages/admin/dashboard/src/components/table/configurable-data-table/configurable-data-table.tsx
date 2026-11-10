@@ -1,26 +1,30 @@
-import { useState, ReactNode } from "react"
-import { Container, Button } from "@medusajs/ui"
+import { useMemo, useState } from "react"
+import { HttpTypes } from "@medusajs/types"
+import { Container, Button, DataTableRowSelectionState } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
 import { DataTable } from "../../data-table"
 import { SaveViewDialog } from "../save-view-dialog"
 import { SaveViewDropdown } from "./save-view-dropdown"
 import { useTableConfiguration } from "../../../hooks/table/use-table-configuration"
 import { useConfigurableTableColumns } from "../../../hooks/table/columns/use-configurable-table-columns"
-import { getEntityAdapter } from "../../../lib/table/entity-adapters"
-import { TableAdapter } from "../../../lib/table/table-adapters"
+import { expandDottedKeys, parseFilterParam } from "../../../hooks/table/query"
+import {
+  createActionsColumn,
+  createSelectColumn,
+  TableAdapter,
+} from "../../../lib/table/table-adapters"
 
 type DataTableActionProps = {
   label: string
   disabled?: boolean
 } & (
-    | {
+  | {
       to: string
     }
-    | {
+  | {
       onClick: () => void
     }
-  )
-
+)
 
 export interface ConfigurableDataTableProps<TData> {
   adapter: TableAdapter<TData>
@@ -44,12 +48,28 @@ export function ConfigurableDataTable<TData>({
   const { t } = useTranslation()
   const [saveDialogOpen, setSaveDialogOpen] = useState(false)
   const [editingView, setEditingView] = useState<any>(null)
+  const [rowSelection, setRowSelection] = useState<DataTableRowSelectionState>(
+    {}
+  )
 
   const entity = adapter.entity
+  const viewConfigKey = adapter.viewConfigurationKey ?? adapter.entity
   const entityName = adapter.entityName
-  const filters = adapter.filters || []
   const pageSize = pageSizeProp || adapter.pageSize || 20
   const queryPrefix = queryPrefixProp || adapter.queryPrefix || ""
+
+  // Inject virtual columns (selection + actions) as API-shaped columns so they
+  // flow through column ordering/visibility state. Their default_order keeps
+  // selection first and actions last.
+  const extraColumns = useMemo(() => {
+    const cols = [
+      adapter.enableRowSelection ? createSelectColumn() : null,
+      adapter.renderRowActions
+        ? createActionsColumn(t("fields.actions"))
+        : null,
+    ].filter((c): c is HttpTypes.AdminColumn => c !== null)
+    return cols.length ? cols : undefined
+  }, [adapter, t])
 
   const {
     activeView,
@@ -65,30 +85,42 @@ export function ConfigurableDataTable<TData>({
     hasConfigurationChanged,
     handleClearConfiguration,
     isLoadingColumns,
+    isLoadingFilterOptions,
     apiColumns,
+    filters,
     requiredFields,
     queryParams,
   } = useTableConfiguration({
     entity,
     pageSize,
     queryPrefix,
-    filters,
+    transformColumns: adapter.transformColumns,
+    extraColumns,
+    defaultFilters: adapter.defaultFilters,
+    viewConfigurationKey: viewConfigKey,
   })
 
-  const parsedQueryParams = { ...queryParams }
-  filters.forEach(filter => {
+  const parsedQueryParams: Record<string, any> = { ...queryParams }
+  filters.forEach((filter) => {
     const filterKey = filter.id
-    if (parsedQueryParams[filterKey] !== undefined) {
-      try {
-        parsedQueryParams[filterKey] = JSON.parse(parsedQueryParams[filterKey])
-      } catch {
-        // If parsing fails, keep the original value
-      }
+    if (!filterKey || parsedQueryParams[filterKey] === undefined) {
+      return
+    }
+    const value = parseFilterParam(parsedQueryParams[filterKey])
+
+    const paramKey = adapter.filterParamMap?.[filterKey] ?? filterKey
+    if (paramKey !== filterKey) {
+      delete parsedQueryParams[filterKey]
+    }
+    if (value === undefined) {
+      delete parsedQueryParams[paramKey]
+    } else {
+      parsedQueryParams[paramKey] = value
     }
   })
 
   const searchParams = {
-    ...parsedQueryParams,
+    ...expandDottedKeys(parsedQueryParams),
     fields: requiredFields,
     limit: pageSize,
     offset: parsedQueryParams.offset ? Number(parsedQueryParams.offset) : 0,
@@ -96,11 +128,11 @@ export function ConfigurableDataTable<TData>({
 
   const fetchResult = adapter.useData(requiredFields, searchParams)
 
-  const columnAdapter = adapter.columnAdapter || getEntityAdapter(entity)
-  const generatedColumns = useConfigurableTableColumns(entity, apiColumns || [], columnAdapter)
-  const columns = (adapter.getColumns && apiColumns)
-    ? adapter.getColumns(apiColumns)
-    : generatedColumns
+  const generatedColumns = useConfigurableTableColumns(
+    apiColumns || [],
+    adapter
+  )
+  const columns = generatedColumns
 
   if (fetchResult.isError) {
     throw fetchResult.error
@@ -117,7 +149,7 @@ export function ConfigurableDataTable<TData>({
             filters: currentConfiguration.filters || {},
             sorting: currentConfiguration.sorting || null,
             search: currentConfiguration.search || "",
-          }
+          },
         })
       } else {
         await createView.mutateAsync({
@@ -130,7 +162,7 @@ export function ConfigurableDataTable<TData>({
             filters: currentConfiguration.filters || {},
             sorting: currentConfiguration.sorting || null,
             search: currentConfiguration.search || "",
-          }
+          },
         })
       }
     } catch (_) {
@@ -139,7 +171,9 @@ export function ConfigurableDataTable<TData>({
   }
 
   const handleUpdateExisting = async () => {
-    if (!activeView) return
+    if (!activeView) {
+      return
+    }
 
     try {
       await updateView.mutateAsync({
@@ -150,7 +184,7 @@ export function ConfigurableDataTable<TData>({
           filters: currentConfiguration.filters || {},
           sorting: currentConfiguration.sorting || null,
           search: currentConfiguration.search || "",
-        }
+        },
       })
     } catch (_) {
       // Error is handled by the hook
@@ -195,9 +229,13 @@ export function ConfigurableDataTable<TData>({
         enablePagination
         enableSearch
         pageSize={pageSize}
-        isLoading={fetchResult.isLoading || isLoadingColumns}
+        isLoading={
+          fetchResult.isLoading || isLoadingColumns || isLoadingFilterOptions
+        }
         layout={layout}
-        heading={heading || entityName || (entity ? t(`${entity}.domain` as any) : "")}
+        heading={
+          heading || entityName || (entity ? t(`${entity}.domain` as any) : "")
+        }
         subHeading={subHeading}
         enableColumnVisibility={isViewConfigEnabled}
         initialColumnVisibility={visibleColumns}
@@ -205,23 +243,37 @@ export function ConfigurableDataTable<TData>({
         columnOrder={columnOrder}
         onColumnOrderChange={setColumnOrder}
         enableViewSelector={isViewConfigEnabled}
-        entity={entity}
+        entity={viewConfigKey}
         currentColumns={currentColumns}
         filterBarContent={filterBarContent}
         rowHref={adapter.getRowHref as ((row: any) => string) | undefined}
-        emptyState={adapter.emptyState || {
-          empty: {
-            heading: t(`${entity}.list.noRecordsMessage` as any),
+        emptyState={
+          adapter.emptyState || {
+            empty: {
+              heading: t(
+                `${entity}.list.noRecordsMessage` as any,
+                "There are no records to show"
+              ),
+            },
           }
-        }}
+        }
         prefix={queryPrefix}
         actions={actions}
-        enableFilterMenu={false}
+        commands={adapter.commands}
+        rowSelection={
+          adapter.enableRowSelection
+            ? {
+                state: rowSelection,
+                onRowSelectionChange: setRowSelection,
+                enableRowSelection: true,
+              }
+            : undefined
+        }
       />
 
       {saveDialogOpen && (
         <SaveViewDialog
-          entity={entity}
+          entity={viewConfigKey}
           currentColumns={currentColumns}
           currentConfiguration={currentConfiguration}
           editingView={editingView}

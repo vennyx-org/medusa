@@ -25,6 +25,7 @@ export const Modules = {
   FILE: "file",
   NOTIFICATION: "notification",
   INDEX: "index",
+  SEARCH: "search",
   LOCKING: "locking",
   SETTINGS: "settings",
   CACHING: "caching",
@@ -59,10 +60,11 @@ export const MODULE_PACKAGE_NAMES = {
   [Modules.FILE]: "@medusajs/medusa/file",
   [Modules.NOTIFICATION]: "@medusajs/medusa/notification",
   [Modules.INDEX]: "@medusajs/medusa/index-module",
+  [Modules.SEARCH]: "@medusajs/medusa/search",
   [Modules.LOCKING]: "@medusajs/medusa/locking",
   [Modules.SETTINGS]: "@medusajs/medusa/settings",
-  [Modules.CACHING]: "@medusajs/caching",
-  [Modules.TRANSLATION]: "@medusajs/translation",
+  [Modules.CACHING]: "@medusajs/medusa/caching",
+  [Modules.TRANSLATION]: "@medusajs/medusa/translation",
   [Modules.RBAC]: "@medusajs/medusa/rbac",
 }
 

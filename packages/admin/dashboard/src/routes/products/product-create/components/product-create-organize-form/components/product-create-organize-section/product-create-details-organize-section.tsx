@@ -12,6 +12,10 @@ import { useDocumentDirection } from "../../../../../../../hooks/use-document-di
 import { sdk } from "../../../../../../../lib/client"
 import { CategoryCombobox } from "../../../../../common/components/category-combobox"
 import { ProductCreateSchemaType } from "../../../../types"
+import { collectionsQueryKeys } from "../../../../../../../hooks/api/collections"
+import { productTypesQueryKeys } from "../../../../../../../hooks/api/product-types"
+import { productTagsQueryKeys } from "../../../../../../../hooks/api/tags"
+import { shippingProfileQueryKeys } from "../../../../../../../hooks/api/shipping-profiles"
 
 type ProductCreateOrganizationSectionProps = {
   form: UseFormReturn<ProductCreateSchemaType>
@@ -24,7 +28,7 @@ export const ProductCreateOrganizationSection = ({
   const direction = useDocumentDirection()
 
   const collections = useComboboxData({
-    queryKey: ["product_collections"],
+    queryKey: collectionsQueryKeys.lists(),
     queryFn: (params) => sdk.admin.productCollection.list(params),
     getOptions: (data) =>
       data.collections.map((collection) => ({
@@ -34,7 +38,7 @@ export const ProductCreateOrganizationSection = ({
   })
 
   const types = useComboboxData({
-    queryKey: ["product_types"],
+    queryKey: productTypesQueryKeys.lists(),
     queryFn: (params) => sdk.admin.productType.list(params),
     getOptions: (data) =>
       data.product_types.map((type) => ({
@@ -44,7 +48,7 @@ export const ProductCreateOrganizationSection = ({
   })
 
   const tags = useComboboxData({
-    queryKey: ["product_tags"],
+    queryKey: productTagsQueryKeys.lists(),
     queryFn: (params) => sdk.admin.productTag.list(params),
     getOptions: (data) =>
       data.product_tags.map((tag) => ({
@@ -54,7 +58,7 @@ export const ProductCreateOrganizationSection = ({
   })
 
   const shippingProfiles = useComboboxData({
-    queryKey: ["shipping_profiles"],
+    queryKey: shippingProfileQueryKeys.lists(),
     queryFn: (params) => sdk.admin.shippingProfile.list(params),
     getOptions: (data) =>
       data.shipping_profiles.map((shippingProfile) => ({
@@ -131,10 +135,13 @@ export const ProductCreateOrganizationSection = ({
                 <Form.Control>
                   <Combobox
                     {...field}
+                    value={field.value || ""}
+                    onChange={(value) => field.onChange(value || "")}
                     options={types.options}
                     searchValue={types.searchValue}
                     onSearchValueChange={types.onSearchValueChange}
                     fetchNextPage={types.fetchNextPage}
+                    allowClear
                   />
                 </Form.Control>
                 <Form.ErrorMessage />
@@ -154,10 +161,13 @@ export const ProductCreateOrganizationSection = ({
                 <Form.Control>
                   <Combobox
                     {...field}
+                    value={field.value || ""}
+                    onChange={(value) => field.onChange(value || "")}
                     options={collections.options}
                     searchValue={collections.searchValue}
                     onSearchValueChange={collections.onSearchValueChange}
                     fetchNextPage={collections.fetchNextPage}
+                    allowClear
                   />
                 </Form.Control>
                 <Form.ErrorMessage />

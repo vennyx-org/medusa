@@ -36,7 +36,7 @@ export interface RemoveDraftOrderShippingMethodWorkflowInput {
 
 /**
  * This workflow removes an existing shipping method from a draft order edit. It's used by the
- * [Remove Shipping Method from Draft Order Edit Admin API Route](https://docs.medusajs.com/api/admin#draft-orders_deletedraftordersideditshippingmethodsmethodmethod_id).
+ * [Remove Shipping Method from Draft Order Edit Admin API Route](https://docs.medusajs.com/api/admin/draft-orders/remove-shipping-method).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to wrap custom logic around
  * removing a shipping method from a draft order edit.
@@ -89,23 +89,6 @@ export const removeDraftOrderShippingMethodWorkflow = createWorkflow(
 
     validateDraftOrderChangeStep({ order, orderChange })
 
-    const appliedPromoCodes: string[] = transform(
-      order,
-      (order) => order.promotions?.map((promotion) => promotion.code) ?? []
-    )
-
-    // If any the order has any promo codes, then we need to refresh the adjustments.
-    when(
-      appliedPromoCodes,
-      (appliedPromoCodes) => appliedPromoCodes.length > 0
-    ).then(() => {
-      computeDraftOrderAdjustmentsWorkflow.runAsStep({
-        input: {
-          order_id: input.order_id,
-        },
-      })
-    })
-
     const orderChangeActionInput = transform(
       {
         input,
@@ -127,6 +110,23 @@ export const removeDraftOrderShippingMethodWorkflow = createWorkflow(
 
     createOrderChangeActionsWorkflow.runAsStep({
       input: orderChangeActionInput,
+    })
+
+    const appliedPromoCodes: string[] = transform(
+      order,
+      (order) => order.promotions?.map((promotion) => promotion.code) ?? []
+    )
+
+    // If any the order has any promo codes, then we need to refresh the adjustments.
+    when(
+      appliedPromoCodes,
+      (appliedPromoCodes) => appliedPromoCodes.length > 0
+    ).then(() => {
+      computeDraftOrderAdjustmentsWorkflow.runAsStep({
+        input: {
+          order_id: input.order_id,
+        },
+      })
     })
 
     releaseLockStep({

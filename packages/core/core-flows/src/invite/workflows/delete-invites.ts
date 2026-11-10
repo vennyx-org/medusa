@@ -3,15 +3,20 @@ import { InviteWorkflowEvents } from "@medusajs/framework/utils"
 import {
   WorkflowData,
   createWorkflow,
+  parallelize,
   transform,
 } from "@medusajs/framework/workflows-sdk"
 import { emitEventStep } from "../../common/steps/emit-event"
+import {
+  deleteRoleAssignmentsStep,
+  getRoleAssignmentsStep,
+} from "../../rbac/steps"
 import { deleteInvitesStep } from "../steps"
 
 export const deleteInvitesWorkflowId = "delete-invites-workflow"
 /**
  * This workflow deletes one or more user invites. It's used by the
- * [Delete Invites Admin API Route](https://docs.medusajs.com/api/admin#invites_deleteinvitesid).
+ * [Delete Invites Admin API Route](https://docs.medusajs.com/api/admin/invites/delete-invite).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to
  * delete invites within your custom flows.
@@ -41,9 +46,23 @@ export const deleteInvitesWorkflow = createWorkflow(
       })
     })
 
-    emitEventStep({
-      eventName: InviteWorkflowEvents.DELETED,
-      data: invitesIdEvents,
+    // Clean up any RBAC role assignments for the deleted invites.
+    const roleAssignments = getRoleAssignmentsStep({
+      reference: "invite",
+      reference_id: input.ids,
     })
+    const roleAssignmentIdsToDelete = transform(
+      { roleAssignments },
+      ({ roleAssignments }) =>
+        roleAssignments.map((assignment) => assignment.id)
+    )
+
+    parallelize(
+      deleteRoleAssignmentsStep({ id: roleAssignmentIdsToDelete }),
+      emitEventStep({
+        eventName: InviteWorkflowEvents.DELETED,
+        data: invitesIdEvents,
+      })
+    )
   }
 )

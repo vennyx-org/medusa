@@ -23,12 +23,12 @@ const defaultRules = {
 const defaultPriceListPrices: PricingTypes.CreatePriceListPriceDTO[] = [
   {
     amount: 232,
-    currency_code: "PLN",
+    currency_code: "pln",
     price_set_id: "price-set-PLN",
   },
   {
     amount: 455,
-    currency_code: "EUR",
+    currency_code: "eur",
     price_set_id: "price-set-EUR",
   },
 ]
@@ -70,7 +70,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               id: "price-PLN",
               title: "price PLN",
               price_set_id: "price-set-PLN",
-              currency_code: "PLN",
+              currency_code: "pln",
               amount: 1000,
               min_quantity: 1,
               max_quantity: 10,
@@ -80,7 +80,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               id: "price-PLN-min-quantity-only",
               title: "price PLN - min quantity only",
               price_set_id: "price-set-PLN",
-              currency_code: "PLN",
+              currency_code: "pln",
               amount: 1250,
               min_quantity: 20,
               max_quantity: null,
@@ -90,7 +90,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               id: "price-ETH",
               title: "price ETH",
               price_set_id: "price-set-ETH",
-              currency_code: "ETH",
+              currency_code: "eth",
               amount: {
                 value: "12345678988754.00000010000000085",
               },
@@ -102,7 +102,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               id: "price-company_id-EUR",
               title: "price EUR - company_id",
               price_set_id: "price-set-EUR",
-              currency_code: "EUR",
+              currency_code: "eur",
               amount: 500,
               min_quantity: 1,
               max_quantity: 10,
@@ -112,7 +112,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               id: "price-company_id-PLN",
               title: "price PLN - company_id",
               price_set_id: "price-set-PLN",
-              currency_code: "PLN",
+              currency_code: "pln",
               amount: 400,
               min_quantity: 1,
               max_quantity: 5,
@@ -122,7 +122,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               id: "price-region_id-PLN",
               title: "price PLN - region_id",
               price_set_id: "price-set-PLN",
-              currency_code: "PLN",
+              currency_code: "pln",
               amount: 300,
               min_quantity: 1,
               max_quantity: 4,
@@ -132,7 +132,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               id: "price-region_id+company_id-PLN",
               title: "price region_id + company_id",
               price_set_id: "price-set-PLN",
-              currency_code: "PLN",
+              currency_code: "pln",
               amount: 999,
               min_quantity: 1,
               max_quantity: 10,
@@ -142,7 +142,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               id: "price-region_id-PLN-5-qty",
               title: "price PLN - region_id 5 qty",
               price_set_id: "price-set-PLN",
-              currency_code: "PLN",
+              currency_code: "pln",
               amount: 250,
               min_quantity: 4,
               max_quantity: 10,
@@ -152,7 +152,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               id: "price-region_id_company_id-PL-EUR",
               title: "price PLN - region_id PL with EUR currency",
               price_set_id: "price-set-PLN",
-              currency_code: "EUR",
+              currency_code: "eur",
               amount: 200,
               min_quantity: 1,
               max_quantity: 3,
@@ -163,7 +163,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               title:
                 "price PLN - region_id PL with EUR currency for quantity 4",
               price_set_id: "price-set-PLN",
-              currency_code: "EUR",
+              currency_code: "eur",
               amount: 50,
               min_quantity: 4,
               max_quantity: 10,
@@ -174,7 +174,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               title:
                 "price PLN - region_id PL with EUR currency for customer group",
               price_set_id: "price-set-PLN",
-              currency_code: "EUR",
+              currency_code: "eur",
               amount: 100,
               min_quantity: 1,
               max_quantity: 3,
@@ -299,7 +299,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
         it("should successfully calculate prices with complex context", async () => {
           const context = {
             id: "cart_01JRDH08QD8CZ0KJDVE410KM1J",
-            currency_code: "PLN",
+            currency_code: "pln",
             email: "tony@stark-industries.com",
             region_id: "reg_01JRDH08ENY3276P6133BVXGWJ",
             created_at: "2025-04-09T14:59:24.526Z",
@@ -442,7 +442,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 value: "1000",
                 precision: 20,
               },
-              currency_code: "PLN",
+              currency_code: "pln",
               calculated_price: {
                 id: "price-PLN",
                 price_list_id: null,
@@ -463,7 +463,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
 
         it("should successfully calculate prices where only min quantity is set", async () => {
           const context = {
-            currency_code: "PLN",
+            currency_code: "pln",
             region_id: "PL",
             quantity: 255,
           }
@@ -490,7 +490,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 value: "1250",
                 precision: 20,
               },
-              currency_code: "PLN",
+              currency_code: "pln",
               calculated_price: {
                 id: "price-PLN-min-quantity-only",
                 price_list_id: null,
@@ -533,13 +533,13 @@ moduleIntegrationTestRunner<IPricingModuleService>({
           const [newSet] = await service.createPriceSets([{}])
           const calculatePricesResult = await service.calculatePrices(
             { id: [newSet.id] },
-            { context: { currency_code: "PLN" } }
+            { context: { currency_code: "pln" } }
           )
 
           const priceSetsResult = await service.listPriceSets(
             {
               id: [newSet.id],
-              context: { currency_code: "PLN" },
+              context: { currency_code: "pln" },
             },
             { relations: ["calculated_price"] }
           )
@@ -552,7 +552,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
           const priceSetsResult = await service.calculatePrices(
             { id: ["price-set-EUR", "price-set-PLN"] },
             {
-              context: { currency_code: "PLN" },
+              context: { currency_code: "pln" },
             }
           )
 
@@ -573,7 +573,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 value: "1000",
                 precision: 20,
               },
-              currency_code: "PLN",
+              currency_code: "pln",
               calculated_price: {
                 id: "price-PLN",
                 price_list_id: null,
@@ -596,7 +596,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
           const priceSetsResult = await service.calculatePrices(
             { id: ["price-set-ETH"] },
             {
-              context: { currency_code: "ETH" },
+              context: { currency_code: "eth" },
             }
           )
 
@@ -617,7 +617,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 value: "12345678988754.00000010000000085",
                 precision: 20,
               },
-              currency_code: "ETH",
+              currency_code: "eth",
               calculated_price: {
                 id: "price-ETH",
                 price_list_id: null,
@@ -640,7 +640,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
           const priceSetsResult = await service.calculatePrices(
             { id: ["price-set-EUR", "price-set-PLN"] },
             {
-              context: { currency_code: "PLN", region_id: "PL" },
+              context: { currency_code: "pln", region_id: "PL" },
             }
           )
 
@@ -661,7 +661,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 value: "300",
                 precision: 20,
               },
-              currency_code: "PLN",
+              currency_code: "pln",
               calculated_price: {
                 id: "price-region_id-PLN",
                 price_list_id: null,
@@ -684,7 +684,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
           const priceSetsResult = await service.calculatePrices(
             { id: ["price-set-EUR", "price-set-PLN"] },
             {
-              context: { currency_code: "PLN" },
+              context: { currency_code: "pln" },
             }
           )
 
@@ -705,7 +705,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 value: "1000",
                 precision: 20,
               },
-              currency_code: "PLN",
+              currency_code: "pln",
               calculated_price: {
                 id: "price-PLN",
                 price_list_id: null,
@@ -728,7 +728,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
           const priceSetsResult = await service.calculatePrices(
             { id: ["price-set-EUR", "price-set-PLN"] },
             {
-              context: { currency_code: "EUR", does_not_exist: "EUR" },
+              context: { currency_code: "eur", does_not_exist: "EUR" },
             }
           )
 
@@ -739,7 +739,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
           const priceSetsResult = await service.calculatePrices(
             { id: ["price-set-EUR", "price-set-PLN"] },
             {
-              context: { currency_code: "PLN", region_id: "PL" },
+              context: { currency_code: "pln", region_id: "PL" },
             }
           )
 
@@ -760,7 +760,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 value: "300",
                 precision: 20,
               },
-              currency_code: "PLN",
+              currency_code: "pln",
               calculated_price: {
                 id: "price-region_id-PLN",
                 price_list_id: null,
@@ -783,7 +783,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
           const priceSetsResult = await service.calculatePrices(
             { id: ["price-set-EUR", "price-set-PLN"] },
             {
-              context: { currency_code: "PLN", company_id: "doesnotexist" },
+              context: { currency_code: "pln", company_id: "doesnotexist" },
             }
           )
 
@@ -804,7 +804,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 value: "1000",
                 precision: 20,
               },
-              currency_code: "PLN",
+              currency_code: "pln",
               calculated_price: {
                 id: "price-PLN",
                 price_list_id: null,
@@ -827,7 +827,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
           const priceSetsResult = await service.calculatePrices(
             { id: ["price-set-PLN"] },
             {
-              context: { currency_code: "PLN", region_id: "PL", quantity: 5 },
+              context: { currency_code: "pln", region_id: "PL", quantity: 5 },
             }
           )
 
@@ -848,7 +848,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 value: "250",
                 precision: 20,
               },
-              currency_code: "PLN",
+              currency_code: "pln",
               calculated_price: {
                 id: "price-region_id-PLN-5-qty",
                 price_list_id: null,
@@ -872,7 +872,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
             { id: ["price-set-EUR", "price-set-PLN"] },
             {
               context: {
-                currency_code: "PLN",
+                currency_code: "pln",
                 region_id: "PL",
                 customer_group_id: "test-customer-group",
                 company_id: "does-not-exist",
@@ -897,7 +897,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 value: "300",
                 precision: 20,
               },
-              currency_code: "PLN",
+              currency_code: "pln",
               calculated_price: {
                 id: "price-region_id-PLN",
                 price_list_id: null,
@@ -921,7 +921,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
             { id: ["price-set-EUR", "price-set-PLN"] },
             {
               context: {
-                currency_code: "EUR",
+                currency_code: "eur",
                 region_id: "PL",
                 customer_group_id: "test-customer-group",
                 company_id: "medusa-company-id",
@@ -947,7 +947,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 value: "100",
                 precision: 20,
               },
-              currency_code: "EUR",
+              currency_code: "eur",
               calculated_price: {
                 id: "price-region_id_company_id-PL-EUR-customer-group",
                 price_list_id: null,
@@ -971,7 +971,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
             { id: ["price-set-EUR", "price-set-PLN"] },
             {
               context: {
-                currency_code: "PLN",
+                currency_code: "pln",
                 region_id: "PL",
                 customer_group_id: "does-not-exist",
                 company_id: "does-not-exist",
@@ -997,7 +997,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 value: "300",
                 precision: 20,
               },
-              currency_code: "PLN",
+              currency_code: "pln",
               calculated_price: {
                 id: "price-region_id-PLN",
                 price_list_id: null,
@@ -1021,7 +1021,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
             { id: ["price-set-EUR", "price-set-PLN"] },
             {
               context: {
-                currency_code: "PLN",
+                currency_code: "pln",
                 region_id: "does-not-exist",
                 customer_group_id: "does-not-exist",
                 company_id: "does-not-exist",
@@ -1047,7 +1047,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 value: "1000",
                 precision: 20,
               },
-              currency_code: "PLN",
+              currency_code: "pln",
               calculated_price: {
                 id: "price-PLN",
                 price_list_id: null,
@@ -1070,7 +1070,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
           const priceSetsResult = await service.calculatePrices(
             { id: ["price-set-EUR", "price-set-PLN"] },
             {
-              context: { currency_code: "EUR", does_not_exist_2: "Berlin" },
+              context: { currency_code: "eur", does_not_exist_2: "Berlin" },
             }
           )
 
@@ -1082,7 +1082,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
             { id: ["price-set-EUR", "price-set-PLN"] },
             {
               context: {
-                currency_code: "PLN",
+                currency_code: "pln",
                 region_id: "PL",
                 city: "Berlin",
               },
@@ -1106,7 +1106,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 value: "300",
                 precision: 20,
               },
-              currency_code: "PLN",
+              currency_code: "pln",
               calculated_price: {
                 id: "price-region_id-PLN",
                 price_list_id: null,
@@ -1130,7 +1130,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
             prices: [
               {
                 amount: 0,
-                currency_code: "USD",
+                currency_code: "usd",
               },
             ],
           })
@@ -1139,7 +1139,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
             { id: [priceSet.id] },
             {
               context: {
-                currency_code: "USD",
+                currency_code: "usd",
               },
             }
           )
@@ -1161,7 +1161,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 value: "0",
                 precision: 20,
               },
-              currency_code: "USD",
+              currency_code: "usd",
               calculated_price: {
                 id: expect.any(String),
                 price_list_id: null,
@@ -1188,7 +1188,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   region_id: "DE",
                   customer_group_id: "vip-customer-group-id",
                   company_id: "medusa-company-id",
@@ -1213,7 +1213,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "400",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
                 calculated_price: {
                   id: expect.any(String),
                   price_list_id: expect.any(String),
@@ -1263,7 +1263,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   region_id: "DE",
                   customer_group_id: "vip-customer-group-id",
                   company_id: "medusa-company-id",
@@ -1288,7 +1288,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "116",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
                 calculated_price: {
                   id: expect.any(String),
                   price_list_id: expect.any(String),
@@ -1307,6 +1307,220 @@ moduleIntegrationTestRunner<IPricingModuleService>({
             ])
           })
 
+          it("should return the override as original_amount when a sale is stacked on an override for the same customer group", async () => {
+            // Customer's real price comes from an OVERRIDE price list (500),
+            // and a SALE price list (300) is stacked on top for the same group.
+            await createPriceLists(
+              service,
+              {
+                title: "Group Override",
+                description: "test description",
+                type: PriceListType.OVERRIDE,
+                status: PriceListStatus.ACTIVE,
+              },
+              defaultRules,
+              [
+                {
+                  amount: 500,
+                  currency_code: "pln",
+                  price_set_id: "price-set-PLN",
+                },
+              ]
+            )
+
+            await createPriceLists(
+              service,
+              {
+                title: "Group Sale",
+                description: "test description",
+                type: PriceListType.SALE,
+                status: PriceListStatus.ACTIVE,
+              },
+              defaultRules,
+              [
+                {
+                  amount: 300,
+                  currency_code: "pln",
+                  price_set_id: "price-set-PLN",
+                },
+              ]
+            )
+
+            const priceSetsResult = await service.calculatePrices(
+              { id: ["price-set-PLN"] },
+              {
+                context: {
+                  currency_code: "pln",
+                  region_id: "DE",
+                  customer_group_id: "vip-customer-group-id",
+                },
+              }
+            )
+
+            expect(priceSetsResult).toEqual([
+              {
+                id: "price-set-PLN",
+                is_calculated_price_price_list: true,
+                is_calculated_price_tax_inclusive: false,
+                calculated_amount: 300,
+                raw_calculated_amount: {
+                  value: "300",
+                  precision: 20,
+                },
+                is_original_price_price_list: true,
+                is_original_price_tax_inclusive: false,
+                original_amount: 500,
+                raw_original_amount: {
+                  value: "500",
+                  precision: 20,
+                },
+                currency_code: "pln",
+                calculated_price: {
+                  id: expect.any(String),
+                  price_list_id: expect.any(String),
+                  price_list_type: "sale",
+                  min_quantity: null,
+                  max_quantity: null,
+                },
+                original_price: {
+                  id: expect.any(String),
+                  price_list_id: expect.any(String),
+                  price_list_type: "override",
+                  min_quantity: null,
+                  max_quantity: null,
+                },
+              },
+            ])
+          })
+
+          it("should return the override as calculated_amount when a higher sale with more rules is stacked on it", async () => {
+            await createPriceLists(
+              service,
+              {
+                title: "Group Override",
+                description: "test description",
+                type: PriceListType.OVERRIDE,
+                status: PriceListStatus.ACTIVE,
+              },
+              { customer_group_id: ["vip-customer-group-id"] },
+              [
+                {
+                  amount: 600,
+                  currency_code: "pln",
+                  price_set_id: "price-set-PLN",
+                },
+              ]
+            )
+
+            await createPriceLists(
+              service,
+              {
+                title: "Group Sale",
+                description: "test description",
+                type: PriceListType.SALE,
+                status: PriceListStatus.ACTIVE,
+              },
+              defaultRules,
+              [
+                {
+                  amount: 900,
+                  currency_code: "pln",
+                  price_set_id: "price-set-PLN",
+                },
+              ]
+            )
+
+            const priceSetsResult = await service.calculatePrices(
+              { id: ["price-set-PLN"] },
+              {
+                context: {
+                  currency_code: "pln",
+                  region_id: "DE",
+                  customer_group_id: "vip-customer-group-id",
+                },
+              }
+            )
+
+            expect(priceSetsResult).toEqual([
+              expect.objectContaining({
+                id: "price-set-PLN",
+                is_calculated_price_price_list: true,
+                calculated_amount: 600,
+                is_original_price_price_list: true,
+                original_amount: 600,
+                calculated_price: expect.objectContaining({
+                  price_list_type: "override",
+                }),
+                original_price: expect.objectContaining({
+                  price_list_type: "override",
+                }),
+              }),
+            ])
+          })
+
+          it("should return the sale as calculated_amount when a lower sale with more rules is stacked on an override", async () => {
+            await createPriceLists(
+              service,
+              {
+                title: "Group Override",
+                description: "test description",
+                type: PriceListType.OVERRIDE,
+                status: PriceListStatus.ACTIVE,
+              },
+              { customer_group_id: ["vip-customer-group-id"] },
+              [
+                {
+                  amount: 600,
+                  currency_code: "pln",
+                  price_set_id: "price-set-PLN",
+                },
+              ]
+            )
+
+            await createPriceLists(
+              service,
+              {
+                title: "Group Sale",
+                description: "test description",
+                type: PriceListType.SALE,
+                status: PriceListStatus.ACTIVE,
+              },
+              defaultRules,
+              [
+                {
+                  amount: 400,
+                  currency_code: "pln",
+                  price_set_id: "price-set-PLN",
+                },
+              ]
+            )
+
+            const priceSetsResult = await service.calculatePrices(
+              { id: ["price-set-PLN"] },
+              {
+                context: {
+                  currency_code: "pln",
+                  region_id: "DE",
+                  customer_group_id: "vip-customer-group-id",
+                },
+              }
+            )
+
+            expect(priceSetsResult).toEqual([
+              expect.objectContaining({
+                id: "price-set-PLN",
+                calculated_amount: 400,
+                original_amount: 600,
+                calculated_price: expect.objectContaining({
+                  price_list_type: "sale",
+                }),
+                original_price: expect.objectContaining({
+                  price_list_type: "override",
+                }),
+              }),
+            ])
+          })
+
           it("should return price list prices when price list dont have rules, but context is loaded", async () => {
             await createPriceLists(service, {}, {})
 
@@ -1314,7 +1528,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   region_id: "DE",
                   customer_group_id: "vip-customer-group-id",
                   company_id: "medusa-company-id",
@@ -1339,7 +1553,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "400",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
                 calculated_price: {
                   id: expect.any(String),
                   price_list_id: expect.any(String),
@@ -1357,6 +1571,54 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               },
             ])
           })
+          
+          it("should not return price list prices when price list have rules but no context is loaded", async() => {
+            await createPriceLists(service)
+
+            const priceSetsResult = await service.calculatePrices(
+              { id: ["price-set-EUR", "price-set-PLN"] },
+              {
+                context: {
+                  currency_code: "pln",
+                },
+              }
+            )
+
+            expect(priceSetsResult).toEqual([
+              {
+                id: "price-set-PLN",
+                is_calculated_price_price_list: false,
+                is_calculated_price_tax_inclusive: false,
+                calculated_amount: 1000,
+                raw_calculated_amount: {
+                  value: "1000",
+                  precision: 20,
+                },
+                is_original_price_price_list: false,
+                is_original_price_tax_inclusive: false,
+                original_amount: 1000,
+                raw_original_amount: {
+                  value: "1000",
+                  precision: 20,
+                },
+                currency_code: "pln",
+                calculated_price: {
+                  id: "price-PLN",
+                  price_list_id: null,
+                  price_list_type: null,
+                  min_quantity: 1,
+                  max_quantity: 10,
+                },
+                original_price: {
+                  id: "price-PLN",
+                  price_list_id: null,
+                  price_list_type: null,
+                  min_quantity: 1,
+                  max_quantity: 10,
+                },
+              }
+            ])
+          })
 
           it("should return price list prices when price list dont have any rules", async () => {
             await createPriceLists(service, {}, {})
@@ -1365,7 +1627,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                 },
               }
             )
@@ -1387,7 +1649,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "1000",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
                 calculated_price: {
                   id: expect.any(String),
                   price_list_id: expect.any(String),
@@ -1410,12 +1672,12 @@ moduleIntegrationTestRunner<IPricingModuleService>({
             await createPriceLists(service, undefined, undefined, [
               {
                 amount: 2500,
-                currency_code: "PLN",
+                currency_code: "pln",
                 price_set_id: "price-set-PLN",
               },
               {
                 amount: 2500,
-                currency_code: "EUR",
+                currency_code: "eur",
                 price_set_id: "price-set-EUR",
               },
             ])
@@ -1424,7 +1686,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                 },
               }
             )
@@ -1446,7 +1708,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "1000",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
                 calculated_price: {
                   id: expect.any(String),
                   price_list_id: null,
@@ -1473,12 +1735,12 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               [
                 {
                   amount: 2500,
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   price_set_id: "price-set-PLN",
                 },
                 {
                   amount: 2500,
-                  currency_code: "EUR",
+                  currency_code: "eur",
                   price_set_id: "price-set-EUR",
                 },
               ]
@@ -1488,7 +1750,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                 },
               }
             )
@@ -1510,7 +1772,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "2500",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
                 calculated_price: {
                   id: expect.any(String),
                   price_list_id: expect.any(String),
@@ -1536,7 +1798,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   region_id: "DE",
                   customer_group_id: "vip-customer-group-id",
                   company_id: "medusa-company-id",
@@ -1561,7 +1823,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "232",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
                 calculated_price: {
                   id: expect.any(String),
                   price_list_id: expect.any(String),
@@ -1586,7 +1848,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   region_id: "PL",
                   customer_group_id: "vip-customer-group-id",
                   company_id: "does-not-exist",
@@ -1611,7 +1873,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "300",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
                 calculated_price: {
                   id: "price-region_id-PLN",
                   price_list_id: null,
@@ -1636,7 +1898,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   region_id: "PL",
                   customer_group_id: "does-not-exist",
                   company_id: "does-not-exist",
@@ -1661,7 +1923,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "300",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
                 calculated_price: {
                   id: expect.any(String),
                   price_list_id: null,
@@ -1699,7 +1961,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   region_id: "DE",
                   customer_group_id: "vip-customer-group-id",
                   company_id: "medusa-company-id",
@@ -1724,7 +1986,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "400",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
                 calculated_price: {
                   id: expect.any(String),
                   price_list_id: expect.any(String),
@@ -1763,7 +2025,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   region_id: "DE",
                   customer_group_id: "vip-customer-group-id",
                   company_id: "medusa-company-id",
@@ -1788,7 +2050,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "400",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
                 calculated_price: {
                   id: "price-company_id-PLN",
                   price_list_id: null,
@@ -1826,7 +2088,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   region_id: "DE",
                   customer_group_id: "vip-customer-group-id",
                   company_id: "medusa-company-id",
@@ -1851,7 +2113,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "400",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
                 calculated_price: {
                   id: "price-company_id-PLN",
                   price_list_id: null,
@@ -1883,7 +2145,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               [
                 {
                   amount: 200,
-                  currency_code: "EUR",
+                  currency_code: "eur",
                   price_set_id: "price-set-EUR",
                 },
               ]
@@ -1893,7 +2155,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR"] },
               {
                 context: {
-                  currency_code: "EUR",
+                  currency_code: "eur",
                   customer_group_id: "vip-customer-group-id",
                 },
               }
@@ -1913,7 +2175,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                 is_original_price_tax_inclusive: false,
                 original_amount: null,
                 raw_original_amount: null,
-                currency_code: "EUR",
+                currency_code: "eur",
                 calculated_price: {
                   id: expect.any(String),
                   price_list_id: id,
@@ -1937,7 +2199,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               ...defaultPriceListPrices,
               {
                 amount: 111,
-                currency_code: "PLN",
+                currency_code: "pln",
                 price_set_id: "price-set-PLN",
                 rules: {
                   region_id: "DE",
@@ -1949,7 +2211,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   region_id: "DE",
                   customer_group_id: "vip-customer-group-id",
                   company_id: "medusa-company-id",
@@ -1974,7 +2236,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "400",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
                 calculated_price: {
                   id: expect.any(String),
                   price_list_id: expect.any(String),
@@ -2003,7 +2265,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               [
                 {
                   amount: 600,
-                  currency_code: "EUR",
+                  currency_code: "eur",
                   price_set_id: "price-set-EUR",
                 },
               ]
@@ -2018,7 +2280,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               [
                 {
                   amount: 400,
-                  currency_code: "EUR",
+                  currency_code: "eur",
                   price_set_id: "price-set-EUR",
                 },
               ]
@@ -2028,7 +2290,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR"] },
               {
                 context: {
-                  currency_code: "EUR",
+                  currency_code: "eur",
                   // @ts-ignore
                   customer: {
                     groups: {
@@ -2056,7 +2318,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "400",
                   precision: 20,
                 },
-                currency_code: "EUR",
+                currency_code: "eur",
                 calculated_price: {
                   id: expect.any(String),
                   price_list_id: idTwo,
@@ -2080,7 +2342,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               ...defaultPriceListPrices,
               {
                 amount: 111,
-                currency_code: "PLN",
+                currency_code: "pln",
                 price_set_id: "price-set-PLN",
                 rules: {
                   region_id: "DE",
@@ -2092,7 +2354,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   region_id: "DE",
                   customer_group_id: "vip-customer-group-id",
                   company_id: "medusa-company-id",
@@ -2117,7 +2379,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "400",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
                 calculated_price: {
                   id: expect.any(String),
                   price_list_id: expect.any(String),
@@ -2141,7 +2403,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               ...defaultPriceListPrices,
               {
                 amount: 111,
-                currency_code: "PLN",
+                currency_code: "pln",
                 price_set_id: "price-set-PLN",
                 rules: {
                   region_id: "PL",
@@ -2153,7 +2415,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   region_id: "DE",
                   customer_group_id: "vip-customer-group-id",
                   company_id: "medusa-company-id",
@@ -2178,7 +2440,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "400",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
                 calculated_price: {
                   id: expect.any(String),
                   price_list_id: expect.any(String),
@@ -2205,7 +2467,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               [
                 {
                   amount: 111,
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   price_set_id: "price-set-PLN",
                   rules: {
                     region_id: "DE",
@@ -2218,7 +2480,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   region_id: "DE",
                   customer_group_id: "vip-customer-group-id",
                   company_id: "medusa-company-id",
@@ -2242,7 +2504,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-EUR", "price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   region_id: "DE",
                   customer_group_id: "vip-customer-group-id",
                   company_id: "medusa-company-id",
@@ -2260,6 +2522,278 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               }),
             ])
           })
+
+          it("should only return the matching price list price when many price lists with rules exist", async () => {
+            // B2B pattern: one price list per customer group, one price per
+            // variant. Non-matching lists are cheaper on purpose: if any of
+            // them leaked into the results, the cheapest-first ordering would
+            // surface it and the assertion would fail.
+            await service.createPriceLists(
+              Array.from({ length: 49 }, (_, i) => ({
+                title: `Non matching price list ${i}`,
+                description: "test description",
+                type: PriceListType.SALE,
+                status: PriceListStatus.ACTIVE,
+                rules: { ["customer.groups.id"]: [`other-group-${i}`] },
+                prices: [
+                  {
+                    amount: 50,
+                    currency_code: "eur",
+                    price_set_id: "price-set-EUR",
+                  },
+                ],
+              }))
+            )
+
+            const [{ id: matchingPriceListId }] = await createPriceLists(
+              service,
+              { title: "Matching price list" },
+              { ["customer.groups.id"]: ["target-group"] },
+              [
+                {
+                  amount: 125,
+                  currency_code: "eur",
+                  price_set_id: "price-set-EUR",
+                },
+              ]
+            )
+
+            const priceSetsResult = await service.calculatePrices(
+              { id: ["price-set-EUR"] },
+              {
+                context: {
+                  currency_code: "eur",
+                  // @ts-ignore
+                  customer: { groups: { id: ["target-group"] } },
+                },
+              }
+            )
+
+            expect(priceSetsResult).toEqual([
+              {
+                id: "price-set-EUR",
+                is_calculated_price_price_list: true,
+                is_calculated_price_tax_inclusive: false,
+                calculated_amount: 125,
+                raw_calculated_amount: {
+                  value: "125",
+                  precision: 20,
+                },
+                is_original_price_price_list: false,
+                is_original_price_tax_inclusive: false,
+                original_amount: null,
+                raw_original_amount: null,
+                currency_code: "eur",
+                calculated_price: {
+                  id: expect.any(String),
+                  price_list_id: matchingPriceListId,
+                  price_list_type: "sale",
+                  min_quantity: null,
+                  max_quantity: null,
+                },
+                original_price: {
+                  id: null,
+                  price_list_id: null,
+                  price_list_type: null,
+                  min_quantity: null,
+                  max_quantity: null,
+                },
+              },
+            ])
+          })
+
+          it("should not return price list prices when only some of the price list rules match", async () => {
+            await createPriceLists(
+              service,
+              {},
+              {
+                customer_group_id: ["vip-customer-group-id"],
+                region_id: ["DE"],
+              },
+              [
+                {
+                  amount: 232,
+                  currency_code: "pln",
+                  price_set_id: "price-set-PLN",
+                },
+              ]
+            )
+
+            const priceSetsResult = await service.calculatePrices(
+              { id: ["price-set-PLN"] },
+              {
+                context: {
+                  currency_code: "pln",
+                  customer_group_id: "vip-customer-group-id",
+                  region_id: "FR",
+                },
+              }
+            )
+
+            expect(priceSetsResult).toEqual([
+              expect.objectContaining({
+                id: "price-set-PLN",
+                is_calculated_price_price_list: false,
+                calculated_amount: 1000,
+                is_original_price_price_list: false,
+                original_amount: 1000,
+                calculated_price: expect.objectContaining({
+                  id: "price-PLN",
+                  price_list_id: null,
+                }),
+              }),
+            ])
+          })
+
+          it("should not return price list prices for expired or inactive price lists even when their rules match", async () => {
+            const yesterday = ((today) =>
+              new Date(today.setDate(today.getDate() - 1)))(new Date())
+            const tenDaysAgo = ((today) =>
+              new Date(today.setDate(today.getDate() - 10)))(new Date())
+
+            await createPriceLists(
+              service,
+              {
+                title: "Expired price list",
+                starts_at: tenDaysAgo.toISOString(),
+                ends_at: yesterday.toISOString(),
+              },
+              { customer_group_id: ["vip-customer-group-id"] },
+              [
+                {
+                  amount: 111,
+                  currency_code: "pln",
+                  price_set_id: "price-set-PLN",
+                },
+              ]
+            )
+
+            await createPriceLists(
+              service,
+              {
+                title: "Draft price list",
+                status: PriceListStatus.DRAFT,
+              },
+              { customer_group_id: ["vip-customer-group-id"] },
+              [
+                {
+                  amount: 222,
+                  currency_code: "pln",
+                  price_set_id: "price-set-PLN",
+                },
+              ]
+            )
+
+            const priceSetsResult = await service.calculatePrices(
+              { id: ["price-set-PLN"] },
+              {
+                context: {
+                  currency_code: "pln",
+                  customer_group_id: "vip-customer-group-id",
+                },
+              }
+            )
+
+            expect(priceSetsResult).toEqual([
+              expect.objectContaining({
+                id: "price-set-PLN",
+                is_calculated_price_price_list: false,
+                calculated_amount: 1000,
+                is_original_price_price_list: false,
+                original_amount: 1000,
+                calculated_price: expect.objectContaining({
+                  id: "price-PLN",
+                  price_list_id: null,
+                }),
+              }),
+            ])
+          })
+
+          it("should return price list prices for price lists without rules regardless of the context", async () => {
+            await createPriceLists(service, {}, {}, [
+              {
+                amount: 232,
+                currency_code: "pln",
+                price_set_id: "price-set-PLN",
+              },
+            ])
+
+            const priceSetsResult = await service.calculatePrices(
+              { id: ["price-set-PLN"] },
+              {
+                context: {
+                  currency_code: "pln",
+                  region_id: "does-not-exist",
+                  customer_group_id: "unknown-customer-group",
+                },
+              }
+            )
+
+            expect(priceSetsResult).toEqual([
+              expect.objectContaining({
+                id: "price-set-PLN",
+                is_calculated_price_price_list: true,
+                calculated_amount: 232,
+                is_original_price_price_list: false,
+                original_amount: 1000,
+                calculated_price: expect.objectContaining({
+                  price_list_id: expect.any(String),
+                  price_list_type: "sale",
+                }),
+                original_price: expect.objectContaining({
+                  id: "price-PLN",
+                  price_list_id: null,
+                }),
+              }),
+            ])
+          })
+
+          it("should return price list prices when multiple context attributes match different rules of the same price list", async () => {
+            await createPriceLists(
+              service,
+              {},
+              {
+                customer_group_id: ["vip-customer-group-id"],
+                region_id: ["DE"],
+              },
+              [
+                {
+                  amount: 232,
+                  currency_code: "pln",
+                  price_set_id: "price-set-PLN",
+                },
+              ]
+            )
+
+            const priceSetsResult = await service.calculatePrices(
+              { id: ["price-set-PLN"] },
+              {
+                context: {
+                  currency_code: "pln",
+                  customer_group_id: "vip-customer-group-id",
+                  region_id: "DE",
+                },
+              }
+            )
+
+            expect(priceSetsResult).toEqual([
+              expect.objectContaining({
+                id: "price-set-PLN",
+                is_calculated_price_price_list: true,
+                calculated_amount: 232,
+                is_original_price_price_list: false,
+                original_amount: 1000,
+                calculated_price: expect.objectContaining({
+                  price_list_id: expect.any(String),
+                  price_list_type: "sale",
+                }),
+                original_price: expect.objectContaining({
+                  id: "price-PLN",
+                  price_list_id: null,
+                }),
+              }),
+            ])
+          })
         })
 
         describe("Tax inclusivity", () => {
@@ -2267,7 +2801,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
             await (service as any).createPricePreferences([
               {
                 attribute: "currency_code",
-                value: "PLN",
+                value: "pln",
                 is_tax_inclusive: true,
               },
             ])
@@ -2275,7 +2809,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
             const priceSetsResult = await service.calculatePrices(
               { id: ["price-set-PLN"] },
               {
-                context: { currency_code: "PLN" },
+                context: { currency_code: "pln" },
               }
             )
 
@@ -2294,7 +2828,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "1000",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
               }),
             ])
           })
@@ -2303,7 +2837,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
             await (service as any).createPricePreferences([
               {
                 attribute: "currency_code",
-                value: "PLN",
+                value: "pln",
                 is_tax_inclusive: false,
               },
               {
@@ -2316,7 +2850,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
             const priceSetsResult = await service.calculatePrices(
               { id: ["price-set-PLN"] },
               {
-                context: { currency_code: "PLN", region_id: "PL" },
+                context: { currency_code: "pln", region_id: "PL" },
               }
             )
 
@@ -2335,7 +2869,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "300",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
               }),
             ])
           })
@@ -2357,7 +2891,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
             const priceSetsResult = await service.calculatePrices(
               { id: ["price-set-PLN"] },
               {
-                context: { currency_code: "PLN", region_id: "PL" },
+                context: { currency_code: "pln", region_id: "PL" },
               }
             )
 
@@ -2376,7 +2910,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "300",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
               }),
             ])
           })
@@ -2386,7 +2920,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
             await (service as any).createPricePreferences([
               {
                 attribute: "currency_code",
-                value: "PLN",
+                value: "pln",
                 is_tax_inclusive: false,
               },
               {
@@ -2400,7 +2934,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
               { id: ["price-set-PLN"] },
               {
                 context: {
-                  currency_code: "PLN",
+                  currency_code: "pln",
                   region_id: "PL",
                 },
               }
@@ -2421,7 +2955,7 @@ moduleIntegrationTestRunner<IPricingModuleService>({
                   value: "300",
                   precision: 20,
                 },
-                currency_code: "PLN",
+                currency_code: "pln",
               }),
             ])
           })

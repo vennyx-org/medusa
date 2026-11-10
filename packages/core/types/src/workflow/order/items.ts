@@ -30,6 +30,11 @@ interface NewItem {
    */
   internal_note?: string | null
   /**
+   * Whether the item can be added even if its variant is out of stock. This
+   * overrides the variant's `allow_backorder` setting for this item only.
+   */
+  allow_backorder?: boolean
+  /**
    * Custom key-value pairs to store additional information about the item.
    */
   metadata?: Record<string, any> | null
@@ -59,6 +64,10 @@ interface ExistingItem {
    * A note viewed by admins only related to the item.
    */
   internal_note?: string | null
+  /**
+   * Custom key-value pairs to store additional information about the item.
+   */
+  metadata?: Record<string, any> | null
 }
 
 /**
@@ -202,8 +211,7 @@ export interface UpdateOrderEditAddNewItemWorkflowInput {
 /**
  * The details to update an existing order item that was added previously to an order edit.
  */
-export interface UpdateOrderEditItemQuantityWorkflowInput
-  extends UpdateOrderEditAddNewItemWorkflowInput {}
+export interface UpdateOrderEditItemQuantityWorkflowInput extends UpdateOrderEditAddNewItemWorkflowInput {}
 
 /**
  * The details to update a claim's outbound item.

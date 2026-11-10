@@ -1,13 +1,14 @@
 import { XMarkMini } from "@medusajs/icons"
-import { PromotionDTO } from "@medusajs/types"
+import { AdminPromotion, HttpTypes } from "@medusajs/types"
 import { Badge, Button, Heading, IconButton, Select, Text } from "@medusajs/ui"
 import { forwardRef, Fragment, useEffect, useRef } from "react"
 import {
+  Control,
   ControllerRenderProps,
   useFieldArray,
-  UseFormReturn,
   useWatch,
 } from "react-hook-form"
+import type { CreatePromotionSchemaType } from "../../../../promotion-create/components/create-promotion-form/form-schema"
 import { useTranslation } from "react-i18next"
 import { Form } from "../../../../../../components/common/form"
 import {
@@ -15,22 +16,42 @@ import {
   usePromotionRules,
 } from "../../../../../../hooks/api/promotions"
 import { useDocumentDirection } from "../../../../../../hooks/use-document-direction"
-import { CreatePromotionSchemaType } from "../../../../promotion-create/components/create-promotion-form/form-schema"
 import { generateRuleAttributes } from "../edit-rules-form/utils"
 import { RuleValueFormField } from "../rule-value-form-field"
 import { requiredProductRule } from "./constants"
 
+type RulesFormFieldForm = {
+  control: Control<CreatePromotionSchemaType>
+  getValues: () => CreatePromotionSchemaType
+  resetField: (
+    name:
+      | "rules"
+      | "application_method.buy_rules"
+      | "application_method.target_rules"
+  ) => void
+}
+
 type RulesFormFieldType = {
-  promotion?: PromotionDTO
-  form: UseFormReturn<CreatePromotionSchemaType>
+  promotion?: AdminPromotion
+  form: RulesFormFieldForm
   ruleType: "rules" | "target-rules" | "buy-rules"
   setRulesToRemove?: any
   rulesToRemove?: any
   scope?:
-    | "application_method.buy_rules"
-    | "rules"
-    | "application_method.target_rules"
+    "application_method.buy_rules" | "rules" | "application_method.target_rules"
   formType?: "create" | "edit"
+}
+
+export type RuleWithFormAttributes = Omit<
+  HttpTypes.AdminPromotionRule,
+  "values"
+> & {
+  values: {
+    value: string
+  }[]
+  required?: boolean
+  field_type?: string
+  disguised?: boolean
 }
 
 export const RulesFormField = ({
@@ -51,7 +72,7 @@ export const RulesFormField = ({
     ruleType,
     formData.type,
     formData.application_method?.target_type
-  )
+  ) as { attributes: HttpTypes.AdminRuleAttributeOption[] | undefined }
 
   const { fields, append, remove, update, replace } = useFieldArray({
     control: form.control,
@@ -110,7 +131,9 @@ export const RulesFormField = ({
     if (ruleType === "rules" && !fields.length) {
       form.resetField("rules")
 
-      replace(generateRuleAttributes(rules) as any)
+      replace(
+        generateRuleAttributes(rules as unknown as RuleWithFormAttributes[])
+      )
     }
 
     if (ruleType === "buy-rules" && !fields.length) {
@@ -118,9 +141,9 @@ export const RulesFormField = ({
       const rulesToAppend =
         promotion?.id || promotionType === "standard"
           ? rules
-          : [...rules, requiredProductRule]
+          : [...(rules ?? []), requiredProductRule]
 
-      replace(generateRuleAttributes(rulesToAppend) as any)
+      replace(generateRuleAttributes(rulesToAppend as RuleWithFormAttributes[]))
     }
 
     if (ruleType === "target-rules" && !fields.length) {
@@ -128,9 +151,9 @@ export const RulesFormField = ({
       const rulesToAppend =
         promotion?.id || promotionType === "standard"
           ? rules
-          : [...rules, requiredProductRule]
+          : [...(rules ?? []), requiredProductRule]
 
-      replace(generateRuleAttributes(rulesToAppend) as any)
+      replace(generateRuleAttributes(rulesToAppend as RuleWithFormAttributes[]))
     }
 
     initialRulesSet.current = true
@@ -151,16 +174,16 @@ export const RulesFormField = ({
       <Heading level="h2" className="mb-2">
         {t(
           ruleType === "target-rules"
-            ? `promotions.fields.conditions.${ruleType}.${applicationMethodTargetType}.title`
-            : `promotions.fields.conditions.${ruleType}.title`
+            ? (`promotions.fields.conditions.${ruleType}.${applicationMethodTargetType}.title` as any)
+            : (`promotions.fields.conditions.${ruleType}.title` as any)
         )}
       </Heading>
 
-      <Text className="text-ui-fg-subtle txt-small mb-6">
+      <Text className="txt-small mb-6 text-ui-fg-subtle">
         {t(
           ruleType === "target-rules"
-            ? `promotions.fields.conditions.${ruleType}.${applicationMethodTargetType}.description`
-            : `promotions.fields.conditions.${ruleType}.description`
+            ? (`promotions.fields.conditions.${ruleType}.${applicationMethodTargetType}.description` as any)
+            : (`promotions.fields.conditions.${ruleType}.description` as any)
         )}
       </Text>
 
@@ -169,7 +192,7 @@ export const RulesFormField = ({
 
         return (
           <Fragment key={`${fieldRule.id}.${index}.${fieldRule.attribute}`}>
-            <div className="bg-ui-bg-subtle border-ui-border-base flex flex-row gap-2 rounded-xl border px-2 py-2">
+            <div className="flex flex-row gap-2 rounded-xl border border-ui-border-base bg-ui-bg-subtle px-2 py-2">
               <div className="grow">
                 <Form.Field
                   name={`${scope}.${index}.attribute`}
@@ -217,7 +240,7 @@ export const RulesFormField = ({
                       <Form.Item className="mb-2">
                         {fieldRule.required && (
                           <div className="flex items-center px-2">
-                            <p className="text text-ui-fg-muted txt-small">
+                            <p className="text txt-small text-ui-fg-muted">
                               {t("promotions.form.required")}
                             </p>
                           </div>
@@ -297,7 +320,7 @@ export const RulesFormField = ({
                           <Form.Control>
                             {!disabled ? (
                               <Select
-                                dir= {direction}
+                                dir={direction}
                                 {...fieldProps}
                                 disabled={!fieldRule.attribute}
                                 onValueChange={onChange}
@@ -338,12 +361,12 @@ export const RulesFormField = ({
 
                   <RuleValueFormField
                     form={form}
-                    identifier={identifier}
+                    identifier={`${identifier}`}
                     scope={scope}
                     name={`${scope}.${index}.values`}
                     operator={`${scope}.${index}.operator`}
                     fieldRule={fieldRule}
-                    attributes={attributes}
+                    attributes={attributes || []}
                     ruleType={ruleType}
                     applicationMethodTargetType={applicationMethodTargetType}
                   />
@@ -374,9 +397,9 @@ export const RulesFormField = ({
 
             {index < fields.length - 1 && (
               <div className="relative px-6 py-3">
-                <div className="border-ui-border-strong absolute bottom-0 left-[40px] top-0 z-[-1] w-px bg-[linear-gradient(var(--border-strong)_33%,rgba(255,255,255,0)_0%)] bg-[length:1px_3px] bg-repeat-y"></div>
+                <div className="absolute bottom-0 left-[40px] top-0 z-[-1] w-px border-ui-border-strong bg-[linear-gradient(var(--border-strong)_33%,rgba(255,255,255,0)_0%)] bg-[length:1px_3px] bg-repeat-y"></div>
 
-                <Badge size="2xsmall" className=" text-xs">
+                <Badge size="2xsmall" className="text-xs">
                   {t("promotions.form.and")}
                 </Badge>
               </div>
@@ -406,10 +429,12 @@ export const RulesFormField = ({
           <Button
             type="button"
             variant="transparent"
-            className="text-ui-fg-muted hover:text-ui-fg-subtle ml-2 inline-block"
+            className="ml-2 inline-block text-ui-fg-muted hover:text-ui-fg-subtle"
             onClick={() => {
               const indicesToRemove = fields
-                .map((field: any, index) => (field.required ? null : index))
+                .map((field: any, index) => {
+                  return field.required ? null : index
+                })
                 .filter((f) => f !== null)
 
               setRulesToRemove &&
@@ -438,7 +463,7 @@ const DisabledField = forwardRef<HTMLInputElement, DisabledAttributeProps>(
   ({ label, field }, ref) => {
     return (
       <div>
-        <div className="txt-compact-small bg-ui-bg-component shadow-borders-base text-ui-fg-base h-8 rounded-md px-2 py-1.5">
+        <div className="txt-compact-small h-8 rounded-md bg-ui-bg-component px-2 py-1.5 text-ui-fg-base shadow-borders-base">
           {label}
         </div>
         <input {...field} ref={ref} disabled hidden />

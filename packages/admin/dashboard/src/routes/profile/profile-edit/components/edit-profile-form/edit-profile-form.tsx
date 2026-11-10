@@ -8,7 +8,7 @@ import { HttpTypes } from "@medusajs/types"
 import { Form } from "../../../../../components/common/form"
 import { RouteDrawer, useRouteModal } from "../../../../../components/modals"
 import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useUpdateUser } from "../../../../../hooks/api/users"
+import { useUpdateMe } from "../../../../../hooks/api/users"
 import { languages } from "../../../../../i18n/languages"
 import { useDocumentDirection } from "../../../../../hooks/use-document-direction"
 
@@ -46,7 +46,7 @@ export const EditProfileForm = ({ user }: EditProfileProps) => {
     a.display_name.localeCompare(b.display_name)
   )
 
-  const { mutateAsync, isPending } = useUpdateUser(user.id!)
+  const { mutateAsync, isPending } = useUpdateMe()
 
   const handleSubmit = form.handleSubmit(async (values) => {
     await mutateAsync(
@@ -172,8 +172,7 @@ export const EditProfileForm = ({ user }: EditProfileProps) => {
                           <a
                             key="hint-link"
                             className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover transition-fg underline"
-                            // TODO change link once docs are public
-                            href="https://medusa-resources-git-docs-v2-medusajs.vercel.app/resources/usage#admin-analytics"
+                            href="https://docs.medusajs.com/resources/usage#admin-analytics"
                             target="_blank"
                             rel="noopener noreferrer"
                           />,

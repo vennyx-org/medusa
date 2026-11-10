@@ -22,12 +22,13 @@ import { validateDraftOrderChangeStep } from "../steps/validate-draft-order-chan
 import { draftOrderFieldsForRefreshSteps } from "../utils/fields"
 import { acquireLockStep, releaseLockStep } from "../../locking"
 import { computeDraftOrderAdjustmentsWorkflow } from "./compute-draft-order-adjustments"
+import { refreshPendingDraftOrderShippingMethodsWorkflow } from "./refresh-pending-draft-order-shipping-methods"
 
 export const addDraftOrderItemsWorkflowId = "add-draft-order-items"
 
 /**
  * This workflow adds items to a draft order. It's used by the
- * [Add Item to Draft Order Admin API Route](https://docs.medusajs.com/api/admin#draft-orders_postdraftordersidedititems).
+ * [Add Item to Draft Order Admin API Route](https://docs.medusajs.com/api/admin/draft-orders/add-item).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to wrap custom logic around adding items to
  * a draft order.
@@ -100,23 +101,6 @@ export const addDraftOrderItemsWorkflow = createWorkflow(
       },
     })
 
-    const appliedPromoCodes: string[] = transform(
-      order,
-      (order) => order.promotions?.map((promotion) => promotion.code) ?? []
-    )
-
-    // If any the order has any promo codes, then we need to refresh the adjustments.
-    when(
-      appliedPromoCodes,
-      (appliedPromoCodes) => appliedPromoCodes.length > 0
-    ).then(() => {
-      computeDraftOrderAdjustmentsWorkflow.runAsStep({
-        input: {
-          order_id: input.order_id,
-        },
-      })
-    })
-
     const orderChangeActionInput = transform(
       { order, orderChange, items: input.items, lineItems },
       ({ order, orderChange, items, lineItems }) => {
@@ -133,6 +117,7 @@ export const addDraftOrderItemsWorkflow = createWorkflow(
             compare_at_unit_price:
               item.compare_at_unit_price ??
               lineItems[index].compare_at_unit_price,
+            allow_backorder: item.allow_backorder,
             metadata: item.metadata,
           },
         }))
@@ -141,6 +126,29 @@ export const addDraftOrderItemsWorkflow = createWorkflow(
 
     createOrderChangeActionsWorkflow.runAsStep({
       input: orderChangeActionInput,
+    })
+
+    // Calculated shipping prices can depend on the order's items, so refresh
+    // them after the items change.
+    refreshPendingDraftOrderShippingMethodsWorkflow.runAsStep({
+      input: { order_id: input.order_id },
+    })
+
+    const appliedPromoCodes: string[] = transform(
+      order,
+      (order) => order.promotions?.map((promotion) => promotion.code) ?? []
+    )
+
+    // If any the order has any promo codes, then we need to refresh the adjustments.
+    when(
+      appliedPromoCodes,
+      (appliedPromoCodes) => appliedPromoCodes.length > 0
+    ).then(() => {
+      computeDraftOrderAdjustmentsWorkflow.runAsStep({
+        input: {
+          order_id: input.order_id,
+        },
+      })
     })
 
     releaseLockStep({

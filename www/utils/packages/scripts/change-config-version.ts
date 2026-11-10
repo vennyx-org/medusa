@@ -13,6 +13,7 @@ type DocsConfig = {
   version: {
     number: string
     releaseUrl: string
+    releaseDate: string
   }
 }
 
@@ -25,7 +26,7 @@ function getConfigPath() {
     "..",
     "..",
     "packages",
-    "docs-ui",
+    "docs-utils",
     "src",
     "global-config.ts"
   )
@@ -66,6 +67,7 @@ async function main() {
     version: {
       number: version,
       releaseUrl: response.data.html_url,
+      releaseDate: response.data.published_at || new Date().toISOString(),
     },
   }
 

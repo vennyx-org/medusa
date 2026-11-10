@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: 2.0.0
+  version: 2.22.5
   title: Medusa Admin API
   license:
     name: MIT
@@ -147,8 +147,7 @@ tags:
       Fulfillment providers are installed as module providers.
     externalDocs:
       description: Learn more about the fulfillment providers and how to create them.
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/fulfillment/fulfillment-provider
+      url: https://docs.medusajs.com/resources/commerce-modules/fulfillment/fulfillment-provider
     x-associatedSchema:
       $ref: ./components/schemas/AdminFulfillmentProvider.yaml
   - name: Fulfillment Sets
@@ -164,8 +163,7 @@ tags:
       These API routes allow admin users to manage fulfillment sets.
     externalDocs:
       description: Learn more about fulfillment sets.
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/fulfillment/concepts
+      url: https://docs.medusajs.com/resources/commerce-modules/fulfillment/concepts
     x-associatedSchema:
       $ref: ./components/schemas/AdminFulfillmentSet.yaml
   - name: Fulfillments
@@ -177,8 +175,7 @@ tags:
       These API routes allow admin users to manage fulfillments.
     externalDocs:
       description: Learn more about fulfillments.
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/fulfillment/item-fulfillment
+      url: https://docs.medusajs.com/resources/commerce-modules/fulfillment/item-fulfillment
     x-associatedSchema:
       $ref: ./components/schemas/AdminFulfillment.yaml
   - name: Gift Cards
@@ -195,8 +192,8 @@ tags:
 
       <Note>
 
-      Gift Card routes are only available for Cloud users using the [Loyalty
-      Plugin](https://docs.medusajs.com/cloud/loyalty-plugin).
+      Gift Card routes are only available through the [Loyalty
+      Plugin](https://docs.medusajs.com/resources/commerce-modules/loyalty).
 
       </Note>
     x-associatedSchema:
@@ -231,6 +228,12 @@ tags:
       url: https://docs.medusajs.com/resources/commerce-modules/user
     x-associatedSchema:
       $ref: ./components/schemas/AdminInvite.yaml
+  - name: Layouts
+    description: >
+      An admin can modify the layout of their admin dashboard. This allows
+      admins to customize their dashboard to their preferences and needs.
+
+      These API routes allow admin users to manage layouts.
   - name: Locales
     description: >
       A locale is a language that content is translated into for customers to
@@ -240,10 +243,33 @@ tags:
       retrieve and view locales.
     externalDocs:
       description: Learn more about locales and translations.
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/translation/concepts
+      url: https://docs.medusajs.com/resources/commerce-modules/translation/concepts
     x-associatedSchema:
       $ref: ./components/schemas/AdminLocale.yaml
+  - name: Modules
+    description: >
+      A module is a package of reusable commerce or architectural functionality
+      installed in a Medusa application, such as the Product Module or a custom
+      module.
+
+      These API routes allow admin users to retrieve the installed modules, for
+      example to check whether a module, such as the RBAC Module, is installed.
+    externalDocs:
+      description: Learn more about modules.
+      url: https://docs.medusajs.com/learn/fundamentals/modules
+    x-associatedSchema:
+      $ref: ./components/schemas/AdminModule.yaml
+  - name: Multi-Factor Authentication
+    description: >
+      Multi-factor authentication (MFA) adds an extra layer of security to admin
+      accounts by requiring additional verification factors during login, such
+      as a TOTP code or a recovery code.
+
+      These API routes allow admin users to manage their MFA factors,
+      challenges, and recovery codes.
+    externalDocs:
+      description: Learn more about MFA in Medusa
+      url: https://docs.medusajs.com/resources/commerce-modules/auth/mfa
   - name: Notifications
     description: >
       A notification informs an admin user of store changes or status changes of
@@ -311,8 +337,7 @@ tags:
       These API routes allow admin users to manage payment collections.
     externalDocs:
       description: Learn more about payment collections.
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/payment/payment-collection
+      url: https://docs.medusajs.com/resources/commerce-modules/payment/payment-collection
     x-associatedSchema:
       $ref: ./components/schemas/AdminPaymentCollection.yaml
   - name: Payments
@@ -359,8 +384,7 @@ tags:
       These API routes allow admin users to manage price lists.
     externalDocs:
       description: Learn more about price lists.
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/pricing/concepts#price-list
+      url: https://docs.medusajs.com/resources/commerce-modules/pricing/concepts#price-list
     x-associatedSchema:
       $ref: ./components/schemas/AdminPriceList.yaml
   - name: Price Preferences
@@ -373,8 +397,7 @@ tags:
       is tax inclusive.
     externalDocs:
       description: Learn more about tax-inclusiveness and the role of a price preference.
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/pricing/tax-inclusive-pricing
+      url: https://docs.medusajs.com/resources/commerce-modules/pricing/tax-inclusive-pricing
     x-associatedSchema:
       $ref: ./components/schemas/AdminPricePreference.yaml
   - name: Product Categories
@@ -393,6 +416,18 @@ tags:
       url: https://docs.medusajs.com/resources/commerce-modules/product
     x-associatedSchema:
       $ref: ./components/schemas/AdminProductCategory.yaml
+  - name: Product Options
+    x-associatedSchema:
+      $ref: ./components/schemas/AdminProductOption.yaml
+    description: >
+      A product option is a way to define different options for a product, such
+      as "Size" or "Color". Product options can be created globally and used by
+      multiple products, or they can be exclusive to a specific product.
+
+      These API routes allow admin users to manage product options.
+    externalDocs:
+      description: Learn more about the Product Module
+      url: https://docs.medusajs.com/resources/commerce-modules/product
   - name: Product Tags
     description: >
       A tag is another way of organizing a product. Each tag has a name and a
@@ -479,6 +514,9 @@ tags:
       url: https://docs.medusajs.com/resources/commerce-modules/promotion/concepts
     x-associatedSchema:
       $ref: ./components/schemas/AdminPromotion.yaml
+  - name: Property Labels
+    x-associatedSchema:
+      $ref: ./components/schemas/AdminPropertyLabel.yaml
   - name: Refund Reasons
     description: >
       A refund reason is a possible reason used when issuing a refund to the
@@ -555,6 +593,19 @@ tags:
       url: https://docs.medusajs.com/resources/commerce-modules/sales-channel
     x-associatedSchema:
       $ref: ./components/schemas/AdminSalesChannel.yaml
+  - name: Search
+    description: >
+      Search the entities that have a search index and are registered as search
+      entities in the Medusa Admin dashboard.
+  - name: Search Indexes
+    description: >
+      A search index stores the documents of an entity so they can be searched.
+
+
+      These API routes allow admin users to list the registered search indexes,
+      rebuild them, and delete them.
+    x-associatedSchema:
+      $ref: ./components/schemas/AdminSearchIndex.yaml
   - name: Shipping Option Types
     x-associatedSchema:
       $ref: ./components/schemas/AdminShippingOptionType.yaml
@@ -566,8 +617,7 @@ tags:
       These API routes allow admins to manage shipping option types.
     externalDocs:
       description: Learn more about shipping option types.
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/fulfillment/shipping-option#shipping-profiles-and-types
+      url: https://docs.medusajs.com/resources/commerce-modules/fulfillment/shipping-option#shipping-profiles-and-types
   - name: Shipping Options
     description: >
       A shipping option is a way of shipping an item to or from the customer.
@@ -584,8 +634,7 @@ tags:
       These API routes allow admins to manage shipping options.
     externalDocs:
       description: Learn more about shipping options.
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/fulfillment/shipping-option
+      url: https://docs.medusajs.com/resources/commerce-modules/fulfillment/shipping-option
     x-associatedSchema:
       $ref: ./components/schemas/AdminShippingOption.yaml
   - name: Shipping Profiles
@@ -598,8 +647,7 @@ tags:
       These API routes allow admin users to manage shipping profiles.
     externalDocs:
       description: Learn more about shipping profiles and other fulfillment concepts.
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/fulfillment/concepts#shipping-profile
+      url: https://docs.medusajs.com/resources/commerce-modules/fulfillment/concepts#shipping-profile
     x-associatedSchema:
       $ref: ./components/schemas/AdminShippingProfile.yaml
   - name: Stock Locations
@@ -619,8 +667,7 @@ tags:
       linked data.
     externalDocs:
       description: Learn more about stock locations.
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/stock-location/concepts
+      url: https://docs.medusajs.com/resources/commerce-modules/stock-location/concepts
     x-associatedSchema:
       $ref: ./components/schemas/AdminStockLocation.yaml
   - name: Store Credit Accounts
@@ -639,7 +686,8 @@ tags:
       <Note>
 
       Store Credit Account routes are only available for Cloud users using the
-      [Loyalty Plugin](https://docs.medusajs.com/cloud/loyalty-plugin).
+      [Loyalty
+      Plugin](https://docs.medusajs.com/resources/commerce-modules/loyalty).
 
       </Note>
     x-associatedSchema:
@@ -686,8 +734,7 @@ tags:
       These API routes allow admin users to manage tax rates and their rules.
     externalDocs:
       description: Learn more about tax rates and rules.
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/tax/tax-rates-and-rules
+      url: https://docs.medusajs.com/resources/commerce-modules/tax/tax-rates-and-rules
     x-associatedSchema:
       $ref: ./components/schemas/AdminTaxRate.yaml
   - name: Tax Regions
@@ -705,22 +752,6 @@ tags:
       url: https://docs.medusajs.com/resources/commerce-modules/tax/tax-region
     x-associatedSchema:
       $ref: ./components/schemas/AdminTaxRegion.yaml
-  - name: Transaction Groups
-    description: >
-      A transaction group is a group of transactions that belong to a store
-      credit account. It allows you to group transactions together, such as all
-      transactions related to a specific gift card.
-
-      These API routes allow admin users to list transaction groups.
-
-      <Note>
-
-      Transaction Group routes are only available for Cloud users using the
-      [Loyalty Plugin](https://docs.medusajs.com/cloud/loyalty-plugin).
-
-      </Note>
-    x-associatedSchema:
-      $ref: ./components/schemas/AdminTransactionGroup.yaml
   - name: Translations
     description: >
       A translation is a localized version of content in a specific locale. For
@@ -761,6 +792,18 @@ tags:
     x-associatedSchema:
       $ref: ./components/schemas/AdminUser.yaml
   - name: Views
+    description: >
+      A view configuration is a saved data-table view for an entity, such as
+      products or orders. It lets admin users customize how a table shows its
+      data, then save that customization as a reusable view.
+
+      These API routes allow admin users to manage the system default and
+      personal views.
+    externalDocs:
+      description: Learn more about views configurations.
+      url: https://docs.medusajs.com/resources/commerce-modules/settings/view-configurations
+    x-associatedSchema:
+      $ref: ./components/schemas/AdminViewConfiguration.yaml
   - name: Workflows Executions
     description: >
       These API routes allow you to track workflow executions in your Medusa
@@ -771,8 +814,7 @@ tags:
       for a short while, or only until the Medusa application is restarted.
     externalDocs:
       description: Check out available Workflow Engine Modules
-      url: >-
-        https://docs.medusajs.com/resources/infrastructure-modules/workflow-engine
+      url: https://docs.medusajs.com/resources/infrastructure-modules/workflow-engine
 paths:
   /admin/api-keys:
     $ref: paths/admin_api-keys.yaml
@@ -834,6 +876,8 @@ paths:
     $ref: paths/admin_customer-groups_{id}_customers.yaml
   /admin/customers:
     $ref: paths/admin_customers.yaml
+  /admin/customers/export:
+    $ref: paths/admin_customers_export.yaml
   /admin/customers/{id}:
     $ref: paths/admin_customers_{id}.yaml
   /admin/customers/{id}/addresses:
@@ -865,8 +909,7 @@ paths:
   /admin/draft-orders/{id}/edit/shipping-methods:
     $ref: paths/admin_draft-orders_{id}_edit_shipping-methods.yaml
   /admin/draft-orders/{id}/edit/shipping-methods/method/{method_id}:
-    $ref: >-
-      paths/admin_draft-orders_{id}_edit_shipping-methods_method_{method_id}.yaml
+    $ref: paths/admin_draft-orders_{id}_edit_shipping-methods_method_{method_id}.yaml
   /admin/draft-orders/{id}/edit/shipping-methods/{action_id}:
     $ref: paths/admin_draft-orders_{id}_edit_shipping-methods_{action_id}.yaml
   /admin/exchanges:
@@ -917,14 +960,14 @@ paths:
     $ref: paths/admin_gift-cards_{id}.yaml
   /admin/gift-cards/{id}/orders:
     $ref: paths/admin_gift-cards_{id}_orders.yaml
-  /admin/gift-cards/{id}/redeem:
-    $ref: paths/admin_gift-cards_{id}_redeem.yaml
   /admin/index/details:
     $ref: paths/admin_index_details.yaml
   /admin/index/sync:
     $ref: paths/admin_index_sync.yaml
   /admin/inventory-items:
     $ref: paths/admin_inventory-items.yaml
+  /admin/inventory-items/export:
+    $ref: paths/admin_inventory-items_export.yaml
   /admin/inventory-items/location-levels/batch:
     $ref: paths/admin_inventory-items_location-levels_batch.yaml
   /admin/inventory-items/{id}:
@@ -943,10 +986,16 @@ paths:
     $ref: paths/admin_invites_{id}.yaml
   /admin/invites/{id}/resend:
     $ref: paths/admin_invites_{id}_resend.yaml
+  /admin/layouts/configurations:
+    $ref: paths/admin_layouts_configurations.yaml
+  /admin/layouts/{zone}/configuration:
+    $ref: paths/admin_layouts_{zone}_configuration.yaml
   /admin/locales:
     $ref: paths/admin_locales.yaml
   /admin/locales/{code}:
     $ref: paths/admin_locales_{code}.yaml
+  /admin/modules:
+    $ref: paths/admin_modules.yaml
   /admin/notifications:
     $ref: paths/admin_notifications.yaml
   /admin/notifications/{id}:
@@ -992,12 +1041,13 @@ paths:
   /admin/orders/{id}/fulfillments/{fulfillment_id}/cancel:
     $ref: paths/admin_orders_{id}_fulfillments_{fulfillment_id}_cancel.yaml
   /admin/orders/{id}/fulfillments/{fulfillment_id}/mark-as-delivered:
-    $ref: >-
-      paths/admin_orders_{id}_fulfillments_{fulfillment_id}_mark-as-delivered.yaml
+    $ref: paths/admin_orders_{id}_fulfillments_{fulfillment_id}_mark-as-delivered.yaml
   /admin/orders/{id}/fulfillments/{fulfillment_id}/shipments:
     $ref: paths/admin_orders_{id}_fulfillments_{fulfillment_id}_shipments.yaml
   /admin/orders/{id}/line-items:
     $ref: paths/admin_orders_{id}_line-items.yaml
+  /admin/orders/{id}/payment-sessions/authorize:
+    $ref: paths/admin_orders_{id}_payment-sessions_authorize.yaml
   /admin/orders/{id}/preview:
     $ref: paths/admin_orders_{id}_preview.yaml
   /admin/orders/{id}/shipping-options:
@@ -1006,12 +1056,16 @@ paths:
     $ref: paths/admin_orders_{id}_transfer.yaml
   /admin/orders/{id}/transfer/cancel:
     $ref: paths/admin_orders_{id}_transfer_cancel.yaml
+  /admin/orders/{id}/transfer/guest:
+    $ref: paths/admin_orders_{id}_transfer_guest.yaml
   /admin/payment-collections:
     $ref: paths/admin_payment-collections.yaml
   /admin/payment-collections/{id}:
     $ref: paths/admin_payment-collections_{id}.yaml
   /admin/payment-collections/{id}/mark-as-paid:
     $ref: paths/admin_payment-collections_{id}_mark-as-paid.yaml
+  /admin/payment-collections/{id}/payment-sessions:
+    $ref: paths/admin_payment-collections_{id}_payment-sessions.yaml
   /admin/payments:
     $ref: paths/admin_payments.yaml
   /admin/payments/payment-providers:
@@ -1044,6 +1098,14 @@ paths:
     $ref: paths/admin_product-categories_{id}.yaml
   /admin/product-categories/{id}/products:
     $ref: paths/admin_product-categories_{id}_products.yaml
+  /admin/product-options:
+    $ref: paths/admin_product-options.yaml
+  /admin/product-options/{id}:
+    $ref: paths/admin_product-options_{id}.yaml
+  /admin/product-options/{id}/values:
+    $ref: paths/admin_product-options_{id}_values.yaml
+  /admin/product-options/{id}/values/{value_id}:
+    $ref: paths/admin_product-options_{id}_values_{value_id}.yaml
   /admin/product-tags:
     $ref: paths/admin_product-tags.yaml
   /admin/product-tags/{id}:
@@ -1074,8 +1136,8 @@ paths:
     $ref: paths/admin_products_{id}_images_{image_id}_variants_batch.yaml
   /admin/products/{id}/options:
     $ref: paths/admin_products_{id}_options.yaml
-  /admin/products/{id}/options/{option_id}:
-    $ref: paths/admin_products_{id}_options_{option_id}.yaml
+  /admin/products/{id}/options/batch:
+    $ref: paths/admin_products_{id}_options_batch.yaml
   /admin/products/{id}/variants:
     $ref: paths/admin_products_{id}_variants.yaml
   /admin/products/{id}/variants/batch:
@@ -1089,15 +1151,13 @@ paths:
   /admin/products/{id}/variants/{variant_id}/inventory-items:
     $ref: paths/admin_products_{id}_variants_{variant_id}_inventory-items.yaml
   /admin/products/{id}/variants/{variant_id}/inventory-items/{inventory_item_id}:
-    $ref: >-
-      paths/admin_products_{id}_variants_{variant_id}_inventory-items_{inventory_item_id}.yaml
+    $ref: paths/admin_products_{id}_variants_{variant_id}_inventory-items_{inventory_item_id}.yaml
   /admin/promotions:
     $ref: paths/admin_promotions.yaml
   /admin/promotions/rule-attribute-options/{rule_type}:
     $ref: paths/admin_promotions_rule-attribute-options_{rule_type}.yaml
   /admin/promotions/rule-value-options/{rule_type}/{rule_attribute_id}:
-    $ref: >-
-      paths/admin_promotions_rule-value-options_{rule_type}_{rule_attribute_id}.yaml
+    $ref: paths/admin_promotions_rule-value-options_{rule_type}_{rule_attribute_id}.yaml
   /admin/promotions/{id}:
     $ref: paths/admin_promotions_{id}.yaml
   /admin/promotions/{id}/buy-rules/batch:
@@ -1108,6 +1168,12 @@ paths:
     $ref: paths/admin_promotions_{id}_target-rules_batch.yaml
   /admin/promotions/{id}/{rule_type}:
     $ref: paths/admin_promotions_{id}_{rule_type}.yaml
+  /admin/property-labels:
+    $ref: paths/admin_property-labels.yaml
+  /admin/property-labels/batch:
+    $ref: paths/admin_property-labels_batch.yaml
+  /admin/property-labels/{id}:
+    $ref: paths/admin_property-labels_{id}.yaml
   /admin/refund-reasons:
     $ref: paths/admin_refund-reasons.yaml
   /admin/refund-reasons/{id}:
@@ -1158,6 +1224,14 @@ paths:
     $ref: paths/admin_sales-channels_{id}.yaml
   /admin/sales-channels/{id}/products:
     $ref: paths/admin_sales-channels_{id}_products.yaml
+  /admin/search:
+    $ref: paths/admin_search.yaml
+  /admin/search-indexes:
+    $ref: paths/admin_search-indexes.yaml
+  /admin/search-indexes/{id}:
+    $ref: paths/admin_search-indexes_{id}.yaml
+  /admin/search-indexes/{id}/reindex:
+    $ref: paths/admin_search-indexes_{id}_reindex.yaml
   /admin/shipping-option-types:
     $ref: paths/admin_shipping-option-types.yaml
   /admin/shipping-option-types/{id}:
@@ -1186,6 +1260,10 @@ paths:
     $ref: paths/admin_store-credit-accounts.yaml
   /admin/store-credit-accounts/{id}:
     $ref: paths/admin_store-credit-accounts_{id}.yaml
+  /admin/store-credit-accounts/{id}/credit:
+    $ref: paths/admin_store-credit-accounts_{id}_credit.yaml
+  /admin/store-credit-accounts/{id}/debit:
+    $ref: paths/admin_store-credit-accounts_{id}_debit.yaml
   /admin/store-credit-accounts/{id}/transactions:
     $ref: paths/admin_store-credit-accounts_{id}_transactions.yaml
   /admin/stores:
@@ -1206,8 +1284,6 @@ paths:
     $ref: paths/admin_tax-regions.yaml
   /admin/tax-regions/{id}:
     $ref: paths/admin_tax-regions_{id}.yaml
-  /admin/transaction-groups:
-    $ref: paths/admin_transaction-groups.yaml
   /admin/translations:
     $ref: paths/admin_translations.yaml
   /admin/translations/batch:
@@ -1216,6 +1292,8 @@ paths:
     $ref: paths/admin_translations_entities.yaml
   /admin/translations/settings:
     $ref: paths/admin_translations_settings.yaml
+  /admin/translations/settings/batch:
+    $ref: paths/admin_translations_settings_batch.yaml
   /admin/translations/statistics:
     $ref: paths/admin_translations_statistics.yaml
   /admin/uploads:
@@ -1230,6 +1308,16 @@ paths:
     $ref: paths/admin_users_me.yaml
   /admin/users/{id}:
     $ref: paths/admin_users_{id}.yaml
+  /admin/users/{id}/auth-providers:
+    $ref: paths/admin_users_{id}_auth-providers.yaml
+  /admin/users/{id}/reset-password:
+    $ref: paths/admin_users_{id}_reset-password.yaml
+  /admin/users/{id}/roles:
+    $ref: paths/admin_users_{id}_roles.yaml
+  /admin/users/{id}/roles/{role_id}:
+    $ref: paths/admin_users_{id}_roles_{role_id}.yaml
+  /admin/views/entities:
+    $ref: paths/admin_views_entities.yaml
   /admin/views/{entity}/columns:
     $ref: paths/admin_views_{entity}_columns.yaml
   /admin/views/{entity}/configurations:
@@ -1252,13 +1340,24 @@ paths:
     $ref: paths/admin_workflows-executions_{workflow_id}_subscribe.yaml
   /admin/workflows-executions/{workflow_id}/{transaction_id}:
     $ref: paths/admin_workflows-executions_{workflow_id}_{transaction_id}.yaml
-  /admin/workflows-executions/{workflow_id}/{transaction_id}/{step_id}/subscribe:
-    $ref: >-
-      paths/admin_workflows-executions_{workflow_id}_{transaction_id}_{step_id}_subscribe.yaml
+  /admin/workflows-executions/{workflow_id}/{transaction_id}/subscribe:
+    $ref: paths/admin_workflows-executions_{workflow_id}_{transaction_id}_subscribe.yaml
+  /auth/mfa/challenges/{id}/verify:
+    $ref: paths/auth_mfa_challenges_{id}_verify.yaml
+  /auth/mfa/factors:
+    $ref: paths/auth_mfa_factors.yaml
+  /auth/mfa/factors/{id}:
+    $ref: paths/auth_mfa_factors_{id}.yaml
+  /auth/mfa/factors/{id}/verify:
+    $ref: paths/auth_mfa_factors_{id}_verify.yaml
+  /auth/mfa/recovery-codes:
+    $ref: paths/auth_mfa_recovery-codes.yaml
   /auth/session:
     $ref: paths/auth_session.yaml
   /auth/token/refresh:
     $ref: paths/auth_token_refresh.yaml
+  /auth/user/providers:
+    $ref: paths/auth_user_providers.yaml
   /auth/user/{auth_provider}:
     $ref: paths/auth_user_{auth_provider}.yaml
   /auth/user/{auth_provider}/callback:
@@ -1269,12 +1368,14 @@ paths:
     $ref: paths/auth_user_{auth_provider}_reset-password.yaml
   /auth/user/{auth_provider}/update:
     $ref: paths/auth_user_{auth_provider}_update.yaml
+  /auth/{auth_provider}/user:
+    $ref: paths/auth_{auth_provider}_user.yaml
 components:
   securitySchemes:
     api_token:
       type: http
       x-displayName: API Token
-      scheme: bearer
+      scheme: basic
     jwt_token:
       type: http
       x-displayName: JWT Token

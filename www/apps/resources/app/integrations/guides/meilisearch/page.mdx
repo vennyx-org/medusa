@@ -3,7 +3,7 @@ products:
   - product
 ---
 
-import { Card, Prerequisites, Details, WorkflowDiagram } from "docs-ui"
+import { Card, Note, Prerequisites, Details, WorkflowDiagram } from "docs-ui"
 import { Github, PlaySolid } from "@medusajs/icons"
 
 export const metadata = {
@@ -13,6 +13,17 @@ export const metadata = {
 # {metadata.title}
 
 In this tutorial, you'll learn how to integrate Meilisearch with Medusa to enable advanced search capabilities in your storefront.
+
+<Note title="Deprecated" type="warning">
+
+This guide is deprecated as of Medusa v2.21.1, which introduced the [Search Module](/infrastructure-modules/search). Rather than the custom module this guide builds, consider one of the following instead:
+
+- [Medusa Search](!cloud!/search), the managed search service for Cloud projects. Refer to [Medusa Search vs Meilisearch](!cloud!/search/meilisearch) for a comparison.
+- A [Search Module Provider](/references/search/provider) for Meilisearch, which keeps Meilisearch behind the Search Module's index definitions and `query.search`.
+
+If you already followed this guide, refer to [Migrate from Meilisearch to Medusa Search](!cloud!/search/migrate-from-meilisearch) for the migration steps.
+
+</Note>
 
 When you install a Medusa application, you get a fully-fledged commerce platform with a Framework for customization. Medusa's architecture supports integrating third-party services, such as search engines, allowing you to build custom features around core commerce flows.
 
@@ -44,7 +55,7 @@ You can follow this tutorial whether you're new to Medusa or an advanced Medusa 
 
 <Prerequisites items={[
   {
-    text: "Node.js v20+",
+    text: "Node.js v20.19.0+ or v22.12.0+",
     link: "https://nodejs.org/en/download"
   },
   {
@@ -65,19 +76,19 @@ npx create-medusa-app@latest
 
 You'll first be asked for the project's name. Then, when asked whether you want to install the [Next.js Starter Storefront](../../../nextjs-starter/page.mdx), choose "Yes."
 
-Afterwards, the installation process will start, which will install the Medusa application in a directory with your project's name and the Next.js Starter Storefront in a separate directory named `{project-name}-storefront`.
-
-<Note title="Why is the storefront installed separately">
-
-The Medusa application is composed of a headless Node.js server and an admin dashboard. The storefront is installed or custom-built separately and connects to the Medusa application through its REST endpoints, called [API routes](!docs!/learn/fundamentals/api-routes). Learn more in [Medusa's Architecture documentation](!docs!/learn/introduction/architecture).
-
-</Note>
+Afterwards, the installation process will start, which will install the Medusa application as a monorepository in a directory with your project's name. The backend is installed in the `apps/backend` directory, and the Next.js Starter Storefront is installed in the `apps/storefront` directory.
 
 Once the installation finishes successfully, the Medusa Admin dashboard will open with a form to create a new user. Enter the user's credentials and submit the form. Afterwards, you can log in with the new user and explore the dashboard.
 
 <Note title="Ran into Errors">
 
 Check out the [troubleshooting guides](../../../troubleshooting/create-medusa-app-errors/page.mdx) for help.
+
+</Note>
+
+<Note>
+
+In this guide, all file paths of backend customizations are relative to the `apps/backend` directory of your Medusa project.
 
 </Note>
 
@@ -185,6 +196,8 @@ The first method you need to add to the service is a method that receives an arr
 Add the following methods to the `MeilisearchModuleService` class:
 
 ```ts title="src/modules/meilisearch/service.ts"
+import { MedusaError } from "@medusajs/framework/utils"
+
 export default class MeilisearchModuleService {
   // ...
   async getIndexName(type: MeilisearchIndexType) {
@@ -192,7 +205,10 @@ export default class MeilisearchModuleService {
       case "product":
         return this.options.productIndexName
       default:
-        throw new Error(`Invalid index type: ${type}`)
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `Invalid index type: ${type}`
+        )
     }
   }
 
@@ -670,7 +686,7 @@ It accepts as a second parameter a constructor function, which is the workflow's
 
 In the workflow's constructor function, you:
 
-1. Retrieve products from Medusa's database using `useQueryGraphStep`. This step uses Medusa's [Query](!docs!/learn/fundamentals/module-links/query) tool to retrieve data across modules. You pass it the pagination and filter parameters you received in the input.
+1. Retrieve products from Medusa's database using `useQueryGraphStep`. This step uses Medusa's [Query](!docs!/learn/fundamentals/query) tool to retrieve data across modules. You pass it the pagination and filter parameters you received in the input.
 2. Use [transform](!docs!/learn/fundamentals/workflows/variable-manipulation) to prepare two lists: one for published products to index in Meilisearch and another for unpublished products to delete from Meilisearch.
 3. Index the published products in Meilisearch using `syncProductsStep`.
 4. Delete unpublished products from Meilisearch using `deleteProductsFromMeilisearchStep`.
@@ -715,11 +731,16 @@ import {
   type SubscriberConfig,
 } from "@medusajs/framework"
 import { syncProductsWorkflow } from "../workflows/sync-products"
+import {
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 export default async function meilisearchSyncHandler({ 
   container,
 }: SubscriberArgs) {
-  const logger = container.resolve("logger")
+  const logger = container.resolve(
+    ContainerRegistrationKeys.LOGGER
+  )
   
   let hasMore = true
   let offset = 0
@@ -1053,12 +1074,17 @@ import {
   type SubscriberConfig,
 } from "@medusajs/framework"
 import { deleteProductsFromMeilisearchWorkflow } from "../workflows/delete-products-from-meilisearch"
+import {
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 export default async function productDeleteHandler({ 
   event: { data },
   container,
 }: SubscriberArgs<{ id: string }>) {
-  const logger = container.resolve("logger")
+  const logger = container.resolve(
+    ContainerRegistrationKeys.LOGGER
+  )
   
   logger.info(`Deleting product ${data.id} from Meilisearch`)
 
@@ -1097,12 +1123,10 @@ In this step, you'll customize the Next.js Starter Storefront to add search func
 
 <Note title="Reminder" forceMultiline>
 
-The Next.js Starter Storefront was installed in a separate directory from Medusa. The directory's name is `{your-project}-storefront`.
-
-So, if your Medusa application's directory is `medusa-search`, you can find the storefront by going back to the parent directory and changing to the `medusa-search-storefront` directory:
+The Next.js Starter Storefront is available in the `apps/storefront` directory of your project:
 
 ```bash
-cd ../medusa-search-storefront # change based on your project name
+cd apps/storefront
 ```
 
 </Note>

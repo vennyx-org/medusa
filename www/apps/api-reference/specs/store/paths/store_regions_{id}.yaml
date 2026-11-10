@@ -28,8 +28,7 @@ get:
         type: string
         example: en-US
         externalDocs:
-          url: >-
-            https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+          url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
           description: Learn more in the Serve Translations in Storefront guide.
     - name: fields
       in: query
@@ -57,8 +56,7 @@ get:
         type: string
         example: en-US
         externalDocs:
-          url: >-
-            https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+          url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
           description: Learn more in the Serve Translations in Storefront guide.
   x-codeSamples:
     - lang: JavaScript
@@ -96,3 +94,21 @@ get:
       $ref: ../components/responses/invalid_request_error.yaml
     '500':
       $ref: ../components/responses/500_error.yaml
+  x-allowed:
+    - id
+    - name
+    - currency_code
+    - created_at
+    - updated_at
+    - deleted_at
+    - metadata
+    - countries
+    - countries.id
+    - countries.iso_2
+    - countries.iso_3
+    - countries.num_code
+    - countries.name
+    - countries.display_name
+    - payment_providers
+    - payment_providers.id
+    - payment_providers.is_enabled

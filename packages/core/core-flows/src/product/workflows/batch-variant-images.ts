@@ -7,12 +7,13 @@ import {
   when,
 } from "@medusajs/framework/workflows-sdk"
 import { ProductVariantDTO } from "@medusajs/types"
+import { ProductVariantWorkflowEvents } from "@medusajs/framework/utils"
 import {
   addImagesToVariantStep,
   removeImagesFromVariantStep,
   updateProductVariantsStep,
 } from "../steps"
-import { useQueryGraphStep } from "../../common"
+import { emitEventStep, useQueryGraphStep } from "../../common"
 
 /**
  * The input for the batch variant-images workflow.
@@ -50,7 +51,7 @@ export const batchVariantImagesWorkflowId = "batch-variant-images"
 
 /**
  * This workflow manages the association between product variants and images in bulk.
- * It's used by the [Batch Variant Images Admin API Route](https://docs.medusajs.com/api/admin#products_postproductsidvariantsvariant_idimagesbatch).
+ * It's used by the [Batch Variant Images Admin API Route](https://docs.medusajs.com/api/admin/products/manage-images-of-product-variant).
  *
  * You can use this workflow within your own customizations or custom workflows to manage variant-image associations in bulk.
  * This is also useful when writing a [seed script](https://docs.medusajs.com/learn/fundamentals/custom-cli-scripts/seed-data) or a custom import script.
@@ -145,6 +146,17 @@ export const batchVariantImagesWorkflow = createWorkflow(
         added: data.res[0] ?? [],
         removed: data.res[1] ?? [],
       }
+    })
+
+    const variantIdEvents = transform({ normalizedInput }, (data) =>
+      data.normalizedInput.add.length || data.normalizedInput.remove.length
+        ? [{ id: data.normalizedInput.variant_id }]
+        : []
+    )
+
+    emitEventStep({
+      eventName: ProductVariantWorkflowEvents.UPDATED,
+      data: variantIdEvents,
     })
 
     return new WorkflowResponse(response)

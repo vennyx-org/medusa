@@ -11,12 +11,14 @@ import {
   MedusaError,
   Modules,
 } from "@medusajs/framework/utils"
-import { HttpTypes } from "@medusajs/types"
+import { HttpTypes } from "@medusajs/framework/types"
 
 export interface UpdateProviderJwtPayload {
   entity_id: string
   actor_type: string
   provider: string
+  purpose?: string
+  jti?: string
 }
 
 // Middleware to validate that a token is valid
@@ -30,6 +32,8 @@ export const validateToken = () => {
 
     const req_ = req as AuthenticatedMedusaRequest
 
+    const logger = req.scope.resolve(ContainerRegistrationKeys.LOGGER)
+
     const { http } = req_.scope.resolve<ConfigModule>(
       ContainerRegistrationKeys.CONFIG_MODULE
     ).projectConfig
@@ -40,7 +44,8 @@ export const validateToken = () => {
       ["bearer"],
       [actor_type],
       http.jwtPublicKey,
-      http.jwtVerifyOptions ?? http.jwtOptions
+      http.jwtVerifyOptions ?? http.jwtOptions,
+      logger
     ) as UpdateProviderJwtPayload | null
 
     const errorObject = new MedusaError(
@@ -48,13 +53,29 @@ export const validateToken = () => {
       `Invalid token`
     )
 
-    if (!token) {
+    if (!token || !token.entity_id) {
+      return next(errorObject)
+    }
+
+    // The password-update route must only accept tokens issued by the
+    // reset-password flow. Reject session bearer tokens (no purpose claim)
+    // and unbound tokens (no jti).
+    if (token.purpose !== "reset" || !token.jti) {
       return next(errorObject)
     }
 
     const authModule = req.scope.resolve<IAuthModuleService>(Modules.AUTH)
 
-    if (!token?.entity_id) {
+    try {
+      // Atomically verify and delete the single-use token row. Storing the
+      // fingerprint on a dedicated table (not on provider_metadata) keeps it
+      // safe from the password provider's metadata-merge on write.
+      await authModule.consumePasswordResetToken({
+        jti: token.jti,
+        provider: auth_provider,
+        entity_id: token.entity_id,
+      })
+    } catch {
       return next(errorObject)
     }
 

@@ -1,7 +1,19 @@
 export const logger = [
   {
+    "title": "compensatePaymentIfNeededStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/compensatePaymentIfNeededStep"
+  },
+  {
+    "title": "addGiftCardToCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addGiftCardToCartWorkflow"
+  },
+  {
     "title": "addShippingMethodToCartWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addShippingMethodToCartWorkflow"
+  },
+  {
+    "title": "addStoreCreditsToCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addStoreCreditsToCartWorkflow"
   },
   {
     "title": "addToCartWorkflow",
@@ -26,6 +38,10 @@ export const logger = [
   {
     "title": "refundPaymentAndRecreatePaymentSessionWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/refundPaymentAndRecreatePaymentSessionWorkflow"
+  },
+  {
+    "title": "removeGiftCardFromCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/removeGiftCardFromCartWorkflow"
   },
   {
     "title": "transferCartCustomerWorkflow",
@@ -66,6 +82,10 @@ export const logger = [
   {
     "title": "refundPaymentsStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/refundPaymentsStep"
+  },
+  {
+    "title": "authorizePaymentSessionForOrderWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/authorizePaymentSessionForOrderWorkflow"
   },
   {
     "title": "refundPaymentsWorkflow",

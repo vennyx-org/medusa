@@ -1,12 +1,13 @@
 {
-	"id": 48348,
+	"schemaVersion": "2.0",
+	"id": 49076,
 	"name": "payment-provider",
 	"variant": "project",
 	"kind": 1,
 	"flags": {},
 	"children": [
 		{
-			"id": 48349,
+			"id": 49077,
 			"name": "AbstractPaymentProvider",
 			"variant": "declaration",
 			"kind": 128,
@@ -15,7 +16,7 @@
 			},
 			"children": [
 				{
-					"id": 48350,
+					"id": 49079,
 					"name": "validateOptions",
 					"variant": "declaration",
 					"kind": 2048,
@@ -27,12 +28,12 @@
 							"fileName": "utils/src/payment/abstract-payment-provider.ts",
 							"line": 53,
 							"character": 9,
-							"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L53"
+							"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L53"
 						}
 					],
 					"signatures": [
 						{
-							"id": 48351,
+							"id": 49080,
 							"name": "validateOptions",
 							"variant": "signature",
 							"kind": 4096,
@@ -69,12 +70,12 @@
 									"fileName": "utils/src/payment/abstract-payment-provider.ts",
 									"line": 53,
 									"character": 9,
-									"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L53"
+									"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L53"
 								}
 							],
 							"parameters": [
 								{
-									"id": 48352,
+									"id": 49081,
 									"name": "options",
 									"variant": "param",
 									"kind": 32768,
@@ -98,7 +99,8 @@
 									"type": {
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+											"packageName": "typescript",
+											"packagePath": "lib/lib.es5.d.ts",
 											"qualifiedName": "Record"
 										},
 										"typeArguments": [
@@ -124,7 +126,7 @@
 					]
 				},
 				{
-					"id": 48358,
+					"id": 49087,
 					"name": "constructor",
 					"variant": "declaration",
 					"kind": 512,
@@ -136,12 +138,12 @@
 							"fileName": "utils/src/payment/abstract-payment-provider.ts",
 							"line": 105,
 							"character": 2,
-							"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L105"
+							"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L105"
 						}
 					],
 					"signatures": [
 						{
-							"id": 48359,
+							"id": 49088,
 							"name": "AbstractPaymentProvider",
 							"variant": "signature",
 							"kind": 16384,
@@ -170,12 +172,12 @@
 									"fileName": "utils/src/payment/abstract-payment-provider.ts",
 									"line": 105,
 									"character": 2,
-									"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L105"
+									"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L105"
 								}
 							],
 							"typeParameters": [
 								{
-									"id": 48360,
+									"id": 49089,
 									"name": "TConfig",
 									"variant": "typeParam",
 									"kind": 131072,
@@ -191,7 +193,8 @@
 									"default": {
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+											"packageName": "typescript",
+											"packagePath": "lib/lib.es5.d.ts",
 											"qualifiedName": "Record"
 										},
 										"typeArguments": [
@@ -211,7 +214,7 @@
 							],
 							"parameters": [
 								{
-									"id": 48361,
+									"id": 49090,
 									"name": "cradle",
 									"variant": "param",
 									"kind": 32768,
@@ -227,7 +230,8 @@
 									"type": {
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+											"packageName": "typescript",
+											"packagePath": "lib/lib.es5.d.ts",
 											"qualifiedName": "Record"
 										},
 										"typeArguments": [
@@ -243,15 +247,39 @@
 										"name": "Record",
 										"package": "typescript"
 									}
+								},
+								{
+									"id": 49091,
+									"name": "config",
+									"variant": "param",
+									"kind": 32768,
+									"flags": {},
+									"comment": {
+										"summary": [
+											{
+												"kind": "text",
+												"text": "The options passed to the Payment Module provider."
+											}
+										]
+									},
+									"type": {
+										"type": "reference",
+										"target": 49078,
+										"name": "TConfig",
+										"package": "@medusajs/utils",
+										"qualifiedName": "AbstractPaymentProvider.TConfig",
+										"refersToTypeParameter": true
+									},
+									"defaultValue": "..."
 								}
 							],
 							"type": {
 								"type": "reference",
-								"target": 48349,
+								"target": 49077,
 								"typeArguments": [
 									{
 										"type": "reference",
-										"target": 48360,
+										"target": 49078,
 										"name": "TConfig",
 										"package": "@medusajs/utils",
 										"qualifiedName": "AbstractPaymentProvider.TConfig",
@@ -265,7 +293,7 @@
 					]
 				},
 				{
-					"id": 48357,
+					"id": 49086,
 					"name": "identifier",
 					"variant": "declaration",
 					"kind": 1024,
@@ -329,7 +357,7 @@
 							"fileName": "utils/src/payment/abstract-payment-provider.ts",
 							"line": 140,
 							"character": 16,
-							"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L140"
+							"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L140"
 						}
 					],
 					"type": {
@@ -338,7 +366,7 @@
 					}
 				},
 				{
-					"id": 48367,
+					"id": 49096,
 					"name": "capturePayment",
 					"variant": "declaration",
 					"kind": 2048,
@@ -350,12 +378,12 @@
 							"fileName": "utils/src/payment/abstract-payment-provider.ts",
 							"line": 207,
 							"character": 11,
-							"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L207"
+							"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L207"
 						}
 					],
 					"signatures": [
 						{
-							"id": 48368,
+							"id": 49097,
 							"name": "capturePayment",
 							"variant": "signature",
 							"kind": 4096,
@@ -370,7 +398,7 @@
 										"kind": "inline-tag",
 										"tag": "@link",
 										"text": "authorizePayment",
-										"target": 48370
+										"target": 49099
 									},
 									{
 										"kind": "text",
@@ -380,7 +408,7 @@
 										"kind": "inline-tag",
 										"tag": "@link",
 										"text": "getWebhookActionAndData",
-										"target": 48394
+										"target": 49123
 									},
 									{
 										"kind": "text",
@@ -422,7 +450,7 @@
 										"kind": "inline-tag",
 										"tag": "@link",
 										"text": "authorizePayment",
-										"target": 48370
+										"target": 49099
 									},
 									{
 										"kind": "text",
@@ -479,12 +507,12 @@
 									"fileName": "utils/src/payment/abstract-payment-provider.ts",
 									"line": 207,
 									"character": 11,
-									"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L207"
+									"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L207"
 								}
 							],
 							"parameters": [
 								{
-									"id": 48369,
+									"id": 49098,
 									"name": "input",
 									"variant": "param",
 									"kind": 32768,
@@ -508,7 +536,8 @@
 									"type": {
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "CapturePaymentInput"
 										},
 										"name": "CapturePaymentInput",
@@ -519,14 +548,16 @@
 							"type": {
 								"type": "reference",
 								"target": {
-									"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+									"packageName": "typescript",
+									"packagePath": "lib/lib.es5.d.ts",
 									"qualifiedName": "Promise"
 								},
 								"typeArguments": [
 									{
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "CapturePaymentOutput"
 										},
 										"name": "CapturePaymentOutput",
@@ -550,7 +581,7 @@
 					}
 				},
 				{
-					"id": 48370,
+					"id": 49099,
 					"name": "authorizePayment",
 					"variant": "declaration",
 					"kind": 2048,
@@ -560,14 +591,14 @@
 					"sources": [
 						{
 							"fileName": "utils/src/payment/abstract-payment-provider.ts",
-							"line": 269,
+							"line": 280,
 							"character": 11,
-							"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L269"
+							"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L280"
 						}
 					],
 					"signatures": [
 						{
-							"id": 48371,
+							"id": 49100,
 							"name": "authorizePayment",
 							"variant": "signature",
 							"kind": 4096,
@@ -582,7 +613,7 @@
 										"kind": "inline-tag",
 										"tag": "@link",
 										"text": "capturePayment",
-										"target": 48367
+										"target": 49096
 									},
 									{
 										"kind": "text",
@@ -594,7 +625,47 @@
 									},
 									{
 										"kind": "text",
-										"text": " is created by the Payment\nModule, and it's associated with the order.\n\n#### Understanding "
+										"text": " is created by the Payment\nModule, and it's associated with the order.\n\n#### Deferred / Asynchronous Authorization\n\nFor payment methods where authorization does not happen immediately (e.g., bank transfers,\npayment links, vouchers like OXXO or boleto), return "
+									},
+									{
+										"kind": "code",
+										"text": "`status: \"pending_authorization\"`"
+									},
+									{
+										"kind": "text",
+										"text": " instead\nof "
+									},
+									{
+										"kind": "code",
+										"text": "`\"authorized\"`"
+									},
+									{
+										"kind": "text",
+										"text": ". This signals that:\n\n- No "
+									},
+									{
+										"kind": "code",
+										"text": "`Payment`"
+									},
+									{
+										"kind": "text",
+										"text": " record will be created yet.\n- The cart can still be completed and an order will be created with an \"awaiting\" payment status.\n- This method may be called again later (via a webhook or manual admin action) to check if the\n  payment has been completed. When the payment is confirmed, return "
+									},
+									{
+										"kind": "code",
+										"text": "`\"authorized\"`"
+									},
+									{
+										"kind": "text",
+										"text": " or "
+									},
+									{
+										"kind": "code",
+										"text": "`\"captured\"`"
+									},
+									{
+										"kind": "text",
+										"text": ".\n\n#### Understanding "
 									},
 									{
 										"kind": "code",
@@ -632,7 +703,7 @@
 										"kind": "inline-tag",
 										"tag": "@link",
 										"text": "initiatePayment",
-										"target": 48376
+										"target": 49105
 									},
 									{
 										"kind": "text",
@@ -669,7 +740,15 @@
 											},
 											{
 												"kind": "text",
-												"text": " field about the payment. Throws in case of an error."
+												"text": " field about the payment. Return "
+											},
+											{
+												"kind": "code",
+												"text": "`\"pending_authorization\"`"
+											},
+											{
+												"kind": "text",
+												"text": " for async payment methods. Throws in case of an error."
 											}
 										]
 									},
@@ -687,14 +766,14 @@
 							"sources": [
 								{
 									"fileName": "utils/src/payment/abstract-payment-provider.ts",
-									"line": 269,
+									"line": 280,
 									"character": 11,
-									"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L269"
+									"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L280"
 								}
 							],
 							"parameters": [
 								{
-									"id": 48372,
+									"id": 49101,
 									"name": "input",
 									"variant": "param",
 									"kind": 32768,
@@ -718,7 +797,8 @@
 									"type": {
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "AuthorizePaymentInput"
 										},
 										"name": "AuthorizePaymentInput",
@@ -729,14 +809,16 @@
 							"type": {
 								"type": "reference",
 								"target": {
-									"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+									"packageName": "typescript",
+									"packagePath": "lib/lib.es5.d.ts",
 									"qualifiedName": "Promise"
 								},
 								"typeArguments": [
 									{
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "AuthorizePaymentOutput"
 										},
 										"name": "AuthorizePaymentOutput",
@@ -760,7 +842,7 @@
 					}
 				},
 				{
-					"id": 48373,
+					"id": 49102,
 					"name": "cancelPayment",
 					"variant": "declaration",
 					"kind": 2048,
@@ -770,14 +852,14 @@
 					"sources": [
 						{
 							"fileName": "utils/src/payment/abstract-payment-provider.ts",
-							"line": 314,
+							"line": 325,
 							"character": 11,
-							"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L314"
+							"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L325"
 						}
 					],
 					"signatures": [
 						{
-							"id": 48374,
+							"id": 49103,
 							"name": "cancelPayment",
 							"variant": "signature",
 							"kind": 4096,
@@ -824,7 +906,7 @@
 										"kind": "inline-tag",
 										"tag": "@link",
 										"text": "authorizePayment",
-										"target": 48370
+										"target": 49099
 									},
 									{
 										"kind": "text",
@@ -870,7 +952,7 @@
 										"content": [
 											{
 												"kind": "code",
-												"text": "```ts\n// other imports...\nimport {\n  PaymentProviderError,\n  PaymentProviderSessionResponse,\n} from \"@medusajs/framework/types\"\n\n\nclass MyPaymentProviderService extends AbstractPaymentProvider<\n  Options\n> {\n  async cancelPayment(\n    input: CancelPaymentInput\n  ): Promise<CancelPaymentOutput> {\n    const externalId = input.data?.id\n\n    // assuming you have a client that cancels the payment\n    const paymentData = await this.client.cancelPayment(externalId)\n    return { data: paymentData }\n  }\n\n  // ...\n}\n```"
+												"text": "```ts\n// other imports...\nimport {\n  CancelPaymentInput,\n  CancelPaymentOutput,\n} from \"@medusajs/framework/types\"\n\n\nclass MyPaymentProviderService extends AbstractPaymentProvider<\n  Options\n> {\n  async cancelPayment(\n    input: CancelPaymentInput\n  ): Promise<CancelPaymentOutput> {\n    const externalId = input.data?.id\n\n    // assuming you have a client that cancels the payment\n    const paymentData = await this.client.cancelPayment(externalId)\n    return { data: paymentData }\n  }\n\n  // ...\n}\n```"
 											}
 										]
 									}
@@ -879,14 +961,14 @@
 							"sources": [
 								{
 									"fileName": "utils/src/payment/abstract-payment-provider.ts",
-									"line": 314,
+									"line": 325,
 									"character": 11,
-									"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L314"
+									"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L325"
 								}
 							],
 							"parameters": [
 								{
-									"id": 48375,
+									"id": 49104,
 									"name": "input",
 									"variant": "param",
 									"kind": 32768,
@@ -910,7 +992,8 @@
 									"type": {
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "CancelPaymentInput"
 										},
 										"name": "CancelPaymentInput",
@@ -921,14 +1004,16 @@
 							"type": {
 								"type": "reference",
 								"target": {
-									"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+									"packageName": "typescript",
+									"packagePath": "lib/lib.es5.d.ts",
 									"qualifiedName": "Promise"
 								},
 								"typeArguments": [
 									{
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "CancelPaymentOutput"
 										},
 										"name": "CancelPaymentOutput",
@@ -952,7 +1037,7 @@
 					}
 				},
 				{
-					"id": 48376,
+					"id": 49105,
 					"name": "initiatePayment",
 					"variant": "declaration",
 					"kind": 2048,
@@ -962,14 +1047,14 @@
 					"sources": [
 						{
 							"fileName": "utils/src/payment/abstract-payment-provider.ts",
-							"line": 379,
+							"line": 390,
 							"character": 11,
-							"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L379"
+							"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L390"
 						}
 					],
 					"signatures": [
 						{
-							"id": 48377,
+							"id": 49106,
 							"name": "initiatePayment",
 							"variant": "signature",
 							"kind": 4096,
@@ -1053,14 +1138,14 @@
 							"sources": [
 								{
 									"fileName": "utils/src/payment/abstract-payment-provider.ts",
-									"line": 379,
+									"line": 390,
 									"character": 11,
-									"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L379"
+									"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L390"
 								}
 							],
 							"parameters": [
 								{
-									"id": 48378,
+									"id": 49107,
 									"name": "input",
 									"variant": "param",
 									"kind": 32768,
@@ -1076,7 +1161,8 @@
 									"type": {
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "InitiatePaymentInput"
 										},
 										"name": "InitiatePaymentInput",
@@ -1087,14 +1173,16 @@
 							"type": {
 								"type": "reference",
 								"target": {
-									"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+									"packageName": "typescript",
+									"packagePath": "lib/lib.es5.d.ts",
 									"qualifiedName": "Promise"
 								},
 								"typeArguments": [
 									{
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "InitiatePaymentOutput"
 										},
 										"name": "InitiatePaymentOutput",
@@ -1118,7 +1206,7 @@
 					}
 				},
 				{
-					"id": 48379,
+					"id": 49108,
 					"name": "deletePayment",
 					"variant": "declaration",
 					"kind": 2048,
@@ -1128,14 +1216,14 @@
 					"sources": [
 						{
 							"fileName": "utils/src/payment/abstract-payment-provider.ts",
-							"line": 430,
+							"line": 441,
 							"character": 11,
-							"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L430"
+							"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L441"
 						}
 					],
 					"signatures": [
 						{
-							"id": 48380,
+							"id": 49109,
 							"name": "deletePayment",
 							"variant": "signature",
 							"kind": 4096,
@@ -1190,7 +1278,7 @@
 										"kind": "inline-tag",
 										"tag": "@link",
 										"text": "initiatePayment",
-										"target": 48376
+										"target": 49105
 									},
 									{
 										"kind": "text",
@@ -1229,14 +1317,14 @@
 							"sources": [
 								{
 									"fileName": "utils/src/payment/abstract-payment-provider.ts",
-									"line": 430,
+									"line": 441,
 									"character": 11,
-									"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L430"
+									"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L441"
 								}
 							],
 							"parameters": [
 								{
-									"id": 48381,
+									"id": 49110,
 									"name": "input",
 									"variant": "param",
 									"kind": 32768,
@@ -1260,7 +1348,8 @@
 									"type": {
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "DeletePaymentInput"
 										},
 										"name": "DeletePaymentInput",
@@ -1271,14 +1360,16 @@
 							"type": {
 								"type": "reference",
 								"target": {
-									"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+									"packageName": "typescript",
+									"packagePath": "lib/lib.es5.d.ts",
 									"qualifiedName": "Promise"
 								},
 								"typeArguments": [
 									{
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "DeletePaymentOutput"
 										},
 										"name": "DeletePaymentOutput",
@@ -1302,7 +1393,7 @@
 					}
 				},
 				{
-					"id": 48382,
+					"id": 49111,
 					"name": "getPaymentStatus",
 					"variant": "declaration",
 					"kind": 2048,
@@ -1312,14 +1403,14 @@
 					"sources": [
 						{
 							"fileName": "utils/src/payment/abstract-payment-provider.ts",
-							"line": 475,
+							"line": 486,
 							"character": 11,
-							"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L475"
+							"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L486"
 						}
 					],
 					"signatures": [
 						{
-							"id": 48383,
+							"id": 49112,
 							"name": "getPaymentStatus",
 							"variant": "signature",
 							"kind": 4096,
@@ -1363,14 +1454,14 @@
 							"sources": [
 								{
 									"fileName": "utils/src/payment/abstract-payment-provider.ts",
-									"line": 475,
+									"line": 486,
 									"character": 11,
-									"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L475"
+									"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L486"
 								}
 							],
 							"parameters": [
 								{
-									"id": 48384,
+									"id": 49113,
 									"name": "input",
 									"variant": "param",
 									"kind": 32768,
@@ -1394,7 +1485,8 @@
 									"type": {
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "GetPaymentStatusInput"
 										},
 										"name": "GetPaymentStatusInput",
@@ -1405,14 +1497,16 @@
 							"type": {
 								"type": "reference",
 								"target": {
-									"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+									"packageName": "typescript",
+									"packagePath": "lib/lib.es5.d.ts",
 									"qualifiedName": "Promise"
 								},
 								"typeArguments": [
 									{
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "GetPaymentStatusOutput"
 										},
 										"name": "GetPaymentStatusOutput",
@@ -1436,7 +1530,7 @@
 					}
 				},
 				{
-					"id": 48385,
+					"id": 49114,
 					"name": "refundPayment",
 					"variant": "declaration",
 					"kind": 2048,
@@ -1446,14 +1540,14 @@
 					"sources": [
 						{
 							"fileName": "utils/src/payment/abstract-payment-provider.ts",
-							"line": 532,
+							"line": 543,
 							"character": 11,
-							"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L532"
+							"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L543"
 						}
 					],
 					"signatures": [
 						{
-							"id": 48386,
+							"id": 49115,
 							"name": "refundPayment",
 							"variant": "signature",
 							"kind": 4096,
@@ -1500,7 +1594,7 @@
 										"kind": "inline-tag",
 										"tag": "@link",
 										"text": "capturePayment",
-										"target": 48367
+										"target": 49096
 									},
 									{
 										"kind": "text",
@@ -1510,7 +1604,7 @@
 										"kind": "inline-tag",
 										"tag": "@link",
 										"text": "refundPayment",
-										"target": 48385
+										"target": 49114
 									},
 									{
 										"kind": "text",
@@ -1573,14 +1667,14 @@
 							"sources": [
 								{
 									"fileName": "utils/src/payment/abstract-payment-provider.ts",
-									"line": 532,
+									"line": 543,
 									"character": 11,
-									"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L532"
+									"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L543"
 								}
 							],
 							"parameters": [
 								{
-									"id": 48387,
+									"id": 49116,
 									"name": "input",
 									"variant": "param",
 									"kind": 32768,
@@ -1604,7 +1698,8 @@
 									"type": {
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "RefundPaymentInput"
 										},
 										"name": "RefundPaymentInput",
@@ -1615,14 +1710,16 @@
 							"type": {
 								"type": "reference",
 								"target": {
-									"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+									"packageName": "typescript",
+									"packagePath": "lib/lib.es5.d.ts",
 									"qualifiedName": "Promise"
 								},
 								"typeArguments": [
 									{
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "RefundPaymentOutput"
 										},
 										"name": "RefundPaymentOutput",
@@ -1646,7 +1743,7 @@
 					}
 				},
 				{
-					"id": 48388,
+					"id": 49117,
 					"name": "retrievePayment",
 					"variant": "declaration",
 					"kind": 2048,
@@ -1656,14 +1753,14 @@
 					"sources": [
 						{
 							"fileName": "utils/src/payment/abstract-payment-provider.ts",
-							"line": 564,
+							"line": 575,
 							"character": 11,
-							"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L564"
+							"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L575"
 						}
 					],
 					"signatures": [
 						{
-							"id": 48389,
+							"id": 49118,
 							"name": "retrievePayment",
 							"variant": "signature",
 							"kind": 4096,
@@ -1681,7 +1778,7 @@
 										"content": [
 											{
 												"kind": "text",
-												"text": "The payment's data as found in the the payment provider."
+												"text": "The payment's data as found in the payment provider."
 											}
 										]
 									},
@@ -1699,14 +1796,14 @@
 							"sources": [
 								{
 									"fileName": "utils/src/payment/abstract-payment-provider.ts",
-									"line": 564,
+									"line": 575,
 									"character": 11,
-									"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L564"
+									"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L575"
 								}
 							],
 							"parameters": [
 								{
-									"id": 48390,
+									"id": 49119,
 									"name": "input",
 									"variant": "param",
 									"kind": 32768,
@@ -1730,7 +1827,8 @@
 									"type": {
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "RetrievePaymentInput"
 										},
 										"name": "RetrievePaymentInput",
@@ -1741,14 +1839,16 @@
 							"type": {
 								"type": "reference",
 								"target": {
-									"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+									"packageName": "typescript",
+									"packagePath": "lib/lib.es5.d.ts",
 									"qualifiedName": "Promise"
 								},
 								"typeArguments": [
 									{
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "RetrievePaymentOutput"
 										},
 										"name": "RetrievePaymentOutput",
@@ -1772,7 +1872,7 @@
 					}
 				},
 				{
-					"id": 48391,
+					"id": 49120,
 					"name": "updatePayment",
 					"variant": "declaration",
 					"kind": 2048,
@@ -1782,14 +1882,14 @@
 					"sources": [
 						{
 							"fileName": "utils/src/payment/abstract-payment-provider.ts",
-							"line": 612,
+							"line": 623,
 							"character": 11,
-							"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L612"
+							"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L623"
 						}
 					],
 					"signatures": [
 						{
-							"id": 48392,
+							"id": 49121,
 							"name": "updatePayment",
 							"variant": "signature",
 							"kind": 4096,
@@ -1804,7 +1904,7 @@
 										"kind": "inline-tag",
 										"tag": "@link",
 										"text": "initiatePayment",
-										"target": 48376
+										"target": 49105
 									},
 									{
 										"kind": "text",
@@ -1843,14 +1943,14 @@
 							"sources": [
 								{
 									"fileName": "utils/src/payment/abstract-payment-provider.ts",
-									"line": 612,
+									"line": 623,
 									"character": 11,
-									"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L612"
+									"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L623"
 								}
 							],
 							"parameters": [
 								{
-									"id": 48393,
+									"id": 49122,
 									"name": "input",
 									"variant": "param",
 									"kind": 32768,
@@ -1874,7 +1974,8 @@
 									"type": {
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "UpdatePaymentInput"
 										},
 										"name": "UpdatePaymentInput",
@@ -1885,14 +1986,16 @@
 							"type": {
 								"type": "reference",
 								"target": {
-									"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+									"packageName": "typescript",
+									"packagePath": "lib/lib.es5.d.ts",
 									"qualifiedName": "Promise"
 								},
 								"typeArguments": [
 									{
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "UpdatePaymentOutput"
 										},
 										"name": "UpdatePaymentOutput",
@@ -1916,7 +2019,7 @@
 					}
 				},
 				{
-					"id": 48394,
+					"id": 49123,
 					"name": "getWebhookActionAndData",
 					"variant": "declaration",
 					"kind": 2048,
@@ -1926,14 +2029,14 @@
 					"sources": [
 						{
 							"fileName": "utils/src/payment/abstract-payment-provider.ts",
-							"line": 698,
+							"line": 709,
 							"character": 11,
-							"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L698"
+							"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L709"
 						}
 					],
 					"signatures": [
 						{
-							"id": 48395,
+							"id": 49124,
 							"name": "getWebhookActionAndData",
 							"variant": "signature",
 							"kind": 4096,
@@ -2001,14 +2104,14 @@
 							"sources": [
 								{
 									"fileName": "utils/src/payment/abstract-payment-provider.ts",
-									"line": 698,
+									"line": 709,
 									"character": 11,
-									"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L698"
+									"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L709"
 								}
 							],
 							"parameters": [
 								{
-									"id": 48396,
+									"id": 49125,
 									"name": "data",
 									"variant": "param",
 									"kind": 32768,
@@ -2024,14 +2127,14 @@
 									"type": {
 										"type": "reflection",
 										"declaration": {
-											"id": 48397,
+											"id": 49126,
 											"name": "__type",
 											"variant": "declaration",
 											"kind": 65536,
 											"flags": {},
 											"children": [
 												{
-													"id": 48398,
+													"id": 49127,
 													"name": "data",
 													"variant": "declaration",
 													"kind": 1024,
@@ -2047,14 +2150,15 @@
 													"sources": [
 														{
 															"fileName": "types/dist/payment/mutations.d.ts",
-															"line": 289,
+															"line": 302,
 															"character": 8
 														}
 													],
 													"type": {
 														"type": "reference",
 														"target": {
-															"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+															"packageName": "typescript",
+															"packagePath": "lib/lib.es5.d.ts",
 															"qualifiedName": "Record"
 														},
 														"typeArguments": [
@@ -2072,7 +2176,7 @@
 													}
 												},
 												{
-													"id": 48399,
+													"id": 49128,
 													"name": "rawData",
 													"variant": "declaration",
 													"kind": 1024,
@@ -2088,7 +2192,7 @@
 													"sources": [
 														{
 															"fileName": "types/dist/payment/mutations.d.ts",
-															"line": 293,
+															"line": 306,
 															"character": 8
 														}
 													],
@@ -2102,9 +2206,22 @@
 															{
 																"type": "reference",
 																"target": {
-																	"sourceFileName": "../../node_modules/@types/node/buffer.d.ts",
+																	"packageName": "@types/node",
+																	"packagePath": "buffer.buffer.d.ts",
 																	"qualifiedName": "__global.Buffer"
 																},
+																"typeArguments": [
+																	{
+																		"type": "reference",
+																		"target": {
+																			"packageName": "typescript",
+																			"packagePath": "lib/lib.es5.d.ts",
+																			"qualifiedName": "ArrayBufferLike"
+																		},
+																		"name": "ArrayBufferLike",
+																		"package": "typescript"
+																	}
+																],
 																"name": "Buffer",
 																"package": "@types/node",
 																"qualifiedName": "__global.Buffer"
@@ -2113,7 +2230,7 @@
 													}
 												},
 												{
-													"id": 48400,
+													"id": 49129,
 													"name": "headers",
 													"variant": "declaration",
 													"kind": 1024,
@@ -2129,14 +2246,15 @@
 													"sources": [
 														{
 															"fileName": "types/dist/payment/mutations.d.ts",
-															"line": 297,
+															"line": 310,
 															"character": 8
 														}
 													],
 													"type": {
 														"type": "reference",
 														"target": {
-															"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+															"packageName": "typescript",
+															"packagePath": "lib/lib.es5.d.ts",
 															"qualifiedName": "Record"
 														},
 														"typeArguments": [
@@ -2158,17 +2276,10 @@
 												{
 													"title": "Properties",
 													"children": [
-														48398,
-														48399,
-														48400
+														49127,
+														49128,
+														49129
 													]
-												}
-											],
-											"sources": [
-												{
-													"fileName": "types/dist/payment/mutations.d.ts",
-													"line": 285,
-													"character": 13
 												}
 											]
 										}
@@ -2178,14 +2289,16 @@
 							"type": {
 								"type": "reference",
 								"target": {
-									"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+									"packageName": "typescript",
+									"packagePath": "lib/lib.es5.d.ts",
 									"qualifiedName": "Promise"
 								},
 								"typeArguments": [
 									{
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+											"packageName": "@medusajs/types",
+											"packagePath": "src/payment/provider.ts",
 											"qualifiedName": "WebhookActionResult"
 										},
 										"name": "WebhookActionResult",
@@ -2213,29 +2326,29 @@
 				{
 					"title": "Constructors",
 					"children": [
-						48358
+						49087
 					]
 				},
 				{
 					"title": "Properties",
 					"children": [
-						48357
+						49086
 					]
 				},
 				{
 					"title": "Methods",
 					"children": [
-						48350,
-						48367,
-						48370,
-						48373,
-						48376,
-						48379,
-						48382,
-						48385,
-						48388,
-						48391,
-						48394
+						49079,
+						49096,
+						49099,
+						49102,
+						49105,
+						49108,
+						49111,
+						49114,
+						49117,
+						49120,
+						49123
 					]
 				}
 			],
@@ -2244,12 +2357,12 @@
 					"fileName": "utils/src/payment/abstract-payment-provider.ts",
 					"line": 25,
 					"character": 22,
-					"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/core/utils/src/payment/abstract-payment-provider.ts#L25"
+					"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/core/utils/src/payment/abstract-payment-provider.ts#L25"
 				}
 			],
 			"typeParameters": [
 				{
-					"id": 48401,
+					"id": 49078,
 					"name": "TConfig",
 					"variant": "typeParam",
 					"kind": 131072,
@@ -2257,7 +2370,8 @@
 					"default": {
 						"type": "reference",
 						"target": {
-							"sourceFileName": "../../node_modules/typescript/lib/lib.es5.d.ts",
+							"packageName": "typescript",
+							"packagePath": "lib/lib.es5.d.ts",
 							"qualifiedName": "Record"
 						},
 						"typeArguments": [
@@ -2279,7 +2393,8 @@
 				{
 					"type": "reference",
 					"target": {
-						"sourceFileName": "../../../../packages/core/types/src/payment/provider.ts",
+						"packageName": "@medusajs/types",
+						"packagePath": "src/payment/provider.ts",
 						"qualifiedName": "IPaymentProvider"
 					},
 					"name": "IPaymentProvider",
@@ -2292,191 +2407,241 @@
 		{
 			"title": "Classes",
 			"children": [
-				48349
+				49077
 			]
 		}
 	],
 	"packageName": "@medusajs/utils",
 	"symbolIdMap": {
-		"48348": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49076": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": ""
 		},
-		"48349": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49077": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider"
 		},
-		"48350": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49078": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
+			"qualifiedName": "AbstractPaymentProvider.TConfig"
+		},
+		"49079": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.validateOptions"
 		},
-		"48351": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49080": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.validateOptions"
 		},
-		"48352": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49081": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "options"
 		},
-		"48357": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49086": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.identifier"
 		},
-		"48358": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49087": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.__constructor"
 		},
-		"48359": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49088": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider"
 		},
-		"48360": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49089": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.TConfig"
 		},
-		"48361": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49090": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "cradle"
 		},
-		"48367": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49091": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
+			"qualifiedName": "config"
+		},
+		"49096": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.capturePayment"
 		},
-		"48368": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49097": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.capturePayment"
 		},
-		"48369": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49098": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "input"
 		},
-		"48370": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49099": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.authorizePayment"
 		},
-		"48371": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49100": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.authorizePayment"
 		},
-		"48372": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49101": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "input"
 		},
-		"48373": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49102": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.cancelPayment"
 		},
-		"48374": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49103": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.cancelPayment"
 		},
-		"48375": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49104": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "input"
 		},
-		"48376": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49105": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.initiatePayment"
 		},
-		"48377": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49106": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.initiatePayment"
 		},
-		"48378": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49107": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "input"
 		},
-		"48379": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49108": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.deletePayment"
 		},
-		"48380": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49109": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.deletePayment"
 		},
-		"48381": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49110": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "input"
 		},
-		"48382": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49111": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.getPaymentStatus"
 		},
-		"48383": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49112": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.getPaymentStatus"
 		},
-		"48384": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49113": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "input"
 		},
-		"48385": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49114": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.refundPayment"
 		},
-		"48386": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49115": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.refundPayment"
 		},
-		"48387": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49116": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "input"
 		},
-		"48388": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49117": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.retrievePayment"
 		},
-		"48389": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49118": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.retrievePayment"
 		},
-		"48390": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49119": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "input"
 		},
-		"48391": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49120": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.updatePayment"
 		},
-		"48392": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49121": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.updatePayment"
 		},
-		"48393": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49122": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "input"
 		},
-		"48394": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49123": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.getWebhookActionAndData"
 		},
-		"48395": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49124": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "AbstractPaymentProvider.getWebhookActionAndData"
 		},
-		"48396": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
+		"49125": {
+			"packageName": "@medusajs/utils",
+			"packagePath": "src/payment/abstract-payment-provider.ts",
 			"qualifiedName": "data"
 		},
-		"48397": {
-			"sourceFileName": "../../../../packages/core/types/src/payment/mutations.ts",
+		"49126": {
+			"packageName": "@medusajs/types",
+			"packagePath": "src/payment/mutations.ts",
 			"qualifiedName": "__type"
 		},
-		"48398": {
-			"sourceFileName": "../../../../packages/core/types/src/payment/mutations.ts",
+		"49127": {
+			"packageName": "@medusajs/types",
+			"packagePath": "src/payment/mutations.ts",
 			"qualifiedName": "__type.data"
 		},
-		"48399": {
-			"sourceFileName": "../../../../packages/core/types/src/payment/mutations.ts",
+		"49128": {
+			"packageName": "@medusajs/types",
+			"packagePath": "src/payment/mutations.ts",
 			"qualifiedName": "__type.rawData"
 		},
-		"48400": {
-			"sourceFileName": "../../../../packages/core/types/src/payment/mutations.ts",
+		"49129": {
+			"packageName": "@medusajs/types",
+			"packagePath": "src/payment/mutations.ts",
 			"qualifiedName": "__type.headers"
-		},
-		"48401": {
-			"sourceFileName": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts",
-			"qualifiedName": "AbstractPaymentProvider.TConfig"
 		}
 	},
 	"files": {
@@ -2484,7 +2649,7 @@
 			"1": "../../../../packages/core/utils/src/payment/abstract-payment-provider.ts"
 		},
 		"reflections": {
-			"1": 48348
+			"1": 49076
 		}
 	}
 }

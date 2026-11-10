@@ -13,20 +13,23 @@ import { useTranslation } from "react-i18next"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { useCancelOrder } from "../../../../../hooks/api/orders"
 import { useDate } from "../../../../../hooks/use-date"
+import { useOrderPermissions } from "../../../../../hooks/use-resource-permissions"
 import {
   getCanceledOrderStatus,
   getOrderFulfillmentStatus,
   getOrderPaymentStatus,
 } from "../../../../../lib/order-helpers"
+import { ExtendedOrder } from "../../constants"
 
 type OrderGeneralSectionProps = {
-  order: HttpTypes.AdminOrder
+  order: ExtendedOrder
 }
 
 export const OrderGeneralSection = ({ order }: OrderGeneralSectionProps) => {
   const { t } = useTranslation()
   const prompt = usePrompt()
   const { getFullDate } = useDate()
+  const { canUpdate } = useOrderPermissions()
 
   const { mutateAsync: cancelOrder } = useCancelOrder(order.id)
 
@@ -34,7 +37,7 @@ export const OrderGeneralSection = ({ order }: OrderGeneralSectionProps) => {
     const res = await prompt({
       title: t("general.areYouSure"),
       description: t("orders.cancelWarning", {
-        id: `#${order.display_id}`,
+        id: `#${order.display_id}` as string,
       }),
       confirmText: t("actions.continue"),
       cancelText: t("actions.cancel"),
@@ -74,20 +77,22 @@ export const OrderGeneralSection = ({ order }: OrderGeneralSectionProps) => {
           <PaymentBadge order={order} />
           <FulfillmentBadge order={order} />
         </div>
-        <ActionMenu
-          groups={[
-            {
-              actions: [
-                {
-                  label: t("actions.cancel"),
-                  onClick: handleCancel,
-                  disabled: !!order.canceled_at,
-                  icon: <XCircle />,
-                },
-              ],
-            },
-          ]}
-        />
+        {canUpdate && (
+          <ActionMenu
+            groups={[
+              {
+                actions: [
+                  {
+                    label: t("actions.cancel"),
+                    onClick: handleCancel,
+                    disabled: !!order.canceled_at,
+                    icon: <XCircle />,
+                  },
+                ],
+              },
+            ]}
+          />
+        )}
       </div>
     </Container>
   )

@@ -1,14 +1,14 @@
 import {
+  AdminOrderLineItem,
   AdminProductVariant,
   AdminProductVariantInventoryItemLink,
-  OrderLineItemDTO,
 } from "@medusajs/types"
 
 /**
  * Check if the line item has inventory kit.
  */
 export function checkInventoryKit(
-  item: OrderLineItemDTO & {
+  item: AdminOrderLineItem & {
     variant?: AdminProductVariant & {
       inventory_items: AdminProductVariantInventoryItemLink[]
     }
@@ -23,6 +23,6 @@ export function checkInventoryKit(
   return (
     (!!variant.inventory_items.length && variant.inventory_items.length > 1) ||
     (variant.inventory_items.length === 1 &&
-      variant.inventory_items[0].required_quantity! > 1)
+      variant.inventory_items[0].required_quantity! !== 1)
   )
 }

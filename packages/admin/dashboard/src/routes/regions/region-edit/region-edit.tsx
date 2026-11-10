@@ -3,12 +3,12 @@ import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
 import { RouteDrawer } from "../../../components/modals"
-import { usePaymentProviders } from "../../../hooks/api/payments"
 import { useRegion } from "../../../hooks/api/regions"
 import { useStore } from "../../../hooks/api/store"
 import { currencies } from "../../../lib/data/currencies"
 import { EditRegionForm } from "./components/edit-region-form"
 import { usePricePreferences } from "../../../hooks/api/price-preferences"
+import { REGION_DETAIL_FIELDS } from "../region-detail/constants"
 
 export const RegionEdit = () => {
   const { t } = useTranslation()
@@ -20,7 +20,7 @@ export const RegionEdit = () => {
     isError: isRegionError,
     error: regionError,
   } = useRegion(id!, {
-    fields: "*payment_providers,*countries,+automatic_taxes",
+    fields: REGION_DETAIL_FIELDS,
   })
 
   const {
@@ -45,9 +45,9 @@ export const RegionEdit = () => {
 
   const isLoading = isRegionLoading || isStoreLoading || isPreferenceLoading
 
-  const storeCurrencies = (store?.supported_currencies ?? []).map(
-    (c) => currencies[c.currency_code.toUpperCase()]
-  )
+  const storeCurrencies = (store?.supported_currencies ?? [])
+    .map((c) => currencies[c.currency_code.toUpperCase()])
+    .filter(Boolean)
 
   if (isRegionError) {
     throw regionError

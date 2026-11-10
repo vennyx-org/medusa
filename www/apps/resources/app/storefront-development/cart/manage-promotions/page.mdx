@@ -20,31 +20,56 @@ In this guide, you'll learn how to manage cart promotions or discounts, includin
 
 ## Add Promotion to Cart
 
-To add a promotion to a cart, use the [Add Promotion API route](!api!/store#carts_postcartsidpromotions).
+To add a promotion to a cart, use the [Add Promotion API route](!api!/store/carts/add-promotions).
 
 For example:
 
-```ts
-fetch(`http://localhost:9000/store/carts/${cart.id}/promotions`, {
-  credentials: "include",
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "x-publishable-api-key": 
-      process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "temp",
-  },
-  body: JSON.stringify({
-    promo_codes: [promoCode],
-  }),
-})
-.then((res) => res.json())
-.then(({ cart }) => {
-  // use cart...
-  console.log(cart)
-})
-```
+<Note title="Tip">
 
-The [Add Promotion API route](!api!/store#carts_postcartsidpromotions) accepts the cart ID as a path parameter, and a `promo_codes` request body parameter, which is an array of promotion codes to apply to the cart.
+Learn how to install and configure the JS SDK in the [JS SDK documentation](../../../js-sdk/page.mdx).
+
+</Note>
+
+<CodeTabs group="store-request">
+  <CodeTab label="JS SDK" value="js-sdk">
+
+  ```ts
+  sdk.store.cart.addPromotions(cart.id, {
+    promo_codes: [promoCode],
+  })
+  .then(({ cart }) => {
+    // use cart...
+    console.log(cart)
+  })
+  ```
+
+  </CodeTab>
+  <CodeTab label="Fetch API" value="fetch">
+
+  ```ts
+  fetch(`http://localhost:9000/store/carts/${cart.id}/promotions`, {
+    credentials: "include",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-publishable-api-key": 
+        process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "temp",
+    },
+    body: JSON.stringify({
+      promo_codes: [promoCode],
+    }),
+  })
+  .then((res) => res.json())
+  .then(({ cart }) => {
+    // use cart...
+    console.log(cart)
+  })
+  ```
+
+  </CodeTab>
+</CodeTabs>
+
+The [Add Promotion API route](!api!/store/carts/add-promotions) accepts the cart ID as a path parameter, and a `promo_codes` request body parameter, which is an array of promotion codes to apply to the cart.
 
 The response includes the updated cart with the applied promotions. You can use this cart object to show the updated promotions to the customer.
 
@@ -54,7 +79,7 @@ The response includes the updated cart with the applied promotions. You can use 
 
 The cart object you retrieve in the storefront has a `promotions` field, which is an array of the promotions applied to the cart.
 
-You can refer to the [API reference](!api!/store#carts_cart_schema) for the expected fields in a promotion object.
+You can refer to the [API reference](!api!/store/carts/schema) for the expected fields in a promotion object.
 
 A promotion mainly has a `code` field. You can use that code to display the applied promotions to the customer, and later to [remove a promotion](#remove-promotion-from-cart) from the cart.
 
@@ -88,30 +113,49 @@ To show the total discount amount from the applied promotions, refer to the [Car
 
 ## Remove Promotion from Cart
 
-To remove a promotion from a cart, use the [Remove Promotion API route](!api!/store#carts_deletecartsidpromotions).
+To remove a promotion from a cart, use the [Remove Promotion API route](!api!/store/carts/remove-promotions-from-cart).
 
 For example:
 
-```ts
-fetch(`http://localhost:9000/store/carts/${cart.id}/promotions`, {
-  credentials: "include",
-  method: "DELETE",
-  headers: {
-    "Content-Type": "application/json",
-    "x-publishable-api-key": 
-      process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "temp",
-  },
-  body: JSON.stringify({
-    promo_codes: [code],
-  }),
-})
-.then((res) => res.json())
-.then(({ cart }) => {
-  // use cart...
-  console.log(cart)
-})
-```
+<CodeTabs group="store-request">
+  <CodeTab label="JS SDK" value="js-sdk">
 
-The [Remove Promotion API route](!api!/store#carts_deletecartsidpromotions) accepts the cart ID as a path parameter, and a `promo_codes` request body parameter, which is an array of promotion codes to remove from the cart.
+  ```ts
+  sdk.store.cart.removePromotions(cart.id, {
+    promo_codes: [code],
+  })
+  .then(({ cart }) => {
+    // use cart...
+    console.log(cart)
+  })
+  ```
+
+  </CodeTab>
+  <CodeTab label="Fetch API" value="fetch">
+
+  ```ts
+  fetch(`http://localhost:9000/store/carts/${cart.id}/promotions`, {
+    credentials: "include",
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "x-publishable-api-key": 
+        process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "temp",
+    },
+    body: JSON.stringify({
+      promo_codes: [code],
+    }),
+  })
+  .then((res) => res.json())
+  .then(({ cart }) => {
+    // use cart...
+    console.log(cart)
+  })
+  ```
+
+  </CodeTab>
+</CodeTabs>
+
+The [Remove Promotion API route](!api!/store/carts/remove-promotions-from-cart) accepts the cart ID as a path parameter, and a `promo_codes` request body parameter, which is an array of promotion codes to remove from the cart.
 
 The response includes the updated cart with the removed promotions. You can use this cart object to show the updated promotions to the customer.

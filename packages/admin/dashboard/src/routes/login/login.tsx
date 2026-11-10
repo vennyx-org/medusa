@@ -1,90 +1,76 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Alert, Button, Heading, Hint, Input, Text } from "@medusajs/ui"
-import { useForm } from "react-hook-form"
+import { Spinner } from "@medusajs/icons"
+import type { AuthTypes } from "@medusajs/types"
+import { Heading, InlineTip, Text } from "@medusajs/ui"
+import { useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import * as z from "zod"
 
-import { Form } from "../../components/common/form"
 import AvatarBox from "../../components/common/logo-box/avatar-box"
-import { useSignInWithEmailPass } from "../../hooks/api"
-import { useCloudAuthEnabled } from "../../hooks/api/cloud"
-import { isFetchError } from "../../lib/is-fetch-error"
+import { useAuthProviders } from "../../hooks/api"
 import { useExtension } from "../../providers/extension-provider"
 import { CloudAuthLogin } from "./components/cloud-auth-login"
-
-const LoginSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
-})
+import { EmailPassLogin } from "./components/email-pass-login"
+import { MfaChallengeCard } from "./components/mfa-challenge-card"
+import { SsoLogin } from "./components/sso-login"
+import { hasEmailPassProvider } from "./utils"
 
 export const Login = () => {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
   const { getWidgets } = useExtension()
-  const { data: cloudAuth } = useCloudAuthEnabled()
+  const [mfaChallenge, setMfaChallenge] =
+    useState<AuthTypes.AuthMfaChallengeDTO | null>(null)
+  const [mfaSuccessHandler, setMfaSuccessHandler] = useState<
+    ((token: string) => void | Promise<void>) | null
+  >(null)
 
-  const from = location.state?.from?.pathname || "/orders"
+  const from = location.state?.from?.pathname || "/"
 
-  const form = useForm<z.infer<typeof LoginSchema>>({
-    resolver: zodResolver(LoginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  })
+  const { providers, isLoading: isProvidersLoading } = useAuthProviders()
 
-  const { mutateAsync, isPending } = useSignInWithEmailPass()
+  const providerList = useMemo(() => providers ?? [], [providers])
+  const isEmailPassInstalled = useMemo(
+    () => hasEmailPassProvider(providerList),
+    [providerList]
+  )
 
-  const handleSubmit = form.handleSubmit(async ({ email, password }) => {
-    await mutateAsync(
-      {
-        email,
-        password,
-      },
-      {
-        onError: (error) => {
-          if (isFetchError(error)) {
-            if (error.status === 401) {
-              form.setError("email", {
-                type: "manual",
-                message: error.message,
-              })
+  const handleMfaChallenge = (
+    challenge: AuthTypes.AuthMfaChallengeDTO,
+    onSuccess: (token: string) => void | Promise<void>
+  ) => {
+    setMfaChallenge(challenge)
+    setMfaSuccessHandler(() => onSuccess)
+  }
 
-              return
+  if (mfaChallenge) {
+    return (
+      <div className="flex min-h-dvh w-dvw items-center justify-center bg-ui-bg-subtle">
+        <MfaChallengeCard
+          challenge={mfaChallenge}
+          onSuccess={(token) => {
+            if (mfaSuccessHandler) {
+              return mfaSuccessHandler(token)
             }
-          }
 
-          form.setError("root.serverError", {
-            type: "manual",
-            message: error.message,
-          })
-        },
-        onSuccess: () => {
-          navigate(from, { replace: true })
-        },
-      }
+            navigate(from, { replace: true })
+          }}
+          onBack={() => {
+            setMfaChallenge(null)
+            setMfaSuccessHandler(null)
+          }}
+        />
+      </div>
     )
-  })
-
-  const serverError = form.formState.errors?.root?.serverError?.message
-  const validationError =
-    form.formState.errors.email?.message ||
-    form.formState.errors.password?.message
-
-  const loginAfterWidgets = [...getWidgets("login.after")] // cloning to avoid mutating the original array below
-  if (cloudAuth?.enabled) {
-    loginAfterWidgets.push(CloudAuthLogin)
   }
 
   return (
-    <div className="bg-ui-bg-subtle flex min-h-dvh w-dvw items-center justify-center">
+    <div className="flex min-h-dvh w-dvw items-center justify-center bg-ui-bg-subtle">
       <div className="m-4 flex w-full max-w-[280px] flex-col items-center">
         <AvatarBox />
         <div className="mb-4 flex flex-col items-center">
           <Heading>{t("login.title")}</Heading>
-          <Text size="small" className="text-ui-fg-subtle text-center">
+          <Text size="small" className="text-center text-ui-fg-subtle">
             {t("login.hint")}
           </Text>
         </div>
@@ -92,88 +78,44 @@ export const Login = () => {
           {getWidgets("login.before").map((Component, i) => {
             return <Component key={i} />
           })}
-          <Form {...form}>
-            <form
-              onSubmit={handleSubmit}
-              className="flex w-full flex-col gap-y-6"
-            >
-              <div className="flex flex-col gap-y-1">
-                <Form.Field
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => {
-                    return (
-                      <Form.Item>
-                        <Form.Control>
-                          <Input
-                            autoComplete="email"
-                            {...field}
-                            className="bg-ui-bg-field-component"
-                            placeholder={t("fields.email")}
-                          />
-                        </Form.Control>
-                      </Form.Item>
-                    )
-                  }}
-                />
-                <Form.Field
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => {
-                    return (
-                      <Form.Item>
-                        <Form.Label>{}</Form.Label>
-                        <Form.Control>
-                          <Input
-                            type="password"
-                            autoComplete="current-password"
-                            {...field}
-                            className="bg-ui-bg-field-component"
-                            placeholder={t("fields.password")}
-                          />
-                        </Form.Control>
-                      </Form.Item>
-                    )
-                  }}
-                />
-              </div>
-              {validationError && (
-                <div className="text-center">
-                  <Hint className="inline-flex" variant={"error"}>
-                    {validationError}
-                  </Hint>
-                </div>
-              )}
-              {serverError && (
-                <Alert
-                  className="bg-ui-bg-base items-center p-2"
-                  dismissible
-                  variant="error"
-                >
-                  {serverError}
-                </Alert>
-              )}
-              <Button className="w-full" type="submit" isLoading={isPending}>
-                {t("actions.continueWithEmail")}
-              </Button>
-            </form>
-          </Form>
-          {loginAfterWidgets.map((Component, i) => {
+          {isProvidersLoading ? (
+            <div className="flex w-full items-center justify-center py-6">
+              <Spinner className="animate-spin text-ui-fg-subtle" />
+            </div>
+          ) : !providerList.length ? (
+            <div>
+              <InlineTip label={t("general.tip")}>
+                {t("auth.login.noProviders")}
+              </InlineTip>
+            </div>
+          ) : (
+            isEmailPassInstalled && (
+              <EmailPassLogin onMfaChallenge={handleMfaChallenge} />
+            )
+          )}
+          {getWidgets("login.after").map((Component, i) => {
             return <Component key={i} />
           })}
-        </div>
-        <span className="text-ui-fg-muted txt-small my-6">
-          <Trans
-            i18nKey="login.forgotPassword"
-            components={[
-              <Link
-                key="reset-password-link"
-                to="/reset-password"
-                className="text-ui-fg-interactive transition-fg hover:text-ui-fg-interactive-hover focus-visible:text-ui-fg-interactive-hover font-medium outline-none"
-              />,
-            ]}
+          <CloudAuthLogin onMfaChallenge={handleMfaChallenge} />
+          <SsoLogin
+            providers={providerList}
+            onMfaChallenge={handleMfaChallenge}
           />
-        </span>
+        </div>
+        {isEmailPassInstalled && (
+          <span className="txt-small my-6 text-ui-fg-muted">
+            <Trans
+              i18nKey="login.forgotPassword"
+              components={[
+                <Link
+                  key="reset-password-link"
+                  to="/reset-password"
+                  className="font-medium text-ui-fg-interactive outline-none transition-fg hover:text-ui-fg-interactive-hover focus-visible:text-ui-fg-interactive-hover"
+                />,
+              ]}
+            />
+          </span>
+        )}
       </div>
     </div>
   )

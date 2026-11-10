@@ -19,7 +19,11 @@ import {
 import { TagsOperationDescriptionSectionWorkflowBadgeProps } from "./WorkflowBadge"
 import { TagsOperationDescriptionSectionEventsProps } from "./Events"
 import { TagsOperationDescriptionSectionDeprecationNoticeProps } from "./DeprecationNotice"
+import { TagsOperationDescriptionSectionFieldRestrictionsProps } from "./FieldRestrictions"
 import { Feedback } from "@/components/Feedback"
+import { useArea } from "@/providers/area"
+import { resolveApiRefDocUrl } from "@/utils/resolve-doc-url"
+import ViewAsMarkdown from "@/components/ViewAsMarkdown"
 
 const TagsOperationDescriptionSectionSecurity =
   dynamic<TagsOperationDescriptionSectionSecurityProps>(
@@ -51,12 +55,18 @@ const TagsOperationDescriptionSectionDeprecationNotice =
     async () => import("./DeprecationNotice")
   ) as React.FC<TagsOperationDescriptionSectionDeprecationNoticeProps>
 
+const TagsOperationDescriptionSectionFieldRestrictions =
+  dynamic<TagsOperationDescriptionSectionFieldRestrictionsProps>(
+    async () => import("./FieldRestrictions")
+  ) as React.FC<TagsOperationDescriptionSectionFieldRestrictionsProps>
+
 type TagsOperationDescriptionSectionProps = {
   operation: OpenAPI.Operation
 }
 const TagsOperationDescriptionSection = ({
   operation,
 }: TagsOperationDescriptionSectionProps) => {
+  const { area } = useArea()
   return (
     <>
       <H2>
@@ -106,6 +116,9 @@ const TagsOperationDescriptionSection = ({
           </Tooltip>
         ))}
       </H2>
+      {operation["x-path"] && (
+        <ViewAsMarkdown path={operation["x-path"]} className="my-1" />
+      )}
       <div className="my-1">
         <MDXContentClient content={operation.description} />
       </div>
@@ -118,7 +131,7 @@ const TagsOperationDescriptionSection = ({
         <>
           Related guide:{" "}
           <Link
-            href={operation.externalDocs.url}
+            href={resolveApiRefDocUrl(operation.externalDocs.url, area)}
             target="_blank"
             variant="content"
             data-testid="related-guide-link"
@@ -144,6 +157,13 @@ const TagsOperationDescriptionSection = ({
           parameters={operation.parameters}
         />
       )}
+      {((operation["x-allowed"]?.length || 0) > 0 ||
+        (operation["x-disallowed"]?.length || 0) > 0) && (
+        <TagsOperationDescriptionSectionFieldRestrictions
+          allowed={operation["x-allowed"]}
+          disallowed={operation["x-disallowed"]}
+        />
+      )}
       {operation.requestBody?.content !== undefined &&
         Object.keys(operation.requestBody.content).length > 0 && (
           <TagsOperationDescriptionSectionRequest
@@ -162,4 +182,6 @@ const TagsOperationDescriptionSection = ({
   )
 }
 
-export default TagsOperationDescriptionSection
+// memoized: props (operation) are referentially stable, so this heavy subtree
+// doesn't re-render on scroll-spy activePath/pathname changes.
+export default React.memo(TagsOperationDescriptionSection)

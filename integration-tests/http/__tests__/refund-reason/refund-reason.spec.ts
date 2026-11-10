@@ -3,16 +3,19 @@ import {
   adminHeaders,
   createAdminUser,
 } from "../../../helpers/create-admin-user"
+import { Modules } from "@medusajs/utils"
+import { updateRefundReasonsWorkflow } from "@medusajs/core-flows"
 
 jest.setTimeout(30000)
 
 medusaIntegrationTestRunner({
-  testSuite: ({ dbConnection, api, getContainer }) => {
+  testSuite: ({ dbConnection, api, getContainer, dbUtils }) => {
     let refundReason1
     let refundReason2
+    let appContainer
 
-    beforeEach(async () => {
-      const appContainer = getContainer()
+    beforeAll(async () => {
+      appContainer = getContainer()
       await createAdminUser(dbConnection, adminHeaders, appContainer)
 
       refundReason1 = (
@@ -30,6 +33,8 @@ medusaIntegrationTestRunner({
           adminHeaders
         )
       ).data.refund_reason
+
+      await dbUtils.snapshot()
     })
 
     describe("GET /admin/refund-reasons", () => {
@@ -44,11 +49,26 @@ medusaIntegrationTestRunner({
         expect(response.data.count).toEqual(5) // There are 3 default ones
         expect(response.data.refund_reasons).toEqual(
           expect.arrayContaining([
-            expect.objectContaining({ label: "Customer Care Adjustment", code: "customer_care_adjustment" }),
-            expect.objectContaining({ label: "Shipping Issue", code: "shipping_issue" }),
-            expect.objectContaining({ label: "Pricing Error", code: "pricing_error" }),
-            expect.objectContaining({ label: "reason 1 - too big", code: "too_big"  }),
-            expect.objectContaining({ label: "reason 2 - too small", code: "too_small"  }),
+            expect.objectContaining({
+              label: "Customer Care Adjustment",
+              code: "customer_care_adjustment",
+            }),
+            expect.objectContaining({
+              label: "Shipping Issue",
+              code: "shipping_issue",
+            }),
+            expect.objectContaining({
+              label: "Pricing Error",
+              code: "pricing_error",
+            }),
+            expect.objectContaining({
+              label: "reason 1 - too big",
+              code: "too_big",
+            }),
+            expect.objectContaining({
+              label: "reason 2 - too small",
+              code: "too_small",
+            }),
           ])
         )
       })
@@ -154,6 +174,25 @@ medusaIntegrationTestRunner({
               `Refund reason with id: ${refundReason1.id.id} not found`
             )
           })
+      })
+    })
+
+    describe("workflows", () => {
+      it("updateRefundReasonsWorkflow - should not call listRefundReasons when data is empty", async () => {
+        const paymentService = appContainer.resolve(Modules.PAYMENT)
+        const listRefundReasonsSpy = jest.spyOn(
+          paymentService,
+          "listRefundReasons"
+        )
+
+        const { result } = await updateRefundReasonsWorkflow(appContainer).run({
+          input: [],
+        })
+
+        expect(result).toEqual([])
+        expect(listRefundReasonsSpy).not.toHaveBeenCalled()
+
+        listRefundReasonsSpy.mockRestore()
       })
     })
   },

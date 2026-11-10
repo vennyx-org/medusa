@@ -60,7 +60,7 @@ export const OrderEditItemsSection = ({
     return preview.items.filter(
       (i) =>
         i.title.toLowerCase().includes(filterTerm) ||
-        i.product_title.toLowerCase().includes(filterTerm)
+        i.product_title?.toLowerCase().includes(filterTerm)
     )
   }, [preview, filterTerm])
 
@@ -137,7 +137,7 @@ export const OrderEditItemsSection = ({
             background:
               "repeating-linear-gradient(-45deg, rgb(212, 212, 216, 0.15), rgb(212, 212, 216,.15) 10px, transparent 10px, transparent 20px)",
           }}
-          className="bg-ui-bg-field mt-4 block h-[56px] w-full rounded-lg border border-dashed"
+          className="mt-4 block h-[56px] w-full rounded-lg border border-dashed bg-ui-bg-field"
         />
       )}
     </div>

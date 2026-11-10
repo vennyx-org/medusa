@@ -1,5 +1,27 @@
 import { Context } from "../shared-context"
 
+// TODO: Comment temporarely and we will re enable it in the near future #14478
+// /**
+//  * Configuration options for individual events.
+//  */
+// export interface EventOptions {
+//   /**
+//    * Priority level for the event processing.
+//    * Lower numbers indicate higher priority.
+//    */
+//   priority?: number
+// }
+
+// /**
+//  * Registry for event bus events options types.
+//  * Events will be added to this registry to serve as a global configuration for all events
+//  * as part of the event bus module service module options.
+//  *
+//  * Modules augment this interface using declaration merging to register their event configurations.
+//  * Custom events can be added via declaration merging in your project.
+//  */
+// export interface EventBusEventsOptions {}
+
 export type Subscriber<TData = unknown> = (data: Event<TData>) => Promise<void>
 
 export type SubscriberContext = {
@@ -22,6 +44,14 @@ export type EventMetadata = Record<string, unknown> & {
    * When set, you must release the grouped events using the Event Module's `releaseGroupedEvents` method to emit the events.
    */
   eventGroupId?: string
+  /**
+   * The date the event was emitted.
+   */
+  created_at?: Date
+  /**
+   * The date the event was published to the event bus. If it's a grouped event, this will be the date the group was released.
+   */
+  published_at?: Date
 }
 
 export type Event<TData = unknown> = {

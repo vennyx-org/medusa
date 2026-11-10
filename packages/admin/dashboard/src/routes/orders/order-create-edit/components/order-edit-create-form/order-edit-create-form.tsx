@@ -15,6 +15,7 @@ import {
   useCancelOrderEdit,
   useRequestOrderEdit,
 } from "../../../../../hooks/api/order-edits"
+import { useUpdateOrderChange } from "../../../../../hooks/api/orders"
 import { getStylizedAmount } from "../../../../../lib/money-amount-helpers"
 import { OrderEditItemsSection } from "./order-edit-items-section"
 import { CreateOrderEditSchemaType, OrderEditCreateSchema } from "./schema"
@@ -43,14 +44,18 @@ export const OrderEditCreateForm = ({
 
   const isRequestRunning = isCanceling || isRequesting
 
+  const { mutateAsync: updateOrderChange } = useUpdateOrderChange(
+    preview?.order_change?.id ?? ""
+  )
+
   /**
    * FORM
    */
   const form = useForm<CreateOrderEditSchemaType>({
     defaultValues: () => {
       return Promise.resolve({
-        note: "", // TODO: add note when update edit route is added
-        send_notification: false, // TODO: not supported in the API ATM
+        note: "",
+        send_notification: false,
       })
     },
     resolver: zodResolver(OrderEditCreateSchema),
@@ -72,13 +77,18 @@ export const OrderEditCreateForm = ({
         return
       }
 
-      await requestOrderEdit()
+      if (data.note && preview?.order_change?.id) {
+        await updateOrderChange({ internal_note: data.note })
+      }
+
+      await requestOrderEdit({ no_notification: !data.send_notification })
 
       toast.success(t("orders.edits.createSuccessToast"))
       handleSuccess()
     } catch (e) {
       toast.error(t("general.error"), {
-        description: e.message,
+        description:
+          e instanceof Error ? e.message : t("errorBoundary.defaultTitle"),
       })
     }
   })
@@ -169,7 +179,7 @@ export const OrderEditCreateForm = ({
             />
 
             {/* SEND NOTIFICATION*/}
-            <div className="bg-ui-bg-field mt-8 rounded-lg border py-2 pl-2 pr-4">
+            <div className="mt-8 rounded-lg border bg-ui-bg-field py-2 pl-2 pr-4">
               <Form.Field
                 control={form.control}
                 name="send_notification"
@@ -188,10 +198,10 @@ export const OrderEditCreateForm = ({
                         </Form.Control>
                         <div className="block">
                           <Form.Label>
-                            {t("orders.returns.sendNotification")}
+                            {t("orders.edits.sendNotification")}
                           </Form.Label>
                           <Form.Hint className="!mt-1">
-                            {t("orders.returns.sendNotificationHint")}
+                            {t("orders.edits.sendNotificationHint")}
                           </Form.Hint>
                         </div>
                       </div>

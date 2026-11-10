@@ -1,6 +1,7 @@
 import { MedusaContainer } from "@medusajs/framework/types"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { dynamicImport } from "@medusajs/utils"
+import compression from "compression"
 import createStore from "connect-redis"
 import cookieParser from "cookie-parser"
 import express, { Express, RequestHandler } from "express"
@@ -10,10 +11,35 @@ import morgan from "morgan"
 import path from "path"
 import { configManager } from "../config"
 import { MedusaRequest, MedusaResponse } from "./types"
+import {
+  compressionOptions,
+  shouldCompressResponse,
+} from "./utils/http-compression"
 
 const NOISY_ENDPOINTS_CHUNKS = ["@fs", "@id", "@vite", "@react", "node_modules"]
 
 const isHealthCheck = (req: MedusaRequest) => req.path === "/health"
+
+/**
+ * Resolves the `sameSite` and `secure` flags used for the session cookie.
+ *
+ * In production/staging the cookie must be `Secure`, but `sameSite` is kept
+ * at `"lax"` rather than `"none"` to prevent CSRF: `SameSite=none` allows the
+ * cookie to be attached to cross-site POSTs from a malicious page, which is
+ * the root cause of GHSA-jhvc-qx3m-6r3q.
+ */
+export function resolveSessionCookieSecurity({
+  isProduction,
+  isStaging,
+}: {
+  isProduction: boolean
+  isStaging: boolean
+}): { sameSite: "lax" | boolean; secure: boolean } {
+  if (isProduction || isStaging) {
+    return { sameSite: "lax", secure: true }
+  }
+  return { sameSite: false, secure: false }
+}
 
 export async function expressLoader({
   app,
@@ -34,12 +60,10 @@ export async function expressLoader({
   const isTest = NODE_ENV === "test"
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
 
-  let sameSite: string | boolean = false
-  let secure = false
-  if (isProduction || isStaging) {
-    secure = true
-    sameSite = "none"
-  }
+  const { sameSite, secure } = resolveSessionCookieSecurity({
+    isProduction,
+    isStaging,
+  })
 
   const { http, sessionOptions, cookieOptions } = configModule.projectConfig
   const sessionOpts = {
@@ -83,6 +107,29 @@ export async function expressLoader({
   }
 
   app.set("trust proxy", 1)
+
+  /**
+   * Register the HTTP compression middleware when it's enabled through
+   * `projectConfig.http.compression`. It has to be registered before the
+   * route handlers so it can compress the responses they produce. The
+   * `filter` additionally skips compression for requests that opt out via
+   * the `x-no-compression` header.
+   */
+  const httpCompressionOptions = compressionOptions(configModule.projectConfig)
+  if (httpCompressionOptions.enabled) {
+    // `compression` ships its own copy of the Express types, so both its
+    // filter input and its middleware output have to be bridged to the
+    // Express types used here. `shouldCompressResponse` additionally reads
+    // `req.scope` off the Medusa request, which only exists at runtime, hence
+    // the casts through `unknown`.
+    const compressionMiddleware = compression({
+      ...httpCompressionOptions,
+      filter:
+        shouldCompressResponse as unknown as compression.CompressionFilter,
+    }) as unknown as RequestHandler
+
+    app.use(compressionMiddleware)
+  }
 
   /**
    * Method to skip logging HTTP requests. We skip in test environment

@@ -1,5 +1,7 @@
 import type { FulfillmentWorkflow } from "@medusajs/framework/types"
 import {
+  Hook,
+  createHook,
   createWorkflow,
   transform,
   WorkflowData,
@@ -8,12 +10,25 @@ import {
 import { calculateShippingOptionsPricesStep } from "../steps"
 import { useQueryGraphStep } from "../../common"
 import { cartFieldsForCalculateShippingOptionsPrices } from "../../cart/utils/fields"
+import { filterCartItemsByShippingProfile } from "../../cart/utils/filter-items-by-shipping-profile"
+import { calculatedShippingPricingContextResult } from "../../cart/utils/schemas"
 
 export const calculateShippingOptionsPricesWorkflowId =
   "calculate-shipping-options-prices-workflow"
 /**
+ * The `setCalculatedShippingPricingContext` hook of {@link calculateShippingOptionsPricesWorkflow}.
+ */
+type SetCalculatedShippingPricingContextHook = Hook<
+  "setCalculatedShippingPricingContext",
+  {
+    input: FulfillmentWorkflow.CalculateShippingOptionsPricesWorkflowInput
+  },
+  Record<string, any> | undefined
+>
+
+/**
  * This workflow calculates the prices for one or more shipping options in a cart. It's used by the
- * [Calculate Shipping Option Price Store API Route](https://docs.medusajs.com/api/store#shipping-options_postshippingoptionsidcalculate).
+ * [Calculate Shipping Option Price Store API Route](https://docs.medusajs.com/api/store/shipping-options/calculate-shipping-option-price).
  *
  * :::note
  *
@@ -45,12 +60,49 @@ export const calculateShippingOptionsPricesWorkflowId =
  * @summary
  *
  * Calculate shipping option prices in a cart.
+ *
+ * @property hooks.setCalculatedShippingPricingContext - This hook is executed after the cart is retrieved and before the shipping option prices are calculated.
+ * You can consume this hook to return any custom context that is forwarded as-is to the fulfillment provider's `calculatePrice` method.
+ *
+ * For example, you can consume the hook to pass a negotiated carrier contract to the provider:
+ *
+ * ```ts
+ * import { calculateShippingOptionsPricesWorkflow } from "@medusajs/medusa/core-flows"
+ * import { StepResponse } from "@medusajs/workflows-sdk"
+ *
+ * calculateShippingOptionsPricesWorkflow.hooks.setCalculatedShippingPricingContext(
+ *   async ({ input }, { container }) => {
+ *     const query = container.resolve("query")
+ *
+ *     const { data: [cart]} = await query.graph({
+ *       entity: "cart",
+ *       filters: { id: input.cart_id },
+ *       fields: ["customer_id"],
+ *     })
+ *
+ *     const { data: contracts } = await query.graph({
+ *       entity: "carrier_contract",
+ *       filters: { customer_id: cart.customer_id },
+ *       fields: ["account_number"],
+ *     })
+ *
+ *     return new StepResponse({
+ *       account_number: contracts[0]?.account_number,
+ *     })
+ *   }
+ * )
+ * ```
+ *
+ * The returned object is merged into the `context` parameter of the fulfillment provider's `calculatePrice` method. If a key here conflicts with a framework-provided key, the framework-provided value takes precedence.
  */
 export const calculateShippingOptionsPricesWorkflow = createWorkflow(
   calculateShippingOptionsPricesWorkflowId,
   (
     input: WorkflowData<FulfillmentWorkflow.CalculateShippingOptionsPricesWorkflowInput>
-  ): WorkflowResponse<FulfillmentWorkflow.CalculateShippingOptionsPricesWorkflowOutput> => {
+  ): WorkflowResponse<
+    FulfillmentWorkflow.CalculateShippingOptionsPricesWorkflowOutput,
+    [SetCalculatedShippingPricingContextHook]
+  > => {
     const ids = transform({ input }, ({ input }) =>
       input.shipping_options.map((so) => so.id)
     )
@@ -58,7 +110,13 @@ export const calculateShippingOptionsPricesWorkflow = createWorkflow(
     const shippingOptionsQuery = useQueryGraphStep({
       entity: "shipping_option",
       filters: { id: ids },
-      fields: ["id", "provider_id", "data", "service_zone.fulfillment_set_id"],
+      fields: [
+        "id",
+        "provider_id",
+        "data",
+        "shipping_profile_id",
+        "service_zone.fulfillment_set_id",
+      ],
     }).config({ name: "shipping-options-query" })
 
     const cartQuery = useQueryGraphStep({
@@ -93,6 +151,16 @@ export const calculateShippingOptionsPricesWorkflow = createWorkflow(
       fields: ["id", "name", "address.*"],
     }).config({ name: "location-query" })
 
+    const setCalculatedShippingPricingContext = createHook(
+      "setCalculatedShippingPricingContext",
+      {
+        input,
+      },
+      { resultValidator: calculatedShippingPricingContextResult }
+    )
+    const setCalculatedShippingPricingContextResult =
+      setCalculatedShippingPricingContext.getResult()
+
     const data = transform(
       {
         shippingOptionsQuery,
@@ -100,6 +168,7 @@ export const calculateShippingOptionsPricesWorkflow = createWorkflow(
         input,
         locationFulfillmentSetQuery,
         locationQuery,
+        setCalculatedShippingPricingContextResult,
       },
       ({
         shippingOptionsQuery,
@@ -107,6 +176,7 @@ export const calculateShippingOptionsPricesWorkflow = createWorkflow(
         input,
         locationFulfillmentSetQuery,
         locationQuery,
+        setCalculatedShippingPricingContextResult,
       }) => {
         const shippingOptions = shippingOptionsQuery.data
         const cart = cartQuery.data[0]
@@ -129,7 +199,12 @@ export const calculateShippingOptionsPricesWorkflow = createWorkflow(
           optionData: shippingOption.data,
           data: shippingOptionDataMap.get(shippingOption.id) ?? {},
           context: {
+            ...setCalculatedShippingPricingContextResult,
             ...cart,
+            items: filterCartItemsByShippingProfile(
+              cart.items,
+              shippingOption.shipping_profile_id
+            ),
             from_location: locations.find(
               (l) =>
                 l.id ===
@@ -144,6 +219,8 @@ export const calculateShippingOptionsPricesWorkflow = createWorkflow(
 
     const prices = calculateShippingOptionsPricesStep(data)
 
-    return new WorkflowResponse(prices)
+    return new WorkflowResponse(prices, {
+      hooks: [setCalculatedShippingPricingContext] as const,
+    })
   }
 )

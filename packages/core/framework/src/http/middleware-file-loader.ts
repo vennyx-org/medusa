@@ -1,6 +1,6 @@
+import { z } from "@medusajs/deps/zod"
 import { dynamicImport, FileSystem, isFileSkipped } from "@medusajs/utils"
 import { join } from "path"
-import zod from "zod"
 
 import { logger } from "../logger"
 import {
@@ -87,7 +87,18 @@ export class MiddlewareFileLoader {
           )
         }
 
-        const matcher = String(route.matcher)
+        /**
+         * The matcher can be a string or a regular expression.
+         * A regular expression must be preserved as-is so that it can be passed
+         * to Express directly. Stringifying it (e.g. via `String(regexp)`) turns
+         * it into its literal source (`/^\/admin$/`), which Express then compiles
+         * as a string path that matches no request, silently disabling the
+         * middleware.
+         */
+        const matcher =
+          route.matcher instanceof RegExp
+            ? route.matcher
+            : String(route.matcher)
 
         if (route.bodyParser !== undefined) {
           let methods = route.methods || [...HTTP_METHODS]
@@ -120,19 +131,18 @@ export class MiddlewareFileLoader {
             matcher: matcher,
             methods,
             schema: route.additionalDataValidator,
-            validator: zod.object(route.additionalDataValidator).nullish(),
+            validator: z.object(route.additionalDataValidator).nullish(),
           })
         }
 
-        if (route.middlewares) {
-          route.middlewares.forEach((middleware) => {
-            result.middleware.push({
-              handler: middleware,
-              matcher: matcher,
-              methods: route.methods,
-            })
+        route.middlewares?.forEach((middleware) => {
+          result.middleware.push({
+            handler: middleware,
+            matcher: matcher,
+            methods: route.methods,
           })
-        }
+        })
+
         return result
       },
       {

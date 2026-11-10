@@ -1,5 +1,6 @@
 {
-	"id": 3351,
+	"schemaVersion": "2.0",
+	"id": 4263,
 	"name": "customer-models",
 	"variant": "project",
 	"kind": 1,
@@ -18,7 +19,7 @@
 	},
 	"children": [
 		{
-			"id": 3352,
+			"id": 4264,
 			"name": "CustomerAddress",
 			"variant": "declaration",
 			"kind": 32,
@@ -30,34 +31,36 @@
 					"fileName": "address.ts",
 					"line": 4,
 					"character": 6,
-					"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L4"
+					"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L4"
 				}
 			],
 			"type": {
 				"type": "reference",
 				"target": {
-					"sourceFileName": "../../../../packages/core/utils/src/dml/entity.ts",
+					"packageName": "@medusajs/utils",
+					"packagePath": "src/dml/entity.ts",
 					"qualifiedName": "DmlEntity"
 				},
 				"typeArguments": [
 					{
 						"type": "reference",
 						"target": {
-							"sourceFileName": "../../../../packages/core/utils/src/dml/entity.ts",
+							"packageName": "@medusajs/utils",
+							"packagePath": "src/dml/entity.ts",
 							"qualifiedName": "DMLEntitySchemaBuilder"
 						},
 						"typeArguments": [
 							{
 								"type": "reflection",
 								"declaration": {
-									"id": 3353,
+									"id": 4265,
 									"name": "__type",
 									"variant": "declaration",
 									"kind": 65536,
 									"flags": {},
 									"children": [
 										{
-											"id": 3354,
+											"id": 4266,
 											"name": "id",
 											"variant": "declaration",
 											"kind": 1024,
@@ -75,20 +78,22 @@
 													"fileName": "address.ts",
 													"line": 6,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L6"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L6"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/primary-key.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/primary-key.ts",
 													"qualifiedName": "PrimaryKeyModifier"
 												},
 												"typeArguments": [
 													{
 														"type": "reference",
 														"target": {
-															"sourceFileName": "../../../../packages/core/utils/src/dml/properties/id.ts",
+															"packageName": "@medusajs/utils",
+															"packagePath": "src/dml/properties/id.ts",
 															"qualifiedName": "IdProperty"
 														},
 														"name": "IdProperty",
@@ -101,7 +106,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3355,
+											"id": 4267,
 											"name": "address_name",
 											"variant": "declaration",
 											"kind": 1024,
@@ -121,13 +126,14 @@
 													"fileName": "address.ts",
 													"line": 7,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L7"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L7"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -136,7 +142,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3356,
+											"id": 4268,
 											"name": "is_default_shipping",
 											"variant": "declaration",
 											"kind": 1024,
@@ -154,13 +160,14 @@
 													"fileName": "address.ts",
 													"line": 8,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L8"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L8"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/boolean.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/boolean.ts",
 													"qualifiedName": "BooleanProperty"
 												},
 												"name": "BooleanProperty",
@@ -169,7 +176,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3357,
+											"id": 4269,
 											"name": "is_default_billing",
 											"variant": "declaration",
 											"kind": 1024,
@@ -187,13 +194,14 @@
 													"fileName": "address.ts",
 													"line": 9,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L9"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L9"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/boolean.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/boolean.ts",
 													"qualifiedName": "BooleanProperty"
 												},
 												"name": "BooleanProperty",
@@ -202,7 +210,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3358,
+											"id": 4270,
 											"name": "company",
 											"variant": "declaration",
 											"kind": 1024,
@@ -222,13 +230,14 @@
 													"fileName": "address.ts",
 													"line": 10,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L10"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L10"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -237,7 +246,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3359,
+											"id": 4271,
 											"name": "first_name",
 											"variant": "declaration",
 											"kind": 1024,
@@ -257,13 +266,14 @@
 													"fileName": "address.ts",
 													"line": 11,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L11"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L11"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -272,7 +282,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3360,
+											"id": 4272,
 											"name": "last_name",
 											"variant": "declaration",
 											"kind": 1024,
@@ -292,13 +302,14 @@
 													"fileName": "address.ts",
 													"line": 12,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L12"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L12"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -307,7 +318,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3361,
+											"id": 4273,
 											"name": "address_1",
 											"variant": "declaration",
 											"kind": 1024,
@@ -327,13 +338,14 @@
 													"fileName": "address.ts",
 													"line": 13,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L13"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L13"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -342,7 +354,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3362,
+											"id": 4274,
 											"name": "address_2",
 											"variant": "declaration",
 											"kind": 1024,
@@ -362,13 +374,14 @@
 													"fileName": "address.ts",
 													"line": 14,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L14"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L14"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -377,7 +390,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3363,
+											"id": 4275,
 											"name": "city",
 											"variant": "declaration",
 											"kind": 1024,
@@ -397,13 +410,14 @@
 													"fileName": "address.ts",
 													"line": 15,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L15"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L15"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -412,7 +426,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3364,
+											"id": 4276,
 											"name": "country_code",
 											"variant": "declaration",
 											"kind": 1024,
@@ -443,13 +457,14 @@
 													"fileName": "address.ts",
 													"line": 16,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L16"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L16"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -458,7 +473,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3365,
+											"id": 4277,
 											"name": "province",
 											"variant": "declaration",
 											"kind": 1024,
@@ -478,13 +493,14 @@
 													"fileName": "address.ts",
 													"line": 17,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L17"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L17"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -493,7 +509,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3366,
+											"id": 4278,
 											"name": "postal_code",
 											"variant": "declaration",
 											"kind": 1024,
@@ -513,13 +529,14 @@
 													"fileName": "address.ts",
 													"line": 18,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L18"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L18"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -528,7 +545,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3367,
+											"id": 4279,
 											"name": "phone",
 											"variant": "declaration",
 											"kind": 1024,
@@ -548,13 +565,14 @@
 													"fileName": "address.ts",
 													"line": 19,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L19"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L19"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -563,7 +581,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3368,
+											"id": 4280,
 											"name": "metadata",
 											"variant": "declaration",
 											"kind": 1024,
@@ -583,22 +601,57 @@
 													"fileName": "address.ts",
 													"line": 20,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L20"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L20"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/json.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/json.ts",
 													"qualifiedName": "JSONProperty"
 												},
+												"typeArguments": [
+													{
+														"type": "reference",
+														"target": {
+															"packageName": "typescript",
+															"packagePath": "lib/lib.es5.d.ts",
+															"qualifiedName": "NoInfer"
+														},
+														"typeArguments": [
+															{
+																"type": "reference",
+																"target": {
+																	"packageName": "typescript",
+																	"packagePath": "lib/lib.es5.d.ts",
+																	"qualifiedName": "Record"
+																},
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "string"
+																	},
+																	{
+																		"type": "intrinsic",
+																		"name": "unknown"
+																	}
+																],
+																"name": "Record",
+																"package": "typescript"
+															}
+														],
+														"name": "NoInfer",
+														"package": "typescript"
+													}
+												],
 												"name": "JSONProperty",
 												"package": "@medusajs/utils"
 											},
 											"defaultValue": "..."
 										},
 										{
-											"id": 3369,
+											"id": 4281,
 											"name": "customer",
 											"variant": "declaration",
 											"kind": 1024,
@@ -619,19 +672,20 @@
 													"fileName": "address.ts",
 													"line": 21,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L21"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/address.ts#L21"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/relations/belongs-to.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/relations/belongs-to.ts",
 													"qualifiedName": "BelongsTo"
 												},
 												"typeArguments": [
 													{
 														"type": "reference",
-														"target": 3388,
+														"target": 4300,
 														"name": "Customer"
 													}
 												],
@@ -645,31 +699,23 @@
 										{
 											"title": "Properties",
 											"children": [
-												3354,
-												3355,
-												3356,
-												3357,
-												3358,
-												3359,
-												3360,
-												3361,
-												3362,
-												3363,
-												3364,
-												3365,
-												3366,
-												3367,
-												3368,
-												3369
+												4266,
+												4267,
+												4268,
+												4269,
+												4270,
+												4271,
+												4272,
+												4273,
+												4274,
+												4275,
+												4276,
+												4277,
+												4278,
+												4279,
+												4280,
+												4281
 											]
-										}
-									],
-									"sources": [
-										{
-											"fileName": "address.ts",
-											"line": 5,
-											"character": 29,
-											"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/address.ts#L5"
 										}
 									]
 								}
@@ -689,7 +735,7 @@
 			"defaultValue": "..."
 		},
 		{
-			"id": 3457,
+			"id": 4369,
 			"name": "CustomerGroupCustomer",
 			"variant": "declaration",
 			"kind": 32,
@@ -701,34 +747,36 @@
 					"fileName": "customer-group-customer.ts",
 					"line": 5,
 					"character": 6,
-					"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer-group-customer.ts#L5"
+					"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer-group-customer.ts#L5"
 				}
 			],
 			"type": {
 				"type": "reference",
 				"target": {
-					"sourceFileName": "../../../../packages/core/utils/src/dml/entity.ts",
+					"packageName": "@medusajs/utils",
+					"packagePath": "src/dml/entity.ts",
 					"qualifiedName": "DmlEntity"
 				},
 				"typeArguments": [
 					{
 						"type": "reference",
 						"target": {
-							"sourceFileName": "../../../../packages/core/utils/src/dml/entity.ts",
+							"packageName": "@medusajs/utils",
+							"packagePath": "src/dml/entity.ts",
 							"qualifiedName": "DMLEntitySchemaBuilder"
 						},
 						"typeArguments": [
 							{
 								"type": "reflection",
 								"declaration": {
-									"id": 3458,
+									"id": 4370,
 									"name": "__type",
 									"variant": "declaration",
 									"kind": 65536,
 									"flags": {},
 									"children": [
 										{
-											"id": 3459,
+											"id": 4371,
 											"name": "id",
 											"variant": "declaration",
 											"kind": 1024,
@@ -746,20 +794,22 @@
 													"fileName": "customer-group-customer.ts",
 													"line": 6,
 													"character": 2,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer-group-customer.ts#L6"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer-group-customer.ts#L6"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/primary-key.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/primary-key.ts",
 													"qualifiedName": "PrimaryKeyModifier"
 												},
 												"typeArguments": [
 													{
 														"type": "reference",
 														"target": {
-															"sourceFileName": "../../../../packages/core/utils/src/dml/properties/id.ts",
+															"packageName": "@medusajs/utils",
+															"packagePath": "src/dml/properties/id.ts",
 															"qualifiedName": "IdProperty"
 														},
 														"name": "IdProperty",
@@ -772,7 +822,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3460,
+											"id": 4372,
 											"name": "created_by",
 											"variant": "declaration",
 											"kind": 1024,
@@ -792,13 +842,14 @@
 													"fileName": "customer-group-customer.ts",
 													"line": 7,
 													"character": 2,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer-group-customer.ts#L7"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer-group-customer.ts#L7"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -807,7 +858,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3461,
+											"id": 4373,
 											"name": "metadata",
 											"variant": "declaration",
 											"kind": 1024,
@@ -827,22 +878,57 @@
 													"fileName": "customer-group-customer.ts",
 													"line": 8,
 													"character": 2,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer-group-customer.ts#L8"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer-group-customer.ts#L8"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/json.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/json.ts",
 													"qualifiedName": "JSONProperty"
 												},
+												"typeArguments": [
+													{
+														"type": "reference",
+														"target": {
+															"packageName": "typescript",
+															"packagePath": "lib/lib.es5.d.ts",
+															"qualifiedName": "NoInfer"
+														},
+														"typeArguments": [
+															{
+																"type": "reference",
+																"target": {
+																	"packageName": "typescript",
+																	"packagePath": "lib/lib.es5.d.ts",
+																	"qualifiedName": "Record"
+																},
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "string"
+																	},
+																	{
+																		"type": "intrinsic",
+																		"name": "unknown"
+																	}
+																],
+																"name": "Record",
+																"package": "typescript"
+															}
+														],
+														"name": "NoInfer",
+														"package": "typescript"
+													}
+												],
 												"name": "JSONProperty",
 												"package": "@medusajs/utils"
 											},
 											"defaultValue": "..."
 										},
 										{
-											"id": 3462,
+											"id": 4374,
 											"name": "customer",
 											"variant": "declaration",
 											"kind": 1024,
@@ -863,19 +949,20 @@
 													"fileName": "customer-group-customer.ts",
 													"line": 9,
 													"character": 2,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer-group-customer.ts#L9"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer-group-customer.ts#L9"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/relations/belongs-to.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/relations/belongs-to.ts",
 													"qualifiedName": "BelongsTo"
 												},
 												"typeArguments": [
 													{
 														"type": "reference",
-														"target": 3388,
+														"target": 4300,
 														"name": "Customer"
 													}
 												],
@@ -885,7 +972,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3481,
+											"id": 4393,
 											"name": "customer_group",
 											"variant": "declaration",
 											"kind": 1024,
@@ -906,19 +993,20 @@
 													"fileName": "customer-group-customer.ts",
 													"line": 12,
 													"character": 2,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer-group-customer.ts#L12"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer-group-customer.ts#L12"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/relations/belongs-to.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/relations/belongs-to.ts",
 													"qualifiedName": "BelongsTo"
 												},
 												"typeArguments": [
 													{
 														"type": "reference",
-														"target": 3432,
+														"target": 4344,
 														"name": "CustomerGroup"
 													}
 												],
@@ -932,20 +1020,12 @@
 										{
 											"title": "Properties",
 											"children": [
-												3459,
-												3460,
-												3461,
-												3462,
-												3481
+												4371,
+												4372,
+												4373,
+												4374,
+												4393
 											]
-										}
-									],
-									"sources": [
-										{
-											"fileName": "customer-group-customer.ts",
-											"line": 5,
-											"character": 68,
-											"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer-group-customer.ts#L5"
 										}
 									]
 								}
@@ -965,7 +1045,7 @@
 			"defaultValue": "..."
 		},
 		{
-			"id": 3432,
+			"id": 4344,
 			"name": "CustomerGroup",
 			"variant": "declaration",
 			"kind": 32,
@@ -977,34 +1057,36 @@
 					"fileName": "customer-group.ts",
 					"line": 5,
 					"character": 6,
-					"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer-group.ts#L5"
+					"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer-group.ts#L5"
 				}
 			],
 			"type": {
 				"type": "reference",
 				"target": {
-					"sourceFileName": "../../../../packages/core/utils/src/dml/entity.ts",
+					"packageName": "@medusajs/utils",
+					"packagePath": "src/dml/entity.ts",
 					"qualifiedName": "DmlEntity"
 				},
 				"typeArguments": [
 					{
 						"type": "reference",
 						"target": {
-							"sourceFileName": "../../../../packages/core/utils/src/dml/entity.ts",
+							"packageName": "@medusajs/utils",
+							"packagePath": "src/dml/entity.ts",
 							"qualifiedName": "DMLEntitySchemaBuilder"
 						},
 						"typeArguments": [
 							{
 								"type": "reflection",
 								"declaration": {
-									"id": 3433,
+									"id": 4345,
 									"name": "__type",
 									"variant": "declaration",
 									"kind": 65536,
 									"flags": {},
 									"children": [
 										{
-											"id": 3434,
+											"id": 4346,
 											"name": "id",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1022,20 +1104,22 @@
 													"fileName": "customer-group.ts",
 													"line": 7,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer-group.ts#L7"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer-group.ts#L7"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/primary-key.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/primary-key.ts",
 													"qualifiedName": "PrimaryKeyModifier"
 												},
 												"typeArguments": [
 													{
 														"type": "reference",
 														"target": {
-															"sourceFileName": "../../../../packages/core/utils/src/dml/properties/id.ts",
+															"packageName": "@medusajs/utils",
+															"packagePath": "src/dml/properties/id.ts",
 															"qualifiedName": "IdProperty"
 														},
 														"name": "IdProperty",
@@ -1048,7 +1132,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3435,
+											"id": 4347,
 											"name": "name",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1066,13 +1150,14 @@
 													"fileName": "customer-group.ts",
 													"line": 8,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer-group.ts#L8"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer-group.ts#L8"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -1081,7 +1166,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3436,
+											"id": 4348,
 											"name": "metadata",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1101,22 +1186,57 @@
 													"fileName": "customer-group.ts",
 													"line": 9,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer-group.ts#L9"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer-group.ts#L9"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/json.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/json.ts",
 													"qualifiedName": "JSONProperty"
 												},
+												"typeArguments": [
+													{
+														"type": "reference",
+														"target": {
+															"packageName": "typescript",
+															"packagePath": "lib/lib.es5.d.ts",
+															"qualifiedName": "NoInfer"
+														},
+														"typeArguments": [
+															{
+																"type": "reference",
+																"target": {
+																	"packageName": "typescript",
+																	"packagePath": "lib/lib.es5.d.ts",
+																	"qualifiedName": "Record"
+																},
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "string"
+																	},
+																	{
+																		"type": "intrinsic",
+																		"name": "unknown"
+																	}
+																],
+																"name": "Record",
+																"package": "typescript"
+															}
+														],
+														"name": "NoInfer",
+														"package": "typescript"
+													}
+												],
 												"name": "JSONProperty",
 												"package": "@medusajs/utils"
 											},
 											"defaultValue": "..."
 										},
 										{
-											"id": 3437,
+											"id": 4349,
 											"name": "created_by",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1136,13 +1256,14 @@
 													"fileName": "customer-group.ts",
 													"line": 10,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer-group.ts#L10"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer-group.ts#L10"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -1151,7 +1272,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3438,
+											"id": 4350,
 											"name": "customers",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1172,19 +1293,20 @@
 													"fileName": "customer-group.ts",
 													"line": 11,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer-group.ts#L11"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer-group.ts#L11"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/relations/many-to-many.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/relations/many-to-many.ts",
 													"qualifiedName": "ManyToMany"
 												},
 												"typeArguments": [
 													{
 														"type": "reference",
-														"target": 3388,
+														"target": 4300,
 														"name": "Customer"
 													}
 												],
@@ -1198,20 +1320,12 @@
 										{
 											"title": "Properties",
 											"children": [
-												3434,
-												3435,
-												3436,
-												3437,
-												3438
+												4346,
+												4347,
+												4348,
+												4349,
+												4350
 											]
-										}
-									],
-									"sources": [
-										{
-											"fileName": "customer-group.ts",
-											"line": 6,
-											"character": 27,
-											"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer-group.ts#L6"
 										}
 									]
 								}
@@ -1231,7 +1345,7 @@
 			"defaultValue": "..."
 		},
 		{
-			"id": 3388,
+			"id": 4300,
 			"name": "Customer",
 			"variant": "declaration",
 			"kind": 32,
@@ -1243,34 +1357,36 @@
 					"fileName": "customer.ts",
 					"line": 6,
 					"character": 6,
-					"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer.ts#L6"
+					"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer.ts#L6"
 				}
 			],
 			"type": {
 				"type": "reference",
 				"target": {
-					"sourceFileName": "../../../../packages/core/utils/src/dml/entity.ts",
+					"packageName": "@medusajs/utils",
+					"packagePath": "src/dml/entity.ts",
 					"qualifiedName": "DmlEntity"
 				},
 				"typeArguments": [
 					{
 						"type": "reference",
 						"target": {
-							"sourceFileName": "../../../../packages/core/utils/src/dml/entity.ts",
+							"packageName": "@medusajs/utils",
+							"packagePath": "src/dml/entity.ts",
 							"qualifiedName": "DMLEntitySchemaBuilder"
 						},
 						"typeArguments": [
 							{
 								"type": "reflection",
 								"declaration": {
-									"id": 3389,
+									"id": 4301,
 									"name": "__type",
 									"variant": "declaration",
 									"kind": 65536,
 									"flags": {},
 									"children": [
 										{
-											"id": 3390,
+											"id": 4302,
 											"name": "id",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1288,20 +1404,22 @@
 													"fileName": "customer.ts",
 													"line": 8,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer.ts#L8"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer.ts#L8"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/primary-key.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/primary-key.ts",
 													"qualifiedName": "PrimaryKeyModifier"
 												},
 												"typeArguments": [
 													{
 														"type": "reference",
 														"target": {
-															"sourceFileName": "../../../../packages/core/utils/src/dml/properties/id.ts",
+															"packageName": "@medusajs/utils",
+															"packagePath": "src/dml/properties/id.ts",
 															"qualifiedName": "IdProperty"
 														},
 														"name": "IdProperty",
@@ -1314,7 +1432,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3391,
+											"id": 4303,
 											"name": "company_name",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1334,13 +1452,14 @@
 													"fileName": "customer.ts",
 													"line": 9,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer.ts#L9"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer.ts#L9"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -1349,7 +1468,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3392,
+											"id": 4304,
 											"name": "first_name",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1369,13 +1488,14 @@
 													"fileName": "customer.ts",
 													"line": 10,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer.ts#L10"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer.ts#L10"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -1384,7 +1504,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3393,
+											"id": 4305,
 											"name": "last_name",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1404,13 +1524,14 @@
 													"fileName": "customer.ts",
 													"line": 11,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer.ts#L11"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer.ts#L11"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -1419,7 +1540,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3394,
+											"id": 4306,
 											"name": "email",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1439,13 +1560,14 @@
 													"fileName": "customer.ts",
 													"line": 12,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer.ts#L12"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer.ts#L12"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -1454,7 +1576,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3395,
+											"id": 4307,
 											"name": "phone",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1474,13 +1596,14 @@
 													"fileName": "customer.ts",
 													"line": 13,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer.ts#L13"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer.ts#L13"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -1489,7 +1612,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3396,
+											"id": 4308,
 											"name": "has_account",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1507,13 +1630,14 @@
 													"fileName": "customer.ts",
 													"line": 14,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer.ts#L14"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer.ts#L14"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/boolean.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/boolean.ts",
 													"qualifiedName": "BooleanProperty"
 												},
 												"name": "BooleanProperty",
@@ -1522,7 +1646,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3397,
+											"id": 4309,
 											"name": "metadata",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1542,22 +1666,57 @@
 													"fileName": "customer.ts",
 													"line": 15,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer.ts#L15"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer.ts#L15"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/json.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/json.ts",
 													"qualifiedName": "JSONProperty"
 												},
+												"typeArguments": [
+													{
+														"type": "reference",
+														"target": {
+															"packageName": "typescript",
+															"packagePath": "lib/lib.es5.d.ts",
+															"qualifiedName": "NoInfer"
+														},
+														"typeArguments": [
+															{
+																"type": "reference",
+																"target": {
+																	"packageName": "typescript",
+																	"packagePath": "lib/lib.es5.d.ts",
+																	"qualifiedName": "Record"
+																},
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "string"
+																	},
+																	{
+																		"type": "intrinsic",
+																		"name": "unknown"
+																	}
+																],
+																"name": "Record",
+																"package": "typescript"
+															}
+														],
+														"name": "NoInfer",
+														"package": "typescript"
+													}
+												],
 												"name": "JSONProperty",
 												"package": "@medusajs/utils"
 											},
 											"defaultValue": "..."
 										},
 										{
-											"id": 3398,
+											"id": 4310,
 											"name": "created_by",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1577,13 +1736,14 @@
 													"fileName": "customer.ts",
 													"line": 16,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer.ts#L16"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer.ts#L16"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/properties/text.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/properties/text.ts",
 													"qualifiedName": "TextProperty"
 												},
 												"name": "TextProperty",
@@ -1592,7 +1752,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3399,
+											"id": 4311,
 											"name": "groups",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1613,19 +1773,20 @@
 													"fileName": "customer.ts",
 													"line": 17,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer.ts#L17"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer.ts#L17"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/relations/many-to-many.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/relations/many-to-many.ts",
 													"qualifiedName": "ManyToMany"
 												},
 												"typeArguments": [
 													{
 														"type": "reference",
-														"target": 3432,
+														"target": 4344,
 														"name": "CustomerGroup"
 													}
 												],
@@ -1635,7 +1796,7 @@
 											"defaultValue": "..."
 										},
 										{
-											"id": 3410,
+											"id": 4322,
 											"name": "addresses",
 											"variant": "declaration",
 											"kind": 1024,
@@ -1656,19 +1817,20 @@
 													"fileName": "customer.ts",
 													"line": 21,
 													"character": 4,
-													"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer.ts#L21"
+													"url": "https://github.com/medusajs/medusa/blob/e925477440a14aa334461fc9959d7244ccc25247/packages/modules/customer/src/models/customer.ts#L21"
 												}
 											],
 											"type": {
 												"type": "reference",
 												"target": {
-													"sourceFileName": "../../../../packages/core/utils/src/dml/relations/has-many.ts",
+													"packageName": "@medusajs/utils",
+													"packagePath": "src/dml/relations/has-many.ts",
 													"qualifiedName": "HasMany"
 												},
 												"typeArguments": [
 													{
 														"type": "reference",
-														"target": 3352,
+														"target": 4264,
 														"name": "CustomerAddress"
 													}
 												],
@@ -1682,26 +1844,18 @@
 										{
 											"title": "Properties",
 											"children": [
-												3390,
-												3391,
-												3392,
-												3393,
-												3394,
-												3395,
-												3396,
-												3397,
-												3398,
-												3399,
-												3410
+												4302,
+												4303,
+												4304,
+												4305,
+												4306,
+												4307,
+												4308,
+												4309,
+												4310,
+												4311,
+												4322
 											]
-										}
-									],
-									"sources": [
-										{
-											"fileName": "customer.ts",
-											"line": 7,
-											"character": 22,
-											"url": "https://github.com/medusajs/medusa/blob/a960fb75c9f662372fd5cd623f883f9d6d8ad473/packages/modules/customer/src/models/customer.ts#L7"
 										}
 									]
 								}
@@ -1725,577 +1879,718 @@
 		{
 			"title": "Variables",
 			"children": [
-				3352,
-				3457,
-				3432,
-				3388
+				4264,
+				4369,
+				4344,
+				4300
 			]
 		}
 	],
 	"packageName": "@medusajs/customer",
 	"symbolIdMap": {
-		"3351": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/index.ts",
+		"4263": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/index.ts",
 			"qualifiedName": ""
 		},
-		"3352": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4264": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "CustomerAddress"
 		},
-		"3353": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4265": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object"
 		},
-		"3354": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4266": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.id"
 		},
-		"3355": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4267": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.address_name"
 		},
-		"3356": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4268": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.is_default_shipping"
 		},
-		"3357": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4269": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.is_default_billing"
 		},
-		"3358": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4270": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.company"
 		},
-		"3359": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4271": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.first_name"
 		},
-		"3360": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4272": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.last_name"
 		},
-		"3361": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4273": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.address_1"
 		},
-		"3362": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4274": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.address_2"
 		},
-		"3363": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4275": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.city"
 		},
-		"3364": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4276": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.country_code"
 		},
-		"3365": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4277": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.province"
 		},
-		"3366": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4278": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.postal_code"
 		},
-		"3367": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4279": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.phone"
 		},
-		"3368": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4280": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.metadata"
 		},
-		"3369": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4281": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.customer"
 		},
-		"3370": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4282": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__function"
 		},
-		"3371": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4283": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__function"
 		},
-		"3372": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4284": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object"
 		},
-		"3373": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4285": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.id"
 		},
-		"3374": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4286": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.company_name"
 		},
-		"3375": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4287": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.first_name"
 		},
-		"3376": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4288": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.last_name"
 		},
-		"3377": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4289": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.email"
 		},
-		"3378": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4290": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.phone"
 		},
-		"3379": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4291": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.has_account"
 		},
-		"3380": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4292": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.metadata"
 		},
-		"3381": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4293": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.created_by"
 		},
-		"3382": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4294": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.groups"
 		},
-		"3383": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4295": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3384": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4296": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3385": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4297": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.addresses"
 		},
-		"3386": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4298": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3387": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4299": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3388": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4300": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "Customer"
 		},
-		"3389": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4301": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object"
 		},
-		"3390": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4302": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.id"
 		},
-		"3391": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4303": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.company_name"
 		},
-		"3392": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4304": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.first_name"
 		},
-		"3393": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4305": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.last_name"
 		},
-		"3394": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4306": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.email"
 		},
-		"3395": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4307": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.phone"
 		},
-		"3396": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4308": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.has_account"
 		},
-		"3397": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4309": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.metadata"
 		},
-		"3398": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4310": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.created_by"
 		},
-		"3399": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4311": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.groups"
 		},
-		"3400": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4312": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3401": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4313": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3402": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4314": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object"
 		},
-		"3403": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4315": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object.id"
 		},
-		"3404": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4316": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object.name"
 		},
-		"3405": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4317": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object.metadata"
 		},
-		"3406": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4318": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object.created_by"
 		},
-		"3407": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4319": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object.customers"
 		},
-		"3408": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4320": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__function"
 		},
-		"3409": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4321": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__function"
 		},
-		"3410": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4322": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.addresses"
 		},
-		"3411": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4323": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3412": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4324": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3413": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4325": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object"
 		},
-		"3414": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4326": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.id"
 		},
-		"3415": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4327": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.address_name"
 		},
-		"3416": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4328": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.is_default_shipping"
 		},
-		"3417": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4329": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.is_default_billing"
 		},
-		"3418": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4330": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.company"
 		},
-		"3419": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4331": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.first_name"
 		},
-		"3420": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4332": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.last_name"
 		},
-		"3421": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4333": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.address_1"
 		},
-		"3422": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4334": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.address_2"
 		},
-		"3423": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4335": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.city"
 		},
-		"3424": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4336": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.country_code"
 		},
-		"3425": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4337": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.province"
 		},
-		"3426": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4338": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.postal_code"
 		},
-		"3427": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4339": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.phone"
 		},
-		"3428": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4340": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.metadata"
 		},
-		"3429": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4341": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__object.customer"
 		},
-		"3430": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4342": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__function"
 		},
-		"3431": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/address.ts",
+		"4343": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/address.ts",
 			"qualifiedName": "__function"
 		},
-		"3432": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4344": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "CustomerGroup"
 		},
-		"3433": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4345": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object"
 		},
-		"3434": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4346": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object.id"
 		},
-		"3435": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4347": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object.name"
 		},
-		"3436": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4348": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object.metadata"
 		},
-		"3437": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4349": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object.created_by"
 		},
-		"3438": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4350": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object.customers"
 		},
-		"3439": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4351": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__function"
 		},
-		"3440": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4352": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__function"
 		},
-		"3441": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4353": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object"
 		},
-		"3442": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4354": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.id"
 		},
-		"3443": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4355": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.company_name"
 		},
-		"3444": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4356": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.first_name"
 		},
-		"3445": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4357": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.last_name"
 		},
-		"3446": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4358": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.email"
 		},
-		"3447": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4359": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.phone"
 		},
-		"3448": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4360": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.has_account"
 		},
-		"3449": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4361": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.metadata"
 		},
-		"3450": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4362": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.created_by"
 		},
-		"3451": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4363": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.groups"
 		},
-		"3452": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4364": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3453": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4365": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3454": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4366": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.addresses"
 		},
-		"3455": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4367": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3456": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4368": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3457": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group-customer.ts",
+		"4369": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group-customer.ts",
 			"qualifiedName": "CustomerGroupCustomer"
 		},
-		"3458": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group-customer.ts",
+		"4370": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group-customer.ts",
 			"qualifiedName": "__object"
 		},
-		"3459": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group-customer.ts",
+		"4371": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group-customer.ts",
 			"qualifiedName": "__object.id"
 		},
-		"3460": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group-customer.ts",
+		"4372": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group-customer.ts",
 			"qualifiedName": "__object.created_by"
 		},
-		"3461": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group-customer.ts",
+		"4373": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group-customer.ts",
 			"qualifiedName": "__object.metadata"
 		},
-		"3462": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group-customer.ts",
+		"4374": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group-customer.ts",
 			"qualifiedName": "__object.customer"
 		},
-		"3463": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group-customer.ts",
+		"4375": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group-customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3464": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group-customer.ts",
+		"4376": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group-customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3465": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4377": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object"
 		},
-		"3466": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4378": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.id"
 		},
-		"3467": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4379": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.company_name"
 		},
-		"3468": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4380": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.first_name"
 		},
-		"3469": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4381": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.last_name"
 		},
-		"3470": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4382": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.email"
 		},
-		"3471": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4383": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.phone"
 		},
-		"3472": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4384": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.has_account"
 		},
-		"3473": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4385": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.metadata"
 		},
-		"3474": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4386": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.created_by"
 		},
-		"3475": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4387": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.groups"
 		},
-		"3476": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4388": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3477": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4389": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3478": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4390": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__object.addresses"
 		},
-		"3479": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4391": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3480": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer.ts",
+		"4392": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3481": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group-customer.ts",
+		"4393": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group-customer.ts",
 			"qualifiedName": "__object.customer_group"
 		},
-		"3482": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group-customer.ts",
+		"4394": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group-customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3483": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group-customer.ts",
+		"4395": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group-customer.ts",
 			"qualifiedName": "__function"
 		},
-		"3484": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4396": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object"
 		},
-		"3485": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4397": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object.id"
 		},
-		"3486": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4398": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object.name"
 		},
-		"3487": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4399": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object.metadata"
 		},
-		"3488": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4400": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object.created_by"
 		},
-		"3489": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4401": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__object.customers"
 		},
-		"3490": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4402": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__function"
 		},
-		"3491": {
-			"sourceFileName": "../../../../packages/modules/customer/src/models/customer-group.ts",
+		"4403": {
+			"packageName": "@medusajs/customer",
+			"packagePath": "src/models/customer-group.ts",
 			"qualifiedName": "__function"
 		}
 	},
@@ -2304,7 +2599,7 @@
 			"1": "../../../../packages/modules/customer/src/models/index.ts"
 		},
 		"reflections": {
-			"1": 3351
+			"1": 4263
 		}
 	}
 }

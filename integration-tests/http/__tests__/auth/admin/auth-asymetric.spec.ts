@@ -12,15 +12,13 @@ jest.setTimeout(100000)
 
 medusaIntegrationTestRunner({
   medusaConfigFile: path.join(__dirname, "../../../__fixtures__/auth"),
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
     let container
-    beforeEach(async () => {
+    beforeAll(async () => {
       container = getContainer()
       await createAdminUser(dbConnection, adminHeaders, container)
-    })
 
-    afterEach(() => {
-      jest.useRealTimers()
+      await dbUtils.snapshot()
     })
 
     describe("Full authentication lifecycle", () => {
@@ -167,13 +165,17 @@ medusaIntegrationTestRunner({
         expect(response.status).toEqual(201)
       })
 
-      it("should fail to generate token for existing user but no provider, but still respond with 201", async () => {
-        const response = await api.post(
-          "/auth/user/non-existing-provider/reset-password",
-          { identifier: "admin@medusa.js" }
-        )
+      it("should reject a provider that is not allowed for the user actor type", async () => {
+        const response = await api
+          .post("/auth/user/non-existing-provider/reset-password", {
+            identifier: "admin@medusa.js",
+          })
+          .catch((e) => e.response)
 
-        expect(response.status).toEqual(201)
+        expect(response.status).toEqual(400)
+        expect(response.data.message).toEqual(
+          "The actor type user is not allowed to use the auth provider non-existing-provider"
+        )
       })
 
       it("should successfully reset password", async () => {
@@ -296,8 +298,6 @@ medusaIntegrationTestRunner({
       })
 
       it("should fail if token has expired", async () => {
-        jest.useFakeTimers()
-
         // Register user
         await api.post("/auth/user/emailpass/register", {
           email: "test@medusa-commerce.com",
@@ -316,8 +316,10 @@ medusaIntegrationTestRunner({
           },
         })
 
-        // Advance time by 15 minutes
-        jest.advanceTimersByTime(15 * 60 * 1000)
+        await dbConnection.raw(
+          `UPDATE "auth_password_reset_token" SET expires_at = NOW() - INTERVAL '1 day' WHERE entity_id = ? AND deleted_at IS NULL`,
+          ["test@medusa-commerce.com"]
+        )
 
         const response = await api
           .post(
@@ -338,16 +340,11 @@ medusaIntegrationTestRunner({
       })
 
       it("should fail if no token is passed", async () => {
-        jest.useFakeTimers()
-
         // Register user
         await api.post("/auth/user/emailpass/register", {
           email: "test@medusa-commerce.com",
           password: "secret_password",
         })
-
-        // Advance time by 15 minutes
-        jest.advanceTimersByTime(15 * 60 * 1000)
 
         const response = await api
           .post(`/auth/user/emailpass/update`, {
@@ -360,8 +357,6 @@ medusaIntegrationTestRunner({
       })
 
       it("should fail if update is attempted on different actor type", async () => {
-        jest.useFakeTimers()
-
         // Register user
         await api.post("/auth/user/emailpass/register", {
           email: "test@medusa-commerce.com",
@@ -379,9 +374,6 @@ medusaIntegrationTestRunner({
             secret: "test",
           },
         })
-
-        // Advance time by 15 minutes
-        jest.advanceTimersByTime(15 * 60 * 1000)
 
         const response = await api
           .post(
@@ -402,8 +394,6 @@ medusaIntegrationTestRunner({
       })
 
       it("should fail if token secret is incorrect", async () => {
-        jest.useFakeTimers()
-
         // Register user
         await api.post("/auth/user/emailpass/register", {
           email: "test@medusa-commerce.com",
@@ -421,9 +411,6 @@ medusaIntegrationTestRunner({
             secret: "incorrect_secret",
           },
         })
-
-        // Advance time by 15 minutes
-        jest.advanceTimersByTime(15 * 60 * 1000)
 
         const response = await api
           .post(
@@ -446,8 +433,7 @@ medusaIntegrationTestRunner({
 
     it("should refresh the token successfully", async () => {
       // Make sure issue date is later than the admin one
-      jest.useFakeTimers()
-      jest.advanceTimersByTime(2000)
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       const resp = await api.post("/auth/token/refresh", {}, adminHeaders)
       const decodedOriginalToken = jwt.decode(

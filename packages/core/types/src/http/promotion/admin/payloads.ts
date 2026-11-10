@@ -1,5 +1,6 @@
 import {
   ApplicationMethodAllocationValues,
+  ApplicationMethodTargetSelectionStrategyValues,
   ApplicationMethodTargetTypeValues,
   ApplicationMethodTypeValues,
   PromotionRuleOperatorValues,
@@ -94,6 +95,12 @@ export interface AdminCreateApplicationMethod {
    * if the promotion is a "Buy 2 shirts get 1 free", the value of this attribute is 2.
    */
   buy_rules_min_quantity?: number | null
+  /**
+   * How a `buyget` promotion picks the items it discounts. With
+   * `most_expensive_first`, it discounts the most expensive target left over.
+   * With `cheapest_first`, it discounts the cheapest eligible items in the cart.
+   */
+  target_selection_strategy?: ApplicationMethodTargetSelectionStrategyValues
 }
 
 export interface AdminUpdateApplicationMethod {
@@ -131,14 +138,6 @@ export interface AdminUpdateApplicationMethod {
    */
   allocation?: ApplicationMethodAllocationValues
   /**
-   * The target rules of the application method.
-   */
-  target_rules?: AdminCreatePromotionRule[]
-  /**
-   * The buy rules of the application method.
-   */
-  buy_rules?: AdminCreatePromotionRule[]
-  /**
    * The quantity of the application method.
    */
   apply_to_quantity?: number | null
@@ -147,6 +146,12 @@ export interface AdminUpdateApplicationMethod {
    * if the promotion is a "Buy 2 shirts get 1 free", the value of this attribute is 2.
    */
   buy_rules_min_quantity?: number | null
+  /**
+   * How a `buyget` promotion picks the items it discounts. With
+   * `most_expensive_first`, it discounts the most expensive target left over.
+   * With `cheapest_first`, it discounts the cheapest eligible items in the cart.
+   */
+  target_selection_strategy?: ApplicationMethodTargetSelectionStrategyValues
 }
 
 export interface AdminCreatePromotion {
@@ -169,6 +174,10 @@ export interface AdminCreatePromotion {
    */
   type: PromotionTypeValues
   /**
+   * The status of the promotion.
+   */
+  status?: PromotionStatusValues
+  /**
    * The ID of the campaign that the promotion belongs to.
    */
   campaign_id?: string | null
@@ -188,6 +197,10 @@ export interface AdminCreatePromotion {
    * The rules of the promotion.
    */
   rules?: AdminCreatePromotionRule[]
+  /**
+   * Holds custom data in key-value pairs.
+   */
+  metadata?: Record<string, unknown> | null
 }
 
 export interface AdminUpdatePromotion {
@@ -218,10 +231,6 @@ export interface AdminUpdatePromotion {
    */
   campaign_id?: string | null
   /**
-   * The campaign that the promotion belongs to.
-   */
-  campaign?: AdminCreateCampaign
-  /**
    * The application method of the promotion.
    */
   application_method?: AdminUpdateApplicationMethod
@@ -230,9 +239,9 @@ export interface AdminUpdatePromotion {
    */
   limit?: number | null
   /**
-   * The rules of the promotion.
+   * Holds custom data in key-value pairs.
    */
-  rules?: AdminCreatePromotionRule[]
+  metadata?: Record<string, unknown> | null
 }
 
 export interface BatchAddPromotionRulesReq {

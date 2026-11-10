@@ -5,6 +5,7 @@ import { currencySidebar } from "./currency.mjs"
 import { customerSidebar } from "./customer.mjs"
 import { fulfillmentSidebar } from "./fulfillment.mjs"
 import { inventorySidebar } from "./inventory.mjs"
+import { loyaltySidebar } from "./loyalty.mjs"
 import { orderSidebar } from "./order-module.mjs"
 import { paymentSidebar } from "./payment.mjs"
 import { pricingSidebar } from "./pricing.mjs"
@@ -12,8 +13,10 @@ import { productSidebar } from "./product.mjs"
 import { promotionSidebar } from "./promotion.mjs"
 import { regionSidebar } from "./region.mjs"
 import { salesChannelSidebar } from "./sales-channel.mjs"
+import { settingsSidebar } from "./settings.mjs"
 import { stockLocationSidebar } from "./stock-location.mjs"
 import { storeSidebar } from "./store.mjs"
+import { storeCreditSidebar } from "./store-credit.mjs"
 import { taxSidebar } from "./tax.mjs"
 import { translationSidebar } from "./translation.mjs"
 import { userSidebar } from "./user.mjs"
@@ -35,15 +38,27 @@ export const commerceModulesSidebar = [
   ...customerSidebar,
   ...fulfillmentSidebar,
   ...inventorySidebar,
+  ...loyaltySidebar,
   ...orderSidebar,
   ...paymentSidebar,
   ...pricingSidebar,
   ...productSidebar,
   ...promotionSidebar,
+  {
+    type: "ref",
+    path: "/enterprise/rbac",
+    title: "RBAC Module",
+    badge: {
+      variant: "purple",
+      text: "Enterprise",
+    },
+  },
   ...regionSidebar,
   ...salesChannelSidebar,
+  ...settingsSidebar,
   ...stockLocationSidebar,
   ...storeSidebar,
+  ...storeCreditSidebar,
   ...taxSidebar,
   ...translationSidebar,
   ...userSidebar,

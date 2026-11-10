@@ -15,8 +15,13 @@ type ColumnProcessor<Output> = (
   csvRow: Record<string, string | boolean | number>,
   rowColumns: string[],
   rowNumber: number,
-  output: Output
+  output: Output,
+  context?: CSVNormalizerContext
 ) => void
+
+type CSVNormalizerContext = {
+  regions?: { id: string; name: string; currency_code: string }[]
+}
 
 type NormalizedRow =
   | (Record<string, string | number | boolean> & {
@@ -47,9 +52,13 @@ function createError(rowNumber: number, message: string) {
  * and the region name. The iso is converted to lowercase
  */
 function parseVariantPriceColumn(columnName: string, rowNumber: number) {
-  const normalizedValue = columnName
-  const potentialRegion = /\[(.*)\]/g.exec(normalizedValue)?.[1]
-  const iso = normalizedValue.split(" ").pop()
+  const normalizedValue = columnName.replace(/^variant price /, "")
+  // Product export writes region prices as "<Region Name> [<ISO>]"
+  const exportMatch = /^(.+) \[([^\]]+)\]$/.exec(normalizedValue)
+  const potentialRegion = exportMatch
+    ? exportMatch[1]
+    : /\[(.*)\]/g.exec(normalizedValue)?.[1]
+  const iso = exportMatch ? exportMatch[2] : normalizedValue.split(" ").pop()
 
   if (!iso) {
     throw createError(
@@ -314,14 +323,17 @@ const variantWildcardColumns: {
     [K in keyof AdminCreateProductVariant]?: any
   }>
 } = {
-  "variant price": (csvRow, rowColumns, rowNumber, output) => {
+  "variant price": (csvRow, rowColumns, rowNumber, output, context) => {
     const pricesColumns = rowColumns.filter((rowKey) => {
       return rowKey.startsWith("variant price ") && isPresent(csvRow[rowKey])
     })
     output["prices"] = output["prices"] ?? []
 
     pricesColumns.forEach((columnName) => {
-      const { iso } = parseVariantPriceColumn(columnName, rowNumber)
+      const { iso, region: regionName } = parseVariantPriceColumn(
+        columnName,
+        rowNumber
+      )
       const value = csvRow[columnName]
 
       const numericValue = tryConvertToNumber(value)
@@ -330,12 +342,31 @@ const variantWildcardColumns: {
           rowNumber,
           `Invalid value provided for "${columnName}". Expected value to be a number, received "${value}"`
         )
-      } else {
+      }
+
+      if (regionName === undefined) {
         output["prices"].push({
           currency_code: iso,
           amount: numericValue,
         })
+        return
       }
+
+      const region = context?.regions?.find(
+        (r) => r.name.toLowerCase() === regionName
+      )
+      if (!region) {
+        throw createError(
+          rowNumber,
+          `Region with name "${regionName}" not found, used by "${columnName}"`
+        )
+      }
+
+      output["prices"].push({
+        currency_code: region.currency_code,
+        amount: numericValue,
+        rules: { region_id: region.id },
+      })
     })
   },
 }
@@ -346,7 +377,12 @@ const variantWildcardColumns: {
  */
 const optionColumns: {
   [columnName: string]: ColumnProcessor<{
-    options: { key: any; value: any }[]
+    options: {
+      key: any
+      value: any
+      id?: string
+      is_exclusive?: boolean
+    }[]
   }>
 } = {
   "variant option": (csvRow, rowColumns, rowNumber, output) => {
@@ -359,15 +395,30 @@ const optionColumns: {
       const [, , counter] = columnName.split(" ")
       const key = csvRow[columnName]
       const value = csvRow[`variant option ${counter} value`]
+      const id = csvRow[`variant option ${counter} id`]
+      const isExclusiveRaw = csvRow[`variant option ${counter} is exclusive`]
 
       if (!isPresent(value)) {
         throw createError(rowNumber, `Missing option value for "${columnName}"`)
       }
 
-      return {
-        key,
-        value,
+      const entry: {
+        key: any
+        value: any
+        id?: string
+        is_exclusive?: boolean
+      } = { key, value }
+
+      if (isPresent(id)) {
+        entry.id = String(id)
       }
+      if (isPresent(isExclusiveRaw)) {
+        const parsed = tryConvertToBoolean(isExclusiveRaw)
+        if (parsed !== undefined) {
+          entry.is_exclusive = parsed
+        }
+      }
+      return entry
     })
   },
 }
@@ -454,8 +505,14 @@ export class CSVNormalizer {
     toUpdate: {},
   }
 
-  constructor(rows: NormalizedRow[]) {
+  #context: CSVNormalizerContext
+
+  /**
+   * The "regions" are used to resolve region prices, e.g. "Variant Price Europe [EUR]"
+   */
+  constructor(rows: NormalizedRow[], context: CSVNormalizerContext = {}) {
     this.#rows = rows
+    this.#context = context
   }
 
   /**
@@ -516,13 +573,26 @@ export class CSVNormalizer {
       variantStaticColumns[column](row, rowColumns, rowNumber, variant)
     })
     Object.keys(variantWildcardColumns).forEach((column) => {
-      variantWildcardColumns[column](row, rowColumns, rowNumber, variant)
+      variantWildcardColumns[column](
+        row,
+        rowColumns,
+        rowNumber,
+        variant,
+        this.#context
+      )
     })
 
     /**
      * Process variant options as a standalone array
      */
-    const options: { options: { key: any; value: any }[] } = { options: [] }
+    const options: {
+      options: {
+        key: any
+        value: any
+        id?: string
+        is_exclusive?: boolean
+      }[]
+    } = { options: [] }
     Object.keys(optionColumns).forEach((column) => {
       optionColumns[column](row, rowColumns, rowNumber, options)
     })
@@ -530,7 +600,7 @@ export class CSVNormalizer {
     /**
      * Specify options on both the variant and the product
      */
-    options.options.forEach(({ key, value }) => {
+    options.options.forEach(({ key, value, id, is_exclusive }) => {
       variant.options = variant.options ?? {}
       variant.options[key] = value
 
@@ -539,9 +609,29 @@ export class CSVNormalizer {
         (option: any) => option.title === key
       )
       if (!matchingKey) {
-        product.options.push({ title: key, values: [value] })
-      } else if (!matchingKey.values.includes(value)) {
-        matchingKey.values.push(value)
+        const newOption: any = { title: key, values: [value] }
+        if (id !== undefined) {
+          newOption.id = id
+        }
+        if (is_exclusive !== undefined) {
+          newOption.is_exclusive = is_exclusive
+        }
+        product.options.push(newOption)
+      } else {
+        if (!matchingKey.values.includes(value)) {
+          matchingKey.values.push(value)
+        }
+        // First-seen meta wins so subsequent rows with empty Id/Is Exclusive
+        // columns don't clobber an earlier row that had them set.
+        if (matchingKey.id === undefined && id !== undefined) {
+          matchingKey.id = id
+        }
+        if (
+          matchingKey.is_exclusive === undefined &&
+          is_exclusive !== undefined
+        ) {
+          matchingKey.is_exclusive = is_exclusive
+        }
       }
     })
 

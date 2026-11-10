@@ -18,6 +18,8 @@ import {
   RecursiveEntity2,
 } from "../__fixtures__/utils"
 
+jest.setTimeout(30000)
+
 const dbName = "mikroorm-utils-integration-1"
 
 jest.mock("@medusajs/deps/mikro-orm/core", () => ({
@@ -64,9 +66,16 @@ describe("mikroOrmUpdateDeletedAtRecursively", () => {
     })
 
     afterEach(async () => {
-      const generator = orm.getSchemaGenerator()
-      await generator.dropSchema()
-      await orm.close(true)
+      if (orm) {
+        const generator = orm.getSchemaGenerator()
+        await generator.dropSchema()
+        await orm.close(true)
+      }
+
+      await dropDatabase(
+        { databaseName: dbName, errorIfNonExist: false },
+        pgGodCredentials
+      )
     })
 
     it("should successfully mark the entities deleted_at recursively", async () => {

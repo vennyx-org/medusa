@@ -46,7 +46,7 @@ describe("Email password auth provider", () => {
 
   it("return error if the passwords don't match", async () => {
     const config = { logN: 15, r: 8, p: 1 }
-    const passwordHash = await Scrypt.kdf("somepass", config)
+    const passwordHash = Buffer.from(await Scrypt.kdf("somepass", config))
 
     const authServiceSpies = {
       retrieve: jest.fn().mockImplementation(() => {
@@ -78,7 +78,7 @@ describe("Email password auth provider", () => {
 
   it("return an existing entity if the passwords match", async () => {
     const config = { logN: 15, r: 8, p: 1 }
-    const passwordHash = await Scrypt.kdf("somepass", config)
+    const passwordHash = Buffer.from(await Scrypt.kdf("somepass", config))
 
     const authServiceSpies = {
       retrieve: jest.fn().mockImplementation(() => {
@@ -153,82 +153,121 @@ describe("Email password auth provider", () => {
     )
   })
 
-  it("updates identity if it exists but doesnt have app_metadata", async () => {
+  it("returns the existing identity if it has no app_metadata and the password matches", async () => {
+    const config = { logN: 15, r: 8, p: 1 }
+    const passwordHash = Buffer.from(await Scrypt.kdf("somepass", config))
+
     const authServiceSpies = {
       retrieve: jest.fn().mockImplementation(() => {
-        return { success: true }
-      }),
-      update: jest.fn().mockImplementation(() => {
         return {
           provider_identities: [
             {
               entity_id: "test@admin.com",
               provider: "emailpass",
               provider_metadata: {
-                password: "somehash",
+                password: passwordHash.toString("base64"),
+                custom: "keep-me",
               },
             },
           ],
         }
       }),
+      update: jest.fn(),
     }
 
     const resp = await emailpassService.register(
-      { body: { email: "test@admin.com", password: "test" } },
-      authServiceSpies
+      { body: { email: "test@admin.com", password: "somepass" } },
+      authServiceSpies as any
     )
 
     expect(authServiceSpies.retrieve).toHaveBeenCalled()
-    expect(authServiceSpies.update).toHaveBeenCalled()
+    expect(authServiceSpies.update).not.toHaveBeenCalled()
 
+    expect(resp.success).toBe(true)
     expect(resp.authIdentity?.provider_identities?.[0]).toEqual(
       expect.objectContaining({
         entity_id: "test@admin.com",
-        provider_metadata: {},
+        provider_metadata: {
+          custom: "keep-me",
+        },
       })
     )
   })
 
-  it("updates identity if it exists but app_metadata is empty", async () => {
+  it("returns the existing identity if app_metadata is empty and the password matches", async () => {
+    const config = { logN: 15, r: 8, p: 1 }
+    const passwordHash = Buffer.from(await Scrypt.kdf("somepass", config))
+
     const authServiceSpies = {
       retrieve: jest.fn().mockImplementation(() => {
-        return { success: true, app_metadata: {} }
-      }),
-      update: jest.fn().mockImplementation(() => {
         return {
+          app_metadata: {},
           provider_identities: [
             {
               entity_id: "test@admin.com",
               provider: "emailpass",
               provider_metadata: {
-                password: "somehash",
+                password: passwordHash.toString("base64"),
               },
             },
           ],
         }
       }),
+      update: jest.fn(),
     }
 
     const resp = await emailpassService.register(
-      { body: { email: "test@admin.com", password: "test" } },
-      authServiceSpies
+      { body: { email: "test@admin.com", password: "somepass" } },
+      authServiceSpies as any
     )
 
     expect(authServiceSpies.retrieve).toHaveBeenCalled()
-    expect(authServiceSpies.update).toHaveBeenCalled()
+    expect(authServiceSpies.update).not.toHaveBeenCalled()
+    expect(resp.success).toBe(true)
+  })
 
-    expect(resp.authIdentity?.provider_identities?.[0]).toEqual(
-      expect.objectContaining({
-        entity_id: "test@admin.com",
-        provider_metadata: {},
-      })
+  it("throw if it has no app_metadata and the password does not match", async () => {
+    const config = { logN: 15, r: 8, p: 1 }
+    const passwordHash = Buffer.from(await Scrypt.kdf("somepass", config))
+
+    const authServiceSpies = {
+      retrieve: jest.fn().mockImplementation(() => {
+        return {
+          app_metadata: {},
+          provider_identities: [
+            {
+              entity_id: "test@admin.com",
+              provider: "emailpass",
+              provider_metadata: {
+                password: passwordHash.toString("base64"),
+              },
+            },
+          ],
+        }
+      }),
+      update: jest.fn(),
+      create: jest.fn(),
+    }
+
+    const resp = await emailpassService.register(
+      { body: { email: "test@admin.com", password: "otherpass" } },
+      authServiceSpies as any
     )
+
+    expect(authServiceSpies.retrieve).toHaveBeenCalled()
+    expect(authServiceSpies.update).not.toHaveBeenCalled()
+    expect(authServiceSpies.create).not.toHaveBeenCalled()
+
+    expect(resp).toEqual({
+      success: false,
+      error: "Identity with email already exists",
+    })
   })
 
   it("throw if auth identity with email already exists and has app_metadata", async () => {
     const authServiceSpies = {
       retrieve: jest.fn().mockImplementation(() => {
-        return { success: true, app_metadata: {"user_id": "some-id"} }
+        return { success: true, app_metadata: { user_id: "some-id" } }
       }),
       create: jest.fn().mockImplementation(() => {
         return {

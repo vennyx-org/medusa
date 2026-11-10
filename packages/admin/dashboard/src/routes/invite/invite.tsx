@@ -6,13 +6,20 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { decodeToken } from "react-jwt"
-import { Link, useSearchParams } from "react-router-dom"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import * as z from "zod"
 import { Form } from "../../components/common/form"
 import AvatarBox from "../../components/common/logo-box/avatar-box"
-import { useSignUpWithEmailPass } from "../../hooks/api/auth"
+import {
+  useLogout,
+  useSignInWithEmailPass,
+  useSignUpWithEmailPass,
+} from "../../hooks/api/auth"
 import { useAcceptInvite } from "../../hooks/api/invites"
+import { useMe } from "../../hooks/api/users"
 import { isFetchError } from "../../lib/is-fetch-error"
+import { queryClient } from "../../lib/query-client"
+import { AuthLoginResponse } from "@medusajs/js-sdk"
 
 const CreateAccountSchema = z
   .object({
@@ -49,12 +56,20 @@ export const Invite = () => {
   const invite: DecodedInvite | null = token ? decodeToken(token) : null
   const isValidInvite = invite && validateDecodedInvite(invite)
 
+  const { user, isPending: isLoadingUser } = useMe({ fields: "email" })
+
+  if (isLoadingUser) {
+    return null
+  }
+
   return (
-    <div className="bg-ui-bg-subtle relative flex min-h-dvh w-dvw items-center justify-center p-4">
+    <div className="relative flex min-h-dvh w-dvw items-center justify-center bg-ui-bg-subtle p-4">
       <div className="flex w-full max-w-[360px] flex-col items-center">
         <AvatarBox checked={success} />
         <div className="max-h-[557px] w-full will-change-contents">
-          {isValidInvite ? (
+          {user ? (
+            <SignedInView email={user.email} />
+          ) : isValidInvite ? (
             <AnimatePresence>
               {!success ? (
                 <motion.div
@@ -139,7 +154,7 @@ const LoginLink = () => {
       <Link
         key="login-link"
         to="/login"
-        className="txt-small text-ui-fg-base transition-fg hover:text-ui-fg-base-hover focus-visible:text-ui-fg-base-hover font-medium outline-none"
+        className="hover:text-ui-fg-base-hover focus-visible:text-ui-fg-base-hover txt-small font-medium text-ui-fg-base outline-none transition-fg"
       >
         {t("invite.backToLogin")}
       </Link>
@@ -154,11 +169,41 @@ const InvalidView = () => {
     <div className="flex flex-col items-center">
       <div className="flex flex-col items-center gap-y-1">
         <Heading>{t("invite.invalidTokenTitle")}</Heading>
-        <Text size="small" className="text-ui-fg-subtle text-center">
+        <Text size="small" className="text-center text-ui-fg-subtle">
           {t("invite.invalidTokenHint")}
         </Text>
       </div>
       <LoginLink />
+    </div>
+  )
+}
+
+const SignedInView = ({ email }: { email: string }) => {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+
+  const { mutateAsync: logout, isPending } = useLogout()
+
+  const handleLogout = async () => {
+    await logout(undefined, {
+      onSuccess: () => {
+        queryClient.clear()
+        navigate(0)
+      },
+    })
+  }
+
+  return (
+    <div className="flex w-full flex-col items-center gap-y-6">
+      <div className="flex flex-col items-center gap-y-1">
+        <Heading className="text-center">{t("invite.signedInTitle")}</Heading>
+        <Text size="small" className="text-center text-ui-fg-subtle">
+          {t("invite.signedInHint", { email })}
+        </Text>
+      </div>
+      <Button className="w-full" onClick={handleLogout} isLoading={isPending}>
+        {t("invite.signOut")}
+      </Button>
     </div>
   )
 }
@@ -192,15 +237,56 @@ const CreateView = ({
   const { mutateAsync: signUpEmailPass, isPending: isCreatingAuthUser } =
     useSignUpWithEmailPass()
 
+  const { mutateAsync: logInWithEmailPass, isPending: isLoggingIn } =
+    useSignInWithEmailPass()
+
   const { mutateAsync: acceptInvite, isPending: isAcceptingInvite } =
     useAcceptInvite(token)
 
+  /**
+   * Sign up or login with email and password.
+   * If the email already exists, it will try to login instead of signing up, to allow other invited actory types to accept the invite
+   * @param email - The email to sign up or login with.
+   * @param password - The password to sign up or login with.
+   * @returns The authentication result.
+   */
+  const signUpOrLoginEmailPass = async (
+    email: string,
+    password: string
+  ): Promise<AuthLoginResponse | undefined> => {
+    try {
+      return await signUpEmailPass({
+        email,
+        password,
+      })
+    } catch (error) {
+      if (
+        isFetchError(error) &&
+        error.status === 401 &&
+        error.message === "Identity with email already exists"
+      ) {
+        return await logInWithEmailPass({
+          email,
+          password,
+        })
+      }
+
+      throw error
+    }
+  }
+
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
-      const authToken = await signUpEmailPass({
-        email: data.email,
-        password: data.password,
-      })
+      const authResult = await signUpOrLoginEmailPass(data.email, data.password)
+
+      // This should not happen since email verification is not enabled in the admin, but it should be covered as a scenario.
+      if (typeof authResult !== "string") {
+        throw new Error(
+          "Email verification is required, but not supported by this flow."
+        )
+      }
+
+      const authToken = authResult
 
       const invitePayload = {
         email: data.email,
@@ -245,7 +331,7 @@ const CreateView = ({
     <div className="flex w-full flex-col items-center">
       <div className="mb-4 flex flex-col items-center">
         <Heading>{t("invite.title")}</Heading>
-        <Text size="small" className="text-ui-fg-subtle text-center">
+        <Text size="small" className="text-center text-ui-fg-subtle">
           {t("invite.hint")}
         </Text>
       </div>
@@ -353,7 +439,7 @@ const CreateView = ({
             )}
             {serverError && (
               <Alert
-                className="bg-ui-bg-base items-center p-2"
+                className="items-center bg-ui-bg-base p-2"
                 dismissible
                 variant="error"
               >
@@ -364,7 +450,7 @@ const CreateView = ({
           <Button
             className="w-full"
             type="submit"
-            isLoading={isCreatingAuthUser || isAcceptingInvite}
+            isLoading={isCreatingAuthUser || isAcceptingInvite || isLoggingIn}
             disabled={invalid}
           >
             {t("invite.createAccount")}
@@ -383,7 +469,7 @@ const SuccessView = () => {
     <div className="flex w-full flex-col items-center gap-y-6">
       <div className="flex flex-col items-center gap-y-1">
         <Heading className="text-center">{t("invite.successTitle")}</Heading>
-        <Text size="small" className="text-ui-fg-subtle text-center">
+        <Text size="small" className="text-center text-ui-fg-subtle">
           {t("invite.successHint")}
         </Text>
       </div>
@@ -396,7 +482,7 @@ const SuccessView = () => {
       <Link
         key="login-link"
         to="/login"
-        className="txt-small text-ui-fg-base transition-fg hover:text-ui-fg-base-hover focus-visible:text-ui-fg-base-hover font-medium outline-none"
+        className="hover:text-ui-fg-base-hover focus-visible:text-ui-fg-base-hover txt-small font-medium text-ui-fg-base outline-none transition-fg"
       >
         {t("invite.backToLogin")}
       </Link>

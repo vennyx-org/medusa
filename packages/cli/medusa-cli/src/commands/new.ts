@@ -2,27 +2,29 @@
  * Adapted from https://github.com/gatsbyjs/gatsby/blob/master/packages/gatsby-cli/src/init-starter.ts
  */
 
-import { execSync } from "child_process"
-import execa from "execa"
+// @ts-ignore
+import { execa } from "execa"
 import { sync as existsSync } from "fs-exists-cached"
 import fs from "fs-extra"
-import hostedGitInfo from "hosted-git-info"
 import isValid from "is-valid-path"
 import sysPath from "path"
-import path from "path"
 import prompts from "prompts"
 import { Pool } from "@medusajs/deps/pg"
 import url from "url"
 import { track } from "@medusajs/telemetry"
 // @ts-ignore
 import inquirer from "inquirer"
-import { createDatabase } from "pg-god"
 
-import { getNodeVersion, MIN_SUPPORTED_NODE_VERSION } from "@medusajs/utils"
+import {
+  isNodeVersionSupported,
+  MIN_SUPPORTED_NODE_VERSION,
+} from "@medusajs/utils"
 import reporter from "../reporter"
 import { PanicId } from "../reporter/panic-handler"
-import { clearProject } from "../util/clear-project"
-import { getPackageManager, setPackageManager } from "../util/package-manager"
+import { getPackageManager } from "../util/package-manager"
+
+const STARTER_PATH = `medusajs/dtc-starter`
+const STARTER_URL = `https://github.com/${STARTER_PATH}.git`
 
 const removeUndefined = (obj) => {
   return Object.fromEntries(
@@ -32,78 +34,16 @@ const removeUndefined = (obj) => {
   )
 }
 
-const spawnWithArgs = (file, args, options) =>
+const spawnWithArgs = async (file, args, options) =>
   execa(file, args, { stdio: `inherit`, preferLocal: false, ...options })
 
-const spawn = (cmd, options) => {
+const spawn = async (cmd, options) => {
   const [file, ...args] = cmd.split(/\s+/)
   return spawnWithArgs(file, args, options)
 }
-// Checks the existence of yarn package
-// We use yarnpkg instead of yarn to avoid conflict with Hadoop yarn
-// Refer to https://github.com/yarnpkg/yarn/issues/673
-const checkForYarn = () => {
-  try {
-    execSync(`yarnpkg --version`, { stdio: `ignore` })
-    return true
-  } catch (e) {
-    return false
-  }
-}
 
-const isAlreadyGitRepository = async () => {
-  try {
-    return await spawn(`git rev-parse --is-inside-work-tree`, {
-      stdio: `pipe`,
-    }).then((output) => output.stdout === `true`)
-  } catch (err) {
-    return false
-  }
-}
-
-// Initialize newly cloned directory as a git repo
-const gitInit = async (rootPath) => {
-  reporter.info(`Initialising git in ${rootPath}`)
-
-  return await spawn(`git init`, { cwd: rootPath })
-}
-
-// Create a .gitignore file if it is missing in the new directory
-const maybeCreateGitIgnore = async (rootPath) => {
-  if (existsSync(sysPath.join(rootPath, `.gitignore`))) {
-    return
-  }
-
-  const gignore = reporter.activity(
-    `Creating minimal .gitignore in ${rootPath}`
-  )
-  await fs.writeFile(
-    sysPath.join(rootPath, `.gitignore`),
-    `.cache\nnode_modules\npublic\n`
-  )
-  reporter.success(gignore, `Created .gitignore in ${rootPath}`)
-}
-
-// Create an initial git commit in the new directory
-const createInitialGitCommit = async (rootPath, starterUrl) => {
-  reporter.info(`Create initial git commit in ${rootPath}`)
-
-  await spawn(`git add -A`, { cwd: rootPath })
-  // use execSync instead of spawn to handle git clients using
-  // pgp signatures (with password)
-  try {
-    execSync(`git commit -m "Initial commit from medusa: (${starterUrl})"`, {
-      cwd: rootPath,
-    })
-  } catch {
-    // Remove git support if initial commit fails
-    reporter.warn(`Initial git commit failed - removing git support\n`)
-    fs.removeSync(sysPath.join(rootPath, `.git`))
-  }
-}
-
-// Executes `npm install` or `yarn install` in rootPath.
-const install = async (rootPath) => {
+// Executes `pnpm install`, `yarn install`, or `npm install` in rootPath.
+const install = async (rootPath: string) => {
   const prevDir = process.cwd()
 
   reporter.info(`Installing packages...`)
@@ -111,91 +51,25 @@ const install = async (rootPath) => {
 
   process.chdir(rootPath)
 
-  const npmConfigUserAgent = process.env.npm_config_user_agent
-
   try {
-    if (!getPackageManager()) {
-      if (npmConfigUserAgent?.includes(`yarn`)) {
-        setPackageManager(`yarn`)
-      } else {
-        setPackageManager(`npm`)
-      }
-    }
-    if (getPackageManager() === `yarn` && checkForYarn()) {
-      await fs.remove(`package-lock.json`)
-      await spawn(`yarnpkg`, {})
-    } else {
-      await fs.remove(`yarn.lock`)
-      await spawn(`npm install`, {})
-    }
+    await spawn(`pnpm install`, {})
   } finally {
     process.chdir(prevDir)
   }
 }
 
-const ignored = (path) => !/^\.(git|hg)$/.test(sysPath.basename(path))
-
-// Copy starter from file system.
-const copy = async (starterPath, rootPath) => {
-  // Chmod with 755.
-  // 493 = parseInt('755', 8)
-  await fs.ensureDir(rootPath, { mode: 493 })
-
-  if (!existsSync(starterPath)) {
-    throw new Error(`starter ${starterPath} doesn't exist`)
-  }
-
-  if (starterPath === `.`) {
-    throw new Error(
-      `You can't create a starter from the existing directory. If you want to
-      create a new project in the current directory, the trailing dot isn't
-      necessary. If you want to create a project from a local starter, run
-      something like "medusa new my-medusa-store ../local-medusa-starter"`
-    )
-  }
-
-  reporter.info(`Creating new site from local starter: ${starterPath}`)
-
-  const copyActivity = reporter.activity(
-    `Copying local starter to ${rootPath} ...`
-  )
-
-  await fs.copy(starterPath, rootPath, { filter: ignored })
-
-  reporter.success(copyActivity, `Created starter directory layout`)
-  console.log() // Add some space
-
-  await install(rootPath)
-
-  return true
-}
-
 // Clones starter from URI.
-const clone = async (hostInfo, rootPath, v2 = false, inputBranch) => {
-  let url
-  // Let people use private repos accessed over SSH.
-  if (hostInfo.getDefaultRepresentation() === `sshurl`) {
-    url = hostInfo.ssh({ noCommittish: true })
-    // Otherwise default to normal git syntax.
-  } else {
-    url = hostInfo.https({ noCommittish: true, noGitPlus: true })
-  }
+const clone = async (rootPath: string, inputBranch?: string) => {
+  const branch = [`-b`, inputBranch || "main"]
 
-  let branch =
-    inputBranch || hostInfo.committish
-      ? [`-b`, inputBranch || hostInfo.committish]
-      : []
-
-  if (v2) {
-    branch = [`-b`, inputBranch || "master"]
-  }
-
-  const createAct = reporter.activity(`Creating new project from git: ${url}`)
+  const createAct = reporter.activity(
+    `Creating new project from git: ${STARTER_URL}`
+  )
 
   const args = [
     `clone`,
     ...branch,
-    url,
+    STARTER_URL,
     rootPath,
     `--recursive`,
     `--depth=1`,
@@ -211,19 +85,17 @@ const clone = async (hostInfo, rootPath, v2 = false, inputBranch) => {
     })
 
   await fs.remove(sysPath.join(rootPath, `.git`))
+  await fs.remove(sysPath.join(rootPath, `.github`))
+
+  // remove storefront from monorepo
+  await fs.remove(sysPath.join(rootPath, `apps`, `storefront`))
 
   await install(rootPath)
-  const isGit = await isAlreadyGitRepository()
-  if (!isGit) await gitInit(rootPath)
-  await maybeCreateGitIgnore(rootPath)
-  if (!isGit) await createInitialGitCommit(rootPath, url)
 }
 
-const getPaths = async (starterPath, rootPath, v2 = false) => {
-  let selectedOtherStarter = false
-
+const getPaths = async (rootPath?: string) => {
   // if no args are passed, prompt user for path and starter
-  if (!starterPath && !rootPath) {
+  if (!rootPath) {
     const response = await prompts.prompt([
       {
         type: `text`,
@@ -231,42 +103,29 @@ const getPaths = async (starterPath, rootPath, v2 = false) => {
         message: `What is your project called?`,
         initial: `my-medusa-store`,
       },
-      !v2 && {
-        type: `select`,
-        name: `starter`,
-        message: `What starter would you like to use?`,
-        choices: [
-          { title: `medusa-starter-default`, value: `medusa-starter-default` },
-          { title: `(Use a different starter)`, value: `different` },
-        ],
-        initial: 0,
-      },
     ])
 
     // exit gracefully if responses aren't provided
-    if ((!v2 && !response.starter) || !response.path.trim()) {
+    if (!response.path.trim()) {
       throw new Error(
         `Please mention both starter package and project name along with path(if its not in the root)`
       )
     }
 
-    selectedOtherStarter = response.starter === `different`
-    starterPath = `medusajs/${v2 ? "medusa-starter-default" : response.starter}`
     rootPath = response.path
   }
 
   // set defaults if no root or starter has been set yet
   rootPath = rootPath || process.cwd()
-  starterPath = starterPath || `medusajs/medusa-starter-default`
 
-  return { starterPath, rootPath, selectedOtherStarter }
+  return { rootPath }
 }
 
 const successMessage = (path) => {
   reporter.info(`Your new Medusa project is ready for you! To start developing run:
 
   cd ${path}
-  medusa develop
+  pnpm dev
 `)
 }
 
@@ -281,8 +140,8 @@ const defaultDBCreds = {
 const verifyPgCreds = async (creds) => {
   const pool = new Pool(creds)
   return new Promise((resolve, reject) => {
-    pool.query("SELECT NOW()", (err, res) => {
-      pool.end()
+    pool.query("SELECT NOW()", async (err, res) => {
+      await pool.end()
       if (err) {
         reject(err)
       } else {
@@ -301,7 +160,7 @@ const interactiveDbCreds = async (dbName, dbCreds = {}) => {
     const result = await inquirer
       .prompt([
         {
-          type: "list",
+          type: "select",
           name: "continueWithDefault",
           message: `
 
@@ -386,22 +245,29 @@ Do you wish to continue with these credentials?
   return
 }
 
-const setupDB = async (dbName, dbCreds = {}) => {
+export const createDatabase = async (dbName, credentials) => {
+  const pool = new Pool(credentials)
+  try {
+    // `dbName` is always internally generated (`medusa-db-<base36>`) and is never
+    // user-supplied, so interpolating it here is safe. CREATE DATABASE also cannot
+    // use a parameterized identifier, so interpolation is the only option.
+    await pool.query(`CREATE DATABASE "${dbName}"`)
+  } finally {
+    await pool.end()
+  }
+}
+
+export const setupDB = async (dbName, dbCreds = {}) => {
   const credentials = Object.assign({}, defaultDBCreds, dbCreds)
 
   const dbActivity = reporter.activity(`Setting up database "${dbName}"...`)
-  await createDatabase(
-    {
-      databaseName: dbName,
-      errorIfExist: true,
-    },
-    credentials
-  )
+  await createDatabase(dbName, credentials)
     .then(() => {
       reporter.success(dbActivity, `Created database "${dbName}"`)
     })
     .catch((err) => {
-      if (err.name === "PDG_ERR::DuplicateDatabase") {
+      // Postgres raises 42P04 (duplicate_database) when the database already exists
+      if (err.code === "42P04") {
         reporter.success(
           dbActivity,
           `Database ${dbName} already exists; skipping setup`
@@ -495,21 +361,34 @@ const attemptSeed = async (rootPath) => {
   }
 }
 
+type NewCommandArgs = {
+  root?: string
+  skipDb?: boolean
+  skipMigrations?: boolean
+  skipEnv?: boolean
+  seed?: boolean
+  useDefaults?: boolean
+  dbUser?: string
+  dbDatabase?: string
+  dbPass?: string
+  dbPort?: number
+  dbHost?: string
+  branch?: string
+}
+
 /**
  * Main function that clones or copies the starter.
  */
-export const newStarter = async (args) => {
-  const nodeVersion = getNodeVersion()
-  if (nodeVersion < MIN_SUPPORTED_NODE_VERSION) {
+export const newStarter = async (args: NewCommandArgs) => {
+  if (!isNodeVersionSupported()) {
     reporter.error(
-      `Medusa requires at least v20 of Node.js. You're using v${nodeVersion}. Please install at least v20 and try again: https://nodejs.org/en/download`
+      `Medusa requires at least v${MIN_SUPPORTED_NODE_VERSION} of Node.js. You're using v${process.versions.node}. Please install v${MIN_SUPPORTED_NODE_VERSION} or later and try again: https://nodejs.org/en/download`
     )
     process.exit(1)
   }
   track("CLI_NEW")
 
   const {
-    starter,
     root,
     skipDb,
     skipMigrations,
@@ -521,7 +400,6 @@ export const newStarter = async (args) => {
     dbPass,
     dbPort,
     dbHost,
-    v2,
     branch,
   } = args
 
@@ -533,34 +411,16 @@ export const newStarter = async (args) => {
     host: dbHost,
   })
 
-  const { starterPath, rootPath, selectedOtherStarter } = await getPaths(
-    starter,
-    root,
-    v2
-  )
+  const { rootPath } = await getPaths(root)
 
   const urlObject = url.parse(rootPath)
 
-  if (selectedOtherStarter) {
-    reporter.info(
-      `Find the url of the Medusa starter you wish to create and run:
-
-medusa new ${rootPath} [url-to-starter]
-
-`
-    )
-    return
-  }
-
   if (urlObject.protocol && urlObject.host) {
-    const isStarterAUrl =
-      starter && !url.parse(starter).hostname && !url.parse(starter).protocol
-
-    if (/medusa-starter/gi.test(rootPath) && isStarterAUrl) {
+    if (/medusa-starter/gi.test(rootPath)) {
       reporter.panic({
         id: PanicId.InvalidProjectName,
         context: {
-          starter,
+          starter: STARTER_PATH,
           rootPath,
         },
       })
@@ -596,12 +456,7 @@ medusa new ${rootPath} [url-to-starter]
     return
   }
 
-  const hostedInfo = hostedGitInfo.fromUrl(starterPath)
-  if (hostedInfo) {
-    await clone(hostedInfo, rootPath, v2, branch)
-  } else {
-    await copy(starterPath, rootPath)
-  }
+  await clone(rootPath, branch)
 
   track("CLI_NEW_LAYOUT_COMPLETED")
 
@@ -637,17 +492,6 @@ medusa new ${rootPath} [url-to-starter]
       track("CLI_NEW_SEED_DB")
       await attemptSeed(rootPath)
     }
-  }
-
-  if (!selectedOtherStarter) {
-    reporter.info("Final project preparations...")
-    // remove demo files
-    clearProject(rootPath)
-    // remove .git directory
-    fs.rmSync(path.join(rootPath, ".git"), {
-      recursive: true,
-      force: true,
-    })
   }
 
   successMessage(rootPath)

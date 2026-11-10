@@ -1,5 +1,4 @@
-import { InlineIcon } from "docs-ui"
-import { ChevronUpDown } from "@medusajs/icons"
+import { getOsShortcut, Kbd } from "docs-ui"
 
 export const metadata = {
   title: `Manage Plans`,
@@ -13,14 +12,14 @@ In this guide, you'll learn how to view and manage your organization's plan in C
 
 You choose your organization's plan when you sign up for Cloud. However, the plan may not be the best fit for your needs as your business grows or as you move to production.
 
-**Hobby** or **Pro** organizations can change their plan from the Cloud dashboard. **Enterprise** organizations need to contact support to change their plan.
+**Develop**, **Launch**, or **Scale** organizations can change their plan from the Cloud dashboard. **Enterprise** organizations need to contact support to change their plan.
 
 ### What happens when I change my plan?
 
 When you change your organization's plan, the following will happen:
 
 - You'll be refunded the remaining days of your current plan.
-    - For example, if you are on a Pro plan and you change to a Hobby plan halfway through the month, you'll be refunded half of the Pro plan's cost.
+    - For example, if you are on a Launch plan and you change to a Develop plan halfway through the month, you'll be refunded half of the Launch plan's cost.
 - You'll be charged a pro-rated amount for your current billing cycle's [Flex Usage](../../usage/page.mdx).
 - You'll be charged upfront for the new plan.
 
@@ -28,17 +27,43 @@ When you change your organization's plan, the following will happen:
 
 To change your organization's plan:
 
-1. Make sure you're viewing the [correct organization's dashboard in Cloud](../../organizations/page.mdx#switch-organization).
-2. Click on the <InlineIcon Icon={ChevronUpDown} alt="switch organization" /> icon in the [organization switcher](../../organizations/page.mdx#switch-organization) at the top left of the Cloud dashboard.
-3. Choose "Organization Settings" from the dropdown.
-4. Change to the "Billing" settings from the sidebar.
-5. In the "Upcoming payment" section, click the "Change plan" button.
+<Note title="Tip">
 
-![Change plan button in the Billing settings](https://res.cloudinary.com/dza7lstvk/image/upload/v1759415060/Cloud/CleanShot_2025-10-02_at_17.23.41_2x_dtqz5r.png)
+You can also navigate to plan management from the [command palette](../../command-palette/page.mdx). Press <Kbd>{getOsShortcut()}</Kbd> + <Kbd>K</Kbd>, then select **Upgrade Plan**.
 
-6. In the modal that opens, choose either to upgrade to the Pro plan or downgrade to the Hobby plan.
+</Note>
+
+1. If you're in a different organization, [switch to the organization](../../organizations/page.mdx#switch-organization).
+2. Make sure you're on the projects overview page of the organization. You can do this by clicking on the organization name at the top left of the dashboard.
+3. Click **Settings** > **Billing** in the sidebar to open the organization's billing settings.
+4. In the "Upcoming payment" section, click the **Change plan** button. If your organization is on a free trial, this section's title includes the plan name instead.
+5. In the modal that opens, choose either to upgrade to the Launch or Scale plan or downgrade to the Develop plan.
     - To upgrade to the Enterprise plan, contact support for assistance.
-7. Confirm the plan change in the pop-up by clicking the "Confirm" button.
+6. Confirm the plan change in the pop-up by clicking the **Confirm** button.
+
+<Note>
+
+Your organization must have a payment method to upgrade its plan. If it doesn't have one, clicking the upgrade button redirects you to add a payment method first. Learn more in the [Manage Billing Details](../manage/page.mdx#add-payment-method-to-organization) guide.
+
+</Note>
+
+---
+
+## View Trial Status
+
+When your organization is on a free trial, the subscription section of the organization's billing settings shows the trial's details:
+
+- An orange **Trial** badge appears next to the plan name.
+- The section's title changes from "Upcoming payment" to a trial title that includes the plan name.
+- The subtitle shows the date the trial ends. If your organization already has billing details, the subtitle shows the date billing starts instead. Otherwise, it prompts you to add billing details before the trial ends.
+
+To view your organization's trial status:
+
+1. If you're in a different organization, [switch to the organization](../../organizations/page.mdx#switch-organization).
+2. Make sure you're on the projects overview page of the organization. You can do this by clicking on the organization name at the top left of the dashboard.
+3. Click **Settings** > **Billing** in the sidebar to open the organization's billing settings.
+
+To add billing details before the trial ends, refer to the [Manage Billing Details](../manage/page.mdx) guide.
 
 ---
 
@@ -46,15 +71,30 @@ To change your organization's plan:
 
 You can cancel your organization's plan at any time. The plan will be cancelled at the end of the current billing period, and you will be charged for the month's plan and Flex Usage.
 
-**Hobby** or **Pro** organizations can cancel their plan from the Cloud dashboard. **Enterprise** organizations need to contact support to cancel their plan.
+**Develop**, **Launch**, or **Scale** organizations can cancel their plan from the Cloud dashboard. **Enterprise** organizations need to contact support to cancel their plan.
 
 To cancel your organization's plan:
 
-1. Make sure you're viewing the [correct organization's dashboard in Cloud](../../organizations/page.mdx#switch-organization).
-2. Click on the <InlineIcon Icon={ChevronUpDown} alt="switch organization" /> icon in the [organization switcher](../../organizations/page.mdx#switch-organization) at the top left of the Cloud dashboard.
-3. Choose "Organization Settings" from the dropdown.
-4. Change to the "Billing" settings from the sidebar.
-5. Scroll down to the "Cancel plan" section and click the "Cancel plan" button.
-6. Confirm the cancellation in the pop-up by clicking the "Confirm" button.
+1. If you're in a different organization, [switch to the organization](../../organizations/page.mdx#switch-organization).
+2. Make sure you're on the projects overview page of the organization. You can do this by clicking on the organization name at the top left of the dashboard.
+3. Click **Settings** > **Billing** in the sidebar to open the organization's billing settings.
+4. Scroll down to the "Cancel subscription" section and click the **Cancel subscription** button.
+5. In the cancellation form, select a reason for cancelling from the available options.
+6. Answer the follow-up question that appears based on your selected reason.
+7. Click the **Cancel Subscription** button to confirm the cancellation.
 
-![Cancel plan section in the Billing settings](https://res.cloudinary.com/dza7lstvk/image/upload/v1759415806/Cloud/CleanShot_2025-10-02_at_17.30.39_2x_d8ixwc.png)
+---
+
+## Resume your Organization's Plan
+
+If you cancelled your organization's plan, or your organization's free trial ended, the billing settings show a section that lets you keep your plan. When you cancelled the plan, the section shows the date until which your subscription remains active. When your free trial ended, the section shows that the trial for your plan has ended.
+
+To resume your organization's plan:
+
+1. If you're in a different organization, [switch to the organization](../../organizations/page.mdx#switch-organization).
+2. Make sure you're on the projects overview page of the organization. You can do this by clicking on the organization name at the top left of the dashboard.
+3. Click **Settings** > **Billing** in the sidebar to open the organization's billing settings.
+4. In the section to resume your plan:
+    - If you cancelled your plan, click the **Resume** button.
+    - If your free trial ended and your organization has a payment method, click the **Keep [Plan Name]** button, where **[Plan Name]** is the name of your plan. For example, **Keep Develop**.
+    - If your free trial ended and your organization has no payment method, click the **Add Payment Method** button. Then, [add a payment method](../manage/page.mdx#add-payment-method-to-organization) to your organization and return to this section to keep your plan.

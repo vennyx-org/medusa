@@ -1,0 +1,65 @@
+{
+  "name": "@medusajs/eslint-plugin",
+  "version": "2.22.6",
+  "description": "Official ESLint plugin for Medusa projects. Enforces Medusa's framework conventions across API routes, modules, workflows, subscribers, jobs, admin extensions, and module links.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/medusajs/medusa.git",
+    "directory": "packages/eslint-plugin"
+  },
+  "bugs": {
+    "url": "https://github.com/medusajs/medusa/issues"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./configs/recommended": "./dist/configs/recommended.js",
+    "./configs/strict": "./dist/configs/strict.js"
+  },
+  "scripts": {
+    "build": "yarn run -T rimraf dist && yarn run -T tsc --build",
+    "watch": "yarn run -T tsc --build --watch",
+    "test": "../../node_modules/.bin/jest --silent=false --bail --forceExit --testPathPatterns=src"
+  },
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "AGENTS.md",
+    "!dist/**/__tests__",
+    "!dist/**/*.spec.*",
+    "!dist/**/*.test.*"
+  ],
+  "llms": "https://docs.medusajs.com/llms.txt",
+  "llmsFull": "https://docs.medusajs.com/llms-full.txt",
+  "mcpServer": "https://docs.medusajs.com/mcp",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin",
+    "medusa",
+    "medusajs"
+  ],
+  "author": "Medusa",
+  "license": "MIT",
+  "peerDependencies": {
+    "eslint": "^8.57.0 || ^9.0.0 || ^10.0.0",
+    "typescript": ">=4.8.0"
+  },
+  "dependencies": {
+    "@typescript-eslint/parser": "^8.72.0",
+    "@typescript-eslint/utils": "^8.72.0",
+    "cron-parser": "^5.10.2"
+  },
+  "devDependencies": {
+    "@types/eslint": "^9.6.1",
+    "@typescript-eslint/rule-tester": "^8.72.0",
+    "eslint": "^10.13.0",
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
+  }
+}

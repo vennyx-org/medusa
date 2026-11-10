@@ -56,7 +56,11 @@ properties:
   amount:
     type: number
     title: amount
-    description: The shipping option's amount.
+    description: >-
+      The shipping option's amount. For a shipping option whose `price_type` is
+      `calculated`, this amount isn't reliable until it's computed by the
+      fulfillment provider using the [Calculate Shipping Option Price API
+      route](https://docs.medusajs.com/api/store#shipping-options_postshippingoptionsidcalculate).
   is_tax_inclusive:
     type: boolean
     title: is_tax_inclusive
@@ -65,8 +69,7 @@ properties:
     type: object
     description: The shipping option's data, useful for the provider handling fulfillment.
     externalDocs:
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/fulfillment/shipping-option#data-property
+      url: https://docs.medusajs.com/resources/commerce-modules/fulfillment/shipping-option#data-property
   metadata:
     type: object
     description: The shipping option's metadata, can hold custom key-value pairs.

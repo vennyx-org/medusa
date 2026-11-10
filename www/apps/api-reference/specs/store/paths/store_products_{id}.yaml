@@ -44,8 +44,7 @@ get:
         type: string
         example: en-US
         externalDocs:
-          url: >-
-            https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+          url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
           description: Learn more in the Serve Translations in Storefront guide.
     - name: fields
       in: query
@@ -78,8 +77,7 @@ get:
           The ID of the region the product is being viewed from. This is
           required if you're retrieving product variant prices with taxes.
         externalDocs:
-          url: >-
-            https://docs.medusajs.com/resources/storefront-development/products/price/examples/tax-price
+          url: https://docs.medusajs.com/resources/storefront-development/products/price/examples/tax-price
           description: 'Storefront guide: How to show product variants'' prices with taxes.'
     - name: country_code
       in: query
@@ -133,8 +131,7 @@ get:
         type: string
         example: en-US
         externalDocs:
-          url: >-
-            https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+          url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
           description: Learn more in the Serve Translations in Storefront guide.
   x-codeSamples:
     - lang: JavaScript
@@ -166,3 +163,92 @@ get:
       $ref: ../components/responses/invalid_request_error.yaml
     '500':
       $ref: ../components/responses/500_error.yaml
+  x-allowed:
+    - id
+    - title
+    - subtitle
+    - description
+    - handle
+    - is_giftcard
+    - discountable
+    - thumbnail
+    - collection_id
+    - type_id
+    - weight
+    - length
+    - height
+    - width
+    - hs_code
+    - origin_country
+    - mid_code
+    - material
+    - created_at
+    - updated_at
+    - type
+    - collection
+    - options
+    - options.values
+    - tags
+    - images
+    - variants
+    - variants.options
+    - metadata
+    - categories
+    - status
+    - external_id
+    - deleted_at
+    - variants.calculated_price
+    - variants.inventory_quantity
+    - variants.manage_inventory
+    - variants.allow_backorder
+    - variants.images
+    - variants.thumbnail
+    - variants.options.option
+    - variants.inventory_items
+    - variants.inventory_items.inventory_item_id
+    - variants.inventory_items.required_quantity
+    - variants.inventory_items.inventory
+    - variants.inventory_items.inventory.location_levels
+    - variants.prices
+    - variants.id
+    - variants.title
+    - variants.sku
+    - variants.barcode
+    - variants.ean
+    - variants.upc
+    - variants.hs_code
+    - variants.origin_country
+    - variants.mid_code
+    - variants.material
+    - variants.weight
+    - variants.length
+    - variants.height
+    - variants.width
+    - variants.created_at
+    - variants.updated_at
+    - variants.deleted_at
+    - variants.options.id
+    - variants.options.value
+    - options.id
+    - options.title
+    - options.is_exclusive
+    - options.values.id
+    - options.values.value
+    - images.id
+    - images.url
+    - images.rank
+    - type.id
+    - type.value
+    - type.created_at
+    - type.updated_at
+    - tags.id
+    - tags.value
+    - tags.created_at
+    - tags.updated_at
+    - collection.id
+    - collection.title
+    - collection.handle
+    - collection.created_at
+    - collection.updated_at
+    - collection.deleted_at
+    - collection.metadata

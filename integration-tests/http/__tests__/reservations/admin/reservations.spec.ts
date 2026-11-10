@@ -3,18 +3,25 @@ import {
   adminHeaders,
   createAdminUser,
 } from "../../../../helpers/create-admin-user"
+import { Modules } from "@medusajs/utils"
+import { updateReservationsWorkflow } from "@medusajs/core-flows"
 
 jest.setTimeout(50000)
 
 medusaIntegrationTestRunner({
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
     let inventoryItem1
     let inventoryItem2
     let stockLocation1
     let stockLocation2
+    let appContainer
 
-    beforeEach(async () => {
-      await createAdminUser(dbConnection, adminHeaders, getContainer())
+    beforeAll(async () => {
+      appContainer = getContainer()
+    })
+
+    beforeAll(async () => {
+      await createAdminUser(dbConnection, adminHeaders, appContainer)
 
       stockLocation1 = (
         await api.post(`/admin/stock-locations`, { name: "loc1" }, adminHeaders)
@@ -49,6 +56,8 @@ medusaIntegrationTestRunner({
           adminHeaders
         )
       ).data.inventory_item
+
+      await dbUtils.snapshot()
     })
 
     describe("POST /admin/reservations", () => {
@@ -352,6 +361,7 @@ medusaIntegrationTestRunner({
               mid_code: null,
               origin_country: "UK",
               requires_shipping: true,
+              unit_of_measure: null,
               reserved_quantity: 1,
               sku: "second",
               stocked_quantity: 100,
@@ -371,7 +381,7 @@ medusaIntegrationTestRunner({
         ])
       })
 
-      it("lists reservation items with free text search on descroption", async () => {
+      it("lists reservation items with free text search on description", async () => {
         const reservationsRes = await api
           .get(`/admin/reservations?q=test`, adminHeaders)
           .catch(console.warn)
@@ -394,6 +404,7 @@ medusaIntegrationTestRunner({
               mid_code: null,
               origin_country: "UK",
               requires_shipping: true,
+              unit_of_measure: null,
               reserved_quantity: 1,
               sku: "second",
               stocked_quantity: 100,
@@ -550,6 +561,102 @@ medusaIntegrationTestRunner({
 
           expect(reservationsRes.data.reservations.length).toBe(1)
           expect(reservationsRes.data.reservations[0].id).toBe(reservation2.id)
+        })
+      })
+    })
+
+    describe("workflows", () => {
+      it("updateReservationsWorklow - should not call listReservations when data is empty", async () => {
+        const reservationService = appContainer.resolve(Modules.INVENTORY)
+
+        const listReservationItemsSpy = jest.spyOn(
+          reservationService,
+          "listReservationItems"
+        )
+
+        const { result } = await updateReservationsWorkflow(appContainer).run({
+          input: { updates: [] },
+        })
+
+        expect(result).toEqual([])
+        expect(listReservationItemsSpy).not.toHaveBeenCalled()
+
+        listReservationItemsSpy.mockRestore()
+      })
+
+      describe("reserved_quantity consistency after soft-delete and restore", () => {
+        let reservationId: string
+        let inventoryService: any
+
+        const getLevel = async () => {
+          const res = await api.get(
+            `/admin/inventory-items/${inventoryItem1.id}/location-levels?location_id[]=${stockLocation1.id}&fields=reserved_quantity,available_quantity,stocked_quantity`,
+            adminHeaders
+          )
+          return res.data.inventory_levels[0]
+        }
+
+        beforeEach(async () => {
+          inventoryService = appContainer.resolve(Modules.INVENTORY)
+
+          await api.post(
+            `/admin/inventory-items/${inventoryItem1.id}/location-levels`,
+            { location_id: stockLocation1.id, stocked_quantity: 10 },
+            adminHeaders
+          )
+
+          const res = await api.post(
+            `/admin/reservations`,
+            {
+              line_item_id: "line-item-id-1",
+              inventory_item_id: inventoryItem1.id,
+              location_id: stockLocation1.id,
+              quantity: 5,
+            },
+            adminHeaders
+          )
+          reservationId = res.data.reservation.id
+        })
+
+        // Scenario 1: a single soft-delete + restore cycle must leave reserved_quantity unchanged.
+        it("should restore reserved_quantity to its pre-deletion value after a soft-delete/restore cycle", async () => {
+          const before = await getLevel()
+          expect(before.reserved_quantity).toBe(5)
+          expect(before.available_quantity).toBe(5)
+
+          await inventoryService.softDeleteReservationItems([reservationId])
+
+          const afterDelete = await getLevel()
+          expect(afterDelete.reserved_quantity).toBe(0)
+
+          await inventoryService.restoreReservationItems([reservationId])
+
+          const afterRestore = await getLevel()
+
+          expect(afterRestore.reserved_quantity).toBe(5)
+          expect(afterRestore.available_quantity).toBe(5)
+        })
+
+        // Scenario 2: multiple delete/restore cycles don't cause negative reserved_quantity
+        it("should not accumulate negative reserved_quantity across repeated soft-delete/restore cycles", async () => {
+          for (let i = 0; i < 3; i++) {
+            await inventoryService.softDeleteReservationItems([reservationId])
+            await inventoryService.restoreReservationItems([reservationId])
+          }
+
+          // Final deletion: leaves no visible reservation records.
+          await inventoryService.softDeleteReservationItems([reservationId])
+
+          const reservations = await api.get(
+            `/admin/reservations?inventory_item_id[]=${inventoryItem1.id}`,
+            adminHeaders
+          )
+          expect(reservations.data.reservations).toHaveLength(0)
+
+          const level = await getLevel()
+
+          expect(level.reserved_quantity).toBe(0)
+          expect(level.available_quantity).toBe(10)
         })
       })
     })

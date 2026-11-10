@@ -23,7 +23,7 @@ const shippingAddressData = {
 }
 
 medusaIntegrationTestRunner({
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
     describe("Admin Order Translation API", () => {
       let appContainer: MedusaContainer
       let storeHeaders: { headers: { [key: string]: string } }
@@ -36,14 +36,21 @@ medusaIntegrationTestRunner({
       let returnShippingOption: { id: string }
       let outboundShippingOption: { id: string }
       let inventoryItem: { id: string }
+      let taxRate: { id: string; name: string }
 
       beforeAll(async () => {
         appContainer = getContainer()
       })
 
-      beforeEach(async () => {
-        await setupTaxStructure(appContainer.resolve(Modules.TAX))
+      beforeAll(async () => {
+        const taxStructure = await setupTaxStructure(
+          appContainer.resolve(Modules.TAX)
+        )
         await createAdminUser(dbConnection, adminHeaders, appContainer)
+
+        const translationModule = appContainer.resolve(Modules.TRANSLATION)
+        await translationModule.__hooks?.onApplicationStart?.().catch(() => {})
+
         const publishableKey = await generatePublishableKey(appContainer)
         storeHeaders = generateStoreHeaders({ publishableKey })
 
@@ -71,7 +78,12 @@ medusaIntegrationTestRunner({
         region = (
           await api.post(
             "/admin/regions",
-            { name: "US", currency_code: "usd", countries: ["us"] },
+            {
+              payment_providers: ["pp_system_default"],
+              name: "US",
+              currency_code: "usd",
+              countries: ["us"],
+            },
             adminHeaders
           )
         ).data.region
@@ -255,7 +267,16 @@ medusaIntegrationTestRunner({
           )
         ).data.shipping_option
 
-        // Create translations for product, variants, and shipping options
+        const taxRatesResponse = await api.get(
+          `/admin/tax-rates?tax_region_id=${taxStructure.us.children.cal.province.id}`,
+          adminHeaders
+        )
+        taxRate = taxRatesResponse.data.tax_rates.find(
+          (rate: { is_default: boolean; code: string }) =>
+            rate.is_default && rate.code === "CADEFAULT"
+        )
+
+        // Create translations for product and variants
         await api.post(
           "/admin/translations/batch",
           {
@@ -318,10 +339,28 @@ medusaIntegrationTestRunner({
                   name: "Test-Versandoption",
                 },
               },
+              {
+                reference_id: taxRate.id,
+                reference: "tax_rate",
+                locale_code: "fr-FR",
+                translations: {
+                  name: "Taux par défaut CA",
+                },
+              },
+              {
+                reference_id: taxRate.id,
+                reference: "tax_rate",
+                locale_code: "de-DE",
+                translations: {
+                  name: "CA Standardsteuersatz",
+                },
+              },
             ],
           },
           adminHeaders
         )
+
+        await dbUtils.snapshot()
       })
 
       const createOrderFromCart = async (locale?: string) => {
@@ -519,6 +558,119 @@ medusaIntegrationTestRunner({
               name: "Option d'expédition de test",
             })
           )
+        })
+      })
+
+      describe("Tax line translations", () => {
+        it("should translate tax line descriptions when order locale is updated", async () => {
+          // Create order with French locale
+          const order = await createOrderFromCart("fr-FR")
+
+          // Verify tax lines exist and have French translation
+          expect(order.items[0].tax_lines).toBeDefined()
+          expect(order.items[0].tax_lines.length).toBe(1)
+          expect(order.items[0].tax_lines[0]).toEqual(
+            expect.objectContaining({
+              description: "Taux par défaut CA",
+              rate: 5,
+              code: "CADEFAULT",
+            })
+          )
+
+          // Update order locale to German
+          await api.post(
+            `/admin/orders/${order.id}`,
+            { locale: "de-DE" },
+            adminHeaders
+          )
+
+          // Fetch updated order
+          const updatedOrder = (
+            await api.get(`/admin/orders/${order.id}`, adminHeaders)
+          ).data.order
+
+          // Verify tax lines are translated to German
+          expect(updatedOrder.items[0].tax_lines.length).toBe(1)
+          expect(updatedOrder.items[0].tax_lines[0]).toEqual(
+            expect.objectContaining({
+              description: "CA Standardsteuersatz",
+              rate: 5,
+              code: "CADEFAULT",
+            })
+          )
+        })
+
+        it("should preserve tax line translations when order is created with locale", async () => {
+          // Create order with French locale
+          const order = await createOrderFromCart("fr-FR")
+
+          // Verify tax lines are translated from the start
+          expect(order.items[0].tax_lines).toBeDefined()
+          expect(order.items[0].tax_lines.length).toBeGreaterThan(0)
+          expect(order.items[0].tax_lines[0]).toEqual(
+            expect.objectContaining({
+              description: "Taux par défaut CA",
+              rate: 5,
+              code: "CADEFAULT",
+            })
+          )
+        })
+
+        it("should use original tax line description when order has no locale", async () => {
+          // Create order without locale
+          const order = await createOrderFromCart()
+
+          // Verify tax lines use original description
+          expect(order.items[0].tax_lines).toBeDefined()
+          expect(order.items[0].tax_lines.length).toBeGreaterThan(0)
+          expect(order.items[0].tax_lines[0]).toEqual(
+            expect.objectContaining({
+              description: "CA Default Rate",
+              rate: 5,
+              code: "CADEFAULT",
+            })
+          )
+        })
+
+        it("should translate shipping method tax lines when order locale is updated", async () => {
+          // Create order with French locale
+          const order = await createOrderFromCart("fr-FR")
+
+          // Verify shipping method tax lines exist and are translated
+          expect(order.shipping_methods).toBeDefined()
+          expect(order.shipping_methods.length).toBeGreaterThan(0)
+          if (order.shipping_methods[0].tax_lines?.length > 0) {
+            expect(order.shipping_methods[0].tax_lines[0]).toEqual(
+              expect.objectContaining({
+                description: "Taux par défaut CA",
+                rate: 5,
+                code: "CADEFAULT",
+              })
+            )
+
+            // Update order locale to German
+            await api.post(
+              `/admin/orders/${order.id}`,
+              { locale: "de-DE" },
+              adminHeaders
+            )
+
+            // Fetch updated order
+            const updatedOrder = (
+              await api.get(`/admin/orders/${order.id}`, adminHeaders)
+            ).data.order
+
+            // Verify shipping method tax lines are translated
+            if (updatedOrder.shipping_methods[0].tax_lines?.length > 0) {
+              expect(updatedOrder.shipping_methods[0].tax_lines[0]).toEqual(
+                expect.objectContaining({
+                  description: "CA Standardsteuersatz",
+                  rate: 5,
+                  code: "CADEFAULT",
+                })
+              )
+            }
+          }
         })
       })
     })

@@ -1,3 +1,8 @@
+export enum Entities {
+  payment_collection = "payment_collection",
+  order = "order",
+}
+
 export const defaultPaymentCollectionFields = [
   "id",
   "currency_code",
@@ -13,4 +18,5 @@ export const defaultPaymentCollectionFields = [
 export const retrievePaymentCollectionTransformQueryConfig = {
   defaults: defaultPaymentCollectionFields,
   isList: false,
+  entity: Entities.payment_collection,
 }

@@ -1,4 +1,5 @@
 import {
+  BigNumberInput,
   CampaignBudgetTypeValues,
   CampaignBudgetUsageDTO,
   Context,
@@ -33,6 +34,7 @@ import {
   toMikroORMEntity,
   transformPropertiesToBigNumber,
 } from "@medusajs/framework/utils"
+import { SqlEntityManager } from "@medusajs/framework/mikro-orm/postgresql"
 import {
   ApplicationMethod,
   Campaign,
@@ -203,41 +205,47 @@ export default class PromotionModuleService
   protected async registerCampaignBudgetUsageByAttribute_(
     budgetId: string,
     attributeValue: string,
+    amount: BigNumberInput,
+    limit: BigNumberInput | null | undefined,
     @MedusaContext() sharedContext: Context = {}
   ): Promise<void> {
+    // Re-read the per-attribute usage row under the budget row lock held by the
+    // caller (`registerUsage`). The lock lives on `promotion_campaign_budget`,
+    // not on this usage row, so `refresh: true` is required to read the
+    // committed value rather than a stale identity-map copy; otherwise a
+    // concurrent registration's guard could pass on a stale count.
     const [campaignBudgetUsagePerAttributeValue] =
       await this.campaignBudgetUsageService_.list(
         {
           budget_id: budgetId,
           attribute_value: attributeValue,
         },
-        { relations: ["budget"] },
+        { options: { refresh: true } },
         sharedContext
       )
+
+    const newUsedValue = MathBN.add(
+      campaignBudgetUsagePerAttributeValue?.used ?? 0,
+      amount
+    )
+
+    if (limit && MathBN.gt(newUsedValue, limit)) {
+      throw new MedusaError(
+        MedusaError.Types.NOT_ALLOWED,
+        "Promotion usage exceeds the budget limit."
+      )
+    }
 
     if (!campaignBudgetUsagePerAttributeValue) {
       await this.campaignBudgetUsageService_.create(
         {
           budget_id: budgetId,
           attribute_value: attributeValue,
-          used: MathBN.convert(1),
+          used: newUsedValue,
         },
         sharedContext
       )
     } else {
-      const limit = campaignBudgetUsagePerAttributeValue.budget.limit
-      const newUsedValue = MathBN.add(
-        campaignBudgetUsagePerAttributeValue.used ?? 0,
-        1
-      )
-
-      if (limit && MathBN.gt(newUsedValue, limit)) {
-        throw new MedusaError(
-          MedusaError.Types.NOT_ALLOWED,
-          "Promotion usage exceeds the budget limit."
-        )
-      }
-
       await this.campaignBudgetUsageService_.update(
         {
           id: campaignBudgetUsagePerAttributeValue.id,
@@ -252,6 +260,7 @@ export default class PromotionModuleService
   protected async revertCampaignBudgetUsageByAttribute_(
     budgetId: string,
     attributeValue: string,
+    amount: BigNumberInput,
     @MedusaContext() sharedContext: Context = {}
   ): Promise<void> {
     const [campaignBudgetUsagePerAttributeValue] =
@@ -268,7 +277,12 @@ export default class PromotionModuleService
       return
     }
 
-    if (MathBN.lte(campaignBudgetUsagePerAttributeValue.used ?? 0, 1)) {
+    const newUsedValue = MathBN.sub(
+      campaignBudgetUsagePerAttributeValue.used ?? 0,
+      amount
+    )
+
+    if (MathBN.lte(newUsedValue, 0)) {
       await this.campaignBudgetUsageService_.delete(
         campaignBudgetUsagePerAttributeValue.id,
         sharedContext
@@ -277,7 +291,7 @@ export default class PromotionModuleService
       await this.campaignBudgetUsageService_.update(
         {
           id: campaignBudgetUsagePerAttributeValue.id,
-          used: MathBN.sub(campaignBudgetUsagePerAttributeValue.used ?? 0, 1),
+          used: newUsedValue,
         },
         sharedContext
       )
@@ -308,10 +322,78 @@ export default class PromotionModuleService
     const campaignBudgetMap = new Map<string, UpdateCampaignBudgetDTO>()
     const promotionCodeUsageMap = new Map<string, boolean>()
     const promotionUsageMap = new Map<string, { id: string; used: number }>()
+    const spendByAttributeUsageMap = new Map<
+      string,
+      {
+        attributeValue: string
+        amount: BigNumberInput
+        limit?: BigNumberInput | null
+      }
+    >()
 
-    const existingPromotions = await this.listActivePromotions_(
+    let existingPromotions = await this.listActivePromotions_(
       { code: promotionCodes },
       { relations: ["campaign", "campaign.budget", "campaign.budget.usages"] },
+      sharedContext
+    )
+
+    // Serialize concurrent usage registration against the same promotions and
+    // budgets. Two concurrent registrations that read the same used value would
+    // both pass the limit guard below and both write, over-spending a spend
+    // budget or exceeding a usage limit. Lock the promotion and budget rows for
+    // the remainder of this transaction, then re-read the usage totals under the
+    // lock so the guards see committed values. Rows are locked in a stable id
+    // order to avoid deadlocks between concurrent multi-promotion registrations,
+    // and the re-read uses `refresh: true` (rather than detaching the identity
+    // map) so a surrounding transaction's pending state is preserved.
+    // Only promotions with a numeric usage limit have their `promotion` row
+    // updated below (see the `typeof promotion.limit === "number"` guard), so
+    // lock only those rows; budgets are locked separately just below.
+    const lockPromotionIds = existingPromotions
+      .filter((promotion) => typeof promotion.limit === "number")
+      .map((promotion) => promotion.id)
+    const lockBudgetIds = Array.from(
+      new Set(
+        existingPromotions
+          .map((promotion) => promotion.campaign?.budget?.id)
+          .filter(Boolean) as string[]
+      )
+    )
+    // The transaction context is required: a FOR UPDATE issued on a pooled
+    // (autocommit) connection would release the lock immediately and silently
+    // stop serializing, so fail explicitly instead of falling back.
+    const manager = sharedContext.transactionManager as SqlEntityManager
+    const knex = manager?.getTransactionContext()
+    if (!knex) {
+      throw new MedusaError(
+        MedusaError.Types.UNEXPECTED_STATE,
+        "registerUsage must run inside a transaction to serialize concurrent usage registration."
+      )
+    }
+    // Bound the wait for these row locks so a contended registration fails fast
+    // instead of hanging: `SET LOCAL` scopes the timeout to this transaction.
+    await knex.raw("SET LOCAL lock_timeout = '3s'")
+    if (lockPromotionIds.length) {
+      await knex("promotion")
+        .whereIn("id", lockPromotionIds)
+        .orderBy("id")
+        .forUpdate()
+        .select("id")
+    }
+    if (lockBudgetIds.length) {
+      await knex("promotion_campaign_budget")
+        .whereIn("id", lockBudgetIds)
+        .orderBy("id")
+        .forUpdate()
+        .select("id")
+    }
+
+    existingPromotions = await this.listActivePromotions_(
+      { code: promotionCodes },
+      {
+        relations: ["campaign", "campaign.budget", "campaign.budget.usages"],
+        options: { refresh: true },
+      },
       sharedContext
     )
 
@@ -432,6 +514,8 @@ export default class PromotionModuleService
         await this.registerCampaignBudgetUsageByAttribute_(
           campaignBudget.id,
           attributeValue,
+          1,
+          campaignBudget.limit,
           sharedContext
         )
 
@@ -445,6 +529,44 @@ export default class PromotionModuleService
 
         promotionCodeUsageMap.set(promotion.code!, true)
       }
+
+      if (campaignBudget.type === CampaignBudgetType.SPEND_BY_ATTRIBUTE) {
+        const campaignBudgetData = campaignBudgetMap.get(campaignBudget.id)
+        const attributeValue = registrationContext[campaignBudget.attribute!]
+
+        if (!campaignBudgetData || !attributeValue) {
+          continue
+        }
+
+        const spendByAttributeUsage = spendByAttributeUsageMap.get(
+          campaignBudget.id
+        )
+
+        spendByAttributeUsageMap.set(campaignBudget.id, {
+          attributeValue,
+          amount: MathBN.add(
+            spendByAttributeUsage?.amount ?? 0,
+            computedAction.amount
+          ),
+          limit: campaignBudget.limit,
+        })
+
+        // update the global budget usage to keep track but it is not used anywhere atm
+        campaignBudgetData.used = MathBN.add(
+          campaignBudgetData.used ?? 0,
+          computedAction.amount
+        )
+      }
+    }
+
+    for (const [budgetId, usage] of spendByAttributeUsageMap) {
+      await this.registerCampaignBudgetUsageByAttribute_(
+        budgetId,
+        usage.attributeValue,
+        usage.amount,
+        usage.limit,
+        sharedContext
+      )
     }
 
     if (promotionUsageMap.size > 0) {
@@ -484,6 +606,10 @@ export default class PromotionModuleService
     const promotionCodeUsageMap = new Map<string, boolean>()
     const campaignBudgetMap = new Map<string, UpdateCampaignBudgetDTO>()
     const promotionUsageMap = new Map<string, { id: string; used: number }>()
+    const spendByAttributeUsageMap = new Map<
+      string,
+      { attributeValue: string; amount: BigNumberInput }
+    >()
 
     const existingPromotions = await this.listActivePromotions_(
       {
@@ -586,6 +712,7 @@ export default class PromotionModuleService
         await this.revertCampaignBudgetUsageByAttribute_(
           campaignBudget.id,
           attributeValue,
+          1,
           sharedContext
         )
         const newUsedValue = MathBN.sub(campaignBudget.used ?? 0, 1)
@@ -599,6 +726,44 @@ export default class PromotionModuleService
 
         promotionCodeUsageMap.set(promotion.code!, true)
       }
+
+      if (campaignBudget.type === CampaignBudgetType.SPEND_BY_ATTRIBUTE) {
+        const campaignBudgetData = campaignBudgetMap.get(campaignBudget.id)
+        const attributeValue = registrationContext[campaignBudget.attribute!]
+
+        if (!campaignBudgetData || !attributeValue) {
+          continue
+        }
+
+        const spendByAttributeUsage = spendByAttributeUsageMap.get(
+          campaignBudget.id
+        )
+
+        spendByAttributeUsageMap.set(campaignBudget.id, {
+          attributeValue,
+          amount: MathBN.add(
+            spendByAttributeUsage?.amount ?? 0,
+            computedAction.amount
+          ),
+        })
+
+        // update the global budget usage to keep track but it is not used anywhere atm
+        const newUsedValue = MathBN.sub(
+          campaignBudgetData.used ?? 0,
+          computedAction.amount
+        )
+
+        campaignBudgetData.used = MathBN.lt(newUsedValue, 0) ? 0 : newUsedValue
+      }
+    }
+
+    for (const [budgetId, usage] of spendByAttributeUsageMap) {
+      await this.revertCampaignBudgetUsageByAttribute_(
+        budgetId,
+        usage.attributeValue,
+        usage.amount,
+        sharedContext
+      )
     }
 
     if (promotionUsageMap.size > 0) {
@@ -808,9 +973,13 @@ export default class PromotionModuleService
         rules: promotionRules = [],
       } = promotion
 
+      const budgetType = promotion.campaign?.budget?.type
+      let campaignBudgetUsagePerAttribute: CampaignBudgetUsageDTO | undefined
+
       if (
         !skipUsageLimitChecks &&
-        promotion.campaign?.budget?.type === CampaignBudgetType.USE_BY_ATTRIBUTE
+        (budgetType === CampaignBudgetType.USE_BY_ATTRIBUTE ||
+          budgetType === CampaignBudgetType.SPEND_BY_ATTRIBUTE)
       ) {
         const attribute = promotion.campaign?.budget?.attribute!
         const budgetUsageContext =
@@ -820,13 +989,17 @@ export default class PromotionModuleService
         const attributeValue = budgetUsageContext[attribute]
 
         if (!attributeValue) {
+          if (promotion.is_automatic) {
+            continue
+          }
+
           throw new MedusaError(
             MedusaError.Types.INVALID_DATA,
             `Attribute value for "${attribute}" is required by promotion campaing budget`
           )
         }
 
-        const [campaignBudgetUsagePerAttribute] =
+        ;[campaignBudgetUsagePerAttribute] =
           (await this.campaignBudgetUsageService_.list(
             {
               budget_id: promotion.campaign?.budget?.id,
@@ -836,7 +1009,10 @@ export default class PromotionModuleService
             sharedContext
           )) as unknown as CampaignBudgetUsageDTO[]
 
-        if (campaignBudgetUsagePerAttribute) {
+        if (
+          budgetType === CampaignBudgetType.USE_BY_ATTRIBUTE &&
+          campaignBudgetUsagePerAttribute
+        ) {
           const action = ComputeActionUtils.computeActionForBudgetExceeded(
             promotion,
             1,
@@ -882,7 +1058,8 @@ export default class PromotionModuleService
             applicationContext[ApplicationMethodTargetType.ITEMS]!,
             methodIdPromoValueMap,
             eligibleBuyItemMap,
-            eligibleTargetItemMap
+            eligibleTargetItemMap,
+            campaignBudgetUsagePerAttribute
           )
 
         computedActions.push(...computedActionsForItems)
@@ -904,7 +1081,8 @@ export default class PromotionModuleService
               promotion,
               applicationContext[ApplicationMethodTargetType.ITEMS],
               methodIdPromoValueMap,
-              allocationOverride
+              allocationOverride,
+              campaignBudgetUsagePerAttribute
             )
 
           computedActions.push(...computedActionsForItems)
@@ -915,7 +1093,8 @@ export default class PromotionModuleService
             ComputeActionUtils.getComputedActionsForShippingMethods(
               promotion,
               applicationContext[ApplicationMethodTargetType.SHIPPING_METHODS],
-              methodIdPromoValueMap
+              methodIdPromoValueMap,
+              campaignBudgetUsagePerAttribute
             )
 
           computedActions.push(...computedActionsForShippingMethods)
@@ -945,8 +1124,7 @@ export default class PromotionModuleService
   // @ts-expect-error
   async createPromotions(
     data:
-      | PromotionTypes.CreatePromotionDTO
-      | PromotionTypes.CreatePromotionDTO[],
+      PromotionTypes.CreatePromotionDTO | PromotionTypes.CreatePromotionDTO[],
     @MedusaContext() sharedContext: Context = {}
   ): Promise<PromotionTypes.PromotionDTO | PromotionTypes.PromotionDTO[]> {
     const input = Array.isArray(data) ? data : [data]
@@ -1235,8 +1413,7 @@ export default class PromotionModuleService
   // @ts-expect-error
   async updatePromotions(
     data:
-      | PromotionTypes.UpdatePromotionDTO
-      | PromotionTypes.UpdatePromotionDTO[],
+      PromotionTypes.UpdatePromotionDTO | PromotionTypes.UpdatePromotionDTO[],
     @MedusaContext() sharedContext: Context = {}
   ): Promise<PromotionTypes.PromotionDTO | PromotionTypes.PromotionDTO[]> {
     const input = Array.isArray(data) ? data : [data]

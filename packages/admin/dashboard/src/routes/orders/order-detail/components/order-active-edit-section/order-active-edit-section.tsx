@@ -8,13 +8,16 @@ import {
   useConfirmOrderEdit,
 } from "../../../../../hooks/api/order-edits"
 import { useMemo } from "react"
-import { HttpTypes } from "@medusajs/types"
+import { AdminOrderLinePreview, HttpTypes } from "@medusajs/types"
 import { Thumbnail } from "../../../../../components/common/thumbnail"
 import { useNavigate } from "react-router-dom"
+import {
+  useOrderChangePermissions,
+  useOrderPermissions,
+} from "../../../../../hooks/use-resource-permissions"
 
 type OrderActiveEditSectionProps = {
   order: HttpTypes.AdminOrder
-  quantity: number
 }
 
 function EditItem({
@@ -25,7 +28,7 @@ function EditItem({
   quantity: number
 }) {
   return (
-    <div key={item.id} className="text-ui-fg-subtle items-center gap-x-2">
+    <div key={item.id} className="items-center gap-x-2 text-ui-fg-subtle">
       <div className="flex items-center gap-x-2">
         <div className="w-fit min-w-[27px]">
           <span className="txt-small tabular-nums">{quantity}</span>x
@@ -33,7 +36,7 @@ function EditItem({
 
         <Thumbnail src={item.thumbnail} />
 
-        <span className="txt-small text-ui-fg-subtle font-medium">
+        <span className="txt-small font-medium text-ui-fg-subtle">
           {item.title}
         </span>
 
@@ -55,17 +58,26 @@ export const OrderActiveEditSection = ({
 }: OrderActiveEditSectionProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { canUpdate: canUpdateOrder } = useOrderPermissions()
+  const {
+    canCreate: canCreateOrderChange,
+    canUpdate: canUpdateOrderChange,
+    canDelete: canDeleteOrderChange,
+  } = useOrderChangePermissions()
+  const canContinue = canCreateOrderChange && canUpdateOrderChange
+  const canForceConfirm = canUpdateOrderChange && canUpdateOrder
+  const canCancel = canDeleteOrderChange
 
   const { order: orderPreview } = useOrderPreview(order.id)
 
   const { mutateAsync: cancelOrderEdit } = useCancelOrderEdit(order.id)
   const { mutateAsync: confirmOrderEdit } = useConfirmOrderEdit(order.id)
 
-  const isPending = orderPreview.order_change?.status === "pending"
+  const isPending = orderPreview?.order_change?.status === "pending"
 
   const [addedItems, removedItems] = useMemo(() => {
-    const added = []
-    const removed = []
+    const added: { item: AdminOrderLinePreview; quantity: number }[] = []
+    const removed: { item: AdminOrderLinePreview; quantity: number }[] = []
 
     const orderLookupMap = new Map(order.items!.map((i) => [i.id, i]))
 
@@ -101,7 +113,9 @@ export const OrderActiveEditSection = ({
 
       toast.success(t("orders.edits.toast.confirmedSuccessfully"))
     } catch (e) {
-      toast.error(e.message)
+      toast.error(
+        e instanceof Error ? e.message : t("errorBoundary.defaultTitle")
+      )
     }
   }
 
@@ -111,7 +125,9 @@ export const OrderActiveEditSection = ({
 
       toast.success(t("orders.edits.toast.canceledSuccessfully"))
     } catch (e) {
-      toast.error(e.message)
+      toast.error(
+        e instanceof Error ? e.message : t("errorBoundary.defaultTitle")
+      )
     }
   }
 
@@ -140,9 +156,9 @@ export const OrderActiveEditSection = ({
             </Heading>
           </div>
 
-          {/*ADDED ITEMS*/}
+          {/* ADDED ITEMS*/}
           {!!addedItems.length && (
-            <div className="txt-small text-ui-fg-subtle flex flex-row px-6 py-4">
+            <div className="txt-small flex flex-row px-6 py-4 text-ui-fg-subtle">
               <span className="flex-1 font-medium">{t("labels.added")}</span>
 
               <div className="flex flex-1 flex-col gap-y-2">
@@ -153,9 +169,9 @@ export const OrderActiveEditSection = ({
             </div>
           )}
 
-          {/*REMOVED ITEMS*/}
+          {/* REMOVED ITEMS*/}
           {!!removedItems.length && (
-            <div className="txt-small text-ui-fg-subtle flex flex-row px-6 py-4">
+            <div className="txt-small flex flex-row px-6 py-4 text-ui-fg-subtle">
               <span className="flex-1 font-medium">{t("labels.removed")}</span>
 
               <div className="flex flex-1 flex-col gap-y-2">
@@ -166,32 +182,38 @@ export const OrderActiveEditSection = ({
             </div>
           )}
 
-          <div className="bg-ui-bg-subtle flex items-center justify-end gap-x-2 rounded-b-xl px-4 py-4">
-            {isPending ? (
-              <Button
-                size="small"
-                variant="secondary"
-                onClick={() => navigate(`/orders/${order.id}/edits`)}
-              >
-                {t("actions.continueEdit")}
-              </Button>
-            ) : (
-              <Button
-                size="small"
-                variant="secondary"
-                onClick={onConfirmOrderEdit}
-              >
-                {t("actions.forceConfirm")}
-              </Button>
-            )}
-            <Button
-              size="small"
-              variant="secondary"
-              onClick={onCancelOrderEdit}
-            >
-              {t("actions.cancel")}
-            </Button>
-          </div>
+          {(canContinue || canForceConfirm || canCancel) && (
+            <div className="flex items-center justify-end gap-x-2 rounded-b-xl bg-ui-bg-subtle px-4 py-4">
+              {isPending
+                ? canContinue && (
+                    <Button
+                      size="small"
+                      variant="secondary"
+                      onClick={() => navigate(`/orders/${order.id}/edits`)}
+                    >
+                      {t("actions.continueEdit")}
+                    </Button>
+                  )
+                : canForceConfirm && (
+                    <Button
+                      size="small"
+                      variant="secondary"
+                      onClick={onConfirmOrderEdit}
+                    >
+                      {t("actions.forceConfirm")}
+                    </Button>
+                  )}
+              {canCancel && (
+                <Button
+                  size="small"
+                  variant="secondary"
+                  onClick={onCancelOrderEdit}
+                >
+                  {t("actions.cancel")}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </Container>
     </div>

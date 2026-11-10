@@ -1,3 +1,5 @@
+import { LayoutConfigurationData } from "./common"
+
 /**
  * The view configuration to be created.
  */
@@ -104,6 +106,41 @@ export interface UpdateViewConfigurationDTO {
 }
 
 /**
+ * The layout configuration to be created.
+ */
+export interface CreateLayoutConfigurationDTO {
+  /**
+   * The zone (page) this configuration is for, e.g. "product.details".
+   */
+  zone: string
+
+  /**
+   * The user ID this configuration belongs to. Null for the system default.
+   */
+  user_id?: string | null
+
+  /**
+   * Whether this is the system default configuration for the zone.
+   */
+  is_system_default?: boolean
+
+  /**
+   * The layout configuration data.
+   */
+  configuration: LayoutConfigurationData
+}
+
+/**
+ * The attributes to update in a layout configuration.
+ */
+export interface UpdateLayoutConfigurationDTO {
+  /**
+   * The layout configuration data.
+   */
+  configuration?: LayoutConfigurationData
+}
+
+/**
  * The user preference to be created.
  */
 export interface CreateUserPreferenceDTO {
@@ -131,4 +168,78 @@ export interface UpdateUserPreferenceDTO {
    * The preference value.
    */
   value: any
+}
+
+/**
+ * The property label to be created.
+ */
+export interface CreatePropertyLabelDTO {
+  /**
+   * The entity this label applies to (e.g., "Order", "Product").
+   */
+  entity: string
+
+  /**
+   * The property path (e.g., "display_id", "customer.email").
+   */
+  property: string
+
+  /**
+   * Custom display name for the property.
+   */
+  label: string
+
+  /**
+   * Optional description providing context about the property.
+   */
+  description?: string
+}
+
+/**
+ * The property label to be upserted (created or updated).
+ */
+export interface UpsertPropertyLabelDTO {
+  /**
+   * The ID of the property label to update.
+   */
+  id?: string
+  /**
+   * The entity this label applies to (e.g., "Order", "Product").
+   */
+  entity?: string
+
+  /**
+   * The property path (e.g., "display_id", "customer.email").
+   */
+  property?: string
+
+  /**
+   * Custom display name for the property.
+   */
+  label?: string
+
+  /**
+   * Optional description providing context about the property.
+   */
+  description?: string
+}
+
+/**
+ * The attributes to update in the property label.
+ */
+export interface UpdatePropertyLabelDTO {
+  /**
+   * The ID of the property label to update.
+   */
+  id?: string
+
+  /**
+   * Custom display name for the property.
+   */
+  label?: string
+
+  /**
+   * Optional description providing context about the property.
+   */
+  description?: string | null
 }

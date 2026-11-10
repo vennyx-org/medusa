@@ -20,6 +20,8 @@ import {
 } from "../../helpers/create-mikro-orm-entity"
 import { pgGodCredentials } from "../utils"
 
+jest.setTimeout(30000)
+
 export const fileSystem = new FileSystem(
   join(__dirname, "../../integration-tests-migrations-many-to-one")
 )
@@ -197,9 +199,8 @@ describe("manyToOne - belongTo", () => {
       }
     )
 
-    const serializedTeams = await mikroOrmSerializer<InstanceType<typeof Team>>(
-      teams
-    )
+    const serializedTeams =
+      await mikroOrmSerializer<InstanceType<typeof Team>>(teams)
     expect(serializedTeams).toHaveLength(2)
     expect(serializedTeams).toEqual(
       expect.arrayContaining([

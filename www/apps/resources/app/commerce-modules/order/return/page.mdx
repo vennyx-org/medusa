@@ -18,6 +18,12 @@ A return is the return of items delivered from the customer back to the merchant
 
 A return is requested either by the customer from the storefront, or the merchant from the admin. Medusa supports an automated Return Merchandise Authorization (RMA) flow.
 
+<Note>
+
+The [Create Return API route](!api!/store/returns/create-return) doesn't require customer authentication, so that guest customers can request a return for their orders. To add access rules to the route, refer to the [Restrict Return Creation guide](../secure-return-creation/page.mdx).
+
+</Note>
+
 ![Diagram showcasing the automated RMA flow.](https://res.cloudinary.com/dza7lstvk/image/upload/v1719578128/Medusa%20Resources/return-rma_pzprwq.jpg)
 
 Once the merchant receives the returned items, they mark the return as received.
@@ -32,6 +38,18 @@ The `ReturnItem` model has two properties storing the item's quantity:
 
 1. `received_quantity`: The quantity of the item that's received and can be added to the item's inventory quantity.
 2. `damaged_quantity`: The quantity of the item that's damaged, meaning it can't be sold again or added to the item's inventory quantity.
+
+### Returnable Quantity
+
+The Order Module only allows returning items that are still with the customer. When you request to return an item, the Order Module calculates its returnable quantity by subtracting the following quantities from the item's fulfilled quantity:
+
+- The quantity already requested for return in other returns.
+- The quantity already received in previous returns.
+- The quantity dismissed in previous returns.
+
+If the requested quantity is greater than the returnable quantity, the Order Module throws an `invalid_data` error.
+
+For example, if you fulfilled three units of an item and already received two of them in a previous return, you can only request to return one more unit.
 
 ---
 

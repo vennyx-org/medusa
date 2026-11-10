@@ -22,9 +22,15 @@ export type Operation = OpenAPIV3.OperationObject<{
   "x-featureFlag"?: string
   "x-workflow"?: string
   "x-sidebar-summary"?: string
+  // Precomputed API-reference page path (without basePath) and its last
+  // segment, injected at request time from the generated path map.
+  "x-path"?: string
+  "x-slug"?: string
   "x-events"?: OasEvents[]
   "x-since"?: string
   "x-deprecated_message"?: string
+  "x-allowed"?: string[]
+  "x-disallowed"?: string[]
   "x-badges"?: {
     text: string
     description: string

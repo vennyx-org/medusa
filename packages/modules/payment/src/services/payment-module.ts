@@ -11,6 +11,7 @@ import {
   CreatePaymentSessionDTO,
   CreateRefundDTO,
   DAL,
+  DeletePaymentMethodDTO,
   FilterablePaymentCollectionProps,
   FilterablePaymentMethodProps,
   FilterablePaymentProviderProps,
@@ -41,7 +42,9 @@ import {
 } from "@medusajs/framework/types"
 import {
   BigNumber,
+  defaultCurrencies,
   EmitEvents,
+  getEpsilonFromDecimalPrecision,
   InjectManager,
   InjectTransactionManager,
   isPresent,
@@ -50,10 +53,14 @@ import {
   MedusaContext,
   MedusaError,
   ModulesSdkUtils,
+  normalizeCurrencyCode,
   PaymentCollectionStatus,
   PaymentSessionStatus,
   promiseAll,
+  RefundStatus,
+  SoftDeletableFilterKey,
 } from "@medusajs/framework/utils"
+import { SqlEntityManager } from "@medusajs/framework/mikro-orm/postgresql"
 import {
   AccountHolder,
   Capture,
@@ -77,6 +84,14 @@ type InjectedDependencies = {
   accountHolderService: ModulesSdkTypes.IMedusaInternalService<any>
   paymentProviderService: PaymentProviderService
 }
+
+/**
+ * How long a refund may sit in `pending` before a retry with the same
+ * idempotency key is allowed to take it over. It has to comfortably exceed the
+ * slowest provider call, since a retry inside this window is treated as a
+ * conflict rather than a recovery.
+ */
+const PENDING_REFUND_RECOVERY_MS = 15 * 60 * 1000
 
 const generateMethodForModels = {
   PaymentCollection,
@@ -159,12 +174,10 @@ export default class PaymentModuleService
   ): BigNumberInput {
     let precision: number | undefined = undefined
     try {
-      const formatted = Intl.NumberFormat(undefined, {
+      precision = Intl.NumberFormat(undefined, {
         style: "currency",
         currency: currencyCode,
-      }).format(0.1111111)
-
-      precision = formatted.split(".")[1].length
+      }).resolvedOptions().maximumFractionDigits
     } catch {
       // Unknown currency, keep the full precision
     }
@@ -208,7 +221,16 @@ export default class PaymentModuleService
     data: CreatePaymentCollectionDTO[],
     @MedusaContext() sharedContext?: Context
   ): Promise<InferEntityType<typeof PaymentCollection>[]> {
-    return await this.paymentCollectionService_.create(data, sharedContext)
+    const normalizedData = data.map((d) => ({
+      ...d,
+      currency_code: d.currency_code
+        ? normalizeCurrencyCode(d.currency_code)
+        : d.currency_code,
+    }))
+    return await this.paymentCollectionService_.create(
+      normalizedData,
+      sharedContext
+    )
   }
 
   // @ts-expect-error
@@ -239,6 +261,9 @@ export default class PaymentModuleService
         {
           id: idOrSelector,
           ...data,
+          ...(data.currency_code ? 
+            { currency_code: normalizeCurrencyCode(data.currency_code) } :
+            {}),
         },
       ]
     } else {
@@ -251,6 +276,10 @@ export default class PaymentModuleService
       updateData = collections.map((c) => ({
         id: c.id,
         ...data,
+        ...(data.currency_code ?
+          { currency_code: normalizeCurrencyCode(data.currency_code) } :
+          {}
+        ),
       }))
     }
 
@@ -300,12 +329,29 @@ export default class PaymentModuleService
     @MedusaContext() sharedContext?: Context
   ): Promise<InferEntityType<typeof PaymentCollection>[]> {
     const input = Array.isArray(data) ? data : [data]
-    const forUpdate = input.filter(
-      (collection): collection is UpdatePaymentCollectionDTO => !!collection.id
-    )
-    const forCreate = input.filter(
-      (collection): collection is CreatePaymentCollectionDTO => !collection.id
-    )
+    const forUpdate = input
+      .filter(
+        (collection): collection is UpdatePaymentCollectionDTO =>
+          !!collection.id
+      )
+      .map((element) => ({
+        ...element,
+        ...(element.currency_code ? 
+          { currency_code: normalizeCurrencyCode(element.currency_code) } :
+          {}
+        )
+      }))
+    const forCreate = input
+      .filter(
+        (collection): collection is CreatePaymentCollectionDTO => !collection.id
+      )
+      .map((element) => ({
+        ...element,
+        ...(element.currency_code ? 
+          { currency_code: normalizeCurrencyCode(element.currency_code) } :
+          {}
+        )
+      }))
 
     const operations: Promise<InferEntityType<typeof PaymentCollection>[]>[] =
       []
@@ -383,7 +429,7 @@ export default class PaymentModuleService
           },
           data: { ...input.data, session_id: paymentSession!.id },
           amount: input.amount,
-          currency_code: input.currency_code,
+          currency_code: normalizeCurrencyCode(input.currency_code),
         }
       )
 
@@ -426,7 +472,7 @@ export default class PaymentModuleService
         payment_collection_id: paymentCollectionId,
         provider_id: data.provider_id,
         amount: data.amount,
-        currency_code: data.currency_code,
+        currency_code: normalizeCurrencyCode(data.currency_code),
         context: data.context,
         data: data.data,
         metadata: data.metadata,
@@ -454,7 +500,7 @@ export default class PaymentModuleService
       {
         data: data.data,
         amount: data.amount,
-        currency_code: data.currency_code,
+        currency_code: normalizeCurrencyCode(data.currency_code),
         context: data.context,
       }
     )
@@ -463,7 +509,7 @@ export default class PaymentModuleService
       {
         id: session.id,
         amount: data.amount,
-        currency_code: data.currency_code,
+        currency_code: normalizeCurrencyCode(data.currency_code),
         data: providerData.data,
         // Allow the caller to explicitly set the status (eg. due to a webhook), fallback to the update response, and finally to the existing status.
         status: data.status ?? providerData.status ?? session.status,
@@ -500,7 +546,7 @@ export default class PaymentModuleService
     id: string,
     context: Record<string, unknown>,
     @MedusaContext() sharedContext?: Context
-  ): Promise<PaymentDTO> {
+  ): Promise<PaymentDTO | null> {
     const session = await this.paymentSessionService_.retrieve(
       id,
       {
@@ -521,7 +567,7 @@ export default class PaymentModuleService
 
     // this method needs to be idempotent
     if (session.payment && session.authorized_at) {
-      return await this.baseRepository_.serialize(session.payment)
+      return await this.baseRepository_.serialize<PaymentDTO>(session.payment)
     }
 
     let { data, status } = await this.paymentProviderService_.authorizePayment(
@@ -531,6 +577,24 @@ export default class PaymentModuleService
         context: { idempotency_key: session.id, ...context },
       }
     )
+
+    if (status === PaymentSessionStatus.PENDING_AUTHORIZATION) {
+      await this.paymentSessionService_.update(
+        {
+          id: session.id,
+          status,
+          data,
+        },
+        sharedContext
+      )
+
+      await this.maybeUpdatePaymentCollection_(
+        session.payment_collection_id,
+        sharedContext
+      )
+
+      return null
+    }
 
     if (
       status !== PaymentSessionStatus.AUTHORIZED &&
@@ -575,7 +639,7 @@ export default class PaymentModuleService
       sharedContext
     )
 
-    return await this.baseRepository_.serialize(payment)
+    return await this.baseRepository_.serialize<PaymentDTO>(payment)
   }
 
   @InjectTransactionManager()
@@ -608,7 +672,7 @@ export default class PaymentModuleService
     const payment = await this.paymentService_.create(
       {
         amount: session.amount,
-        currency_code: session.currency_code,
+        currency_code: normalizeCurrencyCode(session.currency_code),
         payment_session: session.id,
         payment_collection_id: session.payment_collection_id,
         provider_id: session.provider_id,
@@ -701,7 +765,17 @@ export default class PaymentModuleService
       sharedContext
     )
 
-    return await this.baseRepository_.serialize(payment)
+    // Re-fetch the payment so the freshly created capture is reflected in the
+    // returned payload. `refresh` is required because, under the select-in load
+    // strategy, the capture created above is not automatically re-populated on
+    // the managed payment entity within the same context.
+    const capturedPayment = await this.paymentService_.retrieve(
+      payment.id,
+      { relations: ["captures"], options: { refresh: true } },
+      sharedContext
+    )
+
+    return await this.baseRepository_.serialize(capturedPayment)
   }
 
   @InjectTransactionManager()
@@ -724,12 +798,46 @@ export default class PaymentModuleService
       return { isFullyCaptured: true }
     }
 
-    // If no custom amount is passed, we assume the full amount needs to be captured
-    if (!data.amount) {
+    // If no custom amount is passed, we assume the full amount needs to be
+    // captured. An explicit amount, however, must be strictly positive.
+    if (data.amount == null) {
       data.amount = payment.amount as number
+    } else if (MathBN.lte(data.amount, 0)) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        `Capture amount must be greater than 0.`
+      )
     }
 
-    const capturedAmount = payment.captures.reduce((captureAmount, next) => {
+    // Serialize concurrent captures on the same payment: lock the payment row
+    // for the remainder of this transaction so the read-check-write below runs
+    // as a critical section, then re-read the captures under the lock so the
+    // guard sees the committed total. Without this, two concurrent captures both
+    // read a stale total and each pass the guard, over-capturing the payment.
+    // The provider is called afterwards from `capturePaymentFromProvider_` in a
+    // separate context, so the lock is never held across the provider call.
+    // The transaction context is required: a FOR UPDATE issued on a pooled
+    // (autocommit) connection would release the lock immediately and silently
+    // stop serializing, so fail explicitly instead of falling back.
+    const manager = sharedContext.transactionManager as SqlEntityManager
+    const knex = manager?.getTransactionContext()
+    if (!knex) {
+      throw new MedusaError(
+        MedusaError.Types.UNEXPECTED_STATE,
+        "capturePayment_ must run inside a transaction to serialize concurrent captures."
+      )
+    }
+    // Bound the wait for the row lock so a contended capture fails fast instead
+    // of hanging: `SET LOCAL` scopes the timeout to this transaction.
+    await knex.raw("SET LOCAL lock_timeout = '3s'")
+    await knex("payment").where("id", payment.id).forUpdate().select("id")
+
+    const lockedPayment = await this.paymentService_.retrieve(
+      data.payment_id,
+      { select: ["id"], relations: ["captures.raw_amount"] },
+      sharedContext
+    )
+    const capturedAmount = lockedPayment.captures.reduce((captureAmount, next) => {
       return MathBN.add(captureAmount, next.raw_amount as BigNumberInput)
     }, MathBN.convert(0))
 
@@ -762,7 +870,7 @@ export default class PaymentModuleService
       {
         payment: data.payment_id,
         amount: data.amount,
-        captured_by: data.captured_by,
+        created_by: data.captured_by,
       },
       sharedContext
     )
@@ -827,6 +935,7 @@ export default class PaymentModuleService
       {
         select: [
           "id",
+          "currency_code",
           "data",
           "provider_id",
           "payment_collection_id",
@@ -837,19 +946,38 @@ export default class PaymentModuleService
       },
       sharedContext
     )
-    const refund = await this.refundPayment_(payment, data, sharedContext)
-
-    try {
-      await this.refundPaymentFromProvider_(payment, refund, sharedContext)
-    } catch (error) {
-      await super.deleteRefunds({ id: refund.id }, sharedContext)
-      throw error
-    }
-
-    await this.maybeUpdatePaymentCollection_(
-      payment.payment_collection_id,
+    const { refund, alreadyRefunded } = await this.refundPayment_(
+      payment,
+      data,
       sharedContext
     )
+
+    if (!alreadyRefunded) {
+      try {
+        await this.refundPaymentFromProvider_(payment, refund, sharedContext)
+      } catch (error) {
+        // Soft-deleted rather than deleted: the row is the only record that a
+        // request reached the provider, and its id backs the idempotency key a
+        // retry has to reuse. Soft-deleting keeps it out of every refund total
+        // without each caller having to filter it out.
+        await this.refundService_.update(
+          { id: refund.id, status: RefundStatus.FAILED },
+          sharedContext
+        )
+        await this.refundService_.softDelete({ id: refund.id }, sharedContext)
+        throw error
+      }
+
+      await this.refundService_.update(
+        { id: refund.id, status: RefundStatus.SUCCEEDED },
+        sharedContext
+      )
+
+      await this.maybeUpdatePaymentCollection_(
+        payment.payment_collection_id,
+        sharedContext
+      )
+    }
 
     return await this.retrievePayment(
       payment.id,
@@ -858,31 +986,183 @@ export default class PaymentModuleService
     )
   }
 
+  /**
+   * Decides whether a refund request is a new refund, a retry of a failed one,
+   * or a replay of one that already went through. Only a request carrying an
+   * `idempotency_key` can be anything but a new refund.
+   *
+   * Throws when the request collides with an attempt that is still waiting on
+   * the provider: the outcome of that attempt isn't known yet, so neither
+   * answer a replay could be given would be true.
+   */
+  private resolveRefundRequest_(
+    refunds: InferEntityType<typeof Refund>[],
+    data: CreateRefundDTO
+  ): { resume?: InferEntityType<typeof Refund>; replayed: boolean } {
+    if (data.idempotency_key) {
+      const match = refunds.find(
+        (refund) => refund.idempotency_key === data.idempotency_key
+      )
+
+      if (!match) {
+        return { replayed: false }
+      }
+
+      if (!MathBN.eq(match.raw_amount as BigNumberInput, data.amount!)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `A refund with idempotency key ${data.idempotency_key} already exists on payment ${data.payment_id} for a different amount.`
+        )
+      }
+
+      if (match.status === RefundStatus.PENDING) {
+        // A pending refund is normally an attempt still waiting on the provider,
+        // and its outcome isn't known yet. But an attempt whose process died
+        // between the provider call and the status update would stay pending
+        // forever and lock the key out, so past a grace period the refund is
+        // retried instead: the provider sees the same key, which is what makes
+        // re-sending it safe.
+        const startedAt = (match.updated_at ?? match.created_at) as Date
+        const isStale =
+          Date.now() - new Date(startedAt).getTime() >
+          PENDING_REFUND_RECOVERY_MS
+
+        if (!isStale) {
+          throw new MedusaError(
+            MedusaError.Types.CONFLICT,
+            `A refund with idempotency key ${data.idempotency_key} is still in progress on payment ${data.payment_id}.`
+          )
+        }
+
+        return { resume: match, replayed: false }
+      }
+
+      return match.status === RefundStatus.SUCCEEDED
+        ? { resume: match, replayed: true }
+        : { resume: match, replayed: false }
+    }
+
+    // Without a key there is nothing to match a retry against: two refunds of
+    // the same amount are indistinguishable from one refund sent twice. Such a
+    // request always starts a new refund, as it did before refunds could be
+    // resumed at all.
+    return { replayed: false }
+  }
+
   @InjectTransactionManager()
   private async refundPayment_(
     payment: InferEntityType<typeof Payment>,
     data: CreateRefundDTO,
     @MedusaContext() sharedContext: Context = {}
-  ): Promise<InferEntityType<typeof Refund>> {
-    if (!data.amount) {
+  ): Promise<{
+    refund: InferEntityType<typeof Refund>
+    alreadyRefunded: boolean
+  }> {
+    // If no amount is passed, we assume the full payment amount needs to be
+    // refunded. An explicit amount, however, must be strictly positive.
+    if (data.amount == null) {
       data.amount = payment.amount as BigNumberInput
+    } else if (MathBN.lte(data.amount, 0)) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        `Refund amount must be greater than 0.`
+      )
     }
 
-    const capturedAmount = payment.captures.reduce((captureAmount, next) => {
+    // Serialize concurrent refunds on the same payment: lock the payment row for
+    // the remainder of this transaction so the read-check-write below runs as a
+    // critical section, then re-read captures and refunds under the lock so the
+    // guard sees committed totals. Without this, two concurrent refunds both read
+    // a stale refunded total and each pass the guard, over-refunding the payment.
+    // The provider is called afterwards from `refundPaymentFromProvider_` in a
+    // separate context, so the lock is never held across the provider call.
+    // The transaction context is required: a FOR UPDATE issued on a pooled
+    // (autocommit) connection would release the lock immediately and silently
+    // stop serializing, so fail explicitly instead of falling back.
+    const manager = sharedContext.transactionManager as SqlEntityManager
+    const knex = manager?.getTransactionContext()
+    if (!knex) {
+      throw new MedusaError(
+        MedusaError.Types.UNEXPECTED_STATE,
+        "refundPayment_ must run inside a transaction to serialize concurrent refunds."
+      )
+    }
+    // Bound the wait for the row lock so a contended refund fails fast instead
+    // of hanging: `SET LOCAL` scopes the timeout to this transaction.
+    await knex.raw("SET LOCAL lock_timeout = '3s'")
+    await knex("payment").where("id", payment.id).forUpdate().select("id")
+
+    const lockedPayment = await this.paymentService_.retrieve(
+      data.payment_id,
+      {
+        select: ["id"],
+        relations: ["captures.raw_amount", "refunds"],
+        // Soft-deleted refunds are the failed attempts a retry resumes, so
+        // they have to be visible here even though they count for nothing.
+        filters: { [SoftDeletableFilterKey]: { withDeleted: true } },
+      },
+      sharedContext
+    )
+
+    const { resume, replayed } = this.resolveRefundRequest_(
+      lockedPayment.refunds,
+      data
+    )
+
+    // A replay moves no additional funds, so it skips the guard below: the
+    // amount it refunded is already part of the payment's refunded total.
+    if (replayed) {
+      return { refund: resume!, alreadyRefunded: true }
+    }
+
+    const capturedAmount = lockedPayment.captures.reduce((captureAmount, next) => {
       const amountAsBigNumber = new BigNumber(next.raw_amount as BigNumberInput)
       return MathBN.add(captureAmount, amountAsBigNumber)
     }, MathBN.convert(0))
-    const refundedAmount = payment.refunds.reduce((refundedAmount, next) => {
-      return MathBN.add(refundedAmount, next.raw_amount as BigNumberInput)
-    }, MathBN.convert(0))
+    // The refund being resumed is excluded: a soft-deleted one counts for
+    // nothing already, and a stale pending one is this same refund rather than
+    // an additional one, so leaving it in would double-count `data.amount`.
+    const refundedAmount = lockedPayment.refunds
+      .filter((refund) => !refund.deleted_at && refund.id !== resume?.id)
+      .reduce((refundedAmount, next) => {
+        return MathBN.add(refundedAmount, next.raw_amount as BigNumberInput)
+      }, MathBN.convert(0))
 
     const totalRefundedAmount = MathBN.add(refundedAmount, data.amount)
 
-    if (MathBN.lt(capturedAmount, totalRefundedAmount)) {
+    const upperCurCode = payment.currency_code?.toUpperCase() as string
+    const currencyEpsilon = getEpsilonFromDecimalPrecision(
+      defaultCurrencies[upperCurCode]?.decimal_digits
+    )
+
+    if (
+      MathBN.lt(
+        MathBN.sub(capturedAmount, totalRefundedAmount),
+        -currencyEpsilon
+      )
+    ) {
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
         `You cannot refund more than what is captured on the payment.`
       )
+    }
+
+    // Resumed only after the guard: a failed refund counts for nothing while it
+    // is soft-deleted, so restoring it adds its amount back to the refunded
+    // total and can push the payment past what was captured.
+    if (resume) {
+      if (resume.deleted_at) {
+        // Restored before the status is set: an update can't see a soft-deleted
+        // row, so the order here is load-bearing.
+        await this.refundService_.restore({ id: resume.id }, sharedContext)
+      }
+
+      const restored = await this.refundService_.update(
+        { id: resume.id, status: RefundStatus.PENDING },
+        sharedContext
+      )
+
+      return { refund: restored, alreadyRefunded: false }
     }
 
     const refund = await this.refundService_.create(
@@ -892,11 +1172,14 @@ export default class PaymentModuleService
         created_by: data.created_by,
         note: data.note,
         refund_reason_id: data.refund_reason_id,
+        metadata: data.metadata,
+        idempotency_key: data.idempotency_key,
+        status: RefundStatus.PENDING,
       },
       sharedContext
     )
 
-    return refund
+    return { refund, alreadyRefunded: false }
   }
 
   @InjectManager()
@@ -911,7 +1194,7 @@ export default class PaymentModuleService
         data: payment.data!,
         amount: refund.raw_amount as BigNumberInput,
         context: {
-          idempotency_key: refund.id,
+          idempotency_key: refund.idempotency_key ?? refund.id,
         },
       }
     )
@@ -936,15 +1219,18 @@ export default class PaymentModuleService
       sharedContext
     )
 
-    await this.paymentProviderService_.cancelPayment(payment.provider_id, {
-      data: payment.data!,
-      context: {
-        idempotency_key: payment.id,
-      },
-    })
+    const { data } = await this.paymentProviderService_.cancelPayment(
+      payment.provider_id,
+      {
+        data: payment.data!,
+        context: {
+          idempotency_key: payment.id,
+        },
+      }
+    )
 
     await this.paymentService_.update(
-      { id: paymentId, canceled_at: new Date() },
+      { id: paymentId, canceled_at: new Date(), data },
       sharedContext
     )
 
@@ -960,14 +1246,15 @@ export default class PaymentModuleService
       paymentCollectionId,
       {
         select: ["amount", "raw_amount", "status", "currency_code"],
-        relations: [
-          "payment_sessions.amount",
-          "payment_sessions.raw_amount",
-          "payments.captures.amount",
-          "payments.captures.raw_amount",
-          "payments.refunds.amount",
-          "payments.refunds.raw_amount",
-        ],
+        // Use relation paths (not scalar field paths such as
+        // "payment_sessions.amount") so the select-in load strategy populates
+        // the nested collections. `refresh` forces the collections to be
+        // re-hydrated from the database: this runs inside the write transaction
+        // right after sessions/captures/refunds were created, and select-in
+        // does not otherwise re-populate collections that are already loaded on
+        // the managed entities in the shared context.
+        relations: ["payment_sessions", "payments.captures", "payments.refunds"],
+        options: { refresh: true },
       },
       sharedContext
     )
@@ -1265,12 +1552,46 @@ export default class PaymentModuleService
     return Array.isArray(data) ? normalizedResponse : normalizedResponse[0]
   }
 
+  deletePaymentMethods(
+    data: DeletePaymentMethodDTO,
+    sharedContext?: Context
+  ): Promise<void>
+
+  deletePaymentMethods(
+    data: DeletePaymentMethodDTO[],
+    sharedContext?: Context
+  ): Promise<void>
+
+  @InjectManager()
+  @EmitEvents()
+  async deletePaymentMethods(
+    data: DeletePaymentMethodDTO | DeletePaymentMethodDTO[],
+    @MedusaContext() sharedContext?: Context
+  ): Promise<void> {
+    const input = Array.isArray(data) ? data : [data]
+
+    await promiseAll(
+      input.map((item) =>
+        this.paymentProviderService_.deletePaymentMethod(item.provider_id, {
+          context: item.context,
+          data: {
+            ...item.data,
+            id: item.id,
+          },
+        })
+      ),
+      { aggregateErrors: true }
+    )
+  }
+
   @InjectManager()
   async getWebhookActionAndData(
     eventData: ProviderWebhookPayload,
     @MedusaContext() sharedContext?: Context
   ): Promise<WebhookActionResult> {
-    const providerId = `pp_${eventData.provider}`
+    const providerId = eventData.provider.startsWith("pp_")
+      ? eventData.provider
+      : `pp_${eventData.provider}`
 
     return await this.paymentProviderService_.getWebhookActionAndData(
       providerId,

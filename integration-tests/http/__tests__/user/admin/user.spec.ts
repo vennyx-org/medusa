@@ -1,6 +1,12 @@
-import { IAuthModuleService } from "@medusajs/types"
-import { Modules } from "@medusajs/utils"
+import { createUsersWorkflow } from "@medusajs/core-flows"
+import { IWorkflowEngineService } from "@medusajs/framework/types"
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
+import { IAuthModuleService } from "@medusajs/types"
+import {
+  ContainerRegistrationKeys,
+  generateJwtToken,
+  Modules,
+} from "@medusajs/utils"
 import {
   adminHeaders,
   createAdminUser,
@@ -8,11 +14,13 @@ import {
 
 jest.setTimeout(30000)
 
+process.env.ENABLE_RBAC_MODULE = "true"
+
 medusaIntegrationTestRunner({
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
     let user, container, authIdentity
 
-    beforeEach(async () => {
+    beforeAll(async () => {
       container = getContainer()
       const { user: adminUser, authIdentity: authId } = await createAdminUser(
         dbConnection,
@@ -22,6 +30,8 @@ medusaIntegrationTestRunner({
 
       user = adminUser
       authIdentity = authId
+
+      await dbUtils.snapshot()
     })
 
     describe("GET /admin/users/:id", () => {
@@ -104,18 +114,43 @@ medusaIntegrationTestRunner({
       })
     })
 
+    describe("POST /admin/users/me", () => {
+      it("should update the authenticated user", async () => {
+        const updateResponse = (
+          await api.post(
+            "/admin/users/me",
+            { first_name: "Jane", last_name: "Roe" },
+            adminHeaders
+          )
+        ).data.user
+
+        expect(updateResponse).toEqual(
+          expect.objectContaining({
+            id: user.id,
+            first_name: "Jane",
+            last_name: "Roe",
+          })
+        )
+
+        const me = (await api.get("/admin/users/me", adminHeaders)).data.user
+        expect(me).toEqual(
+          expect.objectContaining({ first_name: "Jane", last_name: "Roe" })
+        )
+      })
+    })
+
     describe("DELETE /admin/users", () => {
-      it("Deletes a user and updates associated auth identity", async () => {
+      it("Deletes a user and its auth identity when the user is the only associated actor", async () => {
         const userTwoAdminHeaders = {
-            headers: { "x-medusa-access-token": "test_token" },
+          headers: { "x-medusa-access-token": "test_token" },
         }
 
-        const { user: userTwo, authIdentity: userTwoAuthIdentity } = await createAdminUser(
-            dbConnection,
-            userTwoAdminHeaders,
-            container,
-            { email: "test@test.com" },
-          )
+        const { user: userTwo, authIdentity: userTwoAuthIdentity } =
+          await createAdminUser(dbConnection, userTwoAdminHeaders, container, {
+            email: "test@test.com",
+          })
+
+        const authModule: IAuthModuleService = container.resolve(Modules.AUTH)
 
         const response = await api.delete(
           `/admin/users/${userTwo.id}`,
@@ -129,42 +164,132 @@ medusaIntegrationTestRunner({
           deleted: true,
         })
 
+        // The user was the only actor associated with the auth identity, so the
+        // whole auth identity should be deleted.
+        await expect(
+          authModule.retrieveAuthIdentity(userTwoAuthIdentity.id)
+        ).rejects.toThrow()
+
+        // And its provider identity should be cascade-deleted along with it, so
+        // authentication with the old credentials should no longer succeed.
+        const authError = await api
+          .post(`/auth/user/emailpass`, {
+            email: userTwo.email,
+            password: "somepassword",
+          })
+          .catch((e) => e)
+
+        expect(authError.response.status).toEqual(401)
+
+        // And the provider identity should no longer exist.
+        const providerIdentities = await authModule.listProviderIdentities({
+          entity_id: userTwo.email,
+        })
+        expect(providerIdentities).toHaveLength(0)
+      })
+
+      it("Keeps the auth identity when another non-null actor type is still associated", async () => {
+        const userThreeAdminHeaders = {
+          headers: { "x-medusa-access-token": "test_token" },
+        }
+
+        const { user: userThree, authIdentity: userThreeAuthIdentity } =
+          await createAdminUser(
+            dbConnection,
+            userThreeAdminHeaders,
+            container,
+            {
+              email: "test-multi@test.com",
+            }
+          )
+
         const authModule: IAuthModuleService = container.resolve(Modules.AUTH)
 
-        const updatedAuthIdentity = await authModule.retrieveAuthIdentity(
-            userTwoAuthIdentity.id
+        // Associate another (non-null) actor type with the same auth identity.
+        await authModule.updateAuthIdentities({
+          id: userThreeAuthIdentity.id,
+          app_metadata: {
+            user_id: userThree.id,
+            customer_id: "cus_123",
+          },
+        })
+
+        const response = await api.delete(
+          `/admin/users/${userThree.id}`,
+          adminHeaders
         )
 
-        // Ensure the auth identity has been updated to not contain the user's id
-        expect(updatedAuthIdentity).toEqual(
+        expect(response.status).toEqual(200)
+        expect(response.data).toEqual({
+          id: userThree.id,
+          object: "user",
+          deleted: true,
+        })
+
+        // The auth identity must be kept since another actor is still associated.
+        const authIdentity = await authModule.retrieveAuthIdentity(
+          userThreeAuthIdentity.id
+        )
+
+        expect(authIdentity).toEqual(
           expect.objectContaining({
-            id: userTwoAuthIdentity.id,
-            app_metadata: expect.not.objectContaining({
-              user_id: userTwo.id,
+            id: userThreeAuthIdentity.id,
+            app_metadata: expect.objectContaining({
+              // The other actor type keeps its value...
+              customer_id: "cus_123",
+              // ...while the deleted actor's entry is set to null.
+              user_id: null,
             }),
           })
         )
 
-        // Authentication should still succeed
-        const authenticateToken = (
-          await api.post(`/auth/user/emailpass`, {
-            email: userTwo.email,
-            password: "somepassword",
-          })
-        ).data.token
+        // The provider identity should still exist since the auth identity was kept.
+        const providerIdentities = await authModule.listProviderIdentities({
+          entity_id: userThree.email,
+        })
+        expect(providerIdentities).toHaveLength(1)
+      })
 
-        expect(authenticateToken).toEqual(expect.any(String))
+      it("refuses to delete a user whose roles the actor can't grant", async () => {
+        const rbacModule = container.resolve(Modules.RBAC)
+        const [userDelete] = await rbacModule.listRbacPolicies({
+          resource: "user",
+          operation: "delete",
+        })
+        const role = await rbacModule.createRbacRoles({ name: "User Deleter" })
+        await rbacModule.createRbacRolePolicies([
+          { role_id: role.id, policy_id: userDelete.id },
+        ])
 
-        // However, it should not be possible to access routes any longer
-        const meResponse = await api
-          .get(`/admin/users/me`, {
-            headers: {
-              authorization: `Bearer ${authenticateToken}`,
-            },
-          })
+        const deleterHeaders = { headers: { ...adminHeaders.headers } }
+        await createAdminUser(dbConnection, deleterHeaders, container, {
+          email: "user-deleter@medusa.js",
+          roles: [role.id],
+        })
+
+        const { user: superAdmin } = await createAdminUser(
+          dbConnection,
+          { headers: { ...adminHeaders.headers } },
+          container,
+          { email: "super-admin-target@medusa.js" }
+        )
+        const { user: withoutRoles } = await createAdminUser(
+          dbConnection,
+          { headers: { ...adminHeaders.headers } },
+          container,
+          { email: "no-roles-target@medusa.js", roles: [] }
+        )
+
+        const error = await api
+          .delete(`/admin/users/${superAdmin.id}`, deleterHeaders)
           .catch((e) => e)
+        expect(error.response.status).toEqual(403)
 
-        expect(meResponse.response.status).toEqual(401)
+        const response = await api.delete(
+          `/admin/users/${withoutRoles.id}`,
+          deleterHeaders
+        )
+        expect(response.status).toEqual(200)
       })
 
       it("throws if you attempt to delete your own user", async () => {
@@ -215,6 +340,137 @@ medusaIntegrationTestRunner({
             }),
           ])
         )
+      })
+    })
+
+    describe("GET /admin/users/:id/auth-providers", () => {
+      it("lists the auth providers the user can authenticate with", async () => {
+        const response = await api.get(
+          `/admin/users/${user.id}/auth-providers`,
+          adminHeaders
+        )
+
+        expect(response.status).toEqual(200)
+        expect(response.data.providers).toEqual(["emailpass"])
+      })
+
+      it("returns an empty list for a user without an auth identity", async () => {
+        const userModule = container.resolve(Modules.USER)
+        const providerlessUser = await userModule.createUsers({
+          email: "no-auth-identity@test.com",
+        })
+
+        const response = await api.get(
+          `/admin/users/${providerlessUser.id}/auth-providers`,
+          adminHeaders
+        )
+
+        expect(response.status).toEqual(200)
+        expect(response.data.providers).toEqual([])
+      })
+    })
+
+    describe("POST /admin/users/:id/reset-password", () => {
+      it("returns a token that the user can use to reset their password", async () => {
+        const email = "reset-link@test.com"
+
+        const resetUserHeaders = {
+          headers: { "x-medusa-access-token": "test_token" },
+        }
+
+        const { user: resetUser } = await createAdminUser(
+          dbConnection,
+          resetUserHeaders,
+          container,
+          { email }
+        )
+
+        const response = await api.post(
+          `/admin/users/${resetUser.id}/reset-password`,
+          {},
+          adminHeaders
+        )
+
+        expect(response.status).toEqual(200)
+        expect(response.data).toEqual({ token: expect.any(String) })
+
+        const updateResponse = await api.post(
+          `/auth/user/emailpass/update`,
+          { password: "new_password" },
+          { headers: { authorization: `Bearer ${response.data.token}` } }
+        )
+
+        expect(updateResponse.status).toEqual(200)
+
+        const loginResponse = await api.post("/auth/user/emailpass", {
+          email,
+          password: "new_password",
+        })
+
+        expect(loginResponse.status).toEqual(200)
+      })
+
+      it("throws when the user does not exist", async () => {
+        const error = await api
+          .post(
+            `/admin/users/usr_does-not-exist/reset-password`,
+            {},
+            adminHeaders
+          )
+          .catch((e) => e)
+
+        expect(error.response.status).toEqual(404)
+        expect(error.response.data.message).toEqual(
+          "User with id: usr_does-not-exist was not found"
+        )
+      })
+
+      it("refuses to issue a token for a user whose roles the actor can't grant", async () => {
+        const rbacModule = container.resolve(Modules.RBAC)
+        const [userUpdate] = await rbacModule.listRbacPolicies({
+          resource: "user",
+          operation: "update",
+        })
+        const role = await rbacModule.createRbacRoles({ name: "User Updater" })
+        await rbacModule.createRbacRolePolicies([
+          { role_id: role.id, policy_id: userUpdate.id },
+        ])
+
+        const updaterHeaders = { headers: { ...adminHeaders.headers } }
+        await createAdminUser(dbConnection, updaterHeaders, container, {
+          email: "user-updater@medusa.js",
+          roles: [role.id],
+        })
+
+        const { user: superAdmin } = await createAdminUser(
+          dbConnection,
+          { headers: { ...adminHeaders.headers } },
+          container,
+          { email: "reset-super-admin-target@medusa.js" }
+        )
+        const { user: withoutRoles } = await createAdminUser(
+          dbConnection,
+          { headers: { ...adminHeaders.headers } },
+          container,
+          { email: "reset-no-roles-target@medusa.js", roles: [] }
+        )
+
+        const error = await api
+          .post(
+            `/admin/users/${superAdmin.id}/reset-password`,
+            {},
+            updaterHeaders
+          )
+          .catch((e) => e)
+        expect(error.response.status).toEqual(403)
+
+        const response = await api.post(
+          `/admin/users/${withoutRoles.id}/reset-password`,
+          {},
+          updaterHeaders
+        )
+        expect(response.status).toEqual(200)
+        expect(response.data).toEqual({ token: expect.any(String) })
       })
     })
 
@@ -360,6 +616,774 @@ medusaIntegrationTestRunner({
             expect(err.response.status).toEqual(400)
             expect(err.response.data.message).toEqual("invalid token")
           })
+      })
+    })
+
+    describe("User creation with roles", () => {
+      it("should fail to create user with non-existent role", async () => {
+        const workflowService: IWorkflowEngineService = container.resolve(
+          Modules.WORKFLOW_ENGINE
+        )
+
+        const error = await workflowService
+          .run("create-users-workflow", {
+            input: {
+              users: [
+                {
+                  email: "test-role@medusa.js",
+                  roles: [{ role_id: "non_existent_role_id" }],
+                },
+              ],
+            },
+          })
+          .catch((e) => e)
+
+        expect(error.message).toContain("non_existent_role_id")
+      })
+
+      it("should create user with valid role", async () => {
+        const workflowService: IWorkflowEngineService = container.resolve(
+          Modules.WORKFLOW_ENGINE
+        )
+
+        // Get the super admin role created by the RBAC module loader
+        const rbacService = container.resolve(Modules.RBAC)
+        const superAdminRoles = await rbacService.listRbacRoles({
+          id: "role_super_admin",
+        })
+
+        expect(superAdminRoles.length).toBeGreaterThan(0)
+
+        const { result: users } = await workflowService.run(
+          "create-users-workflow",
+          {
+            input: {
+              users: [
+                {
+                  email: "test-with-role@medusa.js",
+                  roles: [{ role_id: superAdminRoles[0].id }],
+                },
+              ],
+            },
+          }
+        )
+
+        expect(users).toHaveLength(1)
+        expect(users[0].email).toEqual("test-with-role@medusa.js")
+      })
+
+      it("should create user with scoped roles", async () => {
+        const rbacService = container.resolve(Modules.RBAC)
+        const superAdminRoles = await rbacService.listRbacRoles({
+          id: "role_super_admin",
+        })
+
+        const { result: users } = await createUsersWorkflow(container).run({
+          input: {
+            users: [
+              {
+                email: "test-with-scoped-role@medusa.js",
+                roles: [
+                  {
+                    role_id: superAdminRoles[0].id,
+                    scopes: [
+                      { type: "organization", id: "org_1" },
+                      { type: "organization", id: "org_2" },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        })
+
+        const assignments = await rbacService.listRbacRoleAssignments({
+          reference: "user",
+          reference_id: users[0].id,
+        })
+
+        // One assignment per scope
+        expect(assignments).toHaveLength(2)
+        expect(assignments).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              role_id: superAdminRoles[0].id,
+              scope: "organization",
+              scope_id: "org_1",
+            }),
+            expect.objectContaining({
+              role_id: superAdminRoles[0].id,
+              scope: "organization",
+              scope_id: "org_2",
+            }),
+          ])
+        )
+      })
+
+      describe("granting actor role validation", () => {
+        const orgA = { type: "organization", id: "org_A" }
+        const orgB = { type: "organization", id: "org_B" }
+        let productReaderRoleId: string
+        let mixedRoleId: string
+        let globalGranterId: string
+        let scopedGranterId: string
+
+        const ensurePolicy = async (
+          rbacModule,
+          resource: string,
+          operation: string
+        ) => {
+          const key = `${resource}:${operation}`
+          const [existing] = await rbacModule.listRbacPolicies({ key })
+
+          if (existing) {
+            return existing
+          }
+
+          const [created] = await rbacModule.createRbacPolicies([
+            { key, resource, operation, name: key },
+          ])
+          return created
+        }
+
+        beforeEach(async () => {
+          const rbacModule = container.resolve(Modules.RBAC)
+          const userModule = container.resolve(Modules.USER)
+
+          const productRead = await ensurePolicy(rbacModule, "product", "read")
+          const customerCreate = await ensurePolicy(
+            rbacModule,
+            "customer",
+            "create"
+          )
+
+          const productReaderRole = await rbacModule.createRbacRoles({
+            name: "Product Reader",
+          })
+          const mixedRole = await rbacModule.createRbacRoles({
+            name: "Mixed",
+          })
+          await rbacModule.createRbacRolePolicies([
+            { role_id: productReaderRole.id, policy_id: productRead.id },
+            { role_id: mixedRole.id, policy_id: productRead.id },
+            { role_id: mixedRole.id, policy_id: customerCreate.id },
+          ])
+          productReaderRoleId = productReaderRole.id
+          mixedRoleId = mixedRole.id
+
+          const [globalGranter, scopedGranter] = await userModule.createUsers([
+            { email: "global-granter@medusa.js" },
+            { email: "scoped-granter@medusa.js" },
+          ])
+          globalGranterId = globalGranter.id
+          scopedGranterId = scopedGranter.id
+
+          // Both hold product:read only: one across all scopes, one in org_A.
+          await rbacModule.createRbacRoleAssignments([
+            {
+              role_id: productReaderRoleId,
+              reference: "user",
+              reference_id: globalGranterId,
+            },
+            {
+              role_id: productReaderRoleId,
+              reference: "user",
+              reference_id: scopedGranterId,
+              scope: orgA.type,
+              scope_id: orgA.id,
+            },
+          ])
+        })
+
+        const createUser = (
+          email: string,
+          role_id: string,
+          rbac_context: {
+            actor_id: string
+            scope?: { type: string; id: string }
+          },
+          scope?: { type: string; id: string }
+        ) =>
+          createUsersWorkflow(container).run({
+            input: {
+              users: [
+                {
+                  email,
+                  roles: [{ role_id, scopes: scope ? [scope] : undefined }],
+                },
+              ],
+              rbac_context,
+            },
+          })
+
+        it("should allow creating a user with roles whose policies the actor holds", async () => {
+          const { result } = await createUser(
+            "allowed-user@medusa.js",
+            productReaderRoleId,
+            { actor_id: globalGranterId }
+          )
+
+          expect(result).toHaveLength(1)
+        })
+
+        it("should reject creating a user with roles whose policies the actor does not hold", async () => {
+          const error = await createUser("denied-user@medusa.js", mixedRoleId, {
+            actor_id: globalGranterId,
+          }).catch((e) => e)
+
+          expect(error.message).toContain(
+            "You do not have permission to assign these roles"
+          )
+
+          const userModule = container.resolve(Modules.USER)
+          const users = await userModule.listUsers({
+            email: "denied-user@medusa.js",
+          })
+          expect(users).toHaveLength(0)
+        })
+
+        it("should only allow a scoped actor to assign roles within the scope they act in", async () => {
+          const { result } = await createUser(
+            "scoped-a-user@medusa.js",
+            productReaderRoleId,
+            { actor_id: scopedGranterId, scope: orgA },
+            orgA
+          )
+          expect(result).toHaveLength(1)
+
+          for (const [email, granting, target] of [
+            ["scoped-b-user@medusa.js", orgA, orgB],
+            ["scoped-global-user@medusa.js", orgA, undefined],
+            ["scoped-other-context-user@medusa.js", orgB, orgA],
+          ] as const) {
+            const error = await createUser(
+              email,
+              productReaderRoleId,
+              { actor_id: scopedGranterId, scope: granting },
+              target
+            ).catch((e) => e)
+
+            expect(error.message).toContain(
+              "You do not have permission to assign these roles"
+            )
+          }
+        })
+
+        it("should skip the validation when no rbac_context is provided", async () => {
+          const { result } = await createUser(
+            "no-context-user@medusa.js",
+            mixedRoleId,
+            undefined as any
+          )
+
+          expect(result).toHaveLength(1)
+        })
+      })
+    })
+
+    describe("User Roles Management", () => {
+      let testUser
+      let viewerRole
+      let editorRole
+      let adminRole
+      let policies
+
+      beforeEach(async () => {
+        const rbacModule = container.resolve(Modules.RBAC)
+
+        // Create policies
+        const policy1 = await api.post(
+          "/rbac/policies",
+          {
+            key: "read:products",
+            resource: "product",
+            operation: "read",
+            name: "Read Products",
+          },
+          adminHeaders
+        )
+
+        const policy2 = await api.post(
+          "/rbac/policies",
+          {
+            key: "write:products",
+            resource: "product",
+            operation: "write",
+            name: "Write Products",
+          },
+          adminHeaders
+        )
+
+        const policy3 = await api.post(
+          "/rbac/policies",
+          {
+            key: "delete:products",
+            resource: "product",
+            operation: "delete",
+            name: "Delete Products",
+          },
+          adminHeaders
+        )
+
+        policies = [
+          policy1.data.policy,
+          policy2.data.policy,
+          policy3.data.policy,
+        ]
+
+        // Create roles with different policies
+        const viewerRoleResponse = await api.post(
+          "/rbac/roles",
+          {
+            name: "Product Viewer",
+            description: "Can view products",
+          },
+          adminHeaders
+        )
+        viewerRole = viewerRoleResponse.data.role
+
+        const editorRoleResponse = await api.post(
+          "/rbac/roles",
+          {
+            name: "Product Editor",
+            description: "Can edit products",
+          },
+          adminHeaders
+        )
+        editorRole = editorRoleResponse.data.role
+
+        const adminRoleResponse = await api.post(
+          "/rbac/roles",
+          {
+            name: "Product Admin",
+            description: "Full product access",
+          },
+          adminHeaders
+        )
+        adminRole = adminRoleResponse.data.role
+
+        // Assign policies to roles
+        await rbacModule.createRbacRolePolicies([
+          { role_id: viewerRole.id, policy_id: policies[0].id },
+        ])
+        await rbacModule.createRbacRolePolicies([
+          { role_id: editorRole.id, policy_id: policies[0].id },
+          { role_id: editorRole.id, policy_id: policies[1].id },
+        ])
+        await rbacModule.createRbacRolePolicies([
+          { role_id: adminRole.id, policy_id: policies[0].id },
+          { role_id: adminRole.id, policy_id: policies[1].id },
+          { role_id: adminRole.id, policy_id: policies[2].id },
+        ])
+
+        // Assign the admin user the admin role (so they have all policies)
+        await rbacModule.createRbacRoleAssignments([
+          {
+            role_id: adminRole.id,
+            reference: "user",
+            reference_id: user.id,
+          },
+        ])
+
+        // Create a test user
+        const { result: users } = await createUsersWorkflow(container).run({
+          input: {
+            users: [
+              {
+                email: "testuser@example.com",
+                first_name: "Test",
+                last_name: "User",
+              },
+            ],
+          },
+        })
+        testUser = users[0]
+      })
+
+      describe("GET /admin/users/:id/roles", () => {
+        it("should list roles for a user", async () => {
+          const rbacModule = container.resolve(Modules.RBAC)
+
+          // Assign roles to test user
+          await rbacModule.createRbacRoleAssignments([
+            {
+              role_id: viewerRole.id,
+              reference: "user",
+              reference_id: testUser.id,
+            },
+            {
+              role_id: editorRole.id,
+              reference: "user",
+              reference_id: testUser.id,
+            },
+          ])
+
+          const response = await api.get(
+            `/admin/users/${testUser.id}/roles`,
+            adminHeaders
+          )
+
+          expect(response.status).toEqual(200)
+          expect(response.data.count).toEqual(2)
+          expect(response.data.roles).toHaveLength(2)
+          expect(response.data.roles).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({ id: viewerRole.id }),
+              expect.objectContaining({ id: editorRole.id }),
+            ])
+          )
+        })
+
+        it("should return empty array for user with no roles", async () => {
+          const response = await api.get(
+            `/admin/users/${testUser.id}/roles`,
+            adminHeaders
+          )
+
+          expect(response.status).toEqual(200)
+          expect(response.data.count).toEqual(0)
+          expect(response.data.roles).toHaveLength(0)
+        })
+      })
+
+      describe("POST /admin/users/:id/roles", () => {
+        it("should assign roles to a user when actor has all required policies", async () => {
+          const response = await api.post(
+            `/admin/users/${testUser.id}/roles`,
+            {
+              assignments: [
+                { role_id: viewerRole.id },
+                { role_id: editorRole.id },
+              ],
+            },
+            adminHeaders
+          )
+
+          expect(response.status).toEqual(200)
+          expect(response.data.roles).toHaveLength(2)
+          expect(response.data.roles).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({ id: viewerRole.id }),
+              expect.objectContaining({ id: editorRole.id }),
+            ])
+          )
+        })
+
+        it("should fail to assign roles when actor lacks required policies", async () => {
+          const rbacModule = container.resolve(Modules.RBAC)
+
+          // Create a limited user with only viewer role
+          const { result: limitedUsers } = await createUsersWorkflow(
+            container
+          ).run({
+            input: {
+              users: [
+                {
+                  email: "limited@example.com",
+                  first_name: "Limited",
+                  last_name: "User",
+                },
+              ],
+            },
+          })
+          const limitedUser = limitedUsers[0]
+
+          // Assign only viewer role to limited user
+          await rbacModule.createRbacRoleAssignments([
+            {
+              role_id: viewerRole.id,
+              reference: "user",
+              reference_id: limitedUser.id,
+            },
+          ])
+
+          // Create auth identity and generate JWT for limited user
+          const authModule: IAuthModuleService = container.resolve(Modules.AUTH)
+          const limitedAuthIdentity = await authModule.createAuthIdentities({
+            provider_identities: [
+              {
+                provider: "emailpass",
+                entity_id: limitedUser.email,
+              },
+            ],
+            app_metadata: { user_id: limitedUser.id },
+          })
+
+          const config = container.resolve(
+            ContainerRegistrationKeys.CONFIG_MODULE
+          )
+          const { projectConfig } = config
+          const { jwtSecret, jwtOptions } = projectConfig.http
+          const limitedToken = generateJwtToken(
+            {
+              actor_id: limitedUser.id,
+              actor_type: "user",
+              auth_identity_id: limitedAuthIdentity.id,
+              app_metadata: {
+                user_id: limitedUser.id,
+                roles: [viewerRole.id],
+              },
+            },
+            {
+              secret: jwtSecret,
+              expiresIn: "1d",
+              jwtOptions,
+            }
+          )
+
+          const limitedHeaders = {
+            headers: { authorization: `Bearer ${limitedToken}` },
+          }
+
+          // Try to assign admin role (which has policies the limited user doesn't have)
+          const error = await api
+            .post(
+              `/admin/users/${testUser.id}/roles`,
+              { assignments: [{ role_id: adminRole.id }] },
+              limitedHeaders
+            )
+            .catch((e) => e)
+
+          expect(error.response.status).toEqual(403)
+        })
+
+        it("should return 404 for non-existent user", async () => {
+          const error = await api
+            .post(
+              `/admin/users/non_existent_id/roles`,
+              { assignments: [{ role_id: viewerRole.id }] },
+              adminHeaders
+            )
+            .catch((e) => e)
+
+          expect(error.response.status).toEqual(404)
+        })
+      })
+
+      describe("scope validation on user role routes", () => {
+        it("rejects a scope without a scope_id when assigning", async () => {
+          const error = await api
+            .post(
+              `/admin/users/${testUser.id}/roles`,
+              {
+                assignments: [
+                  { role_id: viewerRole.id, scope: "organization" },
+                ],
+              },
+              adminHeaders
+            )
+            .catch((e) => e)
+          expect(error.response.status).toEqual(400)
+
+          const roles = await api.get(
+            `/admin/users/${testUser.id}/roles`,
+            adminHeaders
+          )
+          expect(roles.data.count).toEqual(0)
+        })
+
+        it("rejects an incomplete scope pair when unassigning", async () => {
+          const batch = await api
+            .delete(`/admin/users/${testUser.id}/roles`, {
+              ...adminHeaders,
+              data: {
+                assignments: [{ role_id: viewerRole.id, scope_id: "org_1" }],
+              },
+            })
+            .catch((e) => e)
+          expect(batch.response.status).toEqual(400)
+
+          const single = await api
+            .delete(`/admin/users/${testUser.id}/roles/${viewerRole.id}`, {
+              ...adminHeaders,
+              data: { scope: "organization" },
+            })
+            .catch((e) => e)
+          expect(single.response.status).toEqual(400)
+        })
+      })
+
+      describe("DELETE /admin/users/:id/roles/:role_id", () => {
+        it("should remove a role from a user", async () => {
+          const rbacModule = container.resolve(Modules.RBAC)
+
+          // First assign a role
+          await rbacModule.createRbacRoleAssignments([
+            {
+              role_id: viewerRole.id,
+              reference: "user",
+              reference_id: testUser.id,
+            },
+          ])
+
+          // Verify role was assigned
+          const beforeResponse = await api.get(
+            `/admin/users/${testUser.id}/roles`,
+            adminHeaders
+          )
+          expect(beforeResponse.data.count).toEqual(1)
+
+          // Remove the role
+          const deleteResponse = await api.delete(
+            `/admin/users/${testUser.id}/roles/${viewerRole.id}`,
+            adminHeaders
+          )
+
+          expect(deleteResponse.status).toEqual(200)
+          expect(deleteResponse.data).toEqual({
+            id: viewerRole.id,
+            object: "user_role",
+            deleted: true,
+          })
+
+          // Verify role was removed
+          const afterResponse = await api.get(
+            `/admin/users/${testUser.id}/roles`,
+            adminHeaders
+          )
+          expect(afterResponse.data.count).toEqual(0)
+        })
+      })
+
+      describe("DELETE /admin/users/:id/roles (batch)", () => {
+        it("should remove multiple roles from a user", async () => {
+          const rbacModule = container.resolve(Modules.RBAC)
+
+          // Assign multiple roles to test user
+          await rbacModule.createRbacRoleAssignments([
+            {
+              role_id: viewerRole.id,
+              reference: "user",
+              reference_id: testUser.id,
+            },
+            {
+              role_id: editorRole.id,
+              reference: "user",
+              reference_id: testUser.id,
+            },
+          ])
+
+          // Verify roles were assigned
+          const beforeResponse = await api.get(
+            `/admin/users/${testUser.id}/roles`,
+            adminHeaders
+          )
+          expect(beforeResponse.data.count).toEqual(2)
+
+          // Remove multiple roles
+          const deleteResponse = await api.delete(
+            `/admin/users/${testUser.id}/roles`,
+            {
+              ...adminHeaders,
+              data: {
+                assignments: [
+                  { role_id: viewerRole.id },
+                  { role_id: editorRole.id },
+                ],
+              },
+            }
+          )
+
+          expect(deleteResponse.status).toEqual(200)
+          expect(deleteResponse.data).toEqual({
+            ids: [viewerRole.id, editorRole.id],
+            object: "user_role",
+            deleted: true,
+          })
+
+          // Verify roles were removed
+          const afterResponse = await api.get(
+            `/admin/users/${testUser.id}/roles`,
+            adminHeaders
+          )
+          expect(afterResponse.data.count).toEqual(0)
+        })
+
+        it("should fail to remove a role when actor lacks required policies", async () => {
+          const rbacModule = container.resolve(Modules.RBAC)
+
+          // Assign admin role to test user (has policies A, B, C)
+          await rbacModule.createRbacRoleAssignments([
+            {
+              role_id: adminRole.id,
+              reference: "user",
+              reference_id: testUser.id,
+            },
+          ])
+
+          // Create a limited user with only viewer role (has policy A only)
+          const { result: limitedUsers } = await createUsersWorkflow(
+            container
+          ).run({
+            input: {
+              users: [
+                {
+                  email: "limited-delete@example.com",
+                  first_name: "Limited",
+                  last_name: "Deleter",
+                },
+              ],
+            },
+          })
+          const limitedUser = limitedUsers[0]
+
+          // Assign only viewer role to limited user
+          await rbacModule.createRbacRoleAssignments([
+            {
+              role_id: viewerRole.id,
+              reference: "user",
+              reference_id: limitedUser.id,
+            },
+          ])
+
+          // Create auth identity and generate JWT for limited user
+          const authModule: IAuthModuleService = container.resolve(Modules.AUTH)
+          const limitedAuthIdentity = await authModule.createAuthIdentities({
+            provider_identities: [
+              {
+                provider: "emailpass",
+                entity_id: limitedUser.email,
+              },
+            ],
+            app_metadata: { user_id: limitedUser.id },
+          })
+
+          const config = container.resolve(
+            ContainerRegistrationKeys.CONFIG_MODULE
+          )
+          const { projectConfig } = config
+          const { jwtSecret, jwtOptions } = projectConfig.http
+          const limitedToken = generateJwtToken(
+            {
+              actor_id: limitedUser.id,
+              actor_type: "user",
+              auth_identity_id: limitedAuthIdentity.id,
+              app_metadata: {
+                user_id: limitedUser.id,
+                roles: [viewerRole.id],
+              },
+            },
+            {
+              secret: jwtSecret,
+              expiresIn: "1d",
+              jwtOptions,
+            }
+          )
+
+          const limitedHeaders = {
+            headers: { authorization: `Bearer ${limitedToken}` },
+          }
+
+          // Try to remove admin role (which has policies the limited user doesn't have)
+          const error = await api
+            .delete(
+              `/admin/users/${testUser.id}/roles/${adminRole.id}`,
+              limitedHeaders
+            )
+            .catch((e) => e)
+
+          expect(error.response.status).toEqual(403)
+        })
       })
     })
   },

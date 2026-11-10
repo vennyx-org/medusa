@@ -2,10 +2,16 @@ import {
   validateAndTransformBody,
   validateAndTransformQuery,
 } from "@medusajs/framework"
-import { maybeApplyLinkFilter, MiddlewareRoute } from "@medusajs/framework/http"
+import {
+  authorize,
+  maybeApplyLinkFilter,
+  MiddlewareRoute,
+} from "@medusajs/framework/http"
+import { PolicyOperation } from "@medusajs/framework/utils"
 import { DEFAULT_BATCH_ENDPOINTS_SIZE_LIMIT } from "../../../utils/middlewares"
 import { createBatchBody } from "../../utils/validators"
 import {
+  Entities,
   listTransformQueryConfig,
   retrieveRuleTransformQueryConfig,
   retrieveTransformQueryConfig,
@@ -22,9 +28,26 @@ import {
 
 export const adminShippingOptionRoutesMiddlewares: MiddlewareRoute[] = [
   {
+    matcher: "/admin/shipping-options/*",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.shipping_option,
+          operation: PolicyOperation.read,
+        },
+      ]),
+    ],
+  },
+  {
     method: ["GET"],
     matcher: "/admin/shipping-options",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.shipping_option,
+          operation: PolicyOperation.read,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetShippingOptionsParams,
         listTransformQueryConfig
@@ -51,6 +74,16 @@ export const adminShippingOptionRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/shipping-options",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.shipping_option,
+          operation: PolicyOperation.create,
+        },
+        {
+          resource: Entities.stock_location,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(AdminCreateShippingOption),
       validateAndTransformQuery(
         AdminGetShippingOptionParams,
@@ -62,6 +95,16 @@ export const adminShippingOptionRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/shipping-options/:id",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.shipping_option,
+          operation: PolicyOperation.update,
+        },
+        {
+          resource: Entities.stock_location,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(AdminUpdateShippingOption),
       validateAndTransformQuery(
         AdminGetShippingOptionParams,
@@ -72,6 +115,18 @@ export const adminShippingOptionRoutesMiddlewares: MiddlewareRoute[] = [
   {
     method: ["DELETE"],
     matcher: "/admin/shipping-options/:id",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.shipping_option,
+          operation: PolicyOperation.delete,
+        },
+        {
+          resource: Entities.stock_location,
+          operation: PolicyOperation.update,
+        },
+      ]),
+    ],
   },
   {
     method: ["POST"],
@@ -80,6 +135,16 @@ export const adminShippingOptionRoutesMiddlewares: MiddlewareRoute[] = [
       sizeLimit: DEFAULT_BATCH_ENDPOINTS_SIZE_LIMIT,
     },
     middlewares: [
+      authorize([
+        {
+          resource: Entities.shipping_option,
+          operation: PolicyOperation.update,
+        },
+        {
+          resource: Entities.stock_location,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(
         createBatchBody(
           AdminCreateShippingOptionRule,

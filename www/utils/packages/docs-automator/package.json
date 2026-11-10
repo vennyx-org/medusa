@@ -1,0 +1,23 @@
+{
+  "name": "docs-automator",
+  "private": true,
+  "license": "MIT",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "yarn run -T tsc",
+    "watch": "yarn run -T tsc --watch",
+    "analyze": "node dist/index.js analyze",
+    "analyze-cloud": "node dist/index.js analyze-cloud",
+    "analyze-webhooks": "node dist/index.js analyze-webhooks"
+  },
+  "dependencies": {
+    "@octokit/core": "^5.0.2",
+    "chalk": "^5.4.1",
+    "commander": "^11.1.0",
+    "typescript": "^6.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.10"
+  }
+}

@@ -1,24 +1,32 @@
-import { MiddlewareRoute } from "@medusajs/framework/http"
-import { authenticate } from "../../../utils/middlewares/authenticate-middleware"
 import {
   validateAndTransformBody,
   validateAndTransformQuery,
 } from "@medusajs/framework"
+import { authorize, MiddlewareRoute } from "@medusajs/framework/http"
+import { PolicyOperation } from "@medusajs/framework/utils"
 import * as QueryConfig from "./query-config"
+import { Entities } from "./query-config"
 import {
+  AdminAssignUserRole,
   AdminGetUserParams,
+  AdminGetUserRolesParams,
   AdminGetUsersParams,
+  AdminUnassignUserRole,
+  AdminUnassignUserRoles,
   AdminUpdateUser,
 } from "./validators"
 
-// TODO: Due to issues with our routing (and using router.use for applying middlewares), we have to opt-out of global auth in all routes, and then reapply it here.
-// See https://medusacorp.slack.com/archives/C025KMS13SA/p1716455350491879 for details.
 export const adminUserRoutesMiddlewares: MiddlewareRoute[] = [
   {
     method: ["GET"],
     matcher: "/admin/users",
     middlewares: [
-      authenticate("user", ["bearer", "session"]),
+      authorize([
+        {
+          resource: Entities.user,
+          operation: PolicyOperation.read,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetUsersParams,
         QueryConfig.listTransformQueryConfig
@@ -29,7 +37,12 @@ export const adminUserRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["GET"],
     matcher: "/admin/users/:id",
     middlewares: [
-      authenticate("user", ["bearer", "session"]),
+      authorize([
+        {
+          resource: Entities.user,
+          operation: PolicyOperation.read,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetUserParams,
         QueryConfig.retrieveTransformQueryConfig
@@ -40,7 +53,17 @@ export const adminUserRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["GET"],
     matcher: "/admin/users/me",
     middlewares: [
-      authenticate("user", ["bearer", "session"]),
+      validateAndTransformQuery(
+        AdminGetUserParams,
+        QueryConfig.retrieveTransformQueryConfig
+      ),
+    ],
+  },
+  {
+    method: ["POST"],
+    matcher: "/admin/users/me",
+    middlewares: [
+      validateAndTransformBody(AdminUpdateUser),
       validateAndTransformQuery(
         AdminGetUserParams,
         QueryConfig.retrieveTransformQueryConfig
@@ -51,7 +74,12 @@ export const adminUserRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/users/:id",
     middlewares: [
-      authenticate("user", ["bearer", "session"]),
+      authorize([
+        {
+          resource: Entities.user,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(AdminUpdateUser),
       validateAndTransformQuery(
         AdminGetUserParams,
@@ -62,6 +90,108 @@ export const adminUserRoutesMiddlewares: MiddlewareRoute[] = [
   {
     method: ["DELETE"],
     matcher: "/admin/users/:id",
-    middlewares: [authenticate("user", ["bearer", "session"])],
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.user,
+          operation: PolicyOperation.delete,
+        },
+      ]),
+    ],
+  },
+  {
+    method: ["GET"],
+    matcher: "/admin/users/:id/auth-providers",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.user,
+          operation: PolicyOperation.read,
+        },
+      ]),
+    ],
+  },
+  {
+    method: ["POST"],
+    matcher: "/admin/users/:id/reset-password",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.user,
+          operation: PolicyOperation.update,
+        },
+      ]),
+    ],
+  },
+  {
+    method: ["GET"],
+    matcher: "/admin/users/:id/roles",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.user,
+          operation: PolicyOperation.read,
+        },
+        {
+          resource: Entities.rbac_role_assignment,
+          operation: PolicyOperation.read,
+        },
+      ]),
+      validateAndTransformQuery(
+        AdminGetUserRolesParams,
+        QueryConfig.listUserRolesTransformQueryConfig
+      ),
+    ],
+  },
+  {
+    method: ["POST"],
+    matcher: "/admin/users/:id/roles",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.user,
+          operation: PolicyOperation.update,
+        },
+        {
+          resource: Entities.rbac_role_assignment,
+          operation: PolicyOperation.create,
+        },
+      ]),
+      validateAndTransformBody(AdminAssignUserRole),
+    ],
+  },
+  {
+    method: ["DELETE"],
+    matcher: "/admin/users/:id/roles/:role_id",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.user,
+          operation: PolicyOperation.update,
+        },
+        {
+          resource: Entities.rbac_role_assignment,
+          operation: PolicyOperation.delete,
+        },
+      ]),
+      validateAndTransformBody(AdminUnassignUserRole),
+    ],
+  },
+  {
+    method: ["DELETE"],
+    matcher: "/admin/users/:id/roles",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.user,
+          operation: PolicyOperation.update,
+        },
+        {
+          resource: Entities.rbac_role_assignment,
+          operation: PolicyOperation.delete,
+        },
+      ]),
+      validateAndTransformBody(AdminUnassignUserRoles),
+    ],
   },
 ]

@@ -1,4 +1,4 @@
-import { OrderCreditLineDTO } from "@medusajs/framework/types"
+import { OrderCreditLineDTO } from "@medusajs/types"
 import { ArrowDownRightMini, DocumentText, XCircle } from "@medusajs/icons"
 import { AdminOrder, AdminPayment, HttpTypes } from "@medusajs/types"
 import {
@@ -16,8 +16,17 @@ import { format } from "date-fns"
 import { Trans, useTranslation } from "react-i18next"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import DisplayId from "../../../../../components/common/display-id/display-id"
-import { useCapturePayment } from "../../../../../hooks/api"
+import {
+  useCapturePayment,
+  useAuthorizePaymentSession,
+} from "../../../../../hooks/api"
+import {
+  useCapturePermissions,
+  useOrderPermissions,
+  useRefundPermissions,
+} from "../../../../../hooks/use-resource-permissions"
 import { formatCurrency } from "../../../../../lib/format-currency"
+import { formatProvider } from "../../../../../lib/format-provider"
 import {
   getLocaleAmount,
   getStylizedAmount,
@@ -26,9 +35,10 @@ import { getOrderPaymentStatus } from "../../../../../lib/order-helpers"
 import { getPaymentsFromOrder } from "../../../../../lib/orders"
 import { getTotalCaptured, getTotalPending } from "../../../../../lib/payment"
 import { getLoyaltyPlugin } from "../../../../../lib/plugins"
+import { ExtendedOrder, ExtendedRefund } from "../../constants"
 
 type OrderPaymentSectionProps = {
-  order: HttpTypes.AdminOrder
+  order: ExtendedOrder
   plugins: HttpTypes.AdminPlugin[]
 }
 
@@ -41,7 +51,7 @@ export const OrderPaymentSection = ({
   const refunds = payments
     .map((payment) => payment?.refunds)
     .flat(1)
-    .filter(Boolean) as HttpTypes.AdminRefund[]
+    .filter(Boolean) as ExtendedRefund[]
 
   return (
     <Container className="divide-y divide-dashed p-0">
@@ -60,7 +70,7 @@ export const OrderPaymentSection = ({
   )
 }
 
-const Header = ({ order }: { order: HttpTypes.AdminOrder }) => {
+const Header = ({ order }: { order: ExtendedOrder }) => {
   const { t } = useTranslation()
   const { label, color } = getOrderPaymentStatus(t, order.payment_status)
 
@@ -95,12 +105,12 @@ const Refund = ({
 
   const RefundNoteIndicator = refund.note && (
     <Tooltip content={refund.note}>
-      <DocumentText className="text-ui-tag-neutral-icon ml-1 inline" />
+      <DocumentText className="ml-1 inline text-ui-tag-neutral-icon" />
     </Tooltip>
   )
 
   return (
-    <div className="bg-ui-bg-subtle text-ui-fg-subtle grid grid-cols-[1fr_1fr_1fr_20px] items-center gap-x-4 px-6 py-4">
+    <div className="grid grid-cols-[1fr_1fr_1fr_20px] items-center gap-x-4 bg-ui-bg-subtle px-6 py-4 text-ui-fg-subtle">
       <div className="flex flex-row">
         <div className="self-center pr-3">
           <ArrowDownRightMini className="text-ui-fg-muted" />
@@ -130,13 +140,19 @@ const Payment = ({
   refunds,
   currencyCode,
 }: {
-  order: HttpTypes.AdminOrder
+  order: ExtendedOrder
   payment: HttpTypes.AdminPayment
   refunds: HttpTypes.AdminRefund[]
   currencyCode: string
 }) => {
   const { t } = useTranslation()
   const prompt = usePrompt()
+  const { canUpdate: canUpdateOrder } = useOrderPermissions()
+  const { canCreate: canCapture } = useCapturePermissions()
+  const { canCreate: canRefund } = useRefundPermissions()
+
+  const canCapturePayment = canCapture && canUpdateOrder
+  const canRefundPayment = canRefund && canUpdateOrder
   const { mutateAsync } = useCapturePayment(order.id, payment.id)
 
   const handleCapture = async () => {
@@ -173,11 +189,11 @@ const Payment = ({
 
   const getPaymentStatusAttributes = (payment: AdminPayment) => {
     if (payment.canceled_at) {
-      return ["Canceled", "red"]
+      return [t("orders.payment.status.canceled"), "red"]
     } else if (payment.captured_at) {
-      return ["Captured", "green"]
+      return [t("orders.payment.status.captured"), "green"]
     } else {
-      return ["Pending", "orange"]
+      return [t("orders.payment.status.pending"), "orange"]
     }
   }
 
@@ -187,16 +203,18 @@ const Payment = ({
   ]
 
   const showCapture =
-    payment.captured_at === null && payment.canceled_at === null
+    canCapturePayment &&
+    payment.captured_at === null &&
+    payment.canceled_at === null
 
-  const totalRefunded = payment.refunds.reduce(
+  const totalRefunded = (payment.refunds ?? []).reduce(
     (acc, next) => next.amount + acc,
     0
   )
 
   return (
     <div className="divide-y divide-dashed">
-      <div className="text-ui-fg-subtle grid grid-cols-[1fr_1fr_1fr_20px] items-center gap-x-4 px-6 py-4 sm:grid-cols-[1fr_1fr_1fr_1fr_20px]">
+      <div className="grid grid-cols-[1fr_1fr_1fr_20px] items-center gap-x-4 px-6 py-4 text-ui-fg-subtle sm:grid-cols-[1fr_1fr_1fr_1fr_20px]">
         <div className="w-full min-w-[60px] overflow-hidden">
           <Text
             size="small"
@@ -214,8 +232,8 @@ const Payment = ({
           </Text>
         </div>
         <div className="hidden items-center justify-end sm:flex">
-          <Text size="small" leading="compact" className="capitalize">
-            {payment.provider_id}
+          <Text size="small" leading="compact">
+            {formatProvider(payment.provider_id)}
           </Text>
         </div>
         <div className="flex items-center justify-end">
@@ -228,32 +246,34 @@ const Payment = ({
             {getLocaleAmount(payment.amount as number, payment.currency_code)}
           </Text>
         </div>
-        <ActionMenu
-          groups={[
-            {
-              actions: [
-                {
-                  label: t("orders.payment.refund"),
-                  icon: <XCircle />,
-                  to: `/orders/${order.id}/refund?paymentId=${payment.id}`,
-                  disabled:
-                    !payment.captured_at ||
-                    !!payment.canceled_at ||
-                    totalRefunded >= payment.amount,
-                },
-              ],
-            },
-          ]}
-        />
+        {canRefundPayment && (
+          <ActionMenu
+            groups={[
+              {
+                actions: [
+                  {
+                    label: t("orders.payment.refund"),
+                    icon: <XCircle />,
+                    to: `/orders/${order.id}/refund?paymentId=${payment.id}`,
+                    disabled:
+                      !payment.captured_at ||
+                      !!payment.canceled_at ||
+                      totalRefunded >= payment.amount,
+                  },
+                ],
+              },
+            ]}
+          />
+        )}
       </div>
       {showCapture && (
-        <div className="bg-ui-bg-subtle flex items-center justify-between px-6 py-4">
+        <div className="flex items-center justify-between bg-ui-bg-subtle px-6 py-4">
           <div className="flex items-center gap-x-2">
-            <ArrowDownRightMini className="text-ui-fg-muted shrink-0" />
+            <ArrowDownRightMini className="shrink-0 text-ui-fg-muted" />
             <Text size="small" leading="compact">
               <Trans
                 i18nKey="orders.payment.isReadyToBeCaptured"
-                components={[<DisplayId id={payment.id} />]}
+                components={[<DisplayId key={payment.id} id={payment.id} />]}
               />
             </Text>
           </div>
@@ -289,6 +309,7 @@ const CreditLine = ({
   currencyCode: string
   plugins: HttpTypes.AdminPlugin[]
 }) => {
+  const { t } = useTranslation()
   const loyaltyPlugin = getLoyaltyPlugin(plugins)
 
   if (!loyaltyPlugin) {
@@ -307,7 +328,7 @@ const CreditLine = ({
 
   return (
     <div className="divide-y divide-dashed">
-      <div className="text-ui-fg-subtle grid grid-cols-[1fr_1fr_20px] items-center gap-x-4 px-6 py-4 sm:grid-cols-[1fr_1fr_1fr_20px]">
+      <div className="grid grid-cols-[1fr_1fr_20px] items-center gap-x-4 px-6 py-4 text-ui-fg-subtle sm:grid-cols-[1fr_1fr_1fr_20px]">
         <div className="w-full min-w-[60px] overflow-hidden">
           <Text
             size="small"
@@ -317,7 +338,7 @@ const CreditLine = ({
           >
             {loyaltyPlugin ? (
               <Text size="small" leading="compact" weight="plus">
-                Store credit refund
+                {t("orders.payment.storeCreditRefund")}
               </Text>
             ) : (
               <DisplayId id={creditLine.id} />
@@ -325,7 +346,7 @@ const CreditLine = ({
           </Text>
           <Text size="small" leading="compact">
             {format(
-              new Date(creditLine.created_at as string),
+              new Date(creditLine.created_at as unknown as string),
               "dd MMM, yyyy, HH:mm:ss"
             )}
           </Text>
@@ -345,6 +366,56 @@ const CreditLine = ({
   )
 }
 
+const PendingAuthorizationBanner = ({
+  order,
+  sessionId,
+}: {
+  order: HttpTypes.AdminOrder
+  sessionId: string
+}) => {
+  const { t } = useTranslation()
+  const { mutateAsync, isPending } = useAuthorizePaymentSession(
+    order.id,
+    sessionId
+  )
+
+  const handleCheckStatus = async () => {
+    await mutateAsync(undefined, {
+      onSuccess: ({ is_authorized }) => {
+        if (is_authorized) {
+          toast.success(t("orders.payment.checkStatusSuccess"))
+        } else {
+          toast.info(t("orders.payment.stillPending"))
+        }
+      },
+      onError: (error) => {
+        toast.error(error.message)
+      },
+    })
+  }
+
+  return (
+    <div className="flex items-center justify-between bg-ui-bg-subtle px-6 py-4">
+      <div className="flex items-center gap-x-2">
+        <ArrowDownRightMini className="shrink-0 text-ui-fg-muted" />
+        <Text size="small" leading="compact">
+          {t("orders.payment.pendingAuthorization")}
+        </Text>
+      </div>
+
+      <Button
+        className="shrink-0"
+        size="small"
+        variant="secondary"
+        onClick={handleCheckStatus}
+        disabled={isPending}
+      >
+        {t("orders.payment.checkStatus")}
+      </Button>
+    </div>
+  )
+}
+
 const PaymentBreakdown = ({
   order,
   payments,
@@ -352,12 +423,18 @@ const PaymentBreakdown = ({
   currencyCode,
   plugins,
 }: {
-  order: HttpTypes.AdminOrder
+  order: ExtendedOrder
   payments: HttpTypes.AdminPayment[]
-  refunds: HttpTypes.AdminRefund[]
+  refunds: ExtendedRefund[]
   currencyCode: string
   plugins: HttpTypes.AdminPlugin[]
 }) => {
+  const pendingAuthSessions = (order.payment_collections ?? []).flatMap((pc) =>
+    ((pc as any).payment_sessions ?? [])
+      .filter((s: any) => s.status === "pending_authorization")
+      .map((s: any) => ({ session_id: s.id }))
+  )
+
   /**
    * Refunds that are not associated with a payment.
    */
@@ -393,6 +470,13 @@ const PaymentBreakdown = ({
 
   return (
     <div className="flex flex-col divide-y divide-dashed">
+      {pendingAuthSessions.map(({ session_id }) => (
+        <PendingAuthorizationBanner
+          key={session_id}
+          order={order}
+          sessionId={session_id}
+        />
+      ))}
       {entries.map(({ type, event }) => {
         switch (type) {
           case "payment":
@@ -452,7 +536,7 @@ const Total = ({ order }: { order: AdminOrder }) => {
       {order.status !== "canceled" && totalPending > 0 && (
         <div className="flex items-center justify-between">
           <Text size="small" weight="plus" leading="compact">
-            Total pending
+            {t("orders.payment.totalPending")}
           </Text>
 
           <Text size="small" weight="plus" leading="compact">

@@ -5,6 +5,8 @@ import {
   generateEditedDates,
   generateLlmsFull,
   generateSidebar,
+  generateSitemapUrls,
+  copyMdxToPublic,
 } from "build-scripts"
 import {
   addUrlToRelativeLink,
@@ -18,6 +20,7 @@ async function main() {
   await generateSidebar(sidebars, {
     addNumbering: true,
   })
+  await generateSitemapUrls()
   const baseUrl =
     process.env.NEXT_PUBLIC_PROD_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL
   const plugins = {
@@ -46,6 +49,12 @@ async function main() {
       [localLinksRehypePlugin],
     ],
     after: [[addUrlToRelativeLink, { url: baseUrl }]],
+  }
+  if (process.env.CLOUDFLARE_ENV) {
+    await copyMdxToPublic({
+      srcDir: path.join(process.cwd(), "app"),
+      destDir: path.join(process.cwd(), "public", "raw-mdx"),
+    })
   }
   await generateLlmsFull({
     outputPath: path.join(process.cwd(), "public", "llms-full.txt"),

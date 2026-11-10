@@ -73,7 +73,7 @@ While this tutorial focuses on supporting phone authentication for customers, yo
 
 <Prerequisites items={[
   {
-    text: "Node.js v20+",
+    text: "Node.js v22.22.0+",
     link: "https://nodejs.org/en/download"
   },
   {
@@ -88,25 +88,25 @@ While this tutorial focuses on supporting phone authentication for customers, yo
 
 Start by installing the Medusa application on your machine with the following command:
 
-```bash
+```bash npx2yarnExec
 npx create-medusa-app@latest
 ```
 
 You'll first be asked for the project's name. Then, when asked whether you want to install the [Next.js Starter Storefront](../../../nextjs-starter/page.mdx), choose Yes.
 
-Afterward, the installation process will start, which will install the Medusa application in a directory with your project's name, and the Next.js Starter Storefront in a separate directory with the `{project-name}-storefront` name.
-
-<Note title="Why is the storefront installed separately?">
-
-The Medusa application is composed of a headless Node.js server and an admin dashboard. The storefront is installed or custom-built separately and connects to the Medusa application through its REST endpoints, called [API routes](!docs!/learn/fundamentals/api-routes). Learn more in [Medusa's Architecture documentation](!docs!/learn/introduction/architecture).
-
-</Note>
+Afterward, the installation process will start, which will install the Medusa application as a monorepository in a directory with your project's name. The backend is installed in the `apps/backend` directory, and the Next.js Starter Storefront is installed in the `apps/storefront` directory.
 
 Once the installation finishes successfully, the Medusa Admin dashboard will open with a form to create a new user. Enter the user's credentials and submit the form. Afterward, you can log in with the new user and explore the dashboard.
 
 <Note title="Ran into Errors?">
 
 Check out the [troubleshooting guides](../../../troubleshooting/create-medusa-app-errors/page.mdx) for help.
+
+</Note>
+
+<Note>
+
+In this guide, all file paths of backend customizations are relative to the `apps/backend` directory of your Medusa project.
 
 </Note>
 
@@ -160,7 +160,7 @@ import {
 } from "@medusajs/framework/utils"
 import { 
   Logger, 
-} from "@medusajs/types"
+} from "@medusajs/framework/types"
 
 type InjectedDependencies = {
   logger: Logger
@@ -253,7 +253,7 @@ In the method, you throw an error if the `jwtSecret` option is not set.
 
 ### d. Implement register Method
 
-When a customer (or another actor type) registers in your application, they must also have an [auth identity](../../../commerce-modules/auth/auth-identity-and-actor-types/page.mdx) that allows them to login.
+When a customer (or another actor type) registers in your application, they must also have an [auth identity](../../../commerce-modules/auth/auth-identity-and-actor-types/page.mdx) that allows them to log in.
 
 The `register` method of an auth provider uses custom logic to create the auth identity for the actor type (such as customer). In the method, you can perform custom validation and specify the custom authentication details to store for the user's auth identity.
 
@@ -275,7 +275,7 @@ import {
   AuthenticationInput, 
   AuthIdentityProviderService, 
   AuthenticationResponse, 
-} from "@medusajs/types"
+} from "@medusajs/framework/types"
 
 class PhoneAuthService extends AbstractAuthModuleProvider {
   // ...
@@ -373,7 +373,7 @@ export const authenticateHighlights = [
 // other imports...
 import { 
   AuthIdentityDTO,
-} from "@medusajs/types"
+} from "@medusajs/framework/types"
 import jwt from "jsonwebtoken"
 
 class PhoneAuthService extends AbstractAuthModuleProvider {
@@ -484,14 +484,16 @@ You can use this method to verify the OTP that the user entered. If valid, you r
 So, add the `validateCallback` method to the `PhoneAuthService` class:
 
 export const validateCallbackHighlights = [
-  ["7", "phone", "Extract phone from request query."],
-  ["7", "otp", "Extract OTP from request query."],
-  ["16", "retrieve", "Check that the user exists."],
-  ["37", "verify", "Verify that the OTP is correct and hasn't expired."],
-  ["52", "update", "Remove OTP from provider metadata."],
+  ["9", "phone", "Extract phone from request query."],
+  ["9", "otp", "Extract OTP from request query."],
+  ["18", "retrieve", "Check that the user exists."],
+  ["39", "verify", "Verify that the OTP is correct and hasn't expired."],
+  ["57", "update", "Remove OTP from provider metadata."],
 ]
 
 ```ts title="src/modules/phone-auth/service.ts" highlights={validateCallbackHighlights}
+import { MedusaError } from "@medusajs/framework/utils"
+
 class PhoneAuthService extends AbstractAuthModuleProvider {
   // ...
   async validateCallback(
@@ -534,7 +536,10 @@ class PhoneAuthService extends AbstractAuthModuleProvider {
       ) as { otp: string }
   
       if (decodedOTP.otp !== otp) {
-        throw new Error("Invalid OTP")
+        throw new MedusaError(
+          MedusaError.Types.UNAUTHORIZED,
+          "Invalid OTP"
+        )
       }
     } catch (error) {
       return {
@@ -749,7 +754,7 @@ This will return a `token` in the response:
 
 #### b. Register Customer
 
-Next, you'll register the customer using the [Register Customer](!api!/store#customers_postcustomers) API route. You'll pass the registration token you received in the previous step in the header of this request.
+Next, you'll register the customer using the [Register Customer](!api!/store/customers/register-customer) API route. You'll pass the registration token you received in the previous step in the header of this request.
 
 So, send a `POST` request to `/store/customers`:
 
@@ -771,7 +776,7 @@ Make sure to replace:
 - `{publishable_api_key}` with the publishable API key you retrieved from the Medusa Admin dashboard.
 - `{reg_token}` with the registration token you received in the previous step.
 - The customer details in the request body with the ones you want to use. Use the same phone number you used in the previous step.
-    - You pass the email because it's required by the [Register Customer](!api!/store#customers_postcustomers) API route. You set it to the phone number with a `gmail.com` domain.
+    - You pass the email because it's required by the [Register Customer](!api!/store/customers/register-customer) API route. You set it to the phone number with a `gmail.com` domain.
 
 The request will return the created customer's details:
 
@@ -798,7 +803,7 @@ The customer can now authenticate using the phone number and OTP.
 
 #### c. Authenticate Customer
 
-Next, you'll authenticate the customer using the [Authenticate Customer](!api!/store#auth_postactor_typeauth_provider) API route. This would send the customer an OTP to their phone number (which you'll implement in the next step).
+Next, you'll authenticate the customer using the [Authenticate Customer](!api!/store/auth/authenticate-customer) API route. This would send the customer an OTP to their phone number (which you'll implement in the next step).
 
 So, send a `POST` request to `/auth/customer/phone-auth`:
 
@@ -838,7 +843,7 @@ info:    Generated OTP: 576794
 
 As mentioned before, this is only for debugging purposes. In the next step, you'll implement the logic to send the OTP to the user using Twilio.
 
-So, to verify the OTP, you'll send a request to the [Verify Callback API route](!api!/store#auth_postactor_typeauth_providercallback):
+So, to verify the OTP, you'll send a request to the [Verify Callback API route](!api!/store/auth/validate-authentication-callback):
 
 ```bash
 curl -X POST 'http://localhost:9000/auth/customer/phone-auth/callback?phone=%2B19077890116&otp=476588'
@@ -857,7 +862,7 @@ If the OTP is valid, you'll receive a JWT token in the response:
 }
 ```
 
-You can use this token to authenticate the customer in the application. For example, you can use the token to [retrieve the customer's details](!api!/store#customers_getcustomersme).
+You can use this token to authenticate the customer in the application. For example, you can use the token to [retrieve the customer's details](!api!/store/customers/get-customer).
 
 <Note>
 
@@ -987,17 +992,28 @@ The `validateOptions` method is used to validate the options passed to the modul
 So, add the `validateOptions` method to the `TwilioSmsService` class:
 
 ```ts title="src/modules/twilio-sms/service.ts"
+import { MedusaError } from "@medusajs/framework/utils"
+
 class TwilioSmsService extends AbstractNotificationProviderService {
   // ...
   static validateOptions(options: Record<any, any>): void | never {
     if (!options.accountSid) {
-      throw new Error("Account SID is required")
+      throw new MedusaError(
+        MedusaError.Types.INVALID_ARGUMENT,
+        "Account SID is required"
+      )
     }
     if (!options.authToken) {
-      throw new Error("Auth token is required")
+      throw new MedusaError(
+        MedusaError.Types.INVALID_ARGUMENT,
+        "Auth token is required"
+      )
     }
     if (!options.from) {
-      throw new Error("From is required")
+      throw new MedusaError(
+        MedusaError.Types.INVALID_ARGUMENT,
+        "From is required"
+      )
     }
   }
 }
@@ -1014,14 +1030,14 @@ The only required method for a Notification Module Provider is the `send` method
 So, add the `send` method to the `TwilioSmsService` class:
 
 export const sendHighlights = [
-  ["12", "to", "Extract the phone number to send the SMS to."],
-  ["12", "content", "Extract the content of the SMS."],
-  ["12", "template", "Extract the template to use for the SMS."],
-  ["12", "data", "Extract the data to use in the template."],
-  ["13", "contentText", "Set the content text to either the text or template content."],
-  ["13", "getTemplateContent", "Get the content for the template."],
-  ["17", "message", "Send the SMS using Twilio's client."],
-  ["28", "getTemplateContent", "A method to get the content for the template."],
+  ["13", "to", "Extract the phone number to send the SMS to."],
+  ["13", "content", "Extract the content of the SMS."],
+  ["13", "template", "Extract the template to use for the SMS."],
+  ["13", "data", "Extract the data to use in the template."],
+  ["14", "contentText", "Set the content text to either the text or template content."],
+  ["14", "getTemplateContent", "Get the content for the template."],
+  ["18", "message", "Send the SMS using Twilio's client."],
+  ["29", "getTemplateContent", "A method to get the content for the template."],
 ]
 
 ```ts title="src/modules/twilio-sms/service.ts" highlights={sendHighlights}
@@ -1029,7 +1045,8 @@ export const sendHighlights = [
 import { 
   ProviderSendNotificationDTO, 
   ProviderSendNotificationResultsDTO,
-} from "@medusajs/types"
+} from "@medusajs/framework/types"
+import { MedusaError } from "@medusajs/framework/utils"
 
 class TwilioSmsService extends AbstractNotificationProviderService {
   // ...
@@ -1059,12 +1076,18 @@ class TwilioSmsService extends AbstractNotificationProviderService {
     switch (template) {
       case "otp-template":
         if (!data?.otp) {
-          throw new Error("OTP is required for OTP template")
+          throw new MedusaError(
+            MedusaError.Types.INVALID_DATA,
+            "OTP is required for OTP template"
+          )
         }
 
         return `Your OTP is ${data.otp}`
       default:
-        throw new Error(`Template ${template} not found`)
+        throw new MedusaError(
+          MedusaError.Types.NOT_FOUND,
+          `Template ${template} not found`
+        )
     }
   }
 }
@@ -1301,12 +1324,10 @@ By default, the Next.js Starter Storefront supports email and password authentic
 
 <Note title="Reminder" forceMultiline>
 
-The Next.js Starter Storefront was installed in a separate directory from Medusa. The directory's name is `{your-project}-storefront`.
-
-So, if your Medusa application's directory is `medusa-phone-auth`, you can find the storefront by going back to the parent directory and changing to the `medusa-phone-auth-storefront` directory:
+The Next.js Starter Storefront is available in the `apps/storefront` directory of your project:
 
 ```bash
-cd ../medusa-phone-auth-storefront # change based on your project name
+cd apps/storefront
 ```
 
 </Note>
@@ -1478,14 +1499,14 @@ The function accepts an object with the following properties:
 
 In the function, you retrieve a registration token for the customer using the `/auth/customer/phone-auth/register` API route. You pass the phone number in the request body.
 
-Then, after setting the registration token in the cookies, you create a customer using the [Create Customer](!api!/store#customers_postcustomers) API route. You pass the following properties in the request body:
+Then, after setting the registration token in the cookies, you create a customer using the [Create Customer](!api!/store/customers/register-customer) API route. You pass the following properties in the request body:
 
 - `email`: The email of the customer. You set it to the phone number with a `@gmail.com` domain.
 - `first_name`: The first name of the customer.
 - `last_name`: The last name of the customer.
 - `phone`: The phone number of the customer.
 
-Finally, you call the `authenticateWithPhone` function to authenticate the customer using their phone number. At this step, the customer would receive an OTP to login.
+Finally, you call the `authenticateWithPhone` function to authenticate the customer using their phone number. At this step, the customer would receive an OTP to log in.
 
 ### e. Add OTP Form
 
@@ -2121,7 +2142,7 @@ You can also switch to the registration form by clicking on the "Join" link belo
 
 ![Registration form with phone number input](https://res.cloudinary.com/dza7lstvk/image/upload/v1747739988/Medusa%20Resources/CleanShot_2025-05-20_at_14.19.35_2x_btlc2s.png)
 
-You can try to login with the account you created before, or register with a new one. Once successful, you'll see the OTP form to enter the OTP you received as SMS.
+You can try to log in with the account you created before, or register with a new one. Once successful, you'll see the OTP form to enter the OTP you received as SMS.
 
 ![OTP form](https://res.cloudinary.com/dza7lstvk/image/upload/v1747740102/Medusa%20Resources/CleanShot_2025-05-20_at_14.21.18_2x_yrkuyg.png)
 

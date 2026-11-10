@@ -1,16 +1,18 @@
+import { Note } from "docs-ui"
+
 export const metadata = {
   title: `Prerequisites for New Projects`,
 }
 
 # {metadata.title}
 
-In this guide, learn about the prerequisites for your Medusa application and storefront before deploying it to Medusa Cloud in a new project.
+In this guide, learn about the prerequisites for your Medusa application and storefront before deploying it to Cloud in a new project.
 
 Alternatively, you can create a project from a starter, as explained in the [Create Projects](../page.mdx) guide.
 
 ## Who is this guide for?
 
-This guide is intended for developers and teams deploying their local Medusa applications to Medusa Cloud.
+This guide is intended for developers and teams deploying their local Medusa applications to Cloud.
 
 You'll learn what setup steps are necessary for:
 
@@ -19,13 +21,55 @@ You'll learn what setup steps are necessary for:
 
 ---
 
-## Prerequisites for Medusa Application Only
+## Prerequisites for Medusa Application
 
 This section covers the prerequisites for deploying your Medusa application (server and admin dashboard) to Cloud.
 
 If you're also deploying a storefront with your backend, check the [next section](#prerequisites-for-medusa-application-with-storefront) for additional prerequisites.
 
-### Configurations Managed by Medusa Cloud
+### Supported Node.js Versions
+
+Medusa supports the Node.js LTS of the following major versions:
+
+- 20.x (default)
+- 22.x
+- 24.x
+- 25.x
+
+<Note>
+
+Starting from [Medusa v2.19.0](https://github.com/medusajs/medusa/releases/tag/v2.19.0), the Medusa application requires Node.js v20.19.0+ or v22.12.0+. So, if you specify a Node.js version as explained next, make sure it satisfies this requirement.
+
+</Note>
+
+#### Specifying Node.js Version
+
+You can override the default Node.js version for your Medusa application by adding an `engines` field in your `package.json` file:
+
+```json title="package.json"
+{
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
+```
+
+Medusa will satisfy this version by the following priority:
+
+```mermaid
+flowchart LR
+    A[Start] --> B{"engines field<br/>specified?"}
+    B -- Yes --> C{"Found minimum secure<br/>version matching range?"}
+    C -- Yes --> D["Use minimum secure<br/>version matching the range"]
+    C -- No --> E["Use minimum version<br/>satisfying the range"]
+    B -- No --> F["Use default<br/>Node.js version (20.x)"]
+```
+
+1. Find the minimum secure version that matches the range specified in the `engines` field. For example, if your `package.json` specifies `>=21.0.0`, Medusa will use Node.js v22.x since v21.x is no longer supported.
+2. If Medusa can't find the minimum secure version that matches the range, it will use the minimum version that satisfies the range, even if it's not an LTS version.
+3. If no `engines` field is specified, Medusa will use the default Node.js version (20.x).
+
+### Configurations Managed in Cloud
 
 Your existing Medusa application (server and admin dashboard) doesn't need specific configurations to be deployed to Cloud. Medusa automatically:
 
@@ -46,13 +90,19 @@ The Caching Module was introduced in [Medusa v2.11.0](https://github.com/medusaj
 
 </Note>
 
+<Note type="warning">
+
+Do not set `projectConfig.databaseUrl`, `projectConfig.databaseDriverOptions`, or `projectConfig.redisUrl` in your `medusa-config.ts` when deploying to Cloud. Cloud automatically manages the database connection, SSL configuration, connection pooling, and Redis provisioning. Setting these options manually may cause deployment or database migration failures.
+
+</Note>
+
 ---
 
 ## Prerequisites for Medusa Application with Storefront
 
 This section covers the prerequisites for deploying your Medusa application (server and admin dashboard) along with a storefront to Cloud.
 
-Make sure to follow these steps in addition to the ones mentioned in the [previous section](#prerequisites-for-medusa-application-only).
+Make sure to follow these steps in addition to the ones mentioned in the [previous section](#prerequisites-for-medusa-application).
 
 <Note type="soon">
 
@@ -62,31 +112,87 @@ Storefront deployment is an experimental feature, and our team is actively worki
 
 ### Monorepo Setup
 
-To deploy your Medusa application along with a storefront, both projects must be set up in a monorepo structure.
+To deploy your Medusa application along with a storefront, both projects must be set up in a monorepo structure. If you've created your Medusa application after v2.14.0, it's already set up in a monorepo structure.
 
-To create a monorepo, you need:
+To create a monorepo for projects prior to v2.14.0, you need:
 
 1. Package manager: Cloud supports `npm`, `yarn` (v1, v3, and v4), and `pnpm` as package managers.
 2. Monorepo tool: You can use [turbo](https://turborepo.com/) or [nx](https://nx.dev/) to manage your monorepo.
+
+<Note type="warning">
+
+Cloud storefront builds don't support pnpm 12 yet. If you use pnpm, use pnpm 11, such as `11.26.0`. Learn more in the [Troubleshooting](../../deployments/troubleshooting/page.mdx#storefront-opennextjs-cloudflare-not-found-with-pnpm-12) guide.
+
+</Note>
 
 You can structure your monorepo as you see fit. You'll be required to specify the paths to your Medusa application and storefront during the project creation process on Cloud.
 
 ![Diagram showcasing the monorepo structure with Medusa application and storefront as separate packages](https://res.cloudinary.com/dza7lstvk/image/upload/v1766044505/Cloud/storefront-overview_ebmefz.jpg)
 
-### Root Build Script
+### Storefront Supported Node.js Versions
 
-Your monorepo must have a `build` script that builds both the Medusa application and the storefront. Medusa executes this script during the deployment process.
+Medusa uses Node.js v24.x (LTS) to build storefronts. You can't override this version.
 
-For example, if you're using `turbo`, you should have the following script in your root `package.json` file:
+Medusa updates the build to newer v24.x patch releases when they include security fixes, so the exact patch version can change between deployments. The storefront's Node.js version also doesn't follow the `engines` field of your Medusa application, which only applies to the Medusa application's build and runtime.
 
-```json title="package.json"
+So, ensure that your storefront is compatible with Node.js v24.x, without relying on a specific patch version.
+
+<Note type="warning">
+
+If your storefront's `package.json` has an `engines.node` field that restricts the Node.js version to a range that excludes the v24.x version Medusa uses, the build will fail with a version incompatibility error. This includes a major version other than v24, such as `"22.x"`, and an exact version, such as `"24.15.0"`. Update the field to accept any v24.x version, for example:
+
+```json title="apps/storefront/package.json"
+{
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
+```
+
+</Note>
+
+### Build Scripts
+
+In a monorepo, Medusa doesn't run the `build` script of your root `package.json` file. Instead, it builds your Medusa application and your storefront separately, each targeting only its own package.
+
+So, instead of a root `build` script, you need:
+
+1. A `build` script in your Medusa application's `package.json` file that runs the `medusa build` command.
+2. A `build` script in your storefront's `package.json` file that runs the build command, such as `next build`.
+
+```json title="apps/backend/package.json"
 {
   "scripts": {
-    "build": "turbo run build"
+    "build": "medusa build"
     // other scripts...
   }
 }
 ```
+
+Medusa only builds the target package and the workspace packages it depends on. The other packages of your monorepo don't enter the build process. Learn more about the build process in the [Deployments](../../deployments/page.mdx#build-process-for-deployments) guide.
+
+#### Root Files Available During the Build (Turborepo)
+
+If you're using `turbo`, Medusa prunes your monorepo down to the package it's building before installing dependencies. As a result, the build only has access to the following files from the root of your monorepo:
+
+- `package.json`
+- The lockfile
+- `pnpm-workspace.yaml`
+- `turbo.json`
+- `.gitignore`
+- `.npmrc`
+
+Medusa doesn't copy any other root file into the build, along with the packages that the target package doesn't depend on. For example, if a workspace package's `tsconfig.json` file extends a shared `tsconfig.base.json` file at the root, the build fails with the following error, even though the build succeeds locally:
+
+```bash
+error TS5083: Cannot read file '/tsconfig.base.json'.
+```
+
+To fix this, move the shared file into a workspace package, then add that package as a dependency of your Medusa application or storefront. Medusa then includes the file in the build, since it builds the target package along with the workspace packages it depends on.
+
+This also applies to files that your Medusa application needs at runtime, such as JSON files or fonts. Keep them within your Medusa application, then copy them to the `.medusa/server` directory as part of your `build` script. Learn more in the [Built Assets](!docs!/learn/build#built-assets) documentation.
+
+If you're using `nx` instead of `turbo`, Medusa doesn't prune your monorepo, so all root files are available during the build.
 
 ### Prerequisites for Yarn Workspaces
 
@@ -144,15 +250,25 @@ This configuration ensures that specific dependencies are hoisted to the root `n
 
 ### Prerequisites for NPM Workspaces
 
-If you're using `npm` as your package manager, and you're using the [Next.js Starter Storefront](!resources!/nextjs-starter) as your storefront, add the following override in the storefront's `package.json`:
+If you're using `npm` as your package manager with Turbo, you must add the `packageManager` field to your root `package.json`:
+
+```json title="package.json"
+{
+  "packageManager": "npm@10.9.2"
+}
+```
+
+Replace `10.9.2` with your installed npm version (run `npm --version` to check). Turborepo requires this field when pruning with NPM workspaces. Without it, the build will fail with a `Missing 'packageManager' field` error.
+
+If you're also using the [Next.js Starter Storefront](!resources!/nextjs-starter) as your storefront, add the following override in the storefront's `package.json`:
 
 ```json title="apps/storefront/package.json"
 {
   "overrides": {
     // other overrides...
     "@medusajs/icons": {
-      "react": "19.0.3",
-      "react-dom": "19.0.3"
+      "react": "19.0.4",
+      "react-dom": "19.0.4"
     }
   }
 }
@@ -166,8 +282,8 @@ Also, add the following override in your monorepo's root `package.json`:
 {
   "overrides": {
     // other overrides...
-    "react": "19.0.3",
-    "react-dom": "19.0.3"
+    "react": "19.0.4",
+    "react-dom": "19.0.4"
   }
 }
 ```
@@ -178,9 +294,9 @@ This ensures that all packages in your monorepo use compatible versions of `reac
 
 Cloud currently supports deploying storefronts built with the following frameworks:
 
-1. [Next.js](https://nextjs.org/) v15+
+1. [Next.js](https://nextjs.org/) v15. v16 is also supported if you're not using a [proxy](https://nextjs.org/docs/app/getting-started/proxy).
 2. [SvelteKit](https://kit.svelte.dev/) v2.40.0+
-3. [Tanstack Start](https://tanstack.com/start) v1.132.0+
+3. [Tanstack Start](https://tanstack.com/start) v1.132.0+ (React and Solid)
 
 If you're using a different framework for your storefront, contact support to request it.
 

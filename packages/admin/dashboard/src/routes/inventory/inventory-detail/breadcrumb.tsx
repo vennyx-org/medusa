@@ -18,7 +18,7 @@ export const InventoryDetailBreadcrumb = (
       fields: INVENTORY_DETAIL_FIELDS,
     },
     {
-      initialData: props.data,
+      initialData: props.loaderData,
       enabled: Boolean(id),
     }
   )
@@ -28,4 +28,12 @@ export const InventoryDetailBreadcrumb = (
   }
 
   return <span>{inventory_item.title ?? inventory_item.sku ?? id}</span>
+}
+
+export const seo = (match: UIMatch<HttpTypes.AdminInventoryItemResponse>) => {
+  const item = match.loaderData?.inventory_item
+
+  return {
+    title: item ? (item.title ?? item.sku ?? match.params.id) : undefined,
+  }
 }

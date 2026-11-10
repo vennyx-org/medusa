@@ -30,7 +30,7 @@ export type DeleteProductVariantsWorkflowInput = {
 export const deleteProductVariantsWorkflowId = "delete-product-variants"
 /**
  * This workflow deletes one or more product variants. It's used by the
- * [Delete Product Variants Admin API Route](https://docs.medusajs.com/api/admin#products_deleteproductsidvariantsvariant_id).
+ * [Delete Product Variants Admin API Route](https://docs.medusajs.com/api/admin/products/delete-variant).
  *
  * This workflow has a hook that allows you to perform custom actions after the product variants are deleted. For example,
  * you can delete custom records linked to the product variants.
@@ -68,7 +68,10 @@ export const deleteProductVariantsWorkflow = createWorkflow(
     })
 
     removeRemoteLinkStep({
-      [Modules.PRODUCT]: { variant_id: input.ids },
+      [Modules.PRODUCT]: {
+        variant_id: input.ids,
+        product_variant_id: input.ids,
+      },
     }).config({ name: "remove-variant-link-step" })
 
     const toDeleteInventoryItemIds = transform(
@@ -85,7 +88,10 @@ export const deleteProductVariantsWorkflow = createWorkflow(
           }
 
           for (const inventoryItem of variant.inventory) {
-            if (inventoryItem.variants.every((v) => variantsMap.has(v.id))) {
+            if (
+              !!inventoryItem &&
+              inventoryItem.variants.every((v) => variantsMap.has(v.id))
+            ) {
               toDeleteIds.add(inventoryItem.id)
             }
           }

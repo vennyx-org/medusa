@@ -1,6 +1,6 @@
 import { HttpTypes } from "@medusajs/types"
-import { Client } from "../client"
-import { ClientHeaders } from "../types"
+import { Client } from "../client.js"
+import { ClientHeaders } from "../types.js"
 
 export class ProductVariant {
   /**
@@ -16,7 +16,7 @@ export class ProductVariant {
 
   /**
    * This method retrieves a paginated list of product variants. It sends a request to the
-   * [List Product Variants](https://docs.medusajs.com/api/admin#product-variants_getproductvariants)
+   * [List Product Variants](https://docs.medusajs.com/api/admin/product-variants/list-product-variants)
    * API route.
    *
    * @param query - Filters and pagination configurations.
@@ -59,7 +59,7 @@ export class ProductVariant {
    * })
    * ```
    *
-   * Learn more about the `fields` property in the [API reference](https://docs.medusajs.com/api/store#select-fields-and-relations).
+   * Learn more about the `fields` property in the [API reference](https://docs.medusajs.com/api/store/select-fields-and-relations).
    */
   async list(
     query?: HttpTypes.AdminProductVariantParams,

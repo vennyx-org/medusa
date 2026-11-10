@@ -1,7 +1,7 @@
 /**
  * @schema BaseShippingMethodTaxLine
  * type: object
- * description: The tax line's details.
+ * description: The tax line's details
  * x-schemaName: BaseShippingMethodTaxLine
  * required:
  *   - shipping_method
@@ -19,7 +19,7 @@
  *   shipping_method_id:
  *     type: string
  *     title: shipping_method_id
- *     description: The ID of this shipping method the tax line belongs to.
+ *     description: The ID of the shipping method this tax line belongs to.
  *   total:
  *     type: number
  *     title: total
@@ -43,15 +43,15 @@
  *   code:
  *     type: string
  *     title: code
- *     description: The code that the rate is identified by.
+ *     description: The code that the tax rate is identified by.
  *   rate:
  *     type: number
  *     title: rate
- *     description: The rate to charge.
+ *     description: The charged rate.
  *   provider_id:
  *     type: string
  *     title: provider_id
- *     description: The ID of the tax provider that calculated the taxes.
+ *     description: The ID of the tax provider used to calculate the tax line.
  *   created_at:
  *     type: string
  *     format: date-time

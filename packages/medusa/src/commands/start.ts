@@ -11,11 +11,13 @@ import {
   dynamicImport,
   FileSystem,
   generateContainerTypes,
-  generatePolicyTypes,
+  generateAugmentationRefs,
+  getResolvedPlugins,
   gqlSchemaToTypes,
   GracefulShutdownServer,
   isFileSkipped,
   isPresent,
+  isProduction,
   promiseAll,
 } from "@medusajs/framework/utils"
 
@@ -24,6 +26,7 @@ import { Logger, MedusaContainer } from "@medusajs/framework/types"
 import { parse } from "url"
 import loaders, { initializeContainer } from "../loaders"
 import { reloadResources } from "./utils/dev-server"
+import { startLicenseRemoteCheck } from "./utils/license-check"
 import { HMRReloadError } from "./utils/dev-server/errors"
 
 const EVERY_SIXTH_HOUR = "0 */6 * * *"
@@ -109,11 +112,7 @@ function displayAdminUrl({
   port: string | number
   container: MedusaContainer
 }) {
-  const isProduction = ["production", "prod"].includes(
-    process.env.NODE_ENV || ""
-  )
-
-  if (isProduction) {
+  if (isProduction()) {
     return
   }
 
@@ -297,14 +296,16 @@ async function start(args: {
           )
         }
 
+        const configModule = container.resolve(
+          ContainerRegistrationKeys.CONFIG_MODULE
+        )
+        const plugins = await getResolvedPlugins(directory, configModule, true)
         fileGenPromises.push(
-          generatePolicyTypes({
-            outputDir: typesDirectory,
-          })
+          generateAugmentationRefs({ directory, plugins, modules })
         )
 
         await promiseAll(fileGenPromises)
-        logger.debug("Generated policy types")
+        logger.debug("Generated types")
       }
 
       // Register a health check endpoint. Ideally this also checks the readiness of the service, rather than just returning a static response.
@@ -317,6 +318,7 @@ async function start(args: {
           logger.success(serverActivity, `Server is ready on port: ${port}`)
           displayAdminUrl({ container, host, port })
           track("CLI_START_COMPLETED")
+          void startLicenseRemoteCheck(container)
         })
       )
 

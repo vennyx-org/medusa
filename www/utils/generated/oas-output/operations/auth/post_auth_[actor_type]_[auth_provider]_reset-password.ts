@@ -47,8 +47,15 @@
  * tags:
  *   - "[actor_type]"
  * responses:
- *   "200":
+ *   "201":
  *     description: OK
+ *     content:
+ *       text/plain:
+ *         schema:
+ *           type: string
+ *           title: message
+ *           description: The 201 status code's message.
+ *           example: Created
  *   "400":
  *     $ref: "#/components/responses/400_error"
  *   "401":
@@ -66,7 +73,18 @@
  *   content:
  *     application/json:
  *       schema:
- *         $ref: "#/components/schemas/ResetPasswordRequest"
+ *         type: object
+ *         description: The details of the reset password token to generate.
+ *         required:
+ *           - identifier
+ *         properties:
+ *           identifier:
+ *             type: string
+ *             title: identifier
+ *             description: The actor identifier. For example, an email address.
+ *           metadata:
+ *             type: object
+ *             description: The actor's custom metadata to be included in the emitted event when the token is generated.
  * x-events:
  *   - name: auth.password_reset
  *     payload: |-

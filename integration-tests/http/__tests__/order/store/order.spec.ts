@@ -13,7 +13,7 @@ import { createOrderSeeder } from "../../fixtures/order"
 jest.setTimeout(300000)
 
 medusaIntegrationTestRunner({
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
     let order,
       draftOrder,
       seeder,
@@ -21,7 +21,7 @@ medusaIntegrationTestRunner({
       customer,
       storeHeadersWithCustomer
 
-    beforeEach(async () => {
+    beforeAll(async () => {
       const container = getContainer()
 
       await setupTaxStructure(container.resolve(ModuleRegistrationName.TAX))
@@ -78,6 +78,8 @@ medusaIntegrationTestRunner({
       )
 
       draftOrder = draftOrderResposne.data.draft_order
+
+      await dbUtils.snapshot()
     })
 
     describe("GET /store/orders", () => {
@@ -117,6 +119,44 @@ medusaIntegrationTestRunner({
             id: order.id,
           })
         )
+      })
+
+      it("should not allow pivoting into the customer's other orders", async () => {
+        const pivotFields = [
+          "customer.orders.id",
+          "+customer.orders.*",
+          "customer.*,customer.orders.items.*",
+        ]
+
+        for (const fields of pivotFields) {
+          const response = await api.get(
+            `/store/orders/${order.id}?fields=${fields}`,
+            storeHeaders
+          )
+
+          expect(response.status).toEqual(200)
+          expect(response.data.order.customer?.orders).toBeUndefined()
+        }
+      })
+
+      it("should still resolve the order's own customer and cart", async () => {
+        const response = await api.get(
+          `/store/orders/${order.id}?fields=+customer.email,+cart.id`,
+          storeHeaders
+        )
+
+        expect(response.data.order.cart).toEqual(
+          expect.objectContaining({ id: expect.any(String) })
+        )
+
+        expect(response.data.order.customer).toEqual(
+          expect.objectContaining({
+            id: customer.id,
+            email: customer.email,
+          })
+        )
+        expect(response.data.order.items).toBeTruthy()
+        expect(response.data.order.shipping_address).toBeTruthy()
       })
 
       // TODO: This should have thrown an error, but doesn't seem to.

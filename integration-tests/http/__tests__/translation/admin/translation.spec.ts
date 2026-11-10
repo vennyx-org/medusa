@@ -11,7 +11,7 @@ jest.setTimeout(100000)
 process.env.MEDUSA_FF_TRANSLATION = "true"
 
 medusaIntegrationTestRunner({
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
     describe("Admin Translation API", () => {
       let appContainer: MedusaContainer
 
@@ -19,8 +19,11 @@ medusaIntegrationTestRunner({
         appContainer = getContainer()
       })
 
-      beforeEach(async () => {
+      beforeAll(async () => {
         await createAdminUser(dbConnection, adminHeaders, getContainer())
+
+        const translationModule = appContainer.resolve(Modules.TRANSLATION)
+        await translationModule.__hooks?.onApplicationStart?.().catch(() => {})
 
         const storeModule = appContainer.resolve(Modules.STORE)
         const [defaultStore] = await storeModule.listStores(
@@ -37,6 +40,8 @@ medusaIntegrationTestRunner({
             { locale_code: "de-DE" },
           ],
         })
+
+        await dbUtils.snapshot()
       })
 
       afterAll(async () => {
@@ -671,6 +676,67 @@ medusaIntegrationTestRunner({
             expect(batchResponse.data.updated[0].translations.title).toEqual(
               "Mis à jour"
             )
+          })
+
+          it("should keep created and updated separate when both are returned in one batch", async () => {
+            const seedResponse = await api.post(
+              "/admin/translations/batch",
+              {
+                create: Array.from({ length: 5 }, (_, i) => ({
+                  reference_id: `prod_seed_${i}`,
+                  reference: "product",
+                  locale_code: "fr-FR",
+                  translations: { title: `Semence ${i}` },
+                })),
+              },
+              adminHeaders
+            )
+
+            const seededIds = seedResponse.data.created.map((t) => t.id)
+            expect(seededIds).toHaveLength(5)
+
+            const batchResponse = await api.post(
+              "/admin/translations/batch",
+              {
+                create: Array.from({ length: 5 }, (_, i) => ({
+                  reference_id: `prod_frais_${i}`,
+                  reference: "product",
+                  locale_code: "fr-FR",
+                  translations: { title: `Frais ${i}` },
+                })),
+                update: seededIds.map((id, i) => ({
+                  id,
+                  translations: { title: `Mis à jour ${i}` },
+                })),
+              },
+              adminHeaders
+            )
+
+            expect(batchResponse.status).toEqual(200)
+
+            const createdIds = batchResponse.data.created.map((t) => t.id)
+            const updatedIds = batchResponse.data.updated.map((t) => t.id)
+
+            expect(createdIds).toHaveLength(5)
+            expect(updatedIds).toHaveLength(5)
+
+            // Every seeded row lands in `updated`, and no id may show up in both buckets
+            expect([...updatedIds].sort()).toEqual([...seededIds].sort())
+            expect(createdIds.filter((id) => updatedIds.includes(id))).toEqual(
+              []
+            )
+
+            // Each bucket carries its own rows, not a mix of the two
+            expect(
+              batchResponse.data.created.every((t) =>
+                t.reference_id.startsWith("prod_frais_")
+              )
+            ).toBe(true)
+            expect(
+              batchResponse.data.updated.every((t) =>
+                t.translations.title.startsWith("Mis à jour")
+              )
+            ).toBe(true)
           })
         })
       })

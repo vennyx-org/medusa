@@ -16,17 +16,18 @@ export const metadata = {
 
 # {metadata.title}
 
-In this guide, you'll learn about the two ways to login a customer in your storefront.
+In this guide, you'll learn about the two ways to log in a customer in your storefront.
 
-<Note>
+<Note title="Alternative Guides">
 
-This guide covers login using email and password. For authentication with third-party providers, refer to the [Third-Party Login](../third-party-login/page.mdx) guide.
+- This guide covers login using email and password. For authentication with third-party providers, refer to the [Third-Party Login](../third-party-login/page.mdx) guide.
+- If you have email verification enabled, refer to the [Verify Account](../verify-account/page.mdx) guide instead.
 
 </Note>
 
 ## Login Customer Methods
 
-There are two ways to login a customer in your storefront:
+There are two ways to log in a customer in your storefront:
 
 1. Using a JWT token. This JWT token is obtained from the `/auth/customer/emailpass` API route and is used as a bearer token in the authorization header of all requests.
 2. Using a cookie session. This method uses the `/auth/session` API route to set the authenticated session ID in the cookies.
@@ -238,7 +239,7 @@ If you're not using the JS SDK, the next sections cover the general flow for aut
 
 The first authentication approach is to pass an authenticated JWT token in the authorization header of all requests. You can do that by:
 
-1. Retrieving a JWT token from the `/auth/customer/emailpass` [Authenticate Customer API route](!api!/store#auth_postactor_typeauth_provider):
+1. Retrieving a JWT token from the `/auth/customer/emailpass` [Authenticate Customer API route](!api!/store/auth/authenticate-customer):
 
 ```bash
 curl -X POST '{backend_url}/auth/customer/emailpass' \
@@ -261,7 +262,7 @@ You can store the obtained JWT token based on your use case. For example, you ca
 
 The second authentication approach is to authenticate the customer with a cookie session. You do that by:
 
-1. Retrieving a JWT token from the `/auth/customer/emailpass` [Authenticate Customer API route](!api!/store#auth_postactor_typeauth_provider):
+1. Retrieving a JWT token from the `/auth/customer/emailpass` [Authenticate Customer API route](!api!/store/auth/authenticate-customer):
 
 ```bash
 curl -X POST '{backend_url}/auth/customer/emailpass' \
@@ -272,7 +273,7 @@ curl -X POST '{backend_url}/auth/customer/emailpass' \
 }'
 ```
 
-2. Sending a request to the `/auth/session` [Authentication Session API route](!api!/store#auth_postsession) passing in the authorization header the token as a Bearer token. This sets the authenticated session ID in the cookies:
+2. Sending a request to the `/auth/session` [Authentication Session API route](!api!/store/auth/set-authentication-session) passing in the authorization header the token as a Bearer token. This sets the authenticated session ID in the cookies:
 
 ```bash
 curl -X POST '{backend_url}/auth/session' \

@@ -226,16 +226,15 @@ export const useDeleteCustomerAddress = (
 
 export const useListCustomerAddresses = (
   id: string,
-  query?: Record<string, any>,
   options?: UseQueryOptions<
-    HttpTypes.AdminCustomerResponse,
+    HttpTypes.AdminCustomerAddressListResponse,
     FetchError,
-    HttpTypes.AdminCustomerResponse,
+    HttpTypes.AdminCustomerAddressListResponse,
     QueryKey
   >
 ) => {
   const { data, ...rest } = useQuery({
-    queryFn: () => sdk.admin.customer.listAddresses(id, query),
+    queryFn: () => sdk.admin.customer.listAddresses(id),
     queryKey: customerAddressesQueryKeys.list(id),
     ...options,
   })
@@ -247,9 +246,9 @@ export const useCustomerAddress = (
   id: string,
   addressId: string,
   options?: UseQueryOptions<
-    HttpTypes.AdminCustomerResponse,
+    HttpTypes.AdminCustomerAddressResponse,
     FetchError,
-    HttpTypes.AdminCustomerResponse,
+    HttpTypes.AdminCustomerAddressResponse,
     QueryKey
   >
 ) => {
@@ -260,4 +259,24 @@ export const useCustomerAddress = (
   })
 
   return { ...data, ...rest }
+}
+
+export const useExportCustomers = (
+  options?: UseMutationOptions<
+    HttpTypes.AdminExportCustomerResponse,
+    FetchError,
+    {
+      payload?: HttpTypes.AdminExportCustomerRequest
+      query?: HttpTypes.AdminCustomerFilters
+    }
+  >
+) => {
+  return useMutation({
+    mutationFn: ({ payload = {}, query }) =>
+      sdk.admin.customer.export(payload, query),
+    onSuccess: (data, variables, context) => {
+      options?.onSuccess?.(data, variables, context)
+    },
+    ...options,
+  })
 }

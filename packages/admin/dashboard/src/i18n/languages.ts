@@ -5,11 +5,14 @@ import {
   cs,
   de,
   el,
+  enGB,
   enUS,
   es,
   faIR,
+  fi,
   fr,
   he,
+  hr,
   hu,
   id,
   it,
@@ -30,6 +33,7 @@ import {
   vi,
   zhCN,
   zhTW,
+  sv,
 } from "date-fns/locale"
 import { Language } from "./types"
 
@@ -53,6 +57,12 @@ export const languages: Language[] = [
     date_locale: enUS,
   },
   {
+    code: "enGB",
+    display_name: "English (UK)",
+    ltr: true,
+    date_locale: enGB,
+  },
+  {
     code: "es",
     display_name: "Español",
     ltr: true,
@@ -71,6 +81,12 @@ export const languages: Language[] = [
     date_locale: de,
   },
   {
+    code: "fi",
+    display_name: "Suomi",
+    ltr: true,
+    date_locale: fi,
+  },
+  {
     code: "fr",
     display_name: "Français",
     ltr: true,
@@ -81,6 +97,12 @@ export const languages: Language[] = [
     display_name: "עברית",
     ltr: false,
     date_locale: he,
+  },
+  {
+    code: "hr",
+    display_name: "Hrvatski",
+    ltr: true,
+    date_locale: hr,
   },
   {
     code: "hu",
@@ -219,5 +241,11 @@ export const languages: Language[] = [
     display_name: "繁體中文(臺灣)",
     ltr: true,
     date_locale: zhTW,
+  },
+  {
+    code: "sv",
+    display_name: "Swedish",
+    ltr: true,
+    date_locale: sv,
   },
 ]

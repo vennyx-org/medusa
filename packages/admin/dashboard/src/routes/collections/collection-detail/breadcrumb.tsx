@@ -11,7 +11,7 @@ export const CollectionDetailBreadcrumb = (
   const { id } = props.params || {}
 
   const { collection } = useCollection(id!, {
-    initialData: props.data,
+    initialData: props.loaderData,
     enabled: Boolean(id),
   })
 
@@ -21,3 +21,7 @@ export const CollectionDetailBreadcrumb = (
 
   return <span>{collection.title}</span>
 }
+
+export const seo = (match: UIMatch<HttpTypes.AdminCollectionResponse>) => ({
+  title: match.loaderData?.collection?.title,
+})

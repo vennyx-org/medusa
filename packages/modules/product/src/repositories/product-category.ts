@@ -29,14 +29,18 @@ export class ProductCategoryRepository extends DALUtils.MikroOrmBaseTreeReposito
       rank: "ASC",
     }
 
-    const fields = (findOptions_.options.fields ??= [])
+    // An empty `fields` array narrows the projection down to the primary key,
+    // so it is only set when the caller asked for specific fields. Otherwise it
+    // stays undefined and all scalar properties are selected.
+    const fields = (findOptions_.options.fields ?? []) as string[]
     const populate = (findOptions_.options.populate ??= [])
 
     // Ref: Building descendants
     // mpath and parent_category_id needs to be added to the query for the tree building to be done accurately
     if (
-      familyOptions.includeDescendantsTree ||
-      familyOptions.includeAncestorsTree
+      fields.length &&
+      (familyOptions.includeDescendantsTree ||
+        familyOptions.includeAncestorsTree)
     ) {
       fields.indexOf("mpath") === -1 && fields.push("mpath")
       fields.indexOf("parent_category_id") === -1 &&
@@ -64,7 +68,7 @@ export class ProductCategoryRepository extends DALUtils.MikroOrmBaseTreeReposito
     }
 
     Object.assign(findOptions_.options, {
-      strategy: LoadStrategy.SELECT_IN,
+      strategy: LoadStrategy.BALANCED,
     })
 
     return findOptions_
@@ -77,6 +81,11 @@ export class ProductCategoryRepository extends DALUtils.MikroOrmBaseTreeReposito
   ): Promise<InferEntityType<typeof ProductCategory>[]> {
     const manager = super.getActiveManager<SqlEntityManager>(context)
     const findOptions_ = this.buildFindOptions(findOptions, transformOptions)
+
+    DALUtils.pruneFindOptionsAgainstMetadata(
+      manager.getDriver().getMetadata().get(ProductCategory.name),
+      findOptions_.options as { fields?: unknown; populate?: unknown }
+    )
 
     const productCategories = await manager.find<
       InferEntityType<typeof ProductCategory>
@@ -248,6 +257,11 @@ export class ProductCategoryRepository extends DALUtils.MikroOrmBaseTreeReposito
   ): Promise<[InferEntityType<typeof ProductCategory>[], number]> {
     const manager = super.getActiveManager<SqlEntityManager>(context)
     const findOptions_ = this.buildFindOptions(findOptions, transformOptions)
+
+    DALUtils.pruneFindOptionsAgainstMetadata(
+      manager.getDriver().getMetadata().get(ProductCategory.name),
+      findOptions_.options as { fields?: unknown; populate?: unknown }
+    )
 
     const [productCategories, count] = (await manager.findAndCount(
       ProductCategory.name,

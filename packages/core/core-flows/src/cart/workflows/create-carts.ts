@@ -12,12 +12,15 @@ import {
 } from "@medusajs/framework/utils"
 import {
   createHook,
+  createStep,
   createWorkflow,
   parallelize,
+  StepResponse,
   transform,
   WorkflowData,
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk"
+import { getTranslatedLineItemsStep } from "../../common"
 import { emitEventStep } from "../../common/steps/emit-event"
 import {
   createCartsStep,
@@ -34,7 +37,6 @@ import { getVariantsAndItemsWithPrices } from "./get-variants-and-items-with-pri
 import { refreshPaymentCollectionForCartWorkflow } from "./refresh-payment-collection"
 import { updateCartPromotionsWorkflow } from "./update-cart-promotions"
 import { updateTaxLinesWorkflow } from "./update-tax-lines"
-import { getTranslatedLineItemsStep } from "../../common"
 
 /**
  * The data to create the cart, along with custom data that's passed to the workflow's hooks.
@@ -42,10 +44,90 @@ import { getTranslatedLineItemsStep } from "../../common"
 export type CreateCartWorkflowInput = CreateCartWorkflowInputDTO &
   AdditionalData
 
+/**
+ * The data to prepare the cart to create.
+ */
+export interface PrepareCartToCreateStepInput {
+  /**
+   * The cart creation input.
+   */
+  input: CreateCartWorkflowInput
+  /**
+   * The region the cart belongs to.
+   */
+  region: {
+    id: string
+    currency_code: string
+    countries: { iso_2: string }[]
+  } | null
+  /**
+   * The customer found or created for the cart, if any.
+   */
+  customerData: {
+    customer?: { id: string; email: string } | null
+  }
+  /**
+   * The sales channel the cart belongs to.
+   */
+  salesChannel: { id: string } | null
+}
+
+/**
+ * This step prepares the data used to create a cart, resolving the cart's
+ * currency, region, customer, sales channel, and a default shipping address
+ * when the region has a single country. It throws an error if no region is
+ * provided.
+ */
+export const prepareCartToCreateStep = createStep(
+  "prepare-cart-to-create",
+  async (data: PrepareCartToCreateStepInput) => {
+    if (!data.region) {
+      throw new MedusaError(MedusaError.Types.NOT_FOUND, "No regions found")
+    }
+
+    // The cart's currency is dictated by its region. If the client provides a
+    // currency_code, it must match the region's currency, otherwise the cart
+    // (and the resulting order) could be priced in a currency that's decoupled
+    // from the region it ships to.
+    if (
+      data.input.currency_code &&
+      data.input.currency_code.toLowerCase() !==
+        data.region.currency_code.toLowerCase()
+    ) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        `Currency code ${data.input.currency_code} does not match the region's currency code ${data.region.currency_code}`
+      )
+    }
+
+    const data_ = {
+      ...data.input,
+      currency_code: data.input.currency_code ?? data.region.currency_code,
+      region_id: data.region.id,
+    }
+
+    if (data.customerData.customer?.id) {
+      data_.customer_id = data.customerData.customer.id
+      data_.email = data.input?.email ?? data.customerData.customer.email
+    }
+
+    data_.sales_channel_id = data.salesChannel!.id
+
+    // If there is only one country in the region, we prepare a shipping address with that country's code.
+    if (!data.input.shipping_address && data.region.countries.length === 1) {
+      data_.shipping_address = {
+        country_code: data.region.countries[0].iso_2,
+      }
+    }
+
+    return new StepResponse(data_ as CreateCartDTO)
+  }
+)
+
 export const createCartWorkflowId = "create-cart"
 /**
  * This workflow creates and returns a cart. You can set the cart's items, region, customer, and other details. This workflow is executed by the
- * [Create Cart Store API Route](https://docs.medusajs.com/api/store#carts_postcarts).
+ * [Create Cart Store API Route](https://docs.medusajs.com/api/store/carts/create-cart).
  *
  * This workflow has a hook that allows you to perform custom actions on the created cart. You can see an example in [this guide](https://docs.medusajs.com/resources/commerce-modules/cart/extend#step-4-consume-cartcreated-workflow-hook).
  *
@@ -129,6 +211,7 @@ export const createCartWorkflow = createWorkflow(
       findOrCreateCustomerStep({
         customerId: input.customer_id,
         email: input.email,
+        hasAccount: false,
       })
     )
 
@@ -148,24 +231,40 @@ export const createCartWorkflow = createWorkflow(
     )
     const setPricingContextResult = setPricingContext.getResult()
 
-    const { variants, lineItems } = getVariantsAndItemsWithPrices.runAsStep({
-      input: {
-        cart: {
-          currency_code: input.currency_code,
-          region,
-          region_id: region.id,
-          customer_id: customerData.customer?.id,
-        },
-        items: input.items,
-        setPricingContextResult: setPricingContextResult!,
-        variants: {
-          id: variantIds,
-          fields: deduplicate([
-            ...productVariantsFields,
-            ...requiredVariantFieldsForInventoryConfirmation,
-          ]),
-        },
+    const getVariantsAndItemsWithPricesInput = transform(
+      {
+        input,
+        region,
+        customerData,
+        setPricingContextResult,
+        variantIds,
+        productVariantsFields,
+        requiredVariantFieldsForInventoryConfirmation,
       },
+      (data) => {
+        return {
+          cart: {
+            currency_code: data.input.currency_code,
+            region: data.region,
+            region_id: data.region?.id,
+            customer_id: data.customerData.customer?.id,
+            customer: data.customerData.customer ?? undefined,
+          },
+          items: data.input.items,
+          setPricingContextResult: data.setPricingContextResult!,
+          variants: {
+            id: data.variantIds,
+            fields: deduplicate([
+              ...data.productVariantsFields,
+              ...data.requiredVariantFieldsForInventoryConfirmation,
+            ]),
+          },
+        }
+      }
+    )
+
+    const { variants, lineItems } = getVariantsAndItemsWithPrices.runAsStep({
+      input: getVariantsAndItemsWithPricesInput,
     })
 
     confirmVariantInventoryWorkflow.runAsStep({
@@ -177,39 +276,12 @@ export const createCartWorkflow = createWorkflow(
       },
     })
 
-    const cartInput = transform(
-      { input, region, customerData, salesChannel },
-      (data) => {
-        if (!data.region) {
-          throw new MedusaError(MedusaError.Types.NOT_FOUND, "No regions found")
-        }
-
-        const data_ = {
-          ...data.input,
-          currency_code: data.input.currency_code ?? data.region.currency_code,
-          region_id: data.region.id,
-        }
-
-        if (data.customerData.customer?.id) {
-          data_.customer_id = data.customerData.customer.id
-          data_.email = data.input?.email ?? data.customerData.customer.email
-        }
-
-        data_.sales_channel_id = data.salesChannel!.id
-
-        // If there is only one country in the region, we prepare a shipping address with that country's code.
-        if (
-          !data.input.shipping_address &&
-          data.region.countries.length === 1
-        ) {
-          data_.shipping_address = {
-            country_code: data.region.countries[0].iso_2,
-          }
-        }
-
-        return data_ as CreateCartDTO
-      }
-    )
+    const cartInput = prepareCartToCreateStep({
+      input,
+      region,
+      customerData,
+      salesChannel,
+    })
 
     const itemsToCreate = transform({ lineItems }, (data) => {
       return data.lineItems.map((i) => i.data as CreateLineItemDTO)

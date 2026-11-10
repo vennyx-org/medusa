@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server"
 import path from "path"
-import OpenAPIParser from "@readme/openapi-parser"
+import $RefParser from "@apidevtools/json-schema-ref-parser"
 import getPathsOfTag from "@/utils/get-paths-of-tag"
 import type { OpenAPI } from "types"
+import { withRouteErrorHandling, workerCompatibleFetch } from "docs-utils"
+import { parse as parseYaml } from "yaml"
+import { readSpecFromBinding } from "@/utils/read-spec-from-binding"
 
-export async function GET(request: Request) {
+export const GET = withRouteErrorHandling(async (request: Request) => {
   const { searchParams } = new URL(request.url)
   const area = searchParams.get("area")
   const expand = searchParams.get("expand")
@@ -19,9 +22,27 @@ export async function GET(request: Request) {
       }
     )
   }
-  const baseSpecs = (await OpenAPIParser.parse(
-    path.join(process.cwd(), "specs", area, "openapi.yaml")
-  )) as OpenAPI.ExpandedDocument
+  const r2Base = process.env.SPECS_R2_BASE_URL
+  const specPath = r2Base
+    ? `${r2Base}/specs/${area}/openapi.yaml`
+    : path.join(process.cwd(), "specs", area, "openapi.yaml")
+  const specsFromBinding = await readSpecFromBinding(specPath)
+  const baseSpecs = specsFromBinding
+    ? ((await parseYaml(specsFromBinding)) as OpenAPI.ExpandedDocument)
+    : await workerCompatibleFetch<OpenAPI.ExpandedDocument>({
+        url: specPath,
+        responseTransformer: async (res) => {
+          if (!res.ok) {
+            throw new Error(`Failed to fetch spec: ${specPath} (${res.status})`)
+          }
+          const text = await res.text()
+          return (await parseYaml(text)) as OpenAPI.ExpandedDocument
+        },
+        fallbackAction: async () => {
+          // In local development, we can read the spec directly from the filesystem
+          return (await $RefParser.parse(specPath)) as OpenAPI.ExpandedDocument
+        },
+      })
 
   if (expand) {
     const paths = await getPathsOfTag(expand, area)
@@ -34,4 +55,4 @@ export async function GET(request: Request) {
   return NextResponse.json(baseSpecs, {
     status: 200,
   })
-}
+})

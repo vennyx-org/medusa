@@ -68,6 +68,7 @@ export function InventoryCreateForm({ locations }: InventoryCreateFormProps) {
       origin_country: "",
       mid_code: "",
       material: "",
+      unit_of_measure: "",
       description: "",
       requires_shipping: true,
       thumbnail: "",
@@ -212,7 +213,7 @@ export function InventoryCreateForm({ locations }: InventoryCreateFormProps) {
           onSubmit={handleSubmit}
         >
           <RouteFocusModal.Header>
-            <ProgressTabs.List className="border-ui-border-base -my-2 ml-2 min-w-0 flex-1 border-l">
+            <ProgressTabs.List className="-my-2 ml-2 min-w-0 flex-1 border-l border-ui-border-base">
               <ProgressTabs.Trigger
                 value={Tab.DETAILS}
                 status={status[Tab.DETAILS]}
@@ -454,7 +455,7 @@ export function InventoryCreateForm({ locations }: InventoryCreateFormProps) {
                               {t("products.fields.countryOrigin.label")}
                             </Form.Label>
                             <Form.Control>
-                              <CountrySelect {...field} />
+                              <CountrySelect {...field} allowClear />
                             </Form.Control>
                           </Form.Item>
                         )
@@ -473,6 +474,31 @@ export function InventoryCreateForm({ locations }: InventoryCreateFormProps) {
                             <Form.Control>
                               <Input {...field} />
                             </Form.Control>
+                          </Form.Item>
+                        )
+                      }}
+                    />
+
+                    <Form.Field
+                      control={form.control}
+                      name="unit_of_measure"
+                      render={({ field }) => {
+                        return (
+                          <Form.Item>
+                            <Form.Label optional>
+                              {t("fields.unitOfMeasure")}
+                            </Form.Label>
+                            <Form.Control>
+                              <Input
+                                {...field}
+                                placeholder={t(
+                                  "inventory.unitOfMeasurePlaceholder"
+                                )}
+                              />
+                            </Form.Control>
+                            <Form.Hint>
+                              {t("inventory.unitOfMeasureHint")}
+                            </Form.Hint>
                           </Form.Item>
                         )
                       }}

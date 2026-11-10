@@ -11,7 +11,10 @@ import {
   Tooltip,
   CopyGeneratedSnippetButton,
   BadgesList,
+  EnterpriseNotice,
+  PermissionsBadge,
   InjectedMDXData,
+  H1,
 } from "docs-ui"
 import { CommerceModuleSections } from "../CommerceModuleSections"
 import { EventHeader } from "../EventHeader"
@@ -32,7 +35,10 @@ const MDXComponents: MDXComponentsType = {
   EventHeader,
   CopyGeneratedSnippetButton,
   BadgesList,
+  EnterpriseNotice,
+  PermissionsBadge,
   InjectedMDXData,
+  h1: (props) => <H1 variant="content" {...props} />,
 }
 
 export default MDXComponents

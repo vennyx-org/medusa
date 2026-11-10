@@ -1,9 +1,11 @@
-import { MiddlewareRoute } from "@medusajs/framework/http"
 import {
   validateAndTransformBody,
   validateAndTransformQuery,
 } from "@medusajs/framework"
+import { authorize, MiddlewareRoute } from "@medusajs/framework/http"
+import { PolicyOperation } from "@medusajs/framework/utils"
 import * as queryConfig from "./query-config"
+import { Entities } from "./query-config"
 import {
   AdminCreatePaymentRefundReason,
   AdminGetRefundReasonParams,
@@ -13,9 +15,26 @@ import {
 
 export const adminRefundReasonsRoutesMiddlewares: MiddlewareRoute[] = [
   {
+    matcher: "/admin/refund-reasons/*",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.refund_reason,
+          operation: PolicyOperation.read,
+        },
+      ]),
+    ],
+  },
+  {
     method: ["GET"],
     matcher: "/admin/refund-reasons",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.refund_reason,
+          operation: PolicyOperation.read,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetRefundReasonsParams,
         queryConfig.listTransformQueryConfig
@@ -26,6 +45,12 @@ export const adminRefundReasonsRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/refund-reasons",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.refund_reason,
+          operation: PolicyOperation.create,
+        },
+      ]),
       validateAndTransformBody(AdminCreatePaymentRefundReason),
       validateAndTransformQuery(
         AdminGetRefundReasonsParams,
@@ -37,6 +62,12 @@ export const adminRefundReasonsRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/refund-reasons/:id",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.refund_reason,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(AdminUpdatePaymentRefundReason),
       validateAndTransformQuery(
         AdminGetRefundReasonParams,
@@ -58,6 +89,12 @@ export const adminRefundReasonsRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["DELETE"],
     matcher: "/admin/refund-reasons/:id",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.refund_reason,
+          operation: PolicyOperation.delete,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetRefundReasonsParams,
         queryConfig.retrieveTransformQueryConfig

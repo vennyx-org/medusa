@@ -68,6 +68,10 @@ export const customer = [
     "path": "https://docs.medusajs.com/resources/storefront-development/customers/third-party-login"
   },
   {
+    "title": "Register Customer with Email Verification in Storefront",
+    "path": "https://docs.medusajs.com/resources/storefront-development/customers/verify-account"
+  },
+  {
     "title": "findOrCreateCustomerStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/findOrCreateCustomerStep"
   },
@@ -210,6 +214,14 @@ export const customer = [
   {
     "title": "orderExchangeAddNewItemWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/orderExchangeAddNewItemWorkflow"
+  },
+  {
+    "title": "transferOrderToGuestWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/transferOrderToGuestWorkflow"
+  },
+  {
+    "title": "updateOrderWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateOrderWorkflow"
   },
   {
     "title": "customer",

@@ -1,10 +1,9 @@
 import { BaseFilterable, OperatorMap } from "../../../dal"
-import { FindParams } from "../../common"
+import { FindParams, SelectParams } from "../../common"
 import { BaseRegionCountryFilters } from "../common"
 
 export interface AdminRegionFilters
-  extends FindParams,
-    BaseFilterable<AdminRegionFilters> {
+  extends FindParams, BaseFilterable<AdminRegionFilters> {
   /**
    * Query or keywords to search the region's searchable fields.
    */
@@ -35,3 +34,5 @@ export interface AdminRegionFilters
   deleted_at?: OperatorMap<string>
 }
 export interface AdminRegionCountryFilters extends BaseRegionCountryFilters {}
+
+export interface AdminGetRegionParams extends SelectParams {}

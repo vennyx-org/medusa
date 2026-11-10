@@ -15,7 +15,7 @@ import {
   ChangeActionType,
   MedusaError,
   OrderChangeStatus,
-} from "@medusajs/utils"
+} from "@medusajs/framework/utils"
 
 import { useQueryGraphStep } from "../../../common"
 import { previewOrderChangeStep } from "../../steps"
@@ -96,7 +96,7 @@ export const acceptOrderTransferValidationStep = createStep(
 export const acceptOrderTransferWorkflowId = "accept-order-transfer-workflow"
 /**
  * This workflow accepts an order transfer, requested previously by the {@link requestOrderTransferWorkflow}. This workflow is used by the
- * [Accept Order Transfer Store API Route](https://docs.medusajs.com/api/store#orders_postordersidtransferaccept).
+ * [Accept Order Transfer Store API Route](https://docs.medusajs.com/api/store/orders/accept-transfer).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to build a custom flow
  * around accepting an order transfer.

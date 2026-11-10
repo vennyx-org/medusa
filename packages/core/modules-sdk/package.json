@@ -1,6 +1,6 @@
 {
   "name": "@medusajs/modules-sdk",
-  "version": "2.12.5",
+  "version": "2.22.6",
   "description": "SDK for medusa modules",
   "main": "dist/index.js",
   "export": {
@@ -8,21 +8,28 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/medusajs/medusa",
+    "url": "git+https://github.com/medusajs/medusa.git",
     "directory": "packages/core/modules-sdk"
   },
+  "bugs": {
+    "url": "https://github.com/medusajs/medusa/issues"
+  },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.22.0"
   },
   "publishConfig": {
     "access": "public"
   },
   "files": [
     "dist",
+    "AGENTS.md",
     "!dist/**/__tests__",
     "!dist/**/__fixtures__",
     "!dist/**/__mocks__"
   ],
+  "llms": "https://docs.medusajs.com/llms.txt",
+  "llmsFull": "https://docs.medusajs.com/llms-full.txt",
+  "mcpServer": "https://docs.medusajs.com/mcp",
   "author": "Medusa",
   "license": "MIT",
   "scripts": {
@@ -31,11 +38,11 @@
     "watch": "yarn run -T tsc --build --watch"
   },
   "devDependencies": {
-    "@medusajs/types": "2.12.5"
+    "@medusajs/types": "2.22.6"
   },
   "dependencies": {
-    "@medusajs/deps": "2.12.5",
-    "@medusajs/orchestration": "2.12.5",
-    "@medusajs/utils": "2.12.5"
+    "@medusajs/deps": "2.22.6",
+    "@medusajs/query": "2.22.6",
+    "@medusajs/utils": "2.22.6"
   }
 }

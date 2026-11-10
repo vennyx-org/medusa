@@ -1,3 +1,5 @@
+import { Prerequisites } from "docs-ui"
+
 export const metadata = {
   title: `${pageNumber} Data Model Properties`,
 }
@@ -13,6 +15,21 @@ By default, Medusa creates the following properties for every data model:
 - `created_at`: A [dateTime](#dateTime) property that stores when a record of the data model was created.
 - `updated_at`: A [dateTime](#dateTime) property that stores when a record of the data model was updated.
 - `deleted_at`: A [dateTime](#dateTime) property that stores when a record of the data model was deleted. When you soft-delete a record, Medusa sets the `deleted_at` property to the current date.
+
+### Precision of Default Timestamp Properties
+
+The `created_at` and `updated_at` properties are stored in `timestamptz` columns, and their precision depends on how you write the record:
+
+- When you create a record through a module's service or the ORM, Medusa sets the value from a JavaScript `Date`, which has millisecond precision.
+- When you insert a record with raw SQL that omits the column, such as in seed scripts, backfills, or imports, PostgreSQL applies the column's `now()` default, which has microsecond precision.
+
+When you retrieve a record, the database driver returns these properties as JavaScript `Date` objects, which drop any sub-millisecond digits. So, a retrieved value may be earlier than the value stored in the database.
+
+<Note title="Warning" type="warning">
+
+Don't use a retrieved `created_at` or `updated_at` value directly in a cursor for keyset pagination or in a `>` comparison against the database column. If the stored value has microsecond precision, the comparison can match the same record again, causing duplicate results or infinite pagination loops. Instead, select the column as text in raw SQL, such as `created_at::text`, or truncate the column to milliseconds with `date_trunc('milliseconds', created_at)` in the comparison.
+
+</Note>
 
 ---
 
@@ -143,7 +160,7 @@ The `bigNumber` method defines a number property that expects large numbers, suc
 
 <Note title="Tip">
 
-Use this property type when it's important to have high precision for numbers with large decimal places. Alternatively, for less percision, use the [float property](#float).
+Use this property type when it's important to have high precision for numbers with large decimal places. Alternatively, for less precision, use the [float property](#float).
 
 </Note>
 
@@ -161,6 +178,12 @@ const Post = model.define("post", {
 
 export default Post
 ```
+
+<Note>
+
+Medusa stores along the `bigNumber` property a `raw_{property_name}` property that contains its raw value. Learn more in the [Big Number documentation](../big-numbers/page.mdx).
+
+</Note>
 
 ### boolean
 
@@ -187,7 +210,7 @@ The `enum` method defines a property whose value can only be one of the specifie
 
 For example:
 
-export const enumHighlights = [["4", "enum", "Define a `enum` property."]]
+export const enumHighlights = [["4", "enum", "Define an `enum` property."]]
 
 ```ts highlights={enumHighlights}
 import { model } from "@medusajs/framework/utils"
@@ -223,7 +246,9 @@ export default Post
 
 ### json
 
-The `json` method defines a property whose value is stored as a stringified JSON object in the database.
+The `json` method defines a property whose value is stored as a `jsonb` column in the database, supporting any JSON-serializable value.
+
+By default, the property's TypeScript type is `Record<string, unknown>`. Pass a type parameter to use a different shape, such as an array of objects.
 
 For example:
 
@@ -239,6 +264,31 @@ const Post = model.define("post", {
 
 export default Post
 ```
+
+To store an array of typed objects, pass a type argument:
+
+<Note>
+
+The type argument is supported since [Medusa v2.19.0](https://github.com/medusajs/medusa/releases/tag/v2.19.0).
+
+</Note>
+
+```ts
+import { model } from "@medusajs/framework/utils"
+
+const Post = model.define("post", {
+  warnings: model.json<{ code: string; message: string }[]>(),
+  // ...
+})
+
+export default Post
+```
+
+<Note title="Tip">
+
+To store an array of strings, use the [array](#array) property type instead, which stores the value in a `text[]` column.
+
+</Note>
 
 Learn more in the [JSON Properties](../json-properties/page.mdx) chapter.
 
@@ -430,6 +480,31 @@ export default Post
 
 In this example, the `title` property is searchable.
 
+### Searchable Relationship Properties
+
+You can also make relationship properties searchable by adding the `searchable` method to relationship definitions like `hasMany`, `hasOne`, `belongsTo`, or `manyToMany`.
+
+For example:
+
+export const relationshipSearchableHighlights = [
+  ["6", "searchable", "Make the `variants` relationship searchable."]
+]
+
+```ts highlights={relationshipSearchableHighlights}
+import { model } from "@medusajs/framework/utils"
+
+const Product = model.define("product", {
+  variants: model.hasMany(() => ProductVariant, {
+    mappedBy: "product",
+  }).searchable(),
+  // ...
+})
+
+export default Product
+```
+
+When a relationship property is marked as searchable, the related records' searchable text properties can be queried when using the `q` filter.
+
 ### Search Example
 
 If you pass a `q` filter to the `listPosts` method:
@@ -441,3 +516,97 @@ const posts = await blogModuleService.listPosts({
 ```
 
 This retrieves records that include `New Products` in their `title` property.
+
+---
+
+## Computed Property
+
+Use the `computed` method on a property's definition to indicate that it's a computed property.
+
+Medusa doesn't store computed properties in the database. So, it doesn't create a column for them in migrations, and it doesn't set their value when you retrieve records.
+
+For example:
+
+export const computedHighlights = [
+  ["5", "computed", "Define the `calculated_price` property as computed."]
+]
+
+```ts highlights={computedHighlights}
+import { model } from "@medusajs/framework/utils"
+
+const Post = model.define("post", {
+  id: model.id().primaryKey(),
+  calculated_price: model.bigNumber().computed(),
+  // ...
+})
+
+export default Post
+```
+
+In this example, the `calculated_price` property is computed, so the `post` table has no column for it.
+
+You compute and set the property's value in your own code. For example, in a custom method of your module's service, set the property on the records after retrieving them:
+
+```ts title="src/modules/blog/service.ts"
+import { MedusaService } from "@medusajs/framework/utils"
+import Post from "./models/post"
+
+class BlogModuleService extends MedusaService({
+  Post,
+}) {
+  async listPostsWithPrices() {
+    const posts = await this.listPosts()
+
+    return posts.map((post) => ({
+      ...post,
+      calculated_price: 100, // compute the value here
+    }))
+  }
+}
+
+export default BlogModuleService
+```
+
+---
+
+## Make Property Translatable
+
+<Prerequisites
+  items={[
+    {
+      text: "Medusa v2.13.0+",
+      link: "https://github.com/medusajs/medusa/releases/tag/v2.13.0"
+    },
+    {
+      text: "Translation Module Configured",
+      link: "!resources!/commerce-modules/translation#configure-translation-module",
+    },
+  ]}
+/>
+
+Use the `translatable` method on a `text` property to indicate that the property can have different values per locale. This only works if the [Translation Module](!resources!/commerce-modules/translation) is configured in your application.
+
+When a property is marked as translatable, merchants can manage translations for these fields through the [Medusa Admin](!user-guide!/settings/translations).
+
+For example:
+
+export const translatableHighlights = [
+  ["4", "translatable", "Mark the `title` property as translatable."],
+  ["5", "translatable", "Mark the `description` property as translatable."]
+]
+
+```ts highlights={translatableHighlights}
+import { model } from "@medusajs/framework/utils"
+
+const Post = model.define("post", {
+  title: model.text().translatable(),
+  description: model.text().translatable(),
+  // ...
+})
+
+export default Post
+```
+
+In this example, the `title` and `description` properties are translatable. So, admin users can translate the values of these properties into different locales.
+
+Learn more in the [Translate Custom Data Models](!resources!/commerce-modules/translation/custom-data-models) guide.

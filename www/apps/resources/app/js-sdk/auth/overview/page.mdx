@@ -282,7 +282,7 @@ If you're using an API key for authentication, you don't need to log in the user
 
 </Note>
 
-The JS SDK has an `auth.login` method that allows you to login admin users, customers, or any [actor type](../../../commerce-modules/auth/auth-identity-and-actor-types/page.mdx) with any [auth provider](../../../commerce-modules/auth/auth-providers/page.mdx).
+The JS SDK has an `auth.login` method that allows you to log in admin users, customers, or any [actor type](../../../commerce-modules/auth/auth-identity-and-actor-types/page.mdx) with any [auth provider](../../../commerce-modules/auth/auth-providers/page.mdx).
 
 Not only does this method log in the user, but it also stores the JWT token or session cookie for you and automatically includes it in the headers of all requests to the Medusa API. This means you don't have to manually set the authorization header for each request.
 
@@ -350,10 +350,11 @@ sdk.auth.login("manager", "emailpass", {
 
 In this example, you call the `sdk.auth.login` method passing it the actor type (for example, `user`), the provider (`emailpass`), and the credentials.
 
-If the authentication is successful, there are two types of returned data:
+If the authentication is successful, there are three types of returned data:
 
 - An object with a `location` property: This means the authentication requires more actions, which happens when using third-party authentication providers, such as [Google](../../../commerce-modules/auth/auth-providers/google/page.mdx). In that case, you need to redirect the customer to the location to complete their authentication.
     - Refer to the [Third-Party Login in Storefront](../../../storefront-development/customers/third-party-login/page.mdx) guide for an example implementation.
+- An object with `verification_required: true`: This means the authentication requires email verification before a token can be issued. The object includes verification details like expiry time. Verification is only required if the `require_verification` option is enabled in the [Emailpass Auth Module Provider](../../../commerce-modules/auth/auth-providers/emailpass/page.mdx).
 - A string: This means the authentication was successful, and the user is logged in. The JS SDK automatically stores the JWT token or session cookie for you and includes it in the headers of all requests to the Medusa API. All requests you send afterwards will be authenticated with the stored token or session cookie.
 
 If the authentication fails, the `catch` block will be executed, and you can handle the error accordingly.
@@ -373,6 +374,33 @@ sdk.client.setToken("your-jwt-token")
 ```
 
 You can also clear the token manually as explained in the [Manually Clearing JWT Token](#manually-clearing-jwt-token) section.
+
+---
+
+## List Available Auth Providers
+
+The JS SDK provides a `sdk.auth.listProviders` method to retrieve the auth providers configured for a given actor type. This is useful for building a dynamic login UI that renders the correct options (for example, an email/password form or "Continue with …" redirect buttons) based on the available providers.
+
+For example:
+
+```ts
+const { providers } = await sdk.auth.listProviders("user")
+
+for (const provider of providers) {
+  if (provider.flow === "redirect") {
+    // render a "Continue with {provider.display_name}" button
+  } else {
+    // render an email/password form
+  }
+}
+```
+
+Each provider object contains:
+
+- `id`: The registered instance ID used in authentication routes (for example, `okta`).
+- `identifier`: The provider's static type (for example, `oidc` or `emailpass`).
+- `display_name`: The name to show in the UI.
+- `flow`: Either `"credentials"` (the user submits credentials directly) or `"redirect"` (the user is redirected to the provider).
 
 ---
 

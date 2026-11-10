@@ -2,11 +2,11 @@ import {
   removeUserAccountWorkflow,
   updateUsersWorkflow,
 } from "@medusajs/core-flows"
-import { HttpTypes, UpdateUserDTO } from "@medusajs/framework/types"
 import {
   AuthenticatedMedusaRequest,
   MedusaResponse,
 } from "@medusajs/framework/http"
+import { HttpTypes, UpdateUserDTO } from "@medusajs/framework/types"
 
 import {
   ContainerRegistrationKeys,
@@ -88,7 +88,12 @@ export const DELETE = async (
   const workflow = removeUserAccountWorkflow(req.scope)
 
   await workflow.run({
-    input: { userId: id },
+    input: {
+      userId: id,
+      granting_actor_id: req.auth_context.actor_id,
+      granting_actor: req.auth_context.actor_type,
+      granting_scope: req.rbac_context?.scope,
+    },
   })
 
   res.status(200).json({
@@ -97,5 +102,3 @@ export const DELETE = async (
     deleted: true,
   })
 }
-
-export const AUTHENTICATE = false

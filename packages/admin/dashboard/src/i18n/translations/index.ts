@@ -2,9 +2,11 @@ import bg from "./bg.json"
 import de from "./de.json"
 import el from "./el.json"
 import en from "./en.json"
+import enGB from "./enGB.json"
 import es from "./es.json"
 import fr from "./fr.json"
 import he from "./he.json"
+import hr from "./hr.json"
 import hu from "./hu.json"
 import it from "./it.json"
 import ja from "./ja.json"
@@ -20,6 +22,7 @@ import mn from "./mn.json"
 import ar from "./ar.json"
 import zhCN from "./zhCN.json"
 import fa from "./fa.json"
+import fi from "./fi.json"
 import cs from "./cs.json"
 import ru from "./ru.json"
 import lt from "./lt.json"
@@ -29,6 +32,8 @@ import nl from "./nl.json"
 import bs from "./bs.json"
 import id from "./id.json"
 import zhTW from "./zhTW.json"
+import sv from "./sv.json"
+
 export default {
   bs: {
     translation: bs,
@@ -45,6 +50,9 @@ export default {
   en: {
     translation: en,
   },
+  enGB: {
+    translation: enGB,
+  },
   es: {
     translation: es,
   },
@@ -53,6 +61,9 @@ export default {
   },
   he: {
     translation: he,
+  },
+  hr: {
+    translation: hr,
   },
   hu: {
     translation: hu,
@@ -99,6 +110,9 @@ export default {
   fa: {
     translation: fa,
   },
+  fi: {
+    translation: fi,
+  },
   cs: {
     translation: cs,
   },
@@ -122,5 +136,8 @@ export default {
   },
   zhTW: {
     translation: zhTW,
+  },
+  sv: {
+    translation: sv,
   },
 }

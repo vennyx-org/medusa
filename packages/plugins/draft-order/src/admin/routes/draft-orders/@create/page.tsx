@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
+import { usePermissions } from "@medusajs/dashboard/hooks"
 import { HttpTypes } from "@medusajs/types"
 import {
   Button,
@@ -23,6 +24,7 @@ import { CountrySelect } from "../../../components/inputs/country-select"
 import { RouteFocusModal, useRouteModal } from "../../../components/modals"
 import { useCreateDraftOrder } from "../../../hooks/api/draft-orders"
 import { useComboboxData } from "../../../hooks/common/use-combobox-data"
+import { CREATE_DRAFT_ORDER_PERMISSIONS } from "../../../lib/permissions"
 import { sdk } from "../../../lib/queries/sdk"
 import { addressSchema } from "../../../lib/schemas/address"
 import { getFormattedAddress } from "../../../lib/utils/address-utils"
@@ -38,6 +40,8 @@ const Create = () => {
 
 const CreateForm = () => {
   const { handleSuccess } = useRouteModal()
+  const { hasPermission } = usePermissions()
+  const canReadCustomers = hasPermission("customer:read")
 
   const form = useForm<z.infer<typeof schema>>({
     defaultValues: {
@@ -82,35 +86,30 @@ const CreateForm = () => {
 
   const { mutateAsync } = useCreateDraftOrder()
 
-  const onSubmit = form.handleSubmit(
-    async (data) => {
-      const billingAddress = data.same_as_shipping
-        ? data.shipping_address
-        : data.billing_address
+  const onSubmit = form.handleSubmit(async (data) => {
+    const billingAddress = data.same_as_shipping
+      ? data.shipping_address
+      : data.billing_address
 
-      await mutateAsync(
-        {
-          region_id: data.region_id,
-          sales_channel_id: data.sales_channel_id,
-          customer_id: data.customer_id || undefined,
-          email: !data.customer_id ? data.email : undefined,
-          shipping_address: data.shipping_address,
-          billing_address: billingAddress!,
+    await mutateAsync(
+      {
+        region_id: data.region_id,
+        sales_channel_id: data.sales_channel_id,
+        customer_id: data.customer_id || undefined,
+        email: !data.customer_id ? data.email || undefined : undefined,
+        shipping_address: data.shipping_address,
+        billing_address: billingAddress!,
+      },
+      {
+        onSuccess: (response) => {
+          handleSuccess(`/draft-orders/${response.draft_order.id}`)
         },
-        {
-          onSuccess: (response) => {
-            handleSuccess(`/draft-orders/${response.draft_order.id}`)
-          },
-          onError: (error) => {
-            toast.error(error.message)
-          },
-        }
-      )
-    },
-    (error) => {
-      toast.error(JSON.stringify(error, null, 2))
-    }
-  )
+        onError: (error) => {
+          toast.error(error.message)
+        },
+      }
+    )
+  })
 
   if (regions.isError) {
     throw regions.error
@@ -212,8 +211,15 @@ const CreateForm = () => {
                 />
               </div>
               <Divider variant="dashed" />
-              <CustomerField control={form.control} setValue={form.setValue} />
-              <Divider variant="dashed" />
+              {canReadCustomers && (
+                <>
+                  <CustomerField
+                    control={form.control}
+                    setValue={form.setValue}
+                  />
+                  <Divider variant="dashed" />
+                </>
+              )}
               <EmailField control={form.control} />
               <Divider variant="dashed" />
               <AddressField
@@ -301,16 +307,20 @@ const CustomerField = ({ control, setValue }: CustomerFieldProps) => {
     },
     queryKey: ["customers"],
     getOptions: (data) => {
-      return data.customers.map((customer) => {
-        const name = [customer.first_name, customer.last_name]
-          .filter(Boolean)
-          .join(" ")
+      return data.customers
+        .filter(
+          (customer): customer is HttpTypes.AdminCustomer => customer !== null
+        )
+        .map((customer) => {
+          const name = [customer.first_name, customer.last_name]
+            .filter(Boolean)
+            .join(" ")
 
-        return {
-          label: name ? `${name} (${customer.email})` : customer.email,
-          value: customer.id,
-        }
-      })
+          return {
+            label: name ? `${name} (${customer.email})` : customer.email,
+            value: customer.id,
+          }
+        })
     },
   })
 
@@ -352,25 +362,28 @@ const CustomerField = ({ control, setValue }: CustomerFieldProps) => {
                 <Form.Label optional>Customer</Form.Label>
                 <Form.Hint>Choose an existing customer</Form.Hint>
               </div>
-              <Form.Control>
-                {customerId ? (
-                  <CustomerCard customerId={customerId} onRemove={onRemove} />
-                ) : (
-                  <Combobox
-                    options={customers.options}
-                    fetchNextPage={customers.fetchNextPage}
-                    isFetchingNextPage={customers.isFetchingNextPage}
-                    searchValue={customers.searchValue}
-                    onSearchValueChange={customers.onSearchValueChange}
-                    placeholder="Select customer"
-                    onChange={(value) => {
-                      onPropagateEmail(value)
-                      onChange(value)
-                    }}
-                    {...field}
-                  />
-                )}
-              </Form.Control>
+              <div>
+                <Form.Control>
+                  {customerId ? (
+                    <CustomerCard customerId={customerId} onRemove={onRemove} />
+                  ) : (
+                    <Combobox
+                      options={customers.options}
+                      fetchNextPage={customers.fetchNextPage}
+                      isFetchingNextPage={customers.isFetchingNextPage}
+                      searchValue={customers.searchValue}
+                      onSearchValueChange={customers.onSearchValueChange}
+                      placeholder="Select customer"
+                      onChange={(value) => {
+                        onPropagateEmail(value)
+                        onChange(value)
+                      }}
+                      {...field}
+                    />
+                  )}
+                </Form.Control>
+                <Form.ErrorMessage />
+              </div>
             </div>
           </Form.Item>
         )
@@ -389,6 +402,8 @@ const AddressField = ({ type, control, setValue }: AddressFieldProps) => {
   const customerId = useWatch({ control, name: "customer_id" })
   const addressId = useWatch({ control, name: `${type}_id` })
   const sameAsShipping = useWatch({ control, name: "same_as_shipping" })
+  const { hasPermission } = usePermissions()
+  const canReadAddresses = hasPermission("customer_address:read")
 
   const { customer } = useCustomer(
     customerId!,
@@ -425,7 +440,7 @@ const AddressField = ({ type, control, setValue }: AddressFieldProps) => {
         }
       })
     },
-    enabled: !!customerId,
+    enabled: !!customerId && canReadAddresses,
   })
 
   const onSelectAddress = async (addressId?: string) => {
@@ -505,7 +520,7 @@ const AddressField = ({ type, control, setValue }: AddressFieldProps) => {
         )}
         {showFields && (
           <div className="flex flex-col gap-y-3">
-            {customerId && (
+            {customerId && canReadAddresses && (
               <div className="flex flex-col gap-y-3">
                 <Form.Field
                   control={control}
@@ -740,7 +755,10 @@ const schema = z
     region_id: z.string().min(1),
     sales_channel_id: z.string().min(1),
     customer_id: z.string().optional(),
-    email: z.string().email().optional(),
+    // The field defaults to an empty string, so we allow it here and let the
+    // refinement below surface the "customer or email is required" message
+    // instead of a confusing "Invalid email address".
+    email: z.union([z.literal(""), z.string().email()]).optional(),
     shipping_address_id: z.string().optional(),
     shipping_address: addressSchema,
     billing_address_id: z.string().optional(),
@@ -752,7 +770,7 @@ const schema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Either a customer or email must be provided",
-        path: ["customer_id", "email"],
+        path: ["email"],
       })
     }
 
@@ -774,5 +792,9 @@ const schema = z
       }
     }
   })
+
+export const handle = {
+  permissions: CREATE_DRAFT_ORDER_PERMISSIONS,
+}
 
 export default Create

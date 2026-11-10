@@ -2,6 +2,7 @@ import { setTelemetryEnabled } from "@medusajs/telemetry"
 import { sync as existsSync } from "fs-exists-cached"
 import path from "path"
 import resolveCwd from "resolve-cwd"
+import { getCodemod, listCodemods } from "./codemods/index"
 import { newStarter } from "./commands/new"
 import { didYouMean } from "./did-you-mean"
 import reporter from "./reporter"
@@ -13,9 +14,46 @@ const handlerP =
   (...args) => {
     Promise.resolve(fn(...args)).then(
       () => process.exit(0),
-      (err) => console.log(err)
+      (err) => {
+        console.error(err)
+        process.exit(1)
+      }
     )
   }
+
+/**
+ * Whether `@medusajs/eslint-plugin` is installed in the consumer project.
+ * Linting is enabled by default on `build` and `develop` only when this is true.
+ */
+function isMedusaEslintPluginInstalled(cwd: string): boolean {
+  try {
+    require.resolve("@medusajs/eslint-plugin", { paths: [cwd] })
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Adds the shared `--lint` / `--fix` options to a command builder. Used by both
+ * `build` and `develop`; the only difference is the `commandLabel` woven into
+ * the describe text.
+ */
+function addLintOptions(builder, commandLabel: string, directory: string) {
+  const lintByDefault = isMedusaEslintPluginInstalled(directory)
+
+  return builder
+    .option("lint", {
+      type: "boolean",
+      describe: `Run the Medusa linter before ${commandLabel}. Enabled by default when @medusajs/eslint-plugin is installed. Use --no-lint to skip linting.`,
+      default: lintByDefault,
+    })
+    .option("fix", {
+      type: "boolean",
+      default: false,
+      describe: `Auto-fix lint issues where possible before ${commandLabel}.`,
+    })
+}
 
 function buildLocalCommands(cli, isLocalProject) {
   const defaultPort = "9000"
@@ -25,15 +63,17 @@ function buildLocalCommands(cli, isLocalProject) {
   const useYarn = existsSync(path.join(directory, `yarn.lock`))
 
   if (isLocalProject) {
-    projectInfo["sitePackageJson"] = require(path.join(
-      directory,
-      `package.json`
-    ))
+    projectInfo["sitePackageJson"] = require(
+      path.join(directory, `package.json`)
+    )
   }
 
   function resolveLocalCommand(command) {
-    if (!isLocalProject) {
-      cli.showHelp((s: string) => console.log(s))
+    if (!isLocalProject && command !== "new") {
+      console.error(
+        `The "${command}" command must be run inside a Medusa project. Make sure you are in the root directory of a Medusa project and try again.`
+      )
+      process.exit(1)
     }
 
     try {
@@ -134,6 +174,10 @@ function buildLocalCommands(cli, isLocalProject) {
           type: "boolean",
           describe: "Do not sync links",
         })
+        builder.option("skip-search", {
+          type: "boolean",
+          describe: "Do not create or alter search indexes",
+        })
         builder.option("execute-all-links", {
           type: "boolean",
           describe:
@@ -143,6 +187,16 @@ function buildLocalCommands(cli, isLocalProject) {
           type: "boolean",
           describe:
             "Skip prompts and execute only safe actions from sync links",
+        })
+        builder.option("execute-all-search", {
+          type: "boolean",
+          describe:
+            "Skip prompts and execute all (including unsafe) actions on search indexes",
+        })
+        builder.option("execute-safe-search", {
+          type: "boolean",
+          describe:
+            "Skip prompts and execute only safe actions on search indexes",
         })
       },
       handler: handlerP(
@@ -186,6 +240,10 @@ function buildLocalCommands(cli, isLocalProject) {
           type: "boolean",
           describe: "Do not sync links",
         })
+        builder.option("skip-search", {
+          type: "boolean",
+          describe: "Do not create or alter search indexes",
+        })
         builder.option("execute-all-links", {
           type: "boolean",
           describe:
@@ -195,6 +253,16 @@ function buildLocalCommands(cli, isLocalProject) {
           type: "boolean",
           describe:
             "Skip prompts and execute only safe actions from sync links",
+        })
+        builder.option("execute-all-search", {
+          type: "boolean",
+          describe:
+            "Skip prompts and execute all (including unsafe) actions on search indexes",
+        })
+        builder.option("execute-safe-search", {
+          type: "boolean",
+          describe:
+            "Skip prompts and execute only safe actions on search indexes",
         })
         builder.option("concurrency", {
           type: "number",
@@ -219,6 +287,28 @@ function buildLocalCommands(cli, isLocalProject) {
       desc: "Run all migration scripts",
       handler: handlerP(
         getCommandHandler("db/run-scripts", (args, cmd) => {
+          process.env.NODE_ENV = process.env.NODE_ENV || `development`
+          return cmd(args)
+        })
+      ),
+    })
+    .command({
+      command: "db:migrate:search",
+      desc: "Create and alter the search indexes declared under search/",
+      builder: (builder) => {
+        builder.option("execute-all-search", {
+          type: "boolean",
+          describe:
+            "Skip prompts and execute all (including unsafe) actions on search indexes",
+        })
+        builder.option("execute-safe-search", {
+          type: "boolean",
+          describe:
+            "Skip prompts and execute only safe actions on search indexes",
+        })
+      },
+      handler: handlerP(
+        getCommandHandler("db/migrate-search", (args, cmd) => {
           process.env.NODE_ENV = process.env.NODE_ENV || `development`
           return cmd(args)
         })
@@ -296,7 +386,7 @@ function buildLocalCommands(cli, isLocalProject) {
       command: "plugin:build",
       desc: "Build plugin source for publishing to a package registry",
       handler: handlerP(
-        getCommandHandler("plugin/build", (args, cmd) => {
+        getCommandHandler("plugin/build", async (args, cmd) => {
           process.env.NODE_ENV = process.env.NODE_ENV || `development`
           cmd(args)
           return new Promise((resolve) => {})
@@ -307,7 +397,7 @@ function buildLocalCommands(cli, isLocalProject) {
       command: "plugin:develop",
       desc: "Start plugin development process in watch mode. Changes will be re-published to the local packages registry",
       handler: handlerP(
-        getCommandHandler("plugin/develop", (args, cmd) => {
+        getCommandHandler("plugin/develop", async (args, cmd) => {
           process.env.NODE_ENV = process.env.NODE_ENV || `development`
           cmd(args)
           return new Promise(() => {})
@@ -318,7 +408,7 @@ function buildLocalCommands(cli, isLocalProject) {
       command: "plugin:publish",
       desc: "Publish the plugin to the local packages registry",
       handler: handlerP(
-        getCommandHandler("plugin/publish", (args, cmd) => {
+        getCommandHandler("plugin/publish", async (args, cmd) => {
           process.env.NODE_ENV = process.env.NODE_ENV || `development`
           cmd(args)
           return new Promise(() => {})
@@ -336,7 +426,7 @@ function buildLocalCommands(cli, isLocalProject) {
         },
       },
       handler: handlerP(
-        getCommandHandler("plugin/add", (args, cmd) => {
+        getCommandHandler("plugin/add", async (args, cmd) => {
           process.env.NODE_ENV = process.env.NODE_ENV || `development`
           cmd(args)
           return new Promise(() => {})
@@ -366,33 +456,93 @@ function buildLocalCommands(cli, isLocalProject) {
       }),
     })
     .command({
+      command: `codemod <codemod-name>`,
+      desc: `Run automated code transformations`,
+      builder: (yargs) =>
+        yargs
+          .positional("codemod-name", {
+            type: "string",
+            describe: "Name of the codemod to run",
+            demandOption: true,
+          })
+          .option(`dry-run`, {
+            type: `boolean`,
+            description: `Preview changes without modifying files`,
+            default: false,
+          }),
+      handler: handlerP(async ({ codemodName, dryRun }) => {
+        const codemod = getCodemod(codemodName)
+
+        if (!codemod) {
+          const available = listCodemods()
+          reporter.error(`Unknown codemod: ${codemodName}`)
+          reporter.info(
+            `\nAvailable codemods:\n${available
+              .map((n) => `  - ${n}`)
+              .join("\n")}`
+          )
+          process.exit(1)
+        }
+
+        reporter.info(`Running codemod: ${codemod.name}`)
+        reporter.info(codemod.description)
+
+        if (dryRun) {
+          reporter.info(`\n  DRY RUN MODE - No files will be modified\n`)
+        }
+
+        const result = await codemod.run({ dryRun })
+
+        reporter.info(`\n Summary:`)
+        reporter.info(`   Files scanned: ${result.filesScanned}`)
+        reporter.info(`   Files modified: ${result.filesModified}`)
+        reporter.info(`   Errors: ${result.errors}`)
+
+        if (dryRun && result.filesModified > 0) {
+          reporter.info(`\n Run without --dry-run to apply changes`)
+        } else if (result.filesModified > 0) {
+          reporter.info(`\n Codemod completed successfully!`)
+          reporter.info(`\n Next steps:`)
+          reporter.info(`   1. Review changes: git diff`)
+          reporter.info(`   2. Run tests to verify`)
+          reporter.info(`   3. Commit if satisfied`)
+        } else {
+          reporter.info(`\n No modifications needed`)
+        }
+      }),
+    })
+    .command({
       command: `develop`,
       desc: `Start development server. Watches file and rebuilds when something changes`,
       builder: (_) =>
-        _.option("types", {
-          type: "boolean",
-          default: true,
-          describe:
-            "Generate automated types for modules inside the .medusa directory",
-        })
-          .option(`H`, {
-            alias: `host`,
-            type: `string`,
-            default: process.env.HOST,
-            describe: process.env.HOST
-              ? `Set host. Defaults to ${process.env.HOST} (set by env.HOST)`
-              : "",
+        addLintOptions(
+          _.option("types", {
+            type: "boolean",
+            default: true,
+            describe:
+              "Generate automated types for modules inside the .medusa directory",
           })
-          .option(`p`, {
-            alias: `port`,
-            type: `string`,
-            default: process.env.PORT || defaultPort,
-            describe: process.env.PORT
-              ? `Set port. Defaults to ${process.env.PORT} (set by env.PORT) (otherwise defaults ${defaultPort})`
-              : `Set port. Defaults to ${defaultPort}`,
-          }),
+            .option(`H`, {
+              alias: `host`,
+              type: `string`,
+              default: process.env.HOST,
+              describe: process.env.HOST
+                ? `Set host. Defaults to ${process.env.HOST} (set by env.HOST)`
+                : "",
+            })
+            .option(`p`, {
+              alias: `port`,
+              type: `string`,
+              default: process.env.PORT || defaultPort,
+              describe: process.env.PORT
+                ? `Set port. Defaults to ${process.env.PORT} (set by env.PORT) (otherwise defaults ${defaultPort})`
+                : `Set port. Defaults to ${defaultPort}`,
+            }),
+          "starting the dev server",
+          directory
+        ),
       handler: handlerP(
-        getCommandHandler(`develop`, (args, cmd) => {
+        getCommandHandler(`develop`, async (args, cmd) => {
           process.env.NODE_ENV = process.env.NODE_ENV || `development`
 
           cmd(args)
@@ -447,7 +597,7 @@ function buildLocalCommands(cli, isLocalProject) {
               "Number of server processes in cluster mode or a percentage of cluster size (e.g., 25%).",
           }),
       handler: handlerP(
-        getCommandHandler(`start`, (args, cmd) => {
+        getCommandHandler(`start`, async (args, cmd) => {
           process.env.NODE_ENV = process.env.NODE_ENV || `production`
           cmd(args)
           // Return an empty promise to prevent handlerP from exiting early.
@@ -461,18 +611,53 @@ function buildLocalCommands(cli, isLocalProject) {
       command: "build",
       desc: "Build your project.",
       builder: (_) =>
-        _.option("admin-only", {
-          default: false,
+        addLintOptions(
+          _.option("admin-only", {
+            default: false,
+            type: "boolean",
+            describe:
+              "Only build the admin to serve it separately (outDir .medusa/admin)",
+          }),
+          "building",
+          directory
+        ).option("quiet", {
           type: "boolean",
-          describe:
-            "Only build the admin to serve it separately (outDir .medusa/admin)",
+          default: false,
+          describe: "Report lint errors only, suppressing warnings.",
         }),
       handler: handlerP(
-        getCommandHandler(`build`, (args, cmd) => {
+        getCommandHandler(`build`, async (args, cmd) => {
           process.env.NODE_ENV = process.env.NODE_ENV || `development`
           cmd(args)
 
           return new Promise((resolve) => {})
+        })
+      ),
+    })
+    .command({
+      command: "lint [paths...]",
+      desc: "Lint your project using its ESLint configuration.",
+      builder: (_) =>
+        _.positional("paths", {
+          type: "string",
+          array: true,
+          describe:
+            "Files or directories to lint. Defaults to the whole project.",
+        })
+          .option("fix", {
+            type: "boolean",
+            default: false,
+            describe: "Auto-fix lint issues where possible.",
+          })
+          .option("quiet", {
+            type: "boolean",
+            default: false,
+            describe: "Report lint errors only, suppressing warnings.",
+          }),
+      handler: handlerP(
+        getCommandHandler(`lint`, async (args, cmd) => {
+          process.env.NODE_ENV = process.env.NODE_ENV || `development`
+          return cmd(args)
         })
       ),
     })
@@ -501,7 +686,7 @@ function buildLocalCommands(cli, isLocalProject) {
             default: false,
           }),
       handler: handlerP(
-        getCommandHandler(`user`, (args, cmd) => {
+        getCommandHandler(`user`, async (args, cmd) => {
           cmd(args)
           // Return an empty promise to prevent handlerP from exiting early.
           // The development server shouldn't ever exit until the user directly
@@ -514,11 +699,26 @@ function buildLocalCommands(cli, isLocalProject) {
       command: `exec [file] [args..]`,
       desc: `Run a function defined in a file.`,
       handler: handlerP(
-        getCommandHandler(`exec`, (args, cmd) => {
+        getCommandHandler(`exec`, async (args, cmd) => {
           cmd(args)
           // Return an empty promise to prevent handlerP from exiting early.
           // The development server shouldn't ever exit until the user directly
           // kills it so this is fine.
+          return new Promise((resolve) => {})
+        })
+      ),
+    })
+    .command({
+      command: `mcloud [args..]`,
+      desc: `Run mcloud CLI commands through Medusa CLI.`,
+      builder: (builder) =>
+        builder.parserConfiguration({
+          "unknown-options-as-args": true,
+          "halt-at-non-option": false,
+        }),
+      handler: handlerP(
+        getCommandHandler(`mcloud`, async (args, cmd) => {
+          cmd(args)
           return new Promise((resolve) => {})
         })
       ),
@@ -529,12 +729,17 @@ function isLocalMedusaProject() {
   let inMedusaProject = false
 
   try {
-    const { dependencies, devDependencies } = require(path.resolve(
-      `./package.json`
-    ))
+    const { dependencies, devDependencies } = require(
+      path.resolve(`./package.json`)
+    )
+    // Draft order plugin can't have @medusajs/medusa as dependency,
+    // so we also check for @medusajs/cli
     inMedusaProject = !!(
-      (dependencies && dependencies["@medusajs/medusa"]) ||
-      (devDependencies && devDependencies["@medusajs/medusa"])
+      (dependencies &&
+        (dependencies["@medusajs/medusa"] || dependencies["@medusajs/cli"])) ||
+      (devDependencies &&
+        (devDependencies["@medusajs/medusa"] ||
+          devDependencies["@medusajs/cli"]))
     )
   } catch (err) {
     // ignore
@@ -549,12 +754,14 @@ function getVersionInfo() {
   if (isMedusaProject) {
     let medusaVersion = ""
     try {
-      medusaVersion = require(path.join(
-        process.cwd(),
-        `node_modules`,
-        `@medusajs/medusa`,
-        `package.json`
-      )).version
+      medusaVersion = require(
+        path.join(
+          process.cwd(),
+          `node_modules`,
+          `@medusajs/medusa`,
+          `package.json`
+        )
+      ).version
     } catch (e) {
       /* noop */
     }

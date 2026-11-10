@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { program } from "commander"
+import { Option, program } from "commander"
 import create from "./commands/create.js"
 
 program
@@ -34,13 +34,31 @@ program
   )
   .option(
     "--with-nextjs-starter",
-    "Install the Next.js starter along with the Medusa backend",
+    "Install the storefront along with the Medusa backend",
     false
   )
   .option(
     "--verbose",
     "Show all logs of underlying commands. Useful for debugging.",
     false
+  )
+  .addOption(
+    new Option("--use-npm", "Use npm as the package manager").conflicts([
+      "usePnpm",
+      "useYarn",
+    ])
+  )
+  .addOption(
+    new Option("--use-yarn", "Use yarn as the package manager").conflicts([
+      "useNpm",
+      "usePnpm",
+    ])
+  )
+  .addOption(
+    new Option("--use-pnpm", "Use pnpm as the package manager").conflicts([
+      "useNpm",
+      "useYarn",
+    ])
   )
   .parse()
 

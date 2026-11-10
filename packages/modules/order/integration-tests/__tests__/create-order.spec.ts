@@ -1,6 +1,9 @@
 import { CreateOrderDTO, IOrderModuleService } from "@medusajs/framework/types"
 import { Modules, promiseAll } from "@medusajs/framework/utils"
-import { moduleIntegrationTestRunner } from "@medusajs/test-utils"
+import {
+  moduleIntegrationTestRunner,
+  normalizeBigNumbers,
+} from "@medusajs/test-utils"
 
 jest.setTimeout(100000)
 
@@ -202,7 +205,7 @@ moduleIntegrationTestRunner<IOrderModuleService>({
       it("should create an order, shipping method and items. Including taxes and adjustments associated with them", async function () {
         const createdOrder = await service.createOrders(input)
 
-        expect(createdOrder).toEqual(expectation)
+        expect(normalizeBigNumbers(createdOrder)).toEqual(expectation)
       })
 
       it("should create an order, shipping method and items. Including taxes and adjustments associated with them and add new transactions", async function () {
@@ -213,7 +216,7 @@ moduleIntegrationTestRunner<IOrderModuleService>({
         })
         const created = await service.createOrders(inpCopy)
 
-        expect(created.summary).toEqual(
+        expect(normalizeBigNumbers(created.summary)).toEqual(
           expect.objectContaining({
             transaction_total: 58.9,
             pending_difference: 0,
@@ -453,6 +456,41 @@ moduleIntegrationTestRunner<IOrderModuleService>({
         expect(serializedOrder).toEqual(expectation)
       })
 
+      it("should return the item quantity when only explicit item fields are selected", async function () {
+        const createdOrder = await service.createOrders(input)
+
+        const expectedItems = expect.arrayContaining([
+          expect.objectContaining({ title: "Item 1", quantity: 1 }),
+          expect.objectContaining({ title: "Item 2", quantity: 2 }),
+          expect.objectContaining({ title: "Item 3", quantity: 1 }),
+        ])
+
+        const retrieved = await service.retrieveOrder(createdOrder.id, {
+          select: ["id", "items.id", "items.title", "items.quantity"],
+          relations: ["items"],
+        })
+        expect(normalizeBigNumbers(retrieved).items).toEqual(expectedItems)
+
+        const [listed] = await service.listOrders(
+          { id: createdOrder.id },
+          {
+            select: ["id", "items.id", "items.title", "items.quantity"],
+            relations: ["items"],
+          }
+        )
+        expect(normalizeBigNumbers(listed).items).toEqual(expectedItems)
+
+        const [[paginated]] = await service.listAndCountOrders(
+          { id: createdOrder.id },
+          {
+            select: ["id", "items.id", "items.title", "items.quantity"],
+            relations: ["items"],
+            take: 10,
+          }
+        )
+        expect(normalizeBigNumbers(paginated).items).toEqual(expectedItems)
+      })
+
       it("should return order transactions", async function () {
         const createdOrder = await service.createOrders(input)
         const getOrder = await service.retrieveOrder(createdOrder.id, {
@@ -537,6 +575,21 @@ moduleIntegrationTestRunner<IOrderModuleService>({
           }
         )
         expect(orders4.length).toEqual(0)
+      })
+
+      it("should list orders with totals without selecting shipping method fields", async function () {
+        const createdOrder = await service.createOrders(input)
+
+        const [orders, count] = await service.listAndCountOrders(
+          { id: createdOrder.id },
+          {
+            select: ["id", "total"],
+          }
+        )
+
+        expect(count).toEqual(1)
+        expect(orders[0].id).toEqual(createdOrder.id)
+        expect(Number(orders[0].total)).toEqual(58.9)
       })
     })
   },

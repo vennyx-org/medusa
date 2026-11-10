@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 import {
   applyAndAndOrOperators,
   booleanString,
@@ -56,7 +56,7 @@ export const CreateCustomer = z.object({
   first_name: z.string().nullish(),
   last_name: z.string().nullish(),
   phone: z.string().nullish(),
-  metadata: z.record(z.unknown()).nullish(),
+  metadata: z.record(z.string(), z.unknown()).nullish(),
 })
 export const AdminCreateCustomer = WithAdditionalData(CreateCustomer)
 
@@ -66,7 +66,7 @@ export const UpdateCustomer = z.object({
   first_name: z.string().nullish(),
   last_name: z.string().nullish(),
   phone: z.string().nullish(),
-  metadata: z.record(z.unknown()).nullish(),
+  metadata: z.record(z.string(), z.unknown()).nullish(),
 })
 export const AdminUpdateCustomer = WithAdditionalData(UpdateCustomer)
 
@@ -84,7 +84,7 @@ export const CreateCustomerAddress = z.object({
   province: z.string().nullish(),
   postal_code: z.string().nullish(),
   phone: z.string().nullish(),
-  metadata: z.record(z.unknown()).nullish(),
+  metadata: z.record(z.string(), z.unknown()).nullish(),
 })
 export const AdminCreateCustomerAddress = WithAdditionalData(
   CreateCustomerAddress
@@ -108,7 +108,13 @@ export const AdminCustomerAddressesParams = createFindParams({
   })
 )
 
+export const AdminExportCustomer = z.object({
+  format: z.enum(["csv", "json"]).optional(),
+  batch_size: z.union([z.number(), z.string()]).optional(),
+})
+
 export type AdminCustomerParamsType = z.infer<typeof AdminCustomerParams>
+export type AdminExportCustomerType = z.infer<typeof AdminExportCustomer>
 export type AdminCustomersParamsType = z.infer<typeof AdminCustomersParams>
 export type AdminCreateCustomerType = z.infer<typeof CreateCustomer>
 export type AdminUpdateCustomerType = z.infer<typeof UpdateCustomer>

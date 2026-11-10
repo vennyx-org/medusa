@@ -1,3 +1,5 @@
+import Stripe from "stripe"
+
 export interface StripeOptions {
   /**
    * The API key for the Stripe account
@@ -8,6 +10,15 @@ export interface StripeOptions {
    */
   webhookSecret: string
   /**
+   * The Stripe API version to send requests with (default is `2024-04-10`).
+   * Versions before `2026-07-29` receive `payment_method_types`, later ones
+   * `allowed_payment_method_types`.
+   *
+   * @see https://docs.stripe.com/upgrades
+   * @example "2026-09-30.endive"
+   */
+  apiVersion?: string
+  /**
    * Use this flag to capture payment immediately (default is false)
    */
   capture?: boolean
@@ -16,6 +27,13 @@ export interface StripeOptions {
    */
   automaticPaymentMethods?: boolean
   /**
+   * Set `payment_method_configuration` to a PMC ID to apply a Dashboard-managed set of
+   * payment methods to the intent
+   *
+   * @see https://docs.stripe.com/payments/payment-method-configurations
+   */
+  paymentMethodConfiguration?: string
+  /**
    * Set a default description on the intent if the context does not provide one
    */
   paymentDescription?: string
@@ -23,6 +41,11 @@ export interface StripeOptions {
    * Set the number of days before an OXXO payment expires
    */
   oxxoExpiresDays?: number
+  /**
+   * List of asynchronous payment method types. If not provided, all payment method types will be considered synchronous.
+   * Asynchronous payment methods are allowed to generate an order when the Stripe status is `pending`.
+   */
+  asyncPaymentMethodTypes?: Stripe.PaymentMethod.Type[]
 }
 
 export interface PaymentIntentOptions {
@@ -38,6 +61,7 @@ export interface PaymentIntentOptions {
 
 export const ErrorCodes = {
   PAYMENT_INTENT_UNEXPECTED_STATE: "payment_intent_unexpected_state",
+  CHARGE_ALREADY_REFUNDED: "charge_already_refunded",
 }
 
 export const ErrorIntentStatus = {

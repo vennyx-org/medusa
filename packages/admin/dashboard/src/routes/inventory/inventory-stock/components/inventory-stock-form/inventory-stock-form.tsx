@@ -32,7 +32,6 @@ export const InventoryStockForm = ({
   const { setCloseOnEscape, handleSuccess } = useRouteModal()
 
   const initialValues = useRef(getDefaultValues(items, locations))
-  console.log("initialValues", initialValues.current)
 
   const form = useForm<InventoryStockSchema>({
     defaultValues: getDefaultValues(items, locations),
@@ -61,7 +60,7 @@ export const InventoryStockForm = ({
               ?.locations?.[location_id]?.checked
 
           if (wasChecked && !level.checked) {
-            payload.delete.push(level.id)
+            payload.delete?.push(level.id)
           } else {
             const newQuantity =
               level.quantity !== "" ? castNumber(level.quantity) : 0
@@ -70,7 +69,7 @@ export const InventoryStockForm = ({
                 ?.locations?.[location_id]?.quantity
 
             if (newQuantity !== originalQuantity) {
-              payload.update.push({
+              payload.update?.push({
                 id: level.id,
                 inventory_item_id,
                 location_id,
@@ -81,7 +80,7 @@ export const InventoryStockForm = ({
         }
 
         if (!level.id && level.quantity !== "") {
-          payload.create.push({
+          payload.create?.push({
             inventory_item_id,
             location_id,
             stocked_quantity: castNumber(level.quantity),
@@ -137,28 +136,31 @@ function getDefaultValues(
   locations: HttpTypes.AdminStockLocation[]
 ): DefaultValues<InventoryStockSchema> {
   return {
-    inventory_items: items.reduce((acc, item) => {
-      const locationsMap = locations.reduce((locationAcc, location) => {
-        const level = item.location_levels?.find(
-          (level) => level.location_id === location.id
-        )
+    inventory_items: items.reduce(
+      (acc, item) => {
+        const locationsMap = locations.reduce((locationAcc, location) => {
+          const level = item.location_levels?.find(
+            (level) => level.location_id === location.id
+          )
 
-        locationAcc[location.id] = {
-          id: level?.id,
-          quantity:
-            typeof level?.stocked_quantity === "number"
-              ? level?.stocked_quantity
-              : "",
-          checked: !!level,
-          disabledToggle:
-            (level?.incoming_quantity || 0) > 0 ||
-            (level?.reserved_quantity || 0) > 0,
-        }
-        return locationAcc
-      }, {} as InventoryLocationsSchema)
+          locationAcc[location.id] = {
+            id: level?.id,
+            quantity:
+              typeof level?.stocked_quantity === "number"
+                ? level?.stocked_quantity
+                : "",
+            checked: !!level,
+            disabledToggle:
+              (level?.incoming_quantity || 0) > 0 ||
+              (level?.reserved_quantity || 0) > 0,
+          }
+          return locationAcc
+        }, {} as InventoryLocationsSchema)
 
-      acc[item.id] = { locations: locationsMap }
-      return acc
-    }, {} as Record<string, InventoryItemSchema>),
+        acc[item.id] = { locations: locationsMap }
+        return acc
+      },
+      {} as Record<string, InventoryItemSchema>
+    ),
   }
 }

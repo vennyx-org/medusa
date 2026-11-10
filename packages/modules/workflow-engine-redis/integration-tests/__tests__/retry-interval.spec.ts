@@ -9,11 +9,17 @@
 import { IWorkflowEngineService } from "@medusajs/framework/types"
 import { Modules } from "@medusajs/framework/utils"
 import { moduleIntegrationTestRunner } from "@medusajs/test-utils"
+import { setTimeout } from "timers/promises"
+import { ulid } from "ulid"
 import {
   retryIntervalStep1InvokeMock,
   retryIntervalStep2InvokeMock,
   workflowRetryIntervalId,
 } from "../__fixtures__/workflow_retry_interval"
+import {
+  retryIntervalAwaitingStepInvokeMock,
+  workflowRetryIntervalAwaitingId,
+} from "../__fixtures__/workflow_retry_interval_awaiting"
 import {
   retryIntervalStep0InvokeMock as retryIntervalStep0InvokeMockSync,
   retryIntervalStep1InvokeMock as retryIntervalStep1InvokeMockSync,
@@ -24,12 +30,20 @@ import { TestDatabase } from "../utils"
 
 jest.setTimeout(60000) // Increase timeout for async retries
 
+const testRunId = ulid()
+
 moduleIntegrationTestRunner<IWorkflowEngineService>({
   moduleName: Modules.WORKFLOW_ENGINE,
   resolve: __dirname + "/../..",
   moduleOptions: {
     redis: {
-      url: "localhost:6379",
+      redisUrl: "localhost:6379",
+      queueName: `medusa-workflows-${
+        process.env.JEST_WORKER_ID ?? "1"
+      }-${testRunId}`,
+      jobQueueName: `medusa-workflows-jobs-${
+        process.env.JEST_WORKER_ID ?? "1"
+      }-${testRunId}`,
     },
   },
   testSuite: ({ service: workflowOrcModule }) => {
@@ -184,6 +198,40 @@ moduleIntegrationTestRunner<IWorkflowEngineService>({
           expect(secondRetryInterval).toBeGreaterThan(800)
           expect(secondRetryInterval).toBeLessThan(2000)
         }
+      })
+      it("should retry a background step with retry interval and awaiting retry interval after it fails while awaiting", async () => {
+        const workflowCompletion = new Promise<{ result: any; errors: any }>(
+          (resolve) => {
+            workflowOrcModule.subscribe({
+              workflowId: workflowRetryIntervalAwaitingId,
+              subscriber: async (data) => {
+                if (data.eventType === "onFinish") {
+                  resolve({
+                    result: data.result,
+                    errors: data.errors,
+                  })
+                }
+              },
+            })
+          }
+        )
+
+        await workflowOrcModule.run(workflowRetryIntervalAwaitingId, {
+          throwOnError: false,
+        })
+
+        const outcome = await Promise.race([
+          workflowCompletion,
+          setTimeout(10000, "stalled" as const),
+        ])
+
+        expect(outcome).not.toBe("stalled")
+
+        const { result, errors } = outcome as { result: any; errors: any }
+
+        expect(retryIntervalAwaitingStepInvokeMock).toHaveBeenCalledTimes(2)
+        expect(errors === undefined || errors.length === 0).toBe(true)
+        expect(result).toEqual({ success: true, attempts: 2 })
       })
     })
   },

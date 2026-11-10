@@ -1,9 +1,13 @@
 import {
   CartLineItemDTO,
   CartShippingMethodDTO,
+  ItemTaxLineDTO,
+  ShippingTaxLineDTO,
 } from "@medusajs/framework/types"
 import {
   WorkflowData,
+  WorkflowResponse,
+  createHook,
   createWorkflow,
   transform,
   when,
@@ -12,11 +16,14 @@ import { useQueryGraphStep } from "../../common"
 import { acquireLockStep, releaseLockStep } from "../../locking"
 import { getItemTaxLinesStep } from "../../tax/steps/get-item-tax-lines"
 import { setTaxLinesForItemsStep, validateCartStep } from "../steps"
+import { getTranslatedTaxLinesStep } from "../../common/steps/get-translated-tax-lines"
+import { taxLineContextResult } from "../utils/schemas"
 
 const cartFields = [
   "id",
   "currency_code",
   "email",
+  "locale",
   "region.id",
   "region.automatic_taxes",
   "items.id",
@@ -35,6 +42,7 @@ const cartFields = [
   "items.title",
   "items.quantity",
   "items.unit_price",
+  "items.is_giftcard",
   "items.tax_lines.id",
   "items.tax_lines.description",
   "items.tax_lines.code",
@@ -49,6 +57,8 @@ const cartFields = [
   "shipping_methods.tax_lines.provider_id",
   "shipping_methods.shipping_option_id",
   "shipping_methods.amount",
+  "shipping_methods.name",
+  "shipping_methods.id",
   "customer.id",
   "customer.email",
   "customer.metadata",
@@ -107,7 +117,7 @@ export type UpdateTaxLinesWorkflowInput = {
 export const updateTaxLinesWorkflowId = "update-tax-lines"
 /**
  * This workflow updates a cart's tax lines that are applied on line items and shipping methods. You can update the line item's quantity, unit price, and more. This workflow is executed
- * by the [Calculate Taxes Store API Route](https://docs.medusajs.com/api/store#carts_postcartsidtaxes).
+ * by the [Calculate Taxes Store API Route](https://docs.medusajs.com/api/store/carts/calculate-taxes).
  *
  * You can use this workflow within your own customizations or custom workflows, allowing you to update a cart's tax lines in your custom flows.
  *
@@ -122,10 +132,12 @@ export const updateTaxLinesWorkflowId = "update-tax-lines"
  * @summary
  *
  * Update a cart's tax lines.
+ *
+ * @property hooks.setTaxLineContext - This hook is executed after the cart is fetched and before tax lines are calculated. You can consume this hook to add custom context to the tax calculation. The returned object is set as the additional_context property in the getItemTaxLinesStep input.
  */
 export const updateTaxLinesWorkflow = createWorkflow(
   updateTaxLinesWorkflowId,
-  (input: WorkflowData<UpdateTaxLinesWorkflowInput>): WorkflowData<void> => {
+  (input: WorkflowData<UpdateTaxLinesWorkflowInput>) => {
     const fetchCart = when("should-fetch-cart", { input }, ({ input }) => {
       return !input.cart
     }).then(() => {
@@ -154,23 +166,51 @@ export const updateTaxLinesWorkflow = createWorkflow(
       ttl: 10,
     })
 
+    const setTaxLineContext = createHook(
+      "setTaxLineContext",
+      {
+        cart,
+        items: cart.items,
+        shipping_methods: cart.shipping_methods,
+      },
+      {
+        resultValidator: taxLineContextResult,
+      }
+    )
+
+    const setTaxLineContextResult = setTaxLineContext.getResult()
+
     const taxLineItems = getItemTaxLinesStep(
-      transform({ input, cart }, (data) => ({
+      transform({ input, cart, setTaxLineContextResult }, (data) => ({
         orderOrCart: data.cart,
         items: data.cart.items,
         shipping_methods: data.cart.shipping_methods,
         force_tax_calculation: data.input.force_tax_calculation,
+        additional_context: data.setTaxLineContextResult
+          ? data.setTaxLineContextResult
+          : undefined,
       }))
     )
 
+    const translatedTaxLines = getTranslatedTaxLinesStep({
+      itemTaxLines: taxLineItems.lineItemTaxLines,
+      shippingTaxLines: taxLineItems.shippingMethodsTaxLines,
+      locale: cart.locale,
+    })
+
     setTaxLinesForItemsStep({
       cart,
-      item_tax_lines: taxLineItems.lineItemTaxLines,
-      shipping_tax_lines: taxLineItems.shippingMethodsTaxLines,
+      item_tax_lines: translatedTaxLines.itemTaxLines as ItemTaxLineDTO[],
+      shipping_tax_lines:
+        translatedTaxLines.shippingTaxLines as ShippingTaxLineDTO[],
     })
 
     releaseLockStep({
       key: cart.id,
+    })
+
+    return new WorkflowResponse(void 0, {
+      hooks: [setTaxLineContext],
     })
   }
 )

@@ -1,22 +1,29 @@
 {
   "name": "@medusajs/deps",
-  "version": "2.12.5",
+  "version": "2.22.6",
   "description": "Dependencies for Medusa",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/medusajs/medusa",
+    "url": "git+https://github.com/medusajs/medusa.git",
     "directory": "packages/deps"
   },
+  "bugs": {
+    "url": "https://github.com/medusajs/medusa/issues"
+  },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.22.0"
   },
   "publishConfig": {
     "access": "public"
   },
   "files": [
-    "dist"
+    "dist",
+    "AGENTS.md"
   ],
+  "llms": "https://docs.medusajs.com/llms.txt",
+  "llmsFull": "https://docs.medusajs.com/llms-full.txt",
+  "mcpServer": "https://docs.medusajs.com/mcp",
   "exports": {
     ".": "./dist/index.js",
     "./opentelemetry/instrumentation-pg": "./dist/opentelemetry-instrumentation-pg.js",
@@ -30,7 +37,8 @@
     "./mikro-orm/migrations": "./dist/mikro-orm-migrations.js",
     "./mikro-orm/postgresql": "./dist/mikro-orm-postgresql.js",
     "./awilix": "./dist/awilix.js",
-    "./pg": "./dist/pg.js"
+    "./pg": "./dist/pg.js",
+    "./zod": "./dist/zod.js"
   },
   "author": "Medusa",
   "license": "MIT",
@@ -38,18 +46,19 @@
     "build": "yarn run -T rimraf dist && yarn run -T tsc --build"
   },
   "dependencies": {
-    "@mikro-orm/cli": "6.4.16",
-    "@mikro-orm/core": "6.4.16",
-    "@mikro-orm/knex": "6.4.16",
-    "@mikro-orm/migrations": "6.4.16",
-    "@mikro-orm/postgresql": "6.4.16",
+    "@mikro-orm/cli": "6.6.17",
+    "@mikro-orm/core": "6.6.17",
+    "@mikro-orm/knex": "6.6.17",
+    "@mikro-orm/migrations": "6.6.17",
+    "@mikro-orm/postgresql": "6.6.17",
     "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/instrumentation-pg": "^0.52.0",
-    "@opentelemetry/resources": "^2.0.0",
-    "@opentelemetry/sdk-node": "^0.200.0",
-    "@opentelemetry/sdk-trace-node": "^2.0.0",
-    "awilix": "^8.0.1",
-    "pg": "^8.16.3"
+    "@opentelemetry/instrumentation-pg": "^0.73.0",
+    "@opentelemetry/resources": "^2.7.0",
+    "@opentelemetry/sdk-node": "^0.220.0",
+    "@opentelemetry/sdk-trace-node": "^2.7.0",
+    "awilix": "^13.0.5",
+    "pg": "^8.23.1",
+    "zod": "4.6.6"
   },
   "gitHead": "41a5425405aea5045a26def95c0dc00cf4a5a44d"
 }

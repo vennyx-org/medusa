@@ -1,9 +1,66 @@
 import { isObject } from "@medusajs/framework/utils"
+import { AddressInfo, createServer } from "net"
 
 export function applyEnvVarsToProcess(env?: Record<any, any>) {
+  const previousEnvVars = new Map<string, string | undefined>()
+
   if (isObject(env)) {
-    Object.entries(env).forEach(([k, v]) => (process.env[k] = v))
+    Object.entries(env).forEach(([k, v]) => {
+      previousEnvVars.set(k, process.env[k])
+      process.env[k] = v
+    })
   }
+
+  return function restoreEnvVars() {
+    for (const [key, value] of previousEnvVars) {
+      if (value === undefined) {
+        delete process.env[key]
+      } else {
+        process.env[key] = value
+      }
+    }
+    previousEnvVars.clear()
+  }
+}
+
+export function formatError(error: unknown): string {
+  if (error instanceof Error) {
+    const pgError = error as Error & {
+      code?: string
+      detail?: string
+      hint?: string
+      where?: string
+      cause?: unknown
+    }
+
+    const aggregatedErrors = (error as AggregateError).errors
+
+    return [
+      pgError.message || pgError.name,
+      pgError.code && `code: ${pgError.code}`,
+      pgError.detail && `detail: ${pgError.detail}`,
+      pgError.hint && `hint: ${pgError.hint}`,
+      pgError.where && `where: ${pgError.where}`,
+      Array.isArray(aggregatedErrors) &&
+        aggregatedErrors.map((e) => formatError(e)).join("\n"),
+      pgError.cause && `caused by: ${formatError(pgError.cause)}`,
+    ]
+      .filter(Boolean)
+      .join("\n")
+  }
+
+  if (typeof error === "string") {
+    return error
+  }
+
+  if (error && typeof error === "object" && "message" in error) {
+    const message = (error as { message?: unknown }).message
+    if (typeof message === "string" && message.length > 0) {
+      return message
+    }
+  }
+
+  return String(error)
 }
 
 /**
@@ -24,4 +81,16 @@ export async function execOrTimeout(
   const fnPromise = typeof fn === "function" ? fn() : fn
 
   return Promise.race([fnPromise, timeoutPromise])
+}
+
+export async function getFreePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const server = createServer()
+    server.unref()
+    server.on("error", reject)
+    server.listen(0, () => {
+      const { port } = server.address() as AddressInfo
+      server.close(() => resolve(port))
+    })
+  })
 }

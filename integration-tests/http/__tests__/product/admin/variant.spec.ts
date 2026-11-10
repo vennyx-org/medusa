@@ -1,4 +1,5 @@
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
+import { Modules } from "@medusajs/framework/utils"
 import {
   adminHeaders,
   createAdminUser,
@@ -8,11 +9,11 @@ import { getProductFixture } from "../../../../helpers/fixtures"
 jest.setTimeout(50000)
 
 medusaIntegrationTestRunner({
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
     let baseProduct
     let baseRegion
     let shippingProfile
-    beforeEach(async () => {
+    beforeAll(async () => {
       await createAdminUser(dbConnection, adminHeaders, getContainer())
       // BREAKING: Creating a region no longer takes tax_rate, payment_providers, fulfillment_providers, countriesr
       baseRegion = (
@@ -44,6 +45,8 @@ medusaIntegrationTestRunner({
           adminHeaders
         )
       ).data.product
+
+      await dbUtils.snapshot()
     })
 
     // BREAKING: We no longer have `/admin/variants` endpoint. Instead, variant is scoped by product ID, `/admin/products/:id/variants`
@@ -764,6 +767,125 @@ medusaIntegrationTestRunner({
           inventoryItem2.id
         )
       })
+
+      it("should create an inventory item and link it when manage_inventory is enabled on an existing variant", async () => {
+        const createdProduct = (
+          await api.post(
+            "/admin/products",
+            {
+              title: "Test product for enabling manage inventory",
+              handle: "test-product-enable-manage-inventory",
+              options: [{ title: "size", values: ["large"] }],
+              shipping_profile_id: shippingProfile.id,
+              variants: [
+                {
+                  title: "Variant without inventory",
+                  sku: "variant-enable-manage-inventory",
+                  prices: [{ currency_code: "usd", amount: 100 }],
+                  manage_inventory: false,
+                  options: { size: "large" },
+                },
+              ],
+            },
+            {
+              ...adminHeaders,
+              params: {
+                fields:
+                  "+variants.inventory_items.*,+variants.inventory_items.inventory.*",
+              },
+            }
+          )
+        ).data.product
+
+        const variant = createdProduct.variants[0]
+
+        expect(variant.manage_inventory).toBe(false)
+        expect(variant.inventory_items).toHaveLength(0)
+
+        const updatedProduct = (
+          await api.post(
+            `/admin/products/${createdProduct.id}/variants/${variant.id}`,
+            { manage_inventory: true },
+            {
+              ...adminHeaders,
+              params: {
+                fields:
+                  "+variants.inventory_items.*,+variants.inventory_items.inventory.*",
+              },
+            }
+          )
+        ).data.product
+
+        const updatedVariant = updatedProduct.variants.find(
+          (v) => v.id === variant.id
+        )
+
+        expect(updatedVariant.manage_inventory).toBe(true)
+        expect(updatedVariant.inventory_items).toHaveLength(1)
+        expect(updatedVariant.inventory_items[0]).toEqual(
+          expect.objectContaining({
+            required_quantity: 1,
+            inventory: expect.objectContaining({
+              sku: "variant-enable-manage-inventory",
+              title: "Variant without inventory",
+              requires_shipping: true,
+            }),
+          })
+        )
+      })
+
+      it("should not create a second inventory item when manage_inventory is enabled again", async () => {
+        const createdProduct = (
+          await api.post(
+            "/admin/products",
+            {
+              title: "Test product for idempotent manage inventory",
+              handle: "test-product-idempotent-manage-inventory",
+              options: [{ title: "size", values: ["large"] }],
+              shipping_profile_id: shippingProfile.id,
+              variants: [
+                {
+                  title: "Variant toggled twice",
+                  sku: "variant-idempotent-manage-inventory",
+                  prices: [{ currency_code: "usd", amount: 100 }],
+                  manage_inventory: false,
+                  options: { size: "large" },
+                },
+              ],
+            },
+            adminHeaders
+          )
+        ).data.product
+
+        const variant = createdProduct.variants[0]
+
+        await api.post(
+          `/admin/products/${createdProduct.id}/variants/${variant.id}`,
+          { manage_inventory: true },
+          adminHeaders
+        )
+
+        const updatedProduct = (
+          await api.post(
+            `/admin/products/${createdProduct.id}/variants/${variant.id}`,
+            { manage_inventory: true },
+            {
+              ...adminHeaders,
+              params: {
+                fields:
+                  "+variants.inventory_items.*,+variants.inventory_items.inventory.*",
+              },
+            }
+          )
+        ).data.product
+
+        const updatedVariant = updatedProduct.variants.find(
+          (v) => v.id === variant.id
+        )
+
+        expect(updatedVariant.manage_inventory).toBe(true)
+        expect(updatedVariant.inventory_items).toHaveLength(1)
+      })
     })
 
     describe("POST /admin/products/:id/variants/:variant_id/inventory-items", () => {
@@ -808,6 +930,35 @@ medusaIntegrationTestRunner({
           expect.arrayContaining([
             expect.objectContaining({
               required_quantity: 5,
+              inventory_item_id: inventoryItem.id,
+            }),
+          ])
+        )
+      })
+
+      it("successfully adds inventory item to a variant with a fractional required quantity", async () => {
+        const inventoryItem = (
+          await api.post(
+            `/admin/inventory-items`,
+            { sku: "fractional-sku" },
+            adminHeaders
+          )
+        ).data.inventory_item
+
+        const res = await api.post(
+          `/admin/products/${baseProduct.id}/variants/${baseProduct.variants[0].id}/inventory-items?fields=inventory_items.inventory.*,inventory_items.*`,
+          {
+            inventory_item_id: inventoryItem.id,
+            required_quantity: 0.25,
+          },
+          adminHeaders
+        )
+
+        expect(res.status).toEqual(200)
+        expect(res.data.variant.inventory_items).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              required_quantity: 0.25,
               inventory_item_id: inventoryItem.id,
             }),
           ])
@@ -1076,6 +1227,114 @@ medusaIntegrationTestRunner({
         expect(deletedLinkVariant.inventory_items[0].id).not.toEqual(
           inventoryItemToDelete.id
         )
+      })
+    })
+
+    describe("DELETE /admin/products/:id/variants/:variant_id", () => {
+      it("successfully deletes a variant when a linked inventory item was already deleted", async () => {
+        const stockLocation = (
+          await api.post(
+            `/admin/stock-locations`,
+            { name: "loc" },
+            adminHeaders
+          )
+        ).data.stock_location
+
+        const inventoryItem1 = (
+          await api.post(
+            `/admin/inventory-items`,
+            { sku: "variant-orphan-1" },
+            adminHeaders
+          )
+        ).data.inventory_item
+
+        const inventoryItem2 = (
+          await api.post(
+            `/admin/inventory-items`,
+            { sku: "variant-orphan-2" },
+            adminHeaders
+          )
+        ).data.inventory_item
+
+        await api.post(
+          `/admin/inventory-items/${inventoryItem1.id}/location-levels`,
+          {
+            location_id: stockLocation.id,
+            stocked_quantity: 10,
+          },
+          adminHeaders
+        )
+
+        await api.post(
+          `/admin/inventory-items/${inventoryItem2.id}/location-levels`,
+          {
+            location_id: stockLocation.id,
+            stocked_quantity: 5,
+          },
+          adminHeaders
+        )
+
+        const product = (
+          await api.post(
+            `/admin/products`,
+            {
+              title: "Product with orphan variant link",
+              handle: "product-orphan-variant-link",
+              options: [{ title: "size", values: ["m"] }],
+              shipping_profile_id: shippingProfile.id,
+              variants: [
+                {
+                  title: "Variant with orphan inventory link",
+                  prices: [{ currency_code: "usd", amount: 100 }],
+                  manage_inventory: true,
+                  options: { size: "m" },
+                  inventory_items: [
+                    {
+                      inventory_item_id: inventoryItem1.id,
+                      required_quantity: 1,
+                    },
+                    {
+                      inventory_item_id: inventoryItem2.id,
+                      required_quantity: 1,
+                    },
+                  ],
+                },
+              ],
+            },
+            adminHeaders
+          )
+        ).data.product
+
+        const variantId = product.variants[0].id
+
+        // Delete one inventory item directly via the module service,
+        // bypassing the workflow that would clean up the link.
+        // This creates an orphan link (variant still references a
+        // deleted inventory item).
+        const inventoryModule = getContainer().resolve(Modules.INVENTORY)
+        await inventoryModule.deleteInventoryItems(inventoryItem1.id)
+
+        // Deleting the variant should succeed despite the orphan link
+        const response = await api.delete(
+          `/admin/products/${product.id}/variants/${variantId}`,
+          adminHeaders
+        )
+
+        expect(response.status).toEqual(200)
+        expect(response.data).toEqual(
+          expect.objectContaining({
+            id: variantId,
+            deleted: true,
+          })
+        )
+
+        // The remaining inventory item should also be deleted since it
+        // was only associated with this variant
+        const item2Response = await api
+          .get(`/admin/inventory-items/${inventoryItem2.id}`, adminHeaders)
+          .catch((err) => err.response)
+
+        expect(item2Response.status).toEqual(404)
       })
     })
   },

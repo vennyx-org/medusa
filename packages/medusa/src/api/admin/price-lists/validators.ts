@@ -1,5 +1,5 @@
 import { PriceListStatus, PriceListType } from "@medusajs/framework/utils"
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 import {
   createFindParams,
   createOperatorMap,
@@ -68,6 +68,7 @@ export const AdminCreatePriceList = z.object({
   type: z.nativeEnum(PriceListType).optional(),
   rules: z.record(z.string(), z.array(z.string())).optional(),
   prices: z.array(AdminCreatePriceListPrice).optional(),
+  metadata: z.record(z.string(), z.unknown()).nullish(),
 })
 
 export type AdminCreatePriceListType = z.infer<typeof AdminCreatePriceList>
@@ -80,6 +81,7 @@ export const AdminUpdatePriceList = z.object({
   status: z.nativeEnum(PriceListStatus).optional(),
   type: z.nativeEnum(PriceListType).optional(),
   rules: z.record(z.string(), z.array(z.string())).optional(),
+  metadata: z.record(z.string(), z.unknown()).nullish(),
 })
 
 export type AdminUpdatePriceListType = z.infer<typeof AdminUpdatePriceList>

@@ -48,7 +48,7 @@ In this example, you define a module link between the `blog` module's `post` dat
 
 After defining the link, run the `db:sync-links` command:
 
-```bash
+```bash npx2yarn
 npx medusa db:sync-links
 ```
 
@@ -125,6 +125,7 @@ export default defineLink(
 In this case, you pass an object of configuration as a parameter instead. The object accepts the following properties:
 
 - `linkable`: The data model's link configuration.
+- `alias`: A custom alias to use when querying the linked records. By default, Medusa derives the alias from the data model's name. Available since Medusa [v2.17.2](https://github.com/medusajs/medusa/releases/tag/v2.17.2).
 - `isList`: Whether multiple records can be linked to one record of the other data model.
 
 In this example, a record of `product` can be linked to more than one record of `post`.
@@ -178,6 +179,49 @@ In this example, when a product is deleted with [link.delete](./link/page.mdx#ca
 
 ---
 
+## Override Link Alias
+
+When you define a link using the object form, Medusa derives the query alias for the linked data model from the data model's name. You can override this alias by passing the `alias` property.
+
+<Note>
+
+This option is available since Medusa [v2.17.2](https://github.com/medusajs/medusa/releases/tag/v2.17.2).
+
+</Note>
+
+This is useful when you link the same module twice in different link definitions and need to differentiate the two links when querying.
+
+For example:
+
+export const aliasHighlights = [
+  ["9", "alias", "Override the alias used when querying linked records."],
+]
+
+```ts highlights={aliasHighlights}
+import BlogModule from "../modules/blog"
+import ProductModule from "@medusajs/medusa/product"
+import { defineLink } from "@medusajs/framework/utils"
+
+export default defineLink(
+  ProductModule.linkable.product,
+  {
+    linkable: BlogModule.linkable.post,
+    alias: "featured_post",
+  }
+)
+```
+
+In this example, you override the alias of the `post` data model to `featured_post`. When you query linked records, use `featured_post` as the relation name:
+
+```ts
+const { result } = await query.graph({
+  entity: "product",
+  fields: ["id", "featured_post.*"],
+})
+```
+
+---
+
 ## Renaming Participants in a Module Link
 
 As mentioned in the [Module Link's Database Table](#module-links-database-table) section, the name of a link's table consists of the names of the modules and the data models' table names.
@@ -227,7 +271,7 @@ In this example, you set the `table` property in the `database` object to the ol
 
 This is enough to rename the link table when you rename a module. If you renamed a data model's table, you need to also run the `db:sync-links` or `db:migrate` commands, which will update the column names in the link table automatically:
 
-```bash
+```bash npx2yarn
 npx medusa db:migrate
 ```
 
@@ -237,6 +281,6 @@ npx medusa db:migrate
 
 To delete a module link definition, remove the link file from the `src/links` directory. Then, run the `db:sync-links` or `db:migrate` command to delete the link table from the database:
 
-```bash
+```bash npx2yarn
 npx medusa db:migrate
 ```

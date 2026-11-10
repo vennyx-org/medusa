@@ -18,9 +18,7 @@ type RuleValueFormFieldType = {
   form: any
   identifier: string
   scope:
-    | "application_method.buy_rules"
-    | "rules"
-    | "application_method.target_rules"
+    "application_method.buy_rules" | "rules" | "application_method.target_rules"
   name: string
   operator: string
   fieldRule: any
@@ -62,6 +60,10 @@ export const RuleValueFormField = ({
 
   const { store, isLoading: isStoreLoading } = useStore()
 
+  const selectedValue = !Array.isArray(fieldRule.values)
+    ? fieldRule.values
+    : undefined
+
   const comboboxData = useComboboxData({
     queryFn: async (params) => {
       return await sdk.admin.promotion.listRuleValues(
@@ -80,6 +82,7 @@ export const RuleValueFormField = ({
       !isStoreLoading,
     getOptions: (data) => data.values,
     queryKey: ["rule-value-options", ruleType, attribute?.id],
+    selectedValue,
   })
 
   const watchOperator = useWatch({

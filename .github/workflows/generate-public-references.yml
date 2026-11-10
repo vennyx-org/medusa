@@ -24,6 +24,13 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch'}}
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.MEDUSA_APP_ID }}
+          private-key: ${{ secrets.MEDUSA_APP_PRIVATE_KEY }}
+
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.11.0
         with:
@@ -37,7 +44,8 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          check-latest: true
           cache: "yarn"
 
       - name: Install dependencies
@@ -100,8 +108,9 @@ jobs:
         working-directory: www/utils/packages/scripts
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@38e0b6e68b4c852a5500a94740f0e535e0d7ba54  # v4
         with:
+          token: ${{ steps.app-token.outputs.token }}
           commit-message: "chore(docs): Generated References (automated)"
           base: "develop"
           title: "chore(docs): Generated References (automated)"
@@ -119,6 +128,13 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' || github.event.inputs.referenceName == 'all' || github.event.inputs.referenceName == 'api' }}
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.MEDUSA_APP_ID }}
+          private-key: ${{ secrets.MEDUSA_APP_PRIVATE_KEY }}
+
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.11.0
         with:
@@ -132,7 +148,8 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          check-latest: true
           cache: "yarn"
 
       - name: Install dependencies
@@ -167,16 +184,33 @@ jobs:
           GIT_OWNER: ${{ github.repository_owner }}
           GIT_REPO: medusa
 
+      - name: Get Previous Release Version
+        id: prev-release
+        if: ${{ github.event_name == 'release' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PREV_TAG=$(gh release list --repo ${{ github.repository }} --limit 2 --json tagName | jq -r '.[1].tagName')
+          PREV_VERSION="${PREV_TAG#v}"
+          echo "version=$PREV_VERSION" >> $GITHUB_OUTPUT
+
       - name: Generate API Reference
-        run: yarn openapi:generate
+        run: |
+          PREV_VERSION="${{ steps.prev-release.outputs.version }}"
+          if [ -n "$PREV_VERSION" ]; then
+            yarn openapi:generate --archive-version=$PREV_VERSION
+          else
+            yarn openapi:generate
+          fi
 
       - name: Run prep script
         run: yarn prep
         working-directory: www/apps/api-reference
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@38e0b6e68b4c852a5500a94740f0e535e0d7ba54  # v4
         with:
+          token: ${{ steps.app-token.outputs.token }}
           commit-message: "chore(docs): Generated API Reference (automated)"
           base: "develop"
           title: "chore(docs): Updated API Reference (automated)"
@@ -193,6 +227,13 @@ jobs:
     name: Generate DML JSON files
     runs-on: ubuntu-latest
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.MEDUSA_APP_ID }}
+          private-key: ${{ secrets.MEDUSA_APP_PRIVATE_KEY }}
+
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.11.0
         with:
@@ -206,7 +247,8 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          check-latest: true
           cache: "yarn"
 
       - name: Install dependencies
@@ -234,8 +276,9 @@ jobs:
           GIT_REPO: medusa
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@38e0b6e68b4c852a5500a94740f0e535e0d7ba54  # v4
         with:
+          token: ${{ steps.app-token.outputs.token }}
           commit-message: "chore(docs): Generated DML JSON files (automated)"
           title: "chore(docs): Generated DML JSON files (automated)"
           body: "This PR holds all generated DML JSON files for the upcoming release."
@@ -248,6 +291,13 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' || github.event.inputs.referenceName == 'all' || github.event.inputs.referenceName == 'ui' }}
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.MEDUSA_APP_ID }}
+          private-key: ${{ secrets.MEDUSA_APP_PRIVATE_KEY }}
+
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.11.0
         with:
@@ -261,7 +311,8 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          check-latest: true
           cache: "yarn"
 
       - name: Install dependencies
@@ -301,8 +352,9 @@ jobs:
         working-directory: www/apps/ui
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@38e0b6e68b4c852a5500a94740f0e535e0d7ba54  # v4
         with:
+          token: ${{ steps.app-token.outputs.token }}
           commit-message: "chore(docs): Generated + Updated UI Reference (automated)"
           base: "develop"
           title: "chore(docs): Updated UI Reference (automated)"

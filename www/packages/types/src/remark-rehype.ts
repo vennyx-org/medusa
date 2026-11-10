@@ -20,6 +20,7 @@ export interface UnistNode extends Node {
   spread?: boolean
   depth?: number
   lang?: string
+  meta?: string | null
 }
 
 export type ArrayExpression = {
@@ -267,11 +268,13 @@ export declare type ComponentLinkFixerOptions = {
   filePath?: string
   basePath?: string
   checkLinksType: ComponentLinkFixerLinkType
+  r2BaseUrl?: string
 }
 
 export declare type LocalLinkOptions = {
   filePath?: string
   basePath?: string
+  r2BaseUrl?: string
 }
 
 export type ExpressionJsVarItem = {

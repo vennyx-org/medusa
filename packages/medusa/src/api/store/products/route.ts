@@ -7,7 +7,10 @@ import {
   QueryContext,
 } from "@medusajs/framework/utils"
 import IndexEngineFeatureFlag from "../../../feature-flags/index-engine"
-import { wrapVariantsWithInventoryQuantityForSalesChannel } from "../../utils/middlewares"
+import {
+  prepareInventoryQuantityFields,
+  wrapVariantsWithInventoryQuantityForSalesChannel,
+} from "../../utils/middlewares"
 import { RequestWithContext, wrapProductsWithTaxPrices } from "./helpers"
 
 export const GET = async (
@@ -18,7 +21,9 @@ export const GET = async (
     // TODO: These filters are not supported by the index engine yet
     if (
       isPresent(req.filterableFields.tags) ||
-      isPresent(req.filterableFields.categories)
+      isPresent(req.filterableFields.categories) ||
+      isPresent(req.filterableFields.option_value_id) ||
+      isPresent(req.filterableFields.options)
     ) {
       return await getProducts(req, res)
     }
@@ -36,15 +41,11 @@ async function getProductsWithIndexEngine(
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
 
   const context: QueryContextType = {}
-  const withInventoryQuantity = req.queryConfig.fields.some((field) =>
-    field.includes("variants.inventory_quantity")
+  const { fields, withInventoryQuantity } = prepareInventoryQuantityFields(
+    req.queryConfig.fields,
+    { relation: "variants" }
   )
-
-  if (withInventoryQuantity) {
-    req.queryConfig.fields = req.queryConfig.fields.filter(
-      (field) => !field.includes("variants.inventory_quantity")
-    )
-  }
+  req.queryConfig.fields = fields
 
   if (isPresent(req.pricingContext)) {
     context["variants"] ??= {}
@@ -61,6 +62,11 @@ async function getProductsWithIndexEngine(
     filters["sales_channels"]["id"] = salesChannelIds
 
     delete filters.sales_channel_id
+  }
+
+  // TODO: Remove once we implement search by relations in a similar way to query.graph
+  if (isPresent(filters.q)) {
+    filters["variants"] ??= {}
   }
 
   const { data: products = [], metadata } = await query.index(
@@ -82,7 +88,7 @@ async function getProductsWithIndexEngine(
   if (withInventoryQuantity) {
     await wrapVariantsWithInventoryQuantityForSalesChannel(
       req,
-      products.map((product) => product.variants).flat(1)
+      products.flatMap((product) => product.variants ?? [])
     )
   }
 
@@ -103,15 +109,11 @@ async function getProducts(
 ) {
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
   const context: object = {}
-  const withInventoryQuantity = req.queryConfig.fields.some((field) =>
-    field.includes("variants.inventory_quantity")
+  const { fields, withInventoryQuantity } = prepareInventoryQuantityFields(
+    req.queryConfig.fields,
+    { relation: "variants" }
   )
-
-  if (withInventoryQuantity) {
-    req.queryConfig.fields = req.queryConfig.fields.filter(
-      (field) => !field.includes("variants.inventory_quantity")
-    )
-  }
+  req.queryConfig.fields = fields
 
   if (isPresent(req.pricingContext)) {
     context["variants"] ??= {}
@@ -139,7 +141,7 @@ async function getProducts(
   if (withInventoryQuantity) {
     await wrapVariantsWithInventoryQuantityForSalesChannel(
       req,
-      products.map((product) => product.variants).flat(1)
+      products.flatMap((product) => product.variants ?? [])
     )
   }
 

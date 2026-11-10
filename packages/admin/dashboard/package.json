@@ -1,16 +1,20 @@
 {
   "name": "@medusajs/dashboard",
-  "version": "2.12.5",
+  "version": "2.22.6",
+  "license": "SEE LICENSE IN LICENSE",
   "scripts": {
+    "typecheck": "yarn run -T tsc --noEmit -p tsconfig.typecheck.json",
     "generate:static": "node ./scripts/generate-currencies.js && prettier --write ./src/lib/currencies.ts",
     "dev": "../../../node_modules/.bin/vite",
-    "build": "yarn run -T tsup && node ./scripts/generate-types.js",
+    "build": "yarn typecheck && yarn run -T tsup",
     "build:preview": "../../../node_modules/.bin/vite build",
+    "build:vite": "../../../node_modules/.bin/vite build --outDir dist-vite --emptyOutDir",
     "preview": "../../../node_modules/.bin/vite preview",
     "test": "../../../node_modules/.bin/vitest --run",
     "i18n:validate": "node ./scripts/i18n/validate-translation.js",
     "i18n:schema": "node ./scripts/i18n/generate-schema.js",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "i18n:sync": "node ./scripts/i18n/sync-translations.js",
+    "lint": "eslint . --ext ts,tsx --ignore-pattern dist --report-unused-disable-directives --max-warnings 0"
   },
   "main": "dist/app.js",
   "module": "dist/app.mjs",
@@ -21,6 +25,21 @@
       "import": "./dist/app.mjs",
       "require": "./dist/app.js"
     },
+    "./components": {
+      "types": "./dist/components.d.ts",
+      "import": "./dist/components.mjs",
+      "require": "./dist/components.js"
+    },
+    "./hooks": {
+      "types": "./dist/hooks.d.ts",
+      "import": "./dist/hooks.mjs",
+      "require": "./dist/hooks.js"
+    },
+    "./lib": {
+      "types": "./dist/lib.d.ts",
+      "import": "./dist/lib.mjs",
+      "require": "./dist/lib.js"
+    },
     "./css": {
       "import": "./dist/app.css",
       "require": "./dist/app.css"
@@ -30,60 +49,74 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/medusajs/medusa",
+    "url": "git+https://github.com/medusajs/medusa.git",
     "directory": "packages/admin/dashboard"
+  },
+  "bugs": {
+    "url": "https://github.com/medusajs/medusa/issues"
   },
   "files": [
     "package.json",
     "src",
-    "dist"
+    "dist",
+    "AGENTS.md"
   ],
+  "llms": "https://docs.medusajs.com/llms.txt",
+  "llmsFull": "https://docs.medusajs.com/llms-full.txt",
+  "mcpServer": "https://docs.medusajs.com/mcp",
   "dependencies": {
     "@ariakit/react": "^0.4.15",
-    "@babel/runtime": "^7.26.10",
-    "@dnd-kit/core": "^6.1.0",
-    "@dnd-kit/sortable": "^8.0.0",
+    "@babel/runtime": "^8.0.10",
+    "@dnd-kit/core": "^6.3.0",
+    "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@hookform/error-message": "^2.0.1",
-    "@hookform/resolvers": "3.4.2",
-    "@medusajs/admin-shared": "2.12.5",
-    "@medusajs/icons": "2.12.5",
-    "@medusajs/js-sdk": "2.12.5",
-    "@medusajs/ui": "4.0.33",
+    "@hookform/resolvers": "6.0.0",
+    "@medusajs/admin-shared": "2.22.6",
+    "@medusajs/icons": "2.22.6",
+    "@medusajs/js-sdk": "2.22.6",
+    "@medusajs/ui": "4.2.13",
     "@radix-ui/react-dialog": "1.1.4",
     "@radix-ui/react-dismissable-layer": "1.1.4",
     "@tanstack/react-query": "5.64.2",
     "@tanstack/react-table": "8.20.5",
-    "@tanstack/react-virtual": "^3.8.3",
+    "@tanstack/react-virtual": "^3.14.22",
     "@uiw/react-json-view": "^2.0.0-alpha.17",
-    "cmdk": "^0.2.0",
-    "copy-to-clipboard": "^3.3.3",
-    "date-fns": "^3.6.0",
+    "bignumber.js": "^11.1.5",
+    "cmdk": "^1.1.1",
+    "copy-to-clipboard": "^4.0.2",
+    "date-fns": "^4.4.0",
+    "dequal": "^2.0.3",
     "i18next": "23.7.11",
     "i18next-browser-languagedetector": "7.2.0",
-    "i18next-http-backend": "2.4.2",
     "lodash.debounce": "^4.0.8",
-    "lodash.isequal": "^4.5.0",
-    "match-sorter": "^6.3.4",
-    "motion": "^11.15.0",
-    "qs": "^6.12.1",
+    "match-sorter": "^8.3.0",
+    "motion": "^14.6.0",
+    "qrcode": "^1.5.4",
+    "qs": "^6.16.1",
     "radix-ui": "1.1.2",
     "react": "^18.3.1",
     "react-country-flag": "^3.1.0",
-    "react-currency-input-field": "^3.6.11",
+    "react-currency-input-field": "^4.0.14",
     "react-dom": "^18.3.1",
-    "react-helmet-async": "^2.0.5",
-    "react-hook-form": "7.49.1",
+    "react-helmet-async": "^3.0.0",
+    "react-hook-form": "7.83.0",
     "react-i18next": "13.5.0",
-    "react-jwt": "^1.2.0",
-    "react-router-dom": "6.20.1",
-    "zod": "3.25.76"
+    "react-jwt": "^2.1.1",
+    "react-router-dom": "7.18.2",
+    "zod": "4.6.6"
   },
   "devDependencies": {
-    "@medusajs/admin-shared": "2.12.5",
-    "@medusajs/admin-vite-plugin": "2.12.5",
-    "@medusajs/types": "2.12.5",
-    "@medusajs/ui-preset": "2.12.5"
+    "@medusajs/admin-shared": "2.22.6",
+    "@medusajs/admin-vite-plugin": "2.22.6",
+    "@medusajs/types": "2.22.6",
+    "@medusajs/ui-preset": "2.22.6",
+    "@types/qrcode": "^1.5.5",
+    "eslint": "^10.13.0",
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
-  "packageManager": "yarn@3.2.1"
+  "packageManager": "yarn@4.18.1",
+  "engines": {
+    "node": ">=22.22.0"
+  }
 }

@@ -4,6 +4,7 @@ import type {
   CustomFieldModelContainerMap,
   CustomFieldModelFormTabsMap,
   InjectionZone,
+  LayoutSection,
   NestedRoutePosition,
 } from "@medusajs/admin-shared"
 import type { ComponentType } from "react"
@@ -14,6 +15,28 @@ export interface WidgetConfig {
    * The injection zone or zones that the widget should be injected into.
    */
   zone: InjectionZone | InjectionZone[]
+  /**
+   * An optional stable identifier for the widget, used to persist the user's
+   * layout customizations (ordering, section, visibility) for this widget.
+   *
+   * If omitted, a stable id is derived from the widget's source file path at
+   * build time. Provide an explicit id when you want customizations to survive
+   * the file being renamed or moved. Plugins should include a unique prefix
+   * in their widget ids to avoid collisions with other plugins.
+   */
+  id?: string
+}
+
+export interface LayoutConfig {
+  /**
+   * A unique identifier for the layout, e.g. `"my-plugin:three-column"`.
+   */
+  id: string
+  /**
+   * The sections that the layout's component exposes. Each section can be
+   * targeted by widgets and customized (reordered/hidden) by users.
+   */
+  sections: LayoutSection[]
 }
 
 export interface RouteConfig {
@@ -47,11 +70,25 @@ export interface RouteConfig {
    * ```
    */
   translationNs?: string
+
+  /**
+   * The RBAC permissions, as `resource:operation` keys, required to open the
+   * route. The user must hold all of them. Without them, the route renders an
+   * access denied page and its sidebar item is hidden. Child routes inherit
+   * the requirement unless they declare their own. Only enforced when the RBAC
+   * module is installed.
+   *
+   * @example
+   * ```ts
+   * permissions: ["gift_card:read"]
+   * ```
+   */
+  permissions?: string | string[]
 }
 
 export type CustomFormField<
   TData = unknown,
-  TValidation extends ZodFirstPartySchemaTypes = ZodFirstPartySchemaTypes
+  TValidation extends ZodFirstPartySchemaTypes = ZodFirstPartySchemaTypes,
 > = {
   /**
    * The rules that the field should be validated against.
@@ -122,8 +159,10 @@ export interface CustomFieldConfig<TModel extends CustomFieldModel> {
   link: string | string[]
   forms: Array<
     {
-      [K in CustomFieldFormKeys<TModel> &
-        keyof CustomFieldModelFormTabsMap[TModel]]: {
+      [
+        K in CustomFieldFormKeys<TModel> &
+          keyof CustomFieldModelFormTabsMap[TModel]
+      ]: {
         /**
          * The form to extend.
          *

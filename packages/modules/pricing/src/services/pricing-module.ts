@@ -36,7 +36,9 @@ import {
   MathBN,
   MedusaContext,
   MedusaError,
+  mergeMetadata,
   ModulesSdkUtils,
+  normalizeCurrencyCode,
   PriceListType,
   PricingRuleOperator,
   promiseAll,
@@ -300,9 +302,8 @@ export default class PricingModuleService
       sharedContext
     )
     if (!pricingContext || !priceSets.length) {
-      const serializedPriceSets = await this.baseRepository_.serialize<
-        PriceSetDTO[]
-      >(priceSets)
+      const serializedPriceSets =
+        await this.baseRepository_.serialize<PriceSetDTO[]>(priceSets)
       return [serializedPriceSets, count]
     }
 
@@ -322,9 +323,8 @@ export default class PricingModuleService
       priceSet.calculated_price = calculatedPrice ?? null
     }
 
-    const serializedPriceSets = await this.baseRepository_.serialize<
-      PriceSetDTO[]
-    >(priceSets)
+    const serializedPriceSets =
+      await this.baseRepository_.serialize<PriceSetDTO[]>(priceSets)
 
     return [serializedPriceSets, count]
   }
@@ -408,16 +408,29 @@ export default class PricingModuleService
           return
         }
 
+        /**
+         * The original price is the customer's real (non-sale) reference price.
+         * It is the matching OVERRIDE price list price if one applies, otherwise
+         * the default price. Resolving it over the non-sale subset (rather than
+         * defaulting to the base price) ensures a stacked SALE does not anchor the
+         * reference to the base price when the customer has an OVERRIDE.
+         */
+        const nonSalePrices = prices.filter(
+          (p) => p.price_list_type !== PriceListType.SALE
+        )
+        const nonSalePriceListPrice = nonSalePrices.find((p) => p.price_list_id)
+
         let calculatedPrice: PricingTypes.CalculatedPriceSetDTO | undefined =
           defaultPrice
         let originalPrice: PricingTypes.CalculatedPriceSetDTO | undefined =
-          defaultPrice
+          nonSalePriceListPrice ?? defaultPrice
 
         /**
          * When deciding which price to use we follow the following logic:
          * - If the price list is of type OVERRIDE, we always use the price list price.
          *   - If there are multiple price list prices of type OVERRIDE, we use the one with the lowest amount.
-         * - If the price list is of type SALE, we use the lowest price between the price list price and the default price
+         * - If the price list is of type SALE, we use the lowest price between the price list price and the original price
+         *   (the matching OVERRIDE price list price if any, otherwise the default price)
          */
         if (priceListPrice) {
           switch (priceListPrice.price_list_type) {
@@ -428,13 +441,13 @@ export default class PricingModuleService
             case PriceListType.SALE: {
               let lowestPrice = priceListPrice
 
-              if (defaultPrice?.amount && priceListPrice.amount) {
+              if (originalPrice?.amount && priceListPrice.amount) {
                 lowestPrice = MathBN.lte(
                   priceListPrice.amount,
-                  defaultPrice.amount
+                  originalPrice.amount
                 )
                   ? priceListPrice
-                  : defaultPrice
+                  : originalPrice
               }
 
               calculatedPrice = lowestPrice
@@ -951,12 +964,16 @@ export default class PricingModuleService
 
       const entry = price as ServiceTypes.UpsertPriceDTO
 
-      const hasRulesInput = isPresent(price.rules)
+      const hasRulesInput = isDefined(price.rules)
       entry.price_list_id = priceListId
       if (hasRulesInput) {
         entry.price_rules = rules
         entry.rules_count = rules.length
         delete (entry as CreatePricesDTO).rules
+      }
+
+      if (isDefined(entry.currency_code)) {
+        entry.currency_code = normalizeCurrencyCode(entry.currency_code)!
       }
 
       const entryHash = hashPrice(entry)
@@ -969,7 +986,7 @@ export default class PricingModuleService
         entry.price_rules = existing.price_rules ?? entry.price_rules
       }
 
-      pricesToUpsert.set(entryHash, entry)
+      pricesToUpsert.set(entry.id ?? entryHash, entry)
     })
 
     return Array.from(pricesToUpsert.values())
@@ -1153,9 +1170,8 @@ export default class PricingModuleService
       sharedContext
     )
 
-    const serialized = await this.baseRepository_.serialize<
-      PricePreferenceDTO[]
-    >(preferences)
+    const serialized =
+      await this.baseRepository_.serialize<PricePreferenceDTO[]>(preferences)
     return Array.isArray(data) ? serialized : serialized[0]
   }
 
@@ -1453,12 +1469,22 @@ export default class PricingModuleService
       )
     }
 
+    const existingByIdMap = new Map(existingPriceLists.map((p) => [p.id, p]))
+
     const normalizedData = this.normalizePriceListDate(data).map(
       (priceList) => {
         const entry: Partial<ServiceTypes.CreatePriceListDTO> = {
           ...priceList,
           rules: undefined,
           price_list_rules: undefined,
+        }
+
+        if (isPresent(priceList.metadata)) {
+          const existing = existingByIdMap.get(priceList.id as string)
+          entry.metadata = mergeMetadata(
+            existing?.metadata ?? {},
+            priceList.metadata as Record<string, unknown>
+          )
         }
 
         if (typeof priceList.rules === "object") {
@@ -1530,7 +1556,6 @@ export default class PricingModuleService
       .filter(Boolean) as ServiceTypes.UpsertPriceDTO[]
 
     const priceListMap = new Map(priceLists.map((p) => [p.id, p]))
-
     for (const { price_list_id: priceListId } of data) {
       const priceList = priceListMap.get(priceListId)
 
@@ -1815,7 +1840,7 @@ const hashPrice = (
   const parts: string[] = []
 
   if ("currency_code" in price) {
-    parts.push(`cc:${price.currency_code ?? ""}`)
+    parts.push(`cc:${normalizeCurrencyCode(price.currency_code ?? "")}`)
   }
   if ("price_set_id" in price) {
     parts.push(`ps:${price.price_set_id ?? ""}`)
@@ -1868,8 +1893,8 @@ const buildPreNormalizationPriceConstraintsFromData = (
 
     const constraint: any = {}
 
-    if (price.currency_code !== undefined) {
-      constraint.currency_code = price.currency_code
+    if (!!price.currency_code) {
+      constraint.currency_code = normalizeCurrencyCode(price.currency_code)
     }
     if ("price_set_id" in price && price.price_set_id !== undefined) {
       constraint.price_set_id = price.price_set_id

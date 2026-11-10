@@ -129,9 +129,8 @@ export function isMedusaService(
  */
 export function MedusaService<
   const ModelsConfig extends ModelsConfigTemplate = { __empty: any },
-  const TModels extends ModelEntries<
-    ExtractKeysFromConfig<ModelsConfig>
-  > = ModelEntries<ExtractKeysFromConfig<ModelsConfig>>
+  const TModels extends ModelEntries<ExtractKeysFromConfig<ModelsConfig>> =
+    ModelEntries<ExtractKeysFromConfig<ModelsConfig>>,
 >(
   models: TModels
 ): MedusaServiceReturnType<
@@ -458,10 +457,17 @@ export function MedusaService<
 
       const object = camelToSnakeCase(args.meta.className).toLowerCase()
 
+      // Resolve the identifier from the model's real primary key rather than
+      // assuming an `id` column, so models with a custom (non-id) primary key
+      // still emit the correct identifier. `args.meta.primaryKeys` is provided
+      // by MikroORM for native events and forwarded manually for the events we
+      // dispatch ourselves (e.g. delete, upsert with replace).
+      const primaryKey = args.meta.primaryKeys?.[0] ?? "id"
+
       this.aggregatedEvents({
         action,
         object,
-        data: { id: args.entity.id },
+        data: { id: args.entity[primaryKey] ?? args.entity.id },
         context,
       })
     }
@@ -544,7 +550,7 @@ export function MedusaService<
   const modelsMethods: [
     string, // model name
     TModels[keyof TModels], // configuration (dml, conf, entity)
-    Record<string, string> // method names
+    Record<string, string>, // method names
   ][] = Object.entries(models as {}).map(([name, config]) => [
     DmlEntity.isDmlEntity(config) ? config.name : name,
     config as TModels[keyof TModels],

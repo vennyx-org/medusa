@@ -3,9 +3,12 @@ import {
   ConfigModule,
   InputConfig,
   InputConfigModules,
+  InputConfigWithArrayModules,
+  InputConfigWithObjectModules,
   InternalModuleDeclaration,
   MedusaCloudOptions,
 } from "@medusajs/types"
+import { FeatureFlag } from "../feature-flags/flag-router"
 import {
   MODULE_PACKAGE_NAMES,
   Modules,
@@ -13,23 +16,52 @@ import {
   TEMPORARY_REDIS_MODULE_PACKAGE_NAMES,
 } from "../modules-sdk"
 import { isObject } from "./is-object"
+import { isProduction } from "./is-production"
 import { isString } from "./is-string"
 import { normalizeImportPathWithSource } from "./normalize-import-path-with-source"
 import { resolveExports } from "./resolve-exports"
+import { resolveFromProject } from "./resolve-from-project"
 import { tryConvertToNumber } from "./try-convert-to-number"
 
 const MEDUSA_CLOUD_EXECUTION_CONTEXT = "medusa-cloud"
 const DEFAULT_SECRET = "supersecret"
+
+/**
+ * Returns the secret to use for signing tokens/cookies. In production
+ * environments we never fall back to the hardcoded `DEFAULT_SECRET` since
+ * it is publicly known and would allow forging tokens. The caller is
+ * expected to surface a proper error downstream when the returned value
+ * is `undefined` in production.
+ */
+function resolveEnvSecret(envValue: string | undefined): string | undefined {
+  if (envValue) {
+    return envValue
+  }
+
+  if (isProduction()) {
+    return undefined
+  }
+
+  return DEFAULT_SECRET
+}
 const DEFAULT_ADMIN_URL = "/"
+const DEFAULT_USER_AUTH_METHODS = ["emailpass"]
 const DEFAULT_STORE_CORS = "http://localhost:8000"
 const DEFAULT_DATABASE_URL = "postgres://localhost/medusa-starter-default"
 const DEFAULT_ADMIN_CORS =
   "http://localhost:7000,http://localhost:7001,http://localhost:5173"
 
+/**
+ * The actor types allowed on the "/rbac" API routes. Defaults to "user" only,
+ * so that existing applications keep the behaviour of the previously
+ * admin-only RBAC routes. Applications opt other actors in explicitly.
+ */
+export const DEFAULT_RBAC_ACTOR_TYPES = ["user"]
+
 export const DEFAULT_STORE_RESTRICTED_FIELDS = [
   "order",
   "orders",
-  /*"customer",
+  /* "customer",
   "customers",
   "payment_collection",
   "payment_collections"*/
@@ -43,6 +75,13 @@ export const DEFAULT_STORE_RESTRICTED_FIELDS = [
  * make an application work seamlessly, but still provide you the ability
  * to override configuration as needed.
  */
+export function defineConfig(config?: InputConfigWithArrayModules): ConfigModule
+/**
+ * @deprecated Use array-based modules configuration instead
+ */
+export function defineConfig(
+  config?: InputConfigWithObjectModules
+): ConfigModule
 export function defineConfig(config: InputConfig = {}): ConfigModule {
   const options = {
     isCloud: process.env.EXECUTION_CONTEXT === MEDUSA_CLOUD_EXECUTION_CONTEXT,
@@ -50,7 +89,13 @@ export function defineConfig(config: InputConfig = {}): ConfigModule {
 
   const projectConfig = normalizeProjectConfig(config.projectConfig, options)
   const adminConfig = normalizeAdminConfig(config.admin)
-  const modules = resolveModules(config.modules, options, config.projectConfig)
+  const projectDir = process.cwd()
+  const modules = resolveModules(
+    config.modules,
+    options,
+    config.projectConfig,
+    projectDir
+  )
   applyCloudOptionsToModules(modules, projectConfig?.cloud, adminConfig)
   const plugins = resolvePlugins(config.plugins, options)
 
@@ -69,7 +114,8 @@ export function defineConfig(config: InputConfig = {}): ConfigModule {
  * take precedence in case of duplicate modules
  */
 export function transformModules(
-  modules: InputConfigModules
+  modules: InputConfigModules,
+  projectDir: string = process.cwd()
 ): Exclude<ConfigModule["modules"], undefined> {
   const remappedModules = modules.reduce((acc, moduleConfig) => {
     if (moduleConfig.scope === "external" && !moduleConfig.key) {
@@ -83,34 +129,40 @@ export function transformModules(
     }
 
     // TODO: handle external modules later
-    let serviceName: string =
-      "key" in moduleConfig && moduleConfig.key ? moduleConfig.key : ""
+    let serviceName: string = getKnownModuleName(moduleConfig) ?? ""
     delete moduleConfig.key
 
     if (!serviceName && "resolve" in moduleConfig) {
-      if (
-        isString(moduleConfig.resolve!) &&
-        REVERSED_MODULE_PACKAGE_NAMES[moduleConfig.resolve!]
-      ) {
-        serviceName = REVERSED_MODULE_PACKAGE_NAMES[moduleConfig.resolve!]
-        acc[serviceName] = moduleConfig
-        return acc
+      if (!moduleConfig.resolve) {
+        throw new Error(
+          `Module must have a 'resolve' property in medusa-config.ts and it can't be empty. Please provide a module name or path for the module.`
+        )
       }
 
-      let resolution = isString(moduleConfig.resolve!)
-        ? normalizeImportPathWithSource(moduleConfig.resolve as string)
+      const resolution = isString(moduleConfig.resolve!)
+        ? normalizeImportPathWithSource(
+            moduleConfig.resolve as string,
+            projectDir
+          )
         : moduleConfig.resolve
 
+      /**
+       * Plugin modules are referenced by a bare specifier
+       * ("<plugin>/.medusa/server/src/modules/<name>"), so they must be
+       * resolved from the project directory. Otherwise the lookup starts in
+       * whichever "node_modules" directory `@medusajs/utils` was hoisted into,
+       * which in a workspace monorepo does not contain the plugin.
+       */
       const moduleExport = isString(resolution)
-        ? require(resolution)
+        ? require(resolveFromProject(resolution, projectDir))
         : resolution
 
       const defaultExport = resolveExports(moduleExport).default
 
       const joinerConfig =
         typeof defaultExport.service.prototype.__joinerConfig === "function"
-          ? defaultExport.service.prototype.__joinerConfig() ?? {}
-          : defaultExport.service.prototype.__joinerConfig ?? {}
+          ? (defaultExport.service.prototype.__joinerConfig() ?? {})
+          : (defaultExport.service.prototype.__joinerConfig ?? {})
 
       serviceName = joinerConfig.serviceName
 
@@ -127,6 +179,58 @@ export function transformModules(
   }, {})
 
   return remappedModules as Exclude<ConfigModule["modules"], undefined>
+}
+
+function getKnownModuleName(
+  moduleConfig: InputConfigModules[number]
+): string | undefined {
+  if ("key" in moduleConfig && moduleConfig.key) {
+    return moduleConfig.key
+  }
+
+  if (
+    "resolve" in moduleConfig &&
+    isString(moduleConfig.resolve!) &&
+    REVERSED_MODULE_PACKAGE_NAMES[moduleConfig.resolve!]
+  ) {
+    return REVERSED_MODULE_PACKAGE_NAMES[moduleConfig.resolve!]
+  }
+
+  return undefined
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return isObject(value) ? (value as Record<string, unknown>) : {}
+}
+
+function applyDefaultAuthMfaOptions(
+  modules: InputConfigModules,
+  defaultAuthModuleOptions: Record<string, unknown>
+) {
+  modules.forEach((moduleConfig) => {
+    const moduleName = getKnownModuleName(moduleConfig)
+
+    if (
+      moduleName !== Modules.AUTH ||
+      ("disable" in moduleConfig && moduleConfig.disable)
+    ) {
+      return
+    }
+
+    const options = asRecord(moduleConfig.options)
+    const defaultMfaOptions = asRecord(defaultAuthModuleOptions.mfa)
+    const mfaOptions = asRecord(options.mfa)
+
+    moduleConfig.options = {
+      ...options,
+      mfa: {
+        ...defaultMfaOptions,
+        ...mfaOptions,
+        encryption_key:
+          mfaOptions.encryption_key ?? defaultMfaOptions.encryption_key,
+      },
+    }
+  })
 }
 
 function resolvePlugins(
@@ -165,8 +269,22 @@ function resolvePlugins(
 function resolveModules(
   configModules: InputConfig["modules"],
   { isCloud }: { isCloud: boolean },
-  projectConfig: InputConfig["projectConfig"]
+  projectConfig: InputConfig["projectConfig"],
+  projectDir: string = process.cwd()
 ): Exclude<ConfigModule["modules"], undefined> {
+  const authMfaEncryptionKey = process.env.AUTH_MFA_ENCRYPTION_KEY
+  const authModuleOptions = {
+    mfa: {
+      encryption_key: authMfaEncryptionKey,
+    },
+    providers: [
+      {
+        resolve: "@medusajs/medusa/auth-emailpass",
+        id: "emailpass",
+      },
+    ],
+  }
+
   const sharedModules = [
     { resolve: MODULE_PACKAGE_NAMES[Modules.STOCK_LOCATION] },
     { resolve: MODULE_PACKAGE_NAMES[Modules.INVENTORY] },
@@ -186,24 +304,21 @@ function resolveModules(
     { resolve: MODULE_PACKAGE_NAMES[Modules.ORDER] },
     { resolve: MODULE_PACKAGE_NAMES[Modules.SETTINGS] },
 
-    // TODO: re-enable this once we have the final release
-    // { resolve: MODULE_PACKAGE_NAMES[Modules.TRANSLATION] },
+    {
+      resolve: MODULE_PACKAGE_NAMES[Modules.TRANSLATION],
+      disable: !FeatureFlag.isFeatureEnabled("translation"),
+    },
 
     {
       resolve: MODULE_PACKAGE_NAMES[Modules.AUTH],
-      options: {
-        providers: [
-          {
-            resolve: "@medusajs/medusa/auth-emailpass",
-            id: "emailpass",
-          },
-        ],
-      },
+      options: authModuleOptions,
     },
     {
       resolve: MODULE_PACKAGE_NAMES[Modules.USER],
       options: {
-        jwt_secret: projectConfig?.http?.jwtSecret ?? DEFAULT_SECRET,
+        jwt_secret:
+          projectConfig?.http?.jwtSecret ??
+          resolveEnvSecret(process.env.JWT_SECRET),
         jwt_options: projectConfig?.http?.jwtOptions,
         jwt_verify_options: projectConfig?.http?.jwtVerifyOptions,
         jwt_public_key: projectConfig?.http?.jwtPublicKey,
@@ -235,6 +350,26 @@ function resolveModules(
         ],
       },
     },
+    // Self-hosted: native Postgres FTS. Cloud without a search endpoint: Lakebase.
+    // Cloud with MEDUSA_CLOUD_SEARCH_ENDPOINT: search-medusa is the default
+    // (registered from options.cloud, same pattern as notification cloud email
+    // and Medusa Payments). Postgres stays registered so a provider switch can
+    // drop the previous engine's indexes during `db:migrate`.
+    {
+      resolve: MODULE_PACKAGE_NAMES[Modules.SEARCH],
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/medusa/search-postgres",
+            id: "postgres",
+            options: { engine: isCloud ? "lakebase" : "native" },
+          },
+        ],
+        ...(process.env.MEDUSA_CLOUD_SEARCH_ENDPOINT
+          ? { default_provider: "search-medusa" }
+          : {}),
+      },
+    },
   ]
 
   const defaultModules = [
@@ -257,37 +392,8 @@ function resolveModules(
     },
   ]
 
-  const cloudModules = [
+  const cloudModules: InputConfig["modules"] = [
     ...sharedModules,
-    {
-      resolve: TEMPORARY_REDIS_MODULE_PACKAGE_NAMES[Modules.WORKFLOW_ENGINE],
-      options: {
-        redis: { url: process.env.REDIS_URL },
-      },
-    },
-    {
-      resolve: TEMPORARY_REDIS_MODULE_PACKAGE_NAMES[Modules.CACHE],
-      options: { redisUrl: process.env.REDIS_URL },
-    },
-    {
-      resolve: TEMPORARY_REDIS_MODULE_PACKAGE_NAMES[Modules.EVENT_BUS],
-      options: { redisUrl: process.env.REDIS_URL },
-    },
-    {
-      resolve: MODULE_PACKAGE_NAMES[Modules.LOCKING],
-      options: {
-        providers: [
-          {
-            id: "locking-redis",
-            resolve: TEMPORARY_REDIS_MODULE_PACKAGE_NAMES[Modules.LOCKING],
-            is_default: true,
-            options: {
-              redisUrl: process.env.REDIS_URL,
-            },
-          },
-        ],
-      },
-    },
     {
       resolve: MODULE_PACKAGE_NAMES[Modules.FILE],
       options: {
@@ -308,6 +414,55 @@ function resolveModules(
       },
     },
   ]
+
+  if (process.env.REDIS_URL) {
+    cloudModules.push(
+      ...[
+        {
+          resolve:
+            TEMPORARY_REDIS_MODULE_PACKAGE_NAMES[Modules.WORKFLOW_ENGINE],
+          options: {
+            redis: { url: process.env.REDIS_URL },
+          },
+        },
+        {
+          resolve: TEMPORARY_REDIS_MODULE_PACKAGE_NAMES[Modules.CACHE],
+          options: { redisUrl: process.env.REDIS_URL },
+        },
+        {
+          resolve: TEMPORARY_REDIS_MODULE_PACKAGE_NAMES[Modules.EVENT_BUS],
+          options: {
+            redisUrl: process.env.REDIS_URL,
+            workerOptions: { concurrency: 1 },
+          },
+        },
+        {
+          resolve: MODULE_PACKAGE_NAMES[Modules.LOCKING],
+          options: {
+            providers: [
+              {
+                id: "locking-redis",
+                resolve: TEMPORARY_REDIS_MODULE_PACKAGE_NAMES[Modules.LOCKING],
+                is_default: true,
+                options: {
+                  redisUrl: process.env.REDIS_URL,
+                },
+              },
+            ],
+          },
+        },
+      ]
+    )
+  } else {
+    cloudModules.push(
+      ...[
+        { resolve: MODULE_PACKAGE_NAMES[Modules.CACHE] },
+        { resolve: MODULE_PACKAGE_NAMES[Modules.EVENT_BUS] },
+        { resolve: MODULE_PACKAGE_NAMES[Modules.WORKFLOW_ENGINE] },
+        { resolve: MODULE_PACKAGE_NAMES[Modules.LOCKING] },
+      ]
+    )
+  }
 
   if (process.env.CACHE_REDIS_URL) {
     cloudModules.push({
@@ -362,7 +517,9 @@ function resolveModules(
     }
   }
 
-  return transformModules(modules)
+  applyDefaultAuthMfaOptions(modules, authModuleOptions)
+
+  return transformModules(modules, projectDir)
 }
 
 function normalizeProjectConfig(
@@ -374,16 +531,22 @@ function normalizeProjectConfig(
 
   const mergedCloudOptions: MedusaCloudOptions = {
     environmentHandle: process.env.MEDUSA_CLOUD_ENVIRONMENT_HANDLE,
-    sandboxHandle: process.env.MEDUSA_CLOUD_SANDBOX_HANDLE,
     apiKey: process.env.MEDUSA_CLOUD_API_KEY,
     webhookSecret: process.env.MEDUSA_CLOUD_WEBHOOK_SECRET,
     emailsEndpoint: process.env.MEDUSA_CLOUD_EMAILS_ENDPOINT,
     paymentsEndpoint: process.env.MEDUSA_CLOUD_PAYMENTS_ENDPOINT,
+    paymentAccounts: process.env.MEDUSA_CLOUD_PAYMENT_ACCOUNTS?.split(",")
+      .map((handle) => handle.trim())
+      .filter(Boolean),
+    searchEndpoint: process.env.MEDUSA_CLOUD_SEARCH_ENDPOINT,
     oauthAuthorizeEndpoint: process.env.MEDUSA_CLOUD_OAUTH_AUTHORIZE_ENDPOINT,
     oauthTokenEndpoint: process.env.MEDUSA_CLOUD_OAUTH_TOKEN_ENDPOINT,
     oauthCallbackUrl: process.env.MEDUSA_CLOUD_OAUTH_CALLBACK_URL,
     oauthDisabled:
       process.env.MEDUSA_CLOUD_OAUTH_DISABLED === "true" ? true : undefined,
+    oauthJwksUri: process.env.MEDUSA_CLOUD_OAUTH_JWKS_ENDPOINT,
+    oauthAudience: process.env.MEDUSA_CLOUD_OAUTH_AUDIENCE,
+    oauthClientSecret: process.env.MEDUSA_CLOUD_OAUTH_CLIENT_SECRET,
     ...cloud,
   }
   const hasCloudOptions = Object.values(mergedCloudOptions).some(
@@ -401,12 +564,13 @@ function normalizeProjectConfig(
       storeCors: process.env.STORE_CORS || DEFAULT_STORE_CORS,
       adminCors: process.env.ADMIN_CORS || DEFAULT_ADMIN_CORS,
       authCors: process.env.AUTH_CORS || DEFAULT_ADMIN_CORS,
-      jwtSecret: process.env.JWT_SECRET || DEFAULT_SECRET,
+      jwtSecret: resolveEnvSecret(process.env.JWT_SECRET),
       jwtPublicKey: process.env.JWT_PUBLIC_KEY,
-      cookieSecret: process.env.COOKIE_SECRET || DEFAULT_SECRET,
+      cookieSecret: resolveEnvSecret(process.env.COOKIE_SECRET),
       restrictedFields: {
         store: DEFAULT_STORE_RESTRICTED_FIELDS,
       },
+      rbacActorTypes: DEFAULT_RBAC_ACTOR_TYPES,
       ...http,
     },
     redisOptions: {
@@ -455,6 +619,11 @@ function normalizeProjectConfig(
     ...restOfProjectConfig,
   } satisfies ConfigModule["projectConfig"]
 
+  config.http.authMethodsPerActor = {
+    ...config.http.authMethodsPerActor,
+    user: config.http.authMethodsPerActor?.user ?? DEFAULT_USER_AUTH_METHODS,
+  }
+
   if (
     isCloud &&
     !mergedCloudOptions.oauthDisabled &&
@@ -483,6 +652,7 @@ function normalizeAdminConfig(
   return {
     backendUrl: process.env.MEDUSA_BACKEND_URL || DEFAULT_ADMIN_URL,
     path: "/app",
+    maxUploadFileSize: 1024 * 1024, // 1MB default
     ...adminConfig,
   }
 }
@@ -509,7 +679,6 @@ function applyCloudOptionsToModules(
             api_key: config.apiKey,
             endpoint: config.emailsEndpoint,
             environment_handle: config.environmentHandle,
-            sandbox_handle: config.sandboxHandle,
           },
           ...(module.options ?? {}),
         }
@@ -520,8 +689,18 @@ function applyCloudOptionsToModules(
             api_key: config.apiKey,
             webhook_secret: config.webhookSecret,
             endpoint: config.paymentsEndpoint,
+            payment_accounts: config.paymentAccounts,
             environment_handle: config.environmentHandle,
-            sandbox_handle: config.sandboxHandle,
+          },
+          ...(module.options ?? {}),
+        }
+        break
+      case Modules.SEARCH:
+        module.options = {
+          cloud: {
+            api_key: config.apiKey,
+            endpoint: config.searchEndpoint,
+            environment_handle: config.environmentHandle,
           },
           ...(module.options ?? {}),
         }
@@ -535,8 +714,10 @@ function applyCloudOptionsToModules(
           cloud: {
             oauth_authorize_endpoint: config.oauthAuthorizeEndpoint,
             oauth_token_endpoint: config.oauthTokenEndpoint,
+            oauth_jwks_uri: config.oauthJwksUri,
+            oauth_audience: config.oauthAudience,
+            oauth_client_secret: config.oauthClientSecret,
             environment_handle: config.environmentHandle,
-            sandbox_handle: config.sandboxHandle,
             api_key: config.apiKey,
             callback_url: callbackUrl,
             disabled: config.oauthDisabled,

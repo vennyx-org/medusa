@@ -12,7 +12,7 @@ export const ReservationDetailBreadcrumb = (
   const { id } = props.params || {}
 
   const { reservation } = useReservationItem(id!, undefined, {
-    initialData: props.data,
+    initialData: props.loaderData,
     enabled: Boolean(id),
   })
 
@@ -26,4 +26,16 @@ export const ReservationDetailBreadcrumb = (
     reservation.id
 
   return <span>{display}</span>
+}
+
+export const seo = (match: UIMatch<HttpTypes.AdminReservationResponse>) => {
+  const reservation = match.loaderData?.reservation
+
+  return {
+    title: reservation
+      ? (reservation.inventory_item?.title ??
+        reservation.inventory_item?.sku ??
+        reservation.id)
+      : undefined,
+  }
 }

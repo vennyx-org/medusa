@@ -7,6 +7,10 @@ import {
 import type { RedisOptions } from "ioredis"
 
 import { ConnectionOptions } from "node:tls"
+// This package emits CommonJS under `moduleResolution: Node16`, while Vite ships
+// ESM-only type declarations, so TypeScript cannot resolve them from here and
+// `InlineConfig` degrades to `any`. Fixing that needs a `resolution-mode` import
+// attribute, which the repo's Prettier (2.8.8) cannot parse.
 // @ts-ignore
 import type { InlineConfig } from "vite"
 import type { Logger } from "../logger"
@@ -59,7 +63,6 @@ export interface AdminOptions {
    * - `/admin`
    * - `/store`
    * - `/auth`
-   * - `/`
    *
    * @example
    * ```ts title="medusa-config.ts"
@@ -119,6 +122,22 @@ export interface AdminOptions {
    * @privateRemarks TODO Add example
    */
   vite?: (config: InlineConfig) => InlineConfig
+
+  /**
+   * The maximum file size for media uploads in bytes. The default value is `1048576` (1MB).
+   * Set to `Infinity` to disable the file size limit.
+   *
+   * @example
+   * ```js title="medusa-config.ts"
+   * module.exports = defineConfig({
+   *   admin: {
+   *     maxUploadFileSize: 10 * 1024 * 1024, // 10MB
+   *   },
+   *   // ...
+   * })
+   * ```
+   */
+  maxUploadFileSize?: number
 }
 
 /**
@@ -192,16 +211,40 @@ export type SessionOptions = {
 /**
  * @interface
  *
- * Options to pass to `express-session`.
+ * Cookie options used when setting cookies in the HTTP layer.
  */
 export type CookieOptions = Record<string, any> & {
+  /**
+   * Whether the cookie should only be sent over HTTPS connections.
+   */
   secure?: boolean
+  /**
+   * The `SameSite` attribute of the cookie, controlling cross-site request behavior.
+   */
   sameSite?: "lax" | "strict" | "none"
+  /**
+   * The maximum age of the cookie in milliseconds.
+   */
   maxAge?: number
+  /**
+   * Whether the cookie is accessible only via HTTP(S) and not JavaScript.
+   */
   httpOnly?: boolean
+  /**
+   * The priority of the cookie as defined in RFC 8030.
+   */
   priority?: "low" | "medium" | "high"
+  /**
+   * The domain for which the cookie is valid.
+   */
   domain?: string
+  /**
+   * The URL path for which the cookie is valid.
+   */
   path?: string
+  /**
+   * Whether the cookie should be signed.
+   */
   signed?: boolean
 }
 
@@ -243,10 +286,6 @@ export type MedusaCloudOptions = {
    */
   environmentHandle?: string
   /**
-   * The sandbox handle of the Medusa Cloud sandbox.
-   */
-  sandboxHandle?: string
-  /**
    * The API key used to access Medusa Cloud services.
    */
   apiKey?: string
@@ -259,9 +298,18 @@ export type MedusaCloudOptions = {
    */
   paymentsEndpoint?: string
   /**
+   * The handles of the Medusa Payments accounts available to the environment. A payment
+   * provider is registered for each, with the ID `medusa-payments_{handle}`.
+   */
+  paymentAccounts?: string[]
+  /**
    * The endpoint of the Medusa Cloud email service.
    */
   emailsEndpoint?: string
+  /**
+   * The endpoint of the Medusa Cloud search service.
+   */
+  searchEndpoint?: string
   /**
    * The authorization endpoint of the Medusa Cloud OAuth service.
    */
@@ -278,6 +326,24 @@ export type MedusaCloudOptions = {
    * Whether the Medusa Cloud OAuth service is disabled.
    */
   oauthDisabled?: boolean
+  /**
+   * The JWKS URI for the Medusa Cloud OAuth service. This is used to verify the JWT tokens issued by the Medusa Cloud OAuth service.
+   * If not provided, an error is thrown when trying to use the Medusa Cloud OAuth service.
+   *
+   * @since 2.16.0
+   */
+  oauthJwksUri?: string
+  /**
+   * The expected `aud` claim of id_tokens issued by the Medusa Cloud OAuth service.
+   * If not provided, an error is thrown when trying to use the Medusa Cloud OAuth service.
+   *
+   * @since 2.16.0
+   */
+  oauthAudience?: string
+  /**
+   * The client secret sent to the Medusa Cloud OAuth token endpoint. If not provided, `apiKey` is used.
+   */
+  oauthClientSecret?: string
 }
 
 /**
@@ -497,6 +563,9 @@ export type ProjectConfigOptions = {
    */
   sessionOptions?: SessionOptions
 
+  /**
+   * Additional cookie options to apply when setting cookies in the HTTP layer.
+   */
   cookieOptions?: CookieOptions
 
   /**
@@ -749,12 +818,35 @@ export type ProjectConfigOptions = {
      */
     authCors: string
     /**
+     * The allowed origins for the `/rbac` API Routes. Defaults to `adminCors`, since the Medusa Admin dashboard consumes these routes.
+     *
+     * Set it when another client, such as a custom dashboard for a non-`user` actor type, calls the `/rbac` routes from a different origin.
+     * Accepts the same format as `adminCors`.
+     *
+     * When set, it replaces `adminCors` for the `/rbac` routes rather than extending it. If the Medusa Admin dashboard
+     * also uses the `/rbac` routes, include its origin as well.
+     *
+     * @example
+     * ```js title="medusa-config.ts"
+     * module.exports = defineConfig({
+     *   projectConfig: {
+     *     http: {
+     *       rbacCors: process.env.RBAC_CORS
+     *     }
+     *     // ...
+     *   },
+     *   // ...
+     * })
+     * ```
+     */
+    rbacCors?: string
+    /**
      *
      * Configure HTTP compression from the application layer. If you have access to the HTTP server, the recommended approach would be to enable it there.
      * However, some platforms don't offer access to the HTTP layer and in those cases, this is a good alternative.
      *
      * If you enable HTTP compression and you want to disable it for specific API Routes, you can pass in the request header `"x-no-compression": true`.
-     * Learn more in the [API Reference](https://docs.medusajs.com/api/store#http-compression).
+     * Learn more in the [API Reference](https://docs.medusajs.com/api/store/http-compression).
      *
      * @example
      * ```js title="medusa-config.ts"
@@ -887,7 +979,7 @@ export type ProjectConfigOptions = {
      * This configuration specifies the supported authentication providers per actor type (such as `user`, `customer`, or any custom actors).
      * For example, you only want to allow SSO logins for `users`, while you want to allow email/password logins for `customers` to the storefront.
      *
-     * `authMethodsPerActor` is a a map where the actor type (eg. 'user') is the key, and the value is an array of supported auth provider IDs.
+     * `authMethodsPerActor` is a map where the actor type (eg. 'user') is the key, and the value is an array of supported auth provider IDs.
      *
      * @example
      * Some example values of common use cases:
@@ -912,6 +1004,67 @@ export type ProjectConfigOptions = {
     authMethodsPerActor?: Record<string, string[]>
 
     /**
+     * This configuration specifies the required verification types per actor type (such as `user`, `customer`, or any custom actors).
+     * For example, you only want to require email verification for `customers` when authenticating with emailpass, or phone number verification for `users` when authenticating with phone-auth.
+     *
+     * `authVerificationsPerActor` is a map where the actor type (eg. 'user') is the key, and the value is an array of objects with the following properties:
+     * - `entity_type`: The type of entity being verified. For example, `email` or `phone_number`.
+     * - `auth_provider`: The provider that requires the verification. For example, `emailpass` or `phone-auth`.
+     *
+     * @example
+     *
+     * ```js title="medusa-config.ts"
+     * module.exports = defineConfig({
+     *   projectConfig: {
+     *     http: {
+     *       authVerificationsPerActor: {
+     *         // No verifications required for users
+     *         user: [],
+     *         // Email verification required for customers using emailpass, but if they use google auth no need to verify
+     *         customer: [
+     *           { entity_type: "email", auth_provider: "emailpass" },
+     *         ],
+     *       },
+     *     }
+     *     // ...
+     *   },
+     *   // ...
+     * ```
+     */
+    authVerificationsPerActor?: Record<
+      string,
+      { entity_type: string; auth_provider: string }[]
+    >
+
+    /**
+     * This configuration specifies the auth providers that only authenticate auth identities already associated with an actor of the
+     * requested actor type. For example, you want to refuse logging in to `/auth/user/emailpass` with a customer's credentials.
+     *
+     * `requireActorAssociation` is a map where the auth provider ID (eg. `emailpass`) is the key, and the value is a boolean indicating whether
+     * the association is required. An auth identity is associated with an actor type when its `app_metadata` has the `{actor_type}_id` property.
+     * This only applies to authentication, so registering a new auth identity still works.
+     *
+     * By default, when the option isn't set for a provider, an auth identity can authenticate as any actor type, for example to allow an admin user
+     * to create a customer account with the same email.
+     *
+     * @example
+     *
+     * ```js title="medusa-config.ts"
+     * module.exports = defineConfig({
+     *   projectConfig: {
+     *     http: {
+     *       requireActorAssociation: {
+     *         emailpass: true,
+     *       },
+     *     }
+     *     // ...
+     *   },
+     *   // ...
+     * })
+     * ```
+     */
+    requireActorAssociation?: Record<string, boolean>
+    /**
      * Specifies the fields that can't be selected in the response unless specified in the allowed query config.
      * This is useful to restrict sensitive fields from being exposed in the API.
      *
@@ -929,8 +1082,55 @@ export type ProjectConfigOptions = {
      */
     restrictedFields?: {
       store?: string[]
-      /*admin?: string[]*/
+      /* admin?: string[]*/
     }
+
+    /**
+     * The maximum number of relations that can be expanded in a single request to a Store API route.
+     * For example, requesting `variants.options.values` expands three relations.
+     *
+     * Routes can override this limit through their query configuration's `storeRelationsLimit` property.
+     *
+     * The default value is `3`.
+     *
+     * @since v2.20.0
+     *
+     * @example
+     *
+     * ```js title="medusa-config.ts"
+     * module.exports = defineConfig({
+     *   projectConfig: {
+     *     http: {
+     *       storeRelationsLimit: 4,
+     *     }
+     *     // ...
+     *   },
+     *   // ...
+     * })
+     * ```
+     */
+    storeRelationsLimit?: number
+
+    /**
+     * The actor types that are allowed to authenticate against the `/rbac` API routes.
+     * Requests authenticated as any other actor type are rejected with a 401.
+     *
+     * Defaults to `["user"]`. Pass `["*"]` to allow every authenticated actor type.
+     *
+     * @example
+     * ```js title="medusa-config.ts"
+     * module.exports = defineConfig({
+     *   projectConfig: {
+     *     http: {
+     *       rbacActorTypes: ["user", "custom_actor"],
+     *     }
+     *     // ...
+     *   },
+     *   // ...
+     * })
+     * ```
+     */
+    rbacActorTypes?: string[]
   }
 
   /**
@@ -1139,69 +1339,106 @@ type ExternalModuleDeclarationOverride = ExternalModuleDeclaration & {
   disable?: boolean
 }
 
-/**
- * Generates a union of typed module configs for all known modules in the ModuleOptions registry.
- * This enables automatic type inference when using registered module resolve strings.
- */
-type KnownModuleConfigs = {
-  [K in keyof ModuleOptions]: Partial<
-    Omit<InternalModuleDeclaration, "options"> & {
+type ModuleConfigForResolve<R extends string> = R extends keyof ModuleOptions
+  ? {
+      resolve: R
       key?: string
       disable?: boolean
-      resolve: K
-      options?: ModuleOptions[K]
-    }
-  >
-}[keyof ModuleOptions]
+      options?: ModuleOptions[R]
+    } & Partial<Omit<InternalModuleDeclaration, "options" | "resolve">>
+  : {
+      resolve?: string
+      key?: string
+      disable?: boolean
+      options?: object
+    } & Partial<Omit<InternalModuleDeclaration, "options" | "resolve">>
+
+/**
+ * Generates a union of typed module configs for all known modules in the ModuleOptions registry.
+ * This distributes over all keys in ModuleOptions to create specific config types for each.
+ */
+type KnownModuleConfigs = ModuleConfigForResolve<keyof ModuleOptions & string>
 
 /**
  * Generic module config for modules not registered in ModuleOptions.
  */
-type GenericModuleConfig = Partial<
-  Omit<InternalModuleDeclaration, "options"> & {
-    key?: string
-    disable?: boolean
-    resolve?: string
-    options?: Record<string, unknown>
-  }
->
+type GenericModuleConfig = ModuleConfigForResolve<string & {}>
 
 /**
  * Modules accepted by the defineConfig function.
  * Automatically infers options type for known modules registered in ModuleOptions.
  */
 export type InputConfigModules = (
-  | KnownModuleConfigs
-  | GenericModuleConfig
-  | ExternalModuleDeclarationOverride
+  KnownModuleConfigs | GenericModuleConfig | ExternalModuleDeclarationOverride
 )[]
+
+/**
+ * Base configuration type without modules
+ */
+type InputConfigBase = Partial<
+  Omit<ConfigModule, "admin" | "modules"> & {
+    admin?: Partial<ConfigModule["admin"]>
+  }
+>
+
+/**
+ * Configuration with array-based modules (recommended)
+ */
+export type InputConfigWithArrayModules = InputConfigBase & {
+  modules?: InputConfigModules
+}
+
+/**
+ * Configuration with object-based modules (deprecated)
+ * @deprecated Use array-based modules instead
+ */
+export type InputConfigWithObjectModules = InputConfigBase & {
+  modules?: ConfigModule["modules"]
+}
 
 /**
  * The configuration accepted by the "defineConfig" helper
  */
-export type InputConfig = Partial<
-  Omit<ConfigModule, "admin" | "modules"> & {
-    admin?: Partial<ConfigModule["admin"]>
-    modules:
-      | InputConfigModules
-      /**
-       * @deprecated use the array instead
-       */
-      | ConfigModule["modules"]
-  }
->
+export type InputConfig =
+  InputConfigWithArrayModules | InputConfigWithObjectModules
 
 type PluginAdminDetails = {
   type: "local" | "package"
   resolve: string
 }
 
+/**
+ * @interface
+ *
+ * Resolved details of a plugin loaded by the Medusa application.
+ */
 export type PluginDetails = {
+  /**
+   * The path to the plugin's package or directory.
+   */
   resolve: string
+  /**
+   * The plugin's name as inferred from its package.
+   */
   name: string
+  /**
+   * A unique identifier for the plugin instance.
+   */
   id: string
+  /**
+   * The options passed to the plugin.
+   */
   options: Record<string, unknown>
+  /**
+   * The plugin's version as specified in its `package.json`.
+   */
   version: string
+  /**
+   * Admin dashboard details for the plugin, if any.
+   */
   admin?: PluginAdminDetails
+  /**
+   * Module configurations provided by the plugin.
+   */
   modules?: InputConfigModules
 }

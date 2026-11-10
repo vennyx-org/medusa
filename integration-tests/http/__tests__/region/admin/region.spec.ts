@@ -1,26 +1,20 @@
-import { ContainerRegistrationKeys, Modules } from "@medusajs/utils"
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
 import {
   adminHeaders,
   createAdminUser,
-  generatePublishableKey,
-  generateStoreHeaders,
 } from "../../../../helpers/create-admin-user"
 
 jest.setTimeout(30000)
 
 medusaIntegrationTestRunner({
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
     let region1
     let region2
     let container
-    let storeHeaders
 
-    beforeEach(async () => {
+    beforeAll(async () => {
       container = getContainer()
       await createAdminUser(dbConnection, adminHeaders, container)
-      const publishableKey = await generatePublishableKey(container)
-      storeHeaders = generateStoreHeaders({ publishableKey })
 
       region1 = (
         await api.post(
@@ -43,6 +37,8 @@ medusaIntegrationTestRunner({
           adminHeaders
         )
       ).data.region
+
+      await dbUtils.snapshot()
     })
 
     // BREAKING: There is no more `tax_rate` field on the region.
@@ -116,39 +112,6 @@ medusaIntegrationTestRunner({
               `Region with id: invalid-region-id not found`
             )
           })
-      })
-
-      it("should list payment providers", async () => {
-        const remoteLink = container.resolve(
-          ContainerRegistrationKeys.REMOTE_LINK
-        )
-
-        let response = await api.get(
-          `/store/regions/${region1.id}?fields=*payment_providers`,
-          storeHeaders
-        )
-
-        expect(response.status).toEqual(200)
-        expect(response.data.region.payment_providers).toEqual([])
-
-        await remoteLink.create([
-          {
-            [Modules.REGION]: { region_id: region1.id },
-            [Modules.PAYMENT]: { payment_provider_id: "pp_system_default" },
-          },
-        ])
-
-        response = await api.get(
-          `/store/regions/${region1.id}?fields=*payment_providers`,
-          storeHeaders
-        )
-
-        expect(response.status).toEqual(200)
-        expect(response.data.region.payment_providers).toEqual([
-          expect.objectContaining({
-            id: "pp_system_default",
-          }),
-        ])
       })
     })
 

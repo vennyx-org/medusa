@@ -12,6 +12,10 @@ export const userGuide = [
     "path": "https://docs.medusajs.com/user-guide/customers"
   },
   {
+    "title": "Export Inventory Items",
+    "path": "https://docs.medusajs.com/user-guide/inventory/export"
+  },
+  {
     "title": "Manage Inventory Items",
     "path": "https://docs.medusajs.com/user-guide/inventory/inventory"
   },
@@ -22,6 +26,34 @@ export const userGuide = [
   {
     "title": "Manage Reservations",
     "path": "https://docs.medusajs.com/user-guide/inventory/reservations"
+  },
+  {
+    "title": "Manage Gift Card Products",
+    "path": "https://docs.medusajs.com/user-guide/loyalty/gift-card-products/manage"
+  },
+  {
+    "title": "Gift Card Products Overview",
+    "path": "https://docs.medusajs.com/user-guide/loyalty/gift-card-products"
+  },
+  {
+    "title": "Manage Gift Cards",
+    "path": "https://docs.medusajs.com/user-guide/loyalty/gift-cards/manage"
+  },
+  {
+    "title": "Gift Cards Overview",
+    "path": "https://docs.medusajs.com/user-guide/loyalty/gift-cards"
+  },
+  {
+    "title": "Loyalty Features in Medusa Admin",
+    "path": "https://docs.medusajs.com/user-guide/loyalty"
+  },
+  {
+    "title": "Manage Store Credits",
+    "path": "https://docs.medusajs.com/user-guide/loyalty/store-credits/manage"
+  },
+  {
+    "title": "Store Credits Overview",
+    "path": "https://docs.medusajs.com/user-guide/loyalty/store-credits"
   },
   {
     "title": "Manage Order Claims",
@@ -116,6 +148,10 @@ export const userGuide = [
     "path": "https://docs.medusajs.com/user-guide/products/import"
   },
   {
+    "title": "Manage Product Options",
+    "path": "https://docs.medusajs.com/user-guide/products/options"
+  },
+  {
     "title": "Products Overview",
     "path": "https://docs.medusajs.com/user-guide/products"
   },
@@ -172,6 +208,10 @@ export const userGuide = [
     "path": "https://docs.medusajs.com/user-guide/settings/locations-and-shipping/shipping-profiles"
   },
   {
+    "title": "View Policies",
+    "path": "https://docs.medusajs.com/user-guide/settings/policies"
+  },
+  {
     "title": "Manage Product Tags",
     "path": "https://docs.medusajs.com/user-guide/settings/product-tags"
   },
@@ -182,6 +222,10 @@ export const userGuide = [
   {
     "title": "Manage Profile",
     "path": "https://docs.medusajs.com/user-guide/settings/profile"
+  },
+  {
+    "title": "Manage Property Labels",
+    "path": "https://docs.medusajs.com/user-guide/settings/property-labels"
   },
   {
     "title": "Manage Refund Reasons",
@@ -196,8 +240,20 @@ export const userGuide = [
     "path": "https://docs.medusajs.com/user-guide/settings/return-reasons"
   },
   {
+    "title": "Common Roles",
+    "path": "https://docs.medusajs.com/user-guide/settings/roles/common-roles"
+  },
+  {
+    "title": "Manage Roles",
+    "path": "https://docs.medusajs.com/user-guide/settings/roles"
+  },
+  {
     "title": "Manage Sales Channels",
     "path": "https://docs.medusajs.com/user-guide/settings/sales-channels"
+  },
+  {
+    "title": "Manage Search Indexes",
+    "path": "https://docs.medusajs.com/user-guide/settings/search"
   },
   {
     "title": "Manage Store",
@@ -218,5 +274,17 @@ export const userGuide = [
   {
     "title": "Manage Users",
     "path": "https://docs.medusajs.com/user-guide/settings/users"
+  },
+  {
+    "title": "Configure Layouts",
+    "path": "https://docs.medusajs.com/user-guide/tips/layout-configurations"
+  },
+  {
+    "title": "Login Options",
+    "path": "https://docs.medusajs.com/user-guide/tips/login-options"
+  },
+  {
+    "title": "Configure Table Views",
+    "path": "https://docs.medusajs.com/user-guide/tips/table-views"
   }
 ]

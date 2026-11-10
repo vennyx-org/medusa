@@ -7,7 +7,6 @@
  *   - id
  *   - email
  *   - accepted
- *   - token
  *   - expires_at
  *   - created_at
  *   - updated_at
@@ -50,6 +49,11 @@
  *     format: date-time
  *     title: updated_at
  *     description: The date the invite was updated.
+ *   rbac_roles:
+ *     type: array
+ *     description: The roles of the invited user.
+ *     items:
+ *       $ref: "#/components/schemas/AdminRbacRole"
  * 
 */
 

@@ -1,11 +1,11 @@
-import { z } from "zod"
-import { applyAndAndOrOperators } from "../../utils/common-validators"
+import { z } from "@medusajs/framework/zod"
 import {
   createFindParams,
   createOperatorMap,
   createSelectParams,
   WithAdditionalData,
 } from "../../utils/validators"
+import { applyAndAndOrOperators } from "../../utils/common-validators"
 
 export type AdminGetTaxRegionParamsType = z.infer<
   typeof AdminGetTaxRegionParams
@@ -53,10 +53,10 @@ export const CreateTaxRegion = z.object({
       name: z.string(),
       is_combinable: z.boolean().optional(),
       is_compound: z.boolean().optional(),
-      metadata: z.record(z.unknown()).nullish(),
+      metadata: z.record(z.string(), z.unknown()).nullish(),
     })
     .optional(),
-  metadata: z.record(z.unknown()).nullish(),
+  metadata: z.record(z.string(), z.unknown()).nullish(),
 })
 
 export const AdminCreateTaxRegion = WithAdditionalData(
@@ -73,5 +73,5 @@ export type AdminUpdateTaxRegionType = z.infer<typeof AdminUpdateTaxRegion>
 export const AdminUpdateTaxRegion = z.object({
   province_code: z.string().nullish(),
   provider_id: z.string().optional(),
-  metadata: z.record(z.unknown()).nullish(),
+  metadata: z.record(z.string(), z.unknown()).nullish(),
 })

@@ -24,6 +24,7 @@ import { createInventoryItemsWorkflow } from "../../inventory/workflows/create-i
 import { createPriceSetsStep } from "../../pricing"
 import { createProductVariantsStep } from "../steps/create-product-variants"
 import { createVariantPricingLinkStep } from "../steps/create-variant-pricing-link"
+import { createDefaultInventoryItem } from "../utils/create-default-inventory-item"
 
 /**
  *
@@ -179,20 +180,7 @@ const buildVariantItemCreateMap = (data: {
     }
 
     // Create a default inventory item if the above conditions arent met
-    map[index] = {
-      sku: variantInput.sku,
-      origin_country: variantInput.origin_country,
-      mid_code: variantInput.mid_code,
-      material: variantInput.material,
-      weight: variantInput.weight,
-      length: variantInput.length,
-      height: variantInput.height,
-      width: variantInput.width,
-      title: variantInput.title,
-      description: variantInput.title,
-      hs_code: variantInput.hs_code,
-      requires_shipping: true,
-    }
+    map[index] = createDefaultInventoryItem(variantInput)
   }
 
   return map
@@ -200,7 +188,7 @@ const buildVariantItemCreateMap = (data: {
 
 export const createProductVariantsWorkflowId = "create-product-variants"
 /**
- * This workflow creates one or more product variants. It's used by the [Create Product Variant Admin API Route](https://docs.medusajs.com/api/admin#products_postproductsidvariants).
+ * This workflow creates one or more product variants. It's used by the [Create Product Variant Admin API Route](https://docs.medusajs.com/api/admin/products/create-variant).
  *
  * This workflow has a hook that allows you to perform custom actions on the created product variants. For example, you can pass under `additional_data` custom data that
  * allows you to create custom data models linked to the product variants.

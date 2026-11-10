@@ -15,7 +15,7 @@ const adminHeaders = { headers: { "x-medusa-access-token": "test_token" } }
 
 medusaIntegrationTestRunner({
   env,
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
     describe("Store: Shipping Option API (with translations)", () => {
       let appContainer
       let salesChannel
@@ -35,11 +35,14 @@ medusaIntegrationTestRunner({
         delete process.env.MEDUSA_FF_TRANSLATION
       })
 
-      beforeEach(async () => {
+      beforeAll(async () => {
         const publishableKey = await generatePublishableKey(appContainer)
         storeHeaders = generateStoreHeaders({ publishableKey })
 
         await createAdminUser(dbConnection, adminHeaders, appContainer)
+
+        const translationModule = appContainer.resolve(Modules.TRANSLATION)
+        await translationModule.__hooks?.onApplicationStart?.().catch(() => {})
 
         // Set up store locales
         const storeModule = appContainer.resolve(Modules.STORE)
@@ -214,6 +217,8 @@ medusaIntegrationTestRunner({
           },
           adminHeaders
         )
+
+        await dbUtils.snapshot()
       })
 
       describe("GET /store/shipping-options?cart_id=", () => {

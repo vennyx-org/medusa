@@ -3,10 +3,15 @@ import inquirer from "inquirer"
 import path from "path"
 import slugifyType from "slugify"
 import logMessage from "../log-message.js"
-import { getNodeVersion, MIN_SUPPORTED_NODE_VERSION } from "../node-version.js"
+import {
+  getNodeVersion,
+  isNodeVersionSupported,
+  MIN_SUPPORTED_NODE_VERSION,
+} from "../node-version.js"
 import { ProjectCreator, ProjectOptions } from "./creator.js"
 import { PluginProjectCreator } from "./medusa-plugin-creator.js"
 import { MedusaProjectCreator } from "./medusa-project-creator.js"
+import terminalLink from "terminal-link"
 
 const slugify = slugifyType.default
 
@@ -30,9 +35,12 @@ export class ProjectCreatorFactory {
 
   private static validateNodeVersion(): void {
     const nodeVersion = getNodeVersion()
-    if (nodeVersion < MIN_SUPPORTED_NODE_VERSION) {
+    if (!isNodeVersionSupported(nodeVersion)) {
       logMessage({
-        message: `Medusa requires at least v20 of Node.js. You're using v${nodeVersion}. Please install at least v20 and try again: https://nodejs.org/en/download`,
+        message: `Medusa requires at least v${MIN_SUPPORTED_NODE_VERSION} of Node.js. You're using v${nodeVersion}. Please ${terminalLink(
+          "install Node.js",
+          "https://nodejs.org/en/download"
+        )} v${MIN_SUPPORTED_NODE_VERSION} or later and try again.`,
         type: "error",
       })
     }
@@ -86,7 +94,7 @@ async function askForProjectName(
       name: "projectName",
       message: `What's the name of your ${isPlugin ? "plugin" : "project"}?`,
       default: isPlugin ? "my-medusa-plugin" : "my-medusa-store",
-      filter: (input) => {
+      filter: (input: string) => {
         return slugify(input).toLowerCase()
       },
       validate: (input) => {

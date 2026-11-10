@@ -38,11 +38,14 @@ get:
     - cookie_auth: []
     - jwt_token: []
   x-codeSamples:
+    - lang: JavaScript
+      label: JS SDK
+      source:
+        $ref: ../code_samples/JavaScript/admin_views_{entity}_configurations_active/get.js
     - lang: Shell
       label: cURL
       source:
-        $ref: >-
-          ../code_samples/Shell/admin_views_{entity}_configurations_active/get.sh
+        $ref: ../code_samples/Shell/admin_views_{entity}_configurations_active/get.sh
   tags:
     - Views
   responses:
@@ -116,11 +119,14 @@ post:
         schema:
           $ref: ../components/schemas/AdminSetActiveViewConfiguration.yaml
   x-codeSamples:
+    - lang: JavaScript
+      label: JS SDK
+      source:
+        $ref: ../code_samples/JavaScript/admin_views_{entity}_configurations_active/post.js
     - lang: Shell
       label: cURL
       source:
-        $ref: >-
-          ../code_samples/Shell/admin_views_{entity}_configurations_active/post.sh
+        $ref: ../code_samples/Shell/admin_views_{entity}_configurations_active/post.sh
   tags:
     - Views
   responses:

@@ -7,9 +7,11 @@ import { Sidebar } from "types"
 import { Badge } from "@/components/Badge"
 import { Loading } from "@/components/Loading"
 import { SidebarItem } from "@/components/Sidebar/Item"
+import { SidebarItemTitle } from "@/components/Sidebar/Item/Title"
 import { useSidebar } from "@/providers/Sidebar"
 import clsx from "clsx"
 import { TriangleDownMini, TriangleUpMini } from "@medusajs/icons"
+import Link from "next/link"
 
 export type SidebarItemCategoryProps = {
   item: Sidebar.SidebarItemCategory
@@ -100,25 +102,37 @@ export const SidebarItemCategory = ({
           onClick={handleOpen}
           data-testid="sidebar-item-category"
         >
-          <span
-            className={clsx(
-              "text-compact-x-small-plus",
-              isTitleOneWord && "truncate"
+          {item.path ? (
+            <Link
+              href={item.path}
+              className="flex-1"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <SidebarItemTitle
+                title={item.title}
+                isTitleOneWord={isTitleOneWord}
+                className="text-compact-x-small-plus"
+              />
+            </Link>
+          ) : (
+            <SidebarItemTitle
+              title={item.title}
+              isTitleOneWord={isTitleOneWord}
+              className="text-compact-x-small-plus"
+            />
+          )}
+          <div className="flex gap-docs_0.25 flex-wrap items-center">
+            {item.additionalElms}
+            {item.badge && (
+              <Badge variant={item.badge.variant}>{item.badge.text}</Badge>
             )}
-            data-testid="sidebar-item-title"
-          >
-            {item.title}
-          </span>
-          {item.additionalElms}
-          {item.badge && (
-            <Badge variant={item.badge.variant}>{item.badge.text}</Badge>
-          )}
-          {!item.additionalElms && (
-            <>
-              {open && <TriangleDownMini />}
-              {!open && <TriangleUpMini />}
-            </>
-          )}
+            {!item.additionalElms && (
+              <>
+                {open && <TriangleDownMini />}
+                {!open && <TriangleUpMini />}
+              </>
+            )}
+          </div>
         </div>
       </div>
       {!item.hideChildren && (

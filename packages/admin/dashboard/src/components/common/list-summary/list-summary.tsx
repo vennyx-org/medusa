@@ -1,5 +1,6 @@
 import { Tooltip, clx } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
+import { TruncatedText } from "../truncated-text"
 
 type ListSummaryProps = {
   /**
@@ -37,7 +38,7 @@ export const ListSummary = ({
   return (
     <div
       className={clx(
-        "text-ui-fg-subtle gap-x-1 overflow-hidden",
+        "gap-x-1 overflow-hidden text-ui-fg-subtle",
         {
           "inline-flex": inline,
           flex: !inline,
@@ -47,9 +48,7 @@ export const ListSummary = ({
         className
       )}
     >
-      <div className="flex-1 truncate">
-        <span className="truncate">{list.slice(0, n).join(", ")}</span>
-      </div>
+      <TruncatedText text={list.slice(0, n).join(", ")} />
       {list.length > n && (
         <div className="whitespace-nowrap">
           <Tooltip

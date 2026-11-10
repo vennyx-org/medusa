@@ -4,8 +4,13 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { CreatedAtCell } from "../../../../../components/table/table-cells/common/created-at-cell"
 import { PlaceholderCell } from "../../../../../components/table/table-cells/common/placeholder-cell"
-import { TextCell, TextHeader } from "../../../../../components/table/table-cells/common/text-cell"
+import {
+  TextCell,
+  TextHeader,
+} from "../../../../../components/table/table-cells/common/text-cell"
+import { formatQuantity } from "../../../../../lib/format-quantity"
 import { ReservationActions } from "./reservation-actions"
+import { useStockLocationPermissions } from "../../../../../hooks/use-resource-permissions"
 
 /**
  * Adds missing properties to the InventoryItemDTO type.
@@ -17,8 +22,15 @@ export interface ExtendedReservationItem extends HttpTypes.AdminReservation {
 
 const columnHelper = createColumnHelper<ExtendedReservationItem>()
 
-export const useReservationTableColumn = ({ sku }: { sku: string }) => {
+export const useReservationTableColumn = ({
+  sku,
+  unitOfMeasure,
+}: {
+  sku: string
+  unitOfMeasure?: string | null
+}) => {
   const { t } = useTranslation()
+  const { canRead: canReadStockLocations } = useStockLocationPermissions()
 
   return useMemo(
     () => [
@@ -26,9 +38,7 @@ export const useReservationTableColumn = ({ sku }: { sku: string }) => {
         id: "sku",
         header: () => <TextHeader text={t("fields.sku")} />,
         cell: () => {
-          return (
-            <TextCell text={sku} />
-          )
+          return <TextCell text={sku} />
         },
       }),
       columnHelper.accessor("line_item.order_id", {
@@ -40,9 +50,7 @@ export const useReservationTableColumn = ({ sku }: { sku: string }) => {
             return <PlaceholderCell />
           }
 
-          return (
-            <TextCell text={orderId} />
-          )
+          return <TextCell text={orderId} />
         },
       }),
       columnHelper.accessor("description", {
@@ -54,25 +62,27 @@ export const useReservationTableColumn = ({ sku }: { sku: string }) => {
             return <PlaceholderCell />
           }
 
-          return (
-            <TextCell text={description} />
-          )
+          return <TextCell text={description} />
         },
       }),
-      columnHelper.accessor("location.name", {
-        header: () => <TextHeader text={t("inventory.reservation.location")} />,
-        cell: ({ getValue }) => {
-          const location = getValue()
+      ...(canReadStockLocations
+        ? [
+            columnHelper.accessor("location.name", {
+              header: () => (
+                <TextHeader text={t("inventory.reservation.location")} />
+              ),
+              cell: ({ getValue }) => {
+                const location = getValue()
 
-          if (!location) {
-            return <PlaceholderCell />
-          }
+                if (!location) {
+                  return <PlaceholderCell />
+                }
 
-          return (
-            <TextCell text={location} />
-          )
-        },
-      }),
+                return <TextCell text={location} />
+              },
+            }),
+          ]
+        : []),
       columnHelper.accessor("created_at", {
         header: () => <TextHeader text={t("fields.createdAt")} />,
         cell: ({ getValue }) => <CreatedAtCell date={getValue()} />,
@@ -80,7 +90,12 @@ export const useReservationTableColumn = ({ sku }: { sku: string }) => {
       columnHelper.accessor("quantity", {
         header: () => <TextHeader text={t("fields.quantity")} align="right" />,
         cell: ({ getValue }) => {
-          return <TextCell text={getValue()} align="right" />
+          return (
+            <TextCell
+              text={formatQuantity(getValue(), unitOfMeasure)}
+              align="right"
+            />
+          )
         },
       }),
       columnHelper.display({
@@ -88,6 +103,6 @@ export const useReservationTableColumn = ({ sku }: { sku: string }) => {
         cell: ({ row }) => <ReservationActions reservation={row.original} />,
       }),
     ],
-    [t]
+    [t, canReadStockLocations, sku, unitOfMeasure]
   )
 }

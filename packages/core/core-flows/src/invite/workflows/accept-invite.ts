@@ -9,18 +9,22 @@ import {
 } from "@medusajs/framework/workflows-sdk"
 import { setAuthAppMetadataStep } from "../../auth"
 import { emitEventStep } from "../../common/steps/emit-event"
+import {
+  deleteRoleAssignmentsStep,
+  getRoleAssignmentsStep,
+} from "../../rbac/steps"
 import { createUsersWorkflow } from "../../user"
-import { deleteInvitesStep } from "../steps"
+import { deleteInvitesStep, getInviteRolesStep } from "../steps"
 import { validateTokenStep } from "../steps/validate-token"
 
 export const acceptInviteWorkflowId = "accept-invite-workflow"
 /**
  * This workflow accepts an invite and creates a user. It's used by the
- * [Accept Invite Admin API Route](https://docs.medusajs.com/api/admin#invites_postinvitesaccept).
+ * [Accept Invite Admin API Route](https://docs.medusajs.com/api/admin/invites/accept-invite).
  *
  * The workflow throws an error if the specified token is not valid. Also, the workflow
  * requires an auth identity to be created previously. You can create an auth identity
- * using the [Retrieve Registration JWT Token API Route](https://docs.medusajs.com/api/admin#auth_postactor_typeauth_provider_register).
+ * using the [Retrieve Registration JWT Token API Route](https://docs.medusajs.com/api/admin/auth/retrieve-registration-jwt-token).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to
  * accept invites within your custom flows.
@@ -41,7 +45,7 @@ export const acceptInviteWorkflowId = "accept-invite-workflow"
  *
  * @summary
  *
- * Accept invite and create user.
+ * Accept invite and create user with roles.
  */
 export const acceptInviteWorkflow = createWorkflow(
   acceptInviteWorkflowId,
@@ -50,13 +54,17 @@ export const acceptInviteWorkflow = createWorkflow(
   ): WorkflowResponse<UserDTO[]> => {
     const invite = validateTokenStep(input.invite_token)
 
+    // Get roles associated with the invite
+    const inviteRoles = getInviteRolesStep({ invite_id: invite.id })
+
     const createUserInput = transform(
-      { input, invite },
-      ({ input, invite }) => {
+      { input, invite, inviteRoles },
+      ({ input, invite, inviteRoles }) => {
         return [
           {
             ...input.user,
             email: input.user.email ?? invite.email,
+            roles: inviteRoles,
           },
         ]
       }
@@ -78,9 +86,23 @@ export const acceptInviteWorkflow = createWorkflow(
       }
     })
 
+    // The created user's role assignments are created by createUsersWorkflow
+    // from the invite's roles. Transfer completes by removing the invite's own
+    // assignments once the user has been created.
+    const roleAssignments = getRoleAssignmentsStep({
+      reference: "invite",
+      reference_id: [invite.id],
+    })
+    const roleAssignmentIdsToDelete = transform(
+      { roleAssignments },
+      ({ roleAssignments }) =>
+        roleAssignments.map((assignment) => assignment.id)
+    )
+
     parallelize(
       setAuthAppMetadataStep(authUserInput),
       deleteInvitesStep([invite.id]),
+      deleteRoleAssignmentsStep({ id: roleAssignmentIdsToDelete }),
       emitEventStep({
         eventName: InviteWorkflowEvents.ACCEPTED,
         data: { id: invite.id },

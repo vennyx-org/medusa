@@ -13,8 +13,7 @@ export const PriceListConfiguration = () => {
   const { price_list, isPending, isError, error } = usePriceList(id!)
 
   const customerGroupIds = price_list?.rules?.["customer.groups.id"] as
-    | string[]
-    | undefined
+    string[] | undefined
 
   const {
     customer_groups,

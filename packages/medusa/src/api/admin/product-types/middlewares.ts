@@ -1,9 +1,11 @@
-import * as QueryConfig from "./query-config"
-import { MiddlewareRoute } from "@medusajs/framework/http"
 import {
   validateAndTransformBody,
   validateAndTransformQuery,
 } from "@medusajs/framework"
+import { authorize, MiddlewareRoute } from "@medusajs/framework/http"
+import { PolicyOperation } from "@medusajs/framework/utils"
+import * as QueryConfig from "./query-config"
+import { Entities } from "./query-config"
 import {
   AdminCreateProductType,
   AdminGetProductTypeParams,
@@ -13,9 +15,26 @@ import {
 
 export const adminProductTypeRoutesMiddlewares: MiddlewareRoute[] = [
   {
+    matcher: "/admin/product-types/*",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.product_type,
+          operation: PolicyOperation.read,
+        },
+      ]),
+    ],
+  },
+  {
     method: ["GET"],
     matcher: "/admin/product-types",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.product_type,
+          operation: PolicyOperation.read,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetProductTypesParams,
         QueryConfig.listProductTypesTransformQueryConfig
@@ -37,6 +56,12 @@ export const adminProductTypeRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/product-types",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.product_type,
+          operation: PolicyOperation.create,
+        },
+      ]),
       validateAndTransformBody(AdminCreateProductType),
       validateAndTransformQuery(
         AdminGetProductTypeParams,
@@ -48,6 +73,12 @@ export const adminProductTypeRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/product-types/:id",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.product_type,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(AdminUpdateProductType),
       validateAndTransformQuery(
         AdminGetProductTypeParams,
@@ -58,6 +89,13 @@ export const adminProductTypeRoutesMiddlewares: MiddlewareRoute[] = [
   {
     method: ["DELETE"],
     matcher: "/admin/product-types/:id",
-    middlewares: [],
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.product_type,
+          operation: PolicyOperation.delete,
+        },
+      ]),
+    ],
   },
 ]

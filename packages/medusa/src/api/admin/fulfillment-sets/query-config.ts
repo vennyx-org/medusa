@@ -1,3 +1,9 @@
+export enum Entities {
+  fulfillment_set = "fulfillment_set",
+  service_zone = "service_zone",
+  stock_location = "stock_location",
+}
+
 export const defaultAdminFulfillmentSetsFields = [
   "id",
   "name",
@@ -12,6 +18,7 @@ export const defaultAdminFulfillmentSetsFields = [
 export const retrieveTransformQueryConfig = {
   defaults: defaultAdminFulfillmentSetsFields,
   isList: false,
+  entity: Entities.fulfillment_set,
 }
 
 export const retrieveServiceZoneTransformQueryConfig = {
@@ -25,4 +32,5 @@ export const retrieveServiceZoneTransformQueryConfig = {
     "*geo_zones",
   ],
   isList: false,
+  entity: Entities.fulfillment_set,
 }

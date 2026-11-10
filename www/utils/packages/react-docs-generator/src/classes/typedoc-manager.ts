@@ -19,6 +19,7 @@ import {
   SourceReference,
 } from "typedoc"
 import ts from "typescript"
+import type {} from "types"
 import {
   getFunctionType,
   getProjectChild,
@@ -54,6 +55,7 @@ export default class TypedocManager {
   private options: Options
   private mappedReflectionSignatures: MappedReflectionSignature[]
   private project: ProjectReflection | undefined
+  private context: Context | undefined
   private getTypeOptions = {
     hideLink: true,
     wrapBackticks: false,
@@ -76,8 +78,24 @@ export default class TypedocManager {
       enableInternalResolve: true,
       internalModule: "internal",
       checkVariables: true,
-      logLevel: this.options.verbose ? "Verbose" : "None",
+      // `Error` rather than `None` so that TypeScript compilation errors, which
+      // make `convert` below return `undefined`, are always visible.
+      logLevel: this.options.verbose ? "Verbose" : "Error",
     })
+
+    // TypeDoc 0.28 converts a mapped type, such as `ComponentPropsWithoutRef<...>`,
+    // as its written reference rather than the resolved type, which hides its props.
+    const convertType = this.app.converter.convertType.bind(this.app.converter)
+    this.app.converter.convertType = ((
+      context: Context,
+      typeOrNode: ts.Type,
+      maybeNode?: ts.TypeNode
+    ) =>
+      convertType(
+        context,
+        typeOrNode,
+        typeOrNode && isMappedType(typeOrNode) ? undefined : maybeNode
+      )) as Converter["convertType"]
 
     // This listener sets the content of mappedReflectionSignatures
     this.app.converter.on(
@@ -94,7 +112,26 @@ export default class TypedocManager {
       }
     )
 
+    this.app.converter.on(Converter.EVENT_END, (context: Context) => {
+      this.context = context
+    })
+
     this.project = await this.app.convert()
+
+    if (!this.project) {
+      // Typedoc returns `undefined` when the TypeScript program has compilation
+      // errors. Without it, specs silently lose their `tsType`s and curated
+      // props, and components resolved through Typedoc (such as re-exports like
+      // `const Group = SelectPrimitive.Group`) aren't detected at all. So fail
+      // loudly instead of generating incomplete specs.
+      throw new Error(
+        `Typedoc failed to convert ${filePath}. This is typically caused by TypeScript ` +
+          `compilation errors in the files included by ${this.options.tsconfigPath} ` +
+          `(the errors are logged above). Generating specs now would silently drop ` +
+          `types, props, and entire components, so aborting instead. Re-run with ` +
+          `--verbose-typedoc for the full Typedoc output.`
+      )
+    }
 
     return this.project
   }
@@ -735,6 +772,14 @@ export default class TypedocManager {
   }
 
   getReflectionSymbol(reflection: Reflection): ts.Symbol | undefined {
-    return this.project?.getSymbolFromReflection(reflection)
+    return this.context?.getSymbolFromReflection(reflection)
   }
+}
+
+function isMappedType(typeOrNode: ts.Type | ts.TypeNode): boolean {
+  return (
+    !("kind" in typeOrNode) &&
+    !!(typeOrNode.flags & ts.TypeFlags.Object) &&
+    !!((typeOrNode as ts.ObjectType).objectFlags & ts.ObjectFlags.Mapped)
+  )
 }

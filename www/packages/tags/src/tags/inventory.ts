@@ -1,5 +1,9 @@
 export const inventory = [
   {
+    "title": "Export Inventory Items",
+    "path": "https://docs.medusajs.com/user-guide/inventory/export"
+  },
+  {
     "title": "Manage Inventory Items",
     "path": "https://docs.medusajs.com/user-guide/inventory/inventory"
   },
@@ -16,8 +20,16 @@ export const inventory = [
     "path": "https://docs.medusajs.com/resources/commerce-modules/inventory/inventory-kit"
   },
   {
+    "title": "Reservations Lifecycle",
+    "path": "https://docs.medusajs.com/resources/commerce-modules/inventory/reservations-lifecycle"
+  },
+  {
     "title": "Get Variant Inventory",
     "path": "https://docs.medusajs.com/resources/commerce-modules/product/guides/variant-inventory"
+  },
+  {
+    "title": "Physical and Customs Attributes",
+    "path": "https://docs.medusajs.com/resources/commerce-modules/product/physical-customs-attributes"
   },
   {
     "title": "Product Variant Inventory",
@@ -172,6 +184,10 @@ export const inventory = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/orderExchangeAddNewItemWorkflow"
   },
   {
+    "title": "createProductVariantsDefaultInventoryStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/createProductVariantsDefaultInventoryStep"
+  },
+  {
     "title": "batchProductVariantsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/batchProductVariantsWorkflow"
   },
@@ -190,6 +206,14 @@ export const inventory = [
   {
     "title": "deleteProductsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteProductsWorkflow"
+  },
+  {
+    "title": "updateProductVariantsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateProductVariantsWorkflow"
+  },
+  {
+    "title": "updateProductsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateProductsWorkflow"
   },
   {
     "title": "createReservationsStep",

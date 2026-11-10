@@ -10,7 +10,7 @@ In this chapter, you'll learn about event types and how to emit an event in a se
 
 ## Event Types
 
-In your customization, you can emit an event, then listen to it in a subscriber and perform an asynchronus action, such as send a notification or data to a third-party system.
+In your customization, you can emit an event, then listen to it in a subscriber and perform an asynchronous action, such as sending a notification or sending data to a third-party system.
 
 There are two types of events in Medusa:
 
@@ -118,6 +118,47 @@ const helloWorldWorkflow = createWorkflow(
 
 The event `custom.created` will be emitted three times, once per each object in the array passed to the `data` property. The subscriber listening to the event will be executed three times, each time receiving one of the objects in the array as the event's payload.
 
+### Emit Event with Custom Priority
+
+<Note>
+
+Event priority is available since [Medusa v2.13.0](https://github.com/medusajs/medusa/releases/tag/v2.13.0).
+
+</Note>
+
+You can specify a priority level when emitting events to control when the event is processed relative to other events in the queue. This is useful to ensure that critical business events are handled promptly, while less important events can be deferred.
+
+To emit an event with custom priority, pass the `priority` property in the `options` parameter:
+
+export const priorityHighlights = [
+  ["14", "priority", "Set the event priority to critical."]
+]
+
+```ts highlights={priorityHighlights}
+import {
+  createWorkflow,
+} from "@medusajs/framework/workflows-sdk"
+import { emitEventStep } from "@medusajs/medusa/core-flows"
+import { EventPriority } from "@medusajs/framework/utils"
+
+const criticalWorkflow = createWorkflow(
+  "critical-operation",
+  () => {
+    emitEventStep({
+      eventName: "payment.processed",
+      data: { id: "123" },
+      options: {
+        priority: EventPriority.CRITICAL,
+      },
+    })
+  }
+)
+```
+
+In the above example, the `payment.processed` event is emitted with the `CRITICAL` priority level, ensuring it is processed before other lower-priority events.
+
+Learn more in the [Event Processing Priority guide](../event-priority/page.mdx).
+
 ---
 
 ## Emit Event in a Service
@@ -125,6 +166,12 @@ The event `custom.created` will be emitted three times, once per each object in 
 To emit a service event:
 
 1. Resolve `event_bus` from the module's container in your service's constructor:
+
+<Note>
+
+The Event Module's service (`event_bus`) is available in every module's container by default. You don't need to add it to `dependencies` in `medusa-config.ts`.
+
+</Note>
 
 <CodeTabs group="service_type">
   <CodeTab label="Extending Service Factory" value="service_factory">
@@ -190,75 +237,8 @@ class BlogModuleService {
 
 The method accepts an object having the following properties:
 
-- `name`: The event's name. 
+- `name`: The event's name.
 - `data`: The data payload as an object. You can pass any properties in the object, and subscribers listening to the event will receive this data in the event's payload.
-
-3. By default, the Event Module's service isn't injected into your module's container. To add it to the container, pass it in the module's registration object in `medusa-config.ts` in the `dependencies` property:
-
-<CodeTabs group="module-deps">
-  <CodeTab label="Module Registration" value="module_registration">
-
-export const depsHighlight = [
-  ["8", "dependencies", "An array of module registration names to inject into the Module's container."],
-]
-
-```ts title="medusa-config.ts" highlights={depsHighlight}
-import { Modules } from "@medusajs/framework/utils"
-
-module.exports = defineConfig({
-  // ...
-  modules: [
-    {
-      resolve: "./src/modules/blog",
-      dependencies: [
-        Modules.EVENT_BUS,
-      ],
-    },
-  ],
-})
-```
-
-  </CodeTab>
-  <CodeTab label="Module Provider Registration" value="module_registration_factory">
-
-export const providerHighlights = [
-  ["8", "dependencies", "An array of module registration names to inject into the module and provider's container."],
-]
-
-```ts title="medusa-config.ts" highlights={depsHighlight}
-import { Modules } from "@medusajs/framework/utils"
-
-module.exports = defineConfig({
-  // ...
-  modules: [
-    {
-      resolve: "@medusajs/medusa/payment",
-      dependencies: [
-        Modules.EVENT_BUS,
-      ],
-      options: {
-        providers: [
-          {
-            resolve: "./src/modules/my-provider",
-            id: "my-provider",
-            options: {
-              // ...
-            },
-          },
-        ],
-      },
-    },
-  ],
-})
-```
-  </CodeTab>
-</CodeTabs>
-
-
-
-The `dependencies` property accepts an array of module registration keys. The specified modules' main services are injected into the module's container.
-
-If a module has providers, the dependencies are also injected into the providers' containers.
 
 ### Test it Out
 

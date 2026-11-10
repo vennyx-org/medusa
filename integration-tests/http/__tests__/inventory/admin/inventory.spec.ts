@@ -1,13 +1,15 @@
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
+import { Modules } from "@medusajs/utils"
 import {
   adminHeaders,
   createAdminUser,
 } from "../../../../helpers/create-admin-user"
+import { updateInventoryItemsWorkflow } from "@medusajs/core-flows"
 
 jest.setTimeout(30000)
 
 medusaIntegrationTestRunner({
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
     let inventoryItem1
     let inventoryItem2
     let stockLocation1
@@ -15,8 +17,11 @@ medusaIntegrationTestRunner({
     let stockLocation3
 
     let shippingProfile
-    beforeEach(async () => {
+    let container
+    beforeAll(async () => {
       await createAdminUser(dbConnection, adminHeaders, getContainer())
+
+      container = getContainer()
 
       shippingProfile = (
         await api.post(
@@ -63,6 +68,8 @@ medusaIntegrationTestRunner({
           adminHeaders
         )
       ).data.inventory_item
+
+      await dbUtils.snapshot()
     })
 
     describe("Inventory Items", () => {
@@ -274,6 +281,39 @@ medusaIntegrationTestRunner({
               deleted: [locationLevel2.id],
             })
           )
+        })
+
+        it("should not call listInventoryLevels when update array is empty", async () => {
+          const container = getContainer()
+          const inventoryService = container.resolve(Modules.INVENTORY)
+
+          const listInventoryLevelsSpy = jest.spyOn(
+            inventoryService,
+            "listInventoryLevels"
+          )
+
+          const result = await api.post(
+            `/admin/inventory-items/location-levels/batch`,
+            {
+              update: [],
+              create: [],
+              delete: [],
+            },
+            adminHeaders
+          )
+
+          expect(result.status).toEqual(200)
+          expect(result.data).toEqual(
+            expect.objectContaining({
+              created: [],
+              updated: [],
+              deleted: [],
+            })
+          )
+
+          expect(listInventoryLevelsSpy).not.toHaveBeenCalled()
+
+          listInventoryLevelsSpy.mockRestore()
         })
       })
 
@@ -887,6 +927,40 @@ medusaIntegrationTestRunner({
           )
         })
 
+        it("should create inventory items with a unit of measure", async () => {
+          const response = await api.post(
+            `/admin/inventory-items`,
+            {
+              sku: "test-sku-lb",
+              unit_of_measure: "lb",
+            },
+            adminHeaders
+          )
+
+          expect(response.status).toEqual(200)
+          expect(response.data.inventory_item).toEqual(
+            expect.objectContaining({
+              sku: "test-sku-lb",
+              unit_of_measure: "lb",
+            })
+          )
+
+          const updateResponse = await api.post(
+            `/admin/inventory-items/${response.data.inventory_item.id}`,
+            {
+              unit_of_measure: "kg",
+            },
+            adminHeaders
+          )
+
+          expect(updateResponse.data.inventory_item).toEqual(
+            expect.objectContaining({
+              sku: "test-sku-lb",
+              unit_of_measure: "kg",
+            })
+          )
+        })
+
         it("should create inventory items along with location levels", async () => {
           const response = await api.post(
             `/admin/inventory-items?fields=*location_levels`,
@@ -1054,6 +1128,29 @@ medusaIntegrationTestRunner({
           ).data.variant
 
           expect(updatedVariant2.inventory_items).toHaveLength(0)
+        })
+      })
+
+      describe("workflows", () => {
+        describe("updateInventoryItemsWorkflow", () => {
+          it("should not call listInventoryItems when updates is empty", async () => {
+            const inventoryService = container.resolve(Modules.INVENTORY)
+            const listInventoryItemsSpy = jest.spyOn(
+              inventoryService,
+              "listInventoryItems"
+            )
+
+            const { result } = await updateInventoryItemsWorkflow(
+              container
+            ).run({
+              input: { updates: [] },
+            })
+
+            expect(result).toEqual([])
+            expect(listInventoryItemsSpy).not.toHaveBeenCalled()
+
+            listInventoryItemsSpy.mockRestore()
+          })
         })
       })
     })

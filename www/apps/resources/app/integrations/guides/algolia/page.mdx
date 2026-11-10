@@ -3,7 +3,7 @@ products:
   - product
 ---
 
-import { Card, Prerequisites, Details, WorkflowDiagram } from "docs-ui"
+import { Card, Note, Prerequisites, Details, WorkflowDiagram } from "docs-ui"
 import { Github, PlaySolid } from "@medusajs/icons"
 
 export const ogImage = "https://res.cloudinary.com/dza7lstvk/image/upload/v1743097088/Medusa%20Resources/integrations-algolia_qwpguu.jpg"
@@ -35,6 +35,17 @@ export const metadata = {
 # {metadata.title}
 
 In this tutorial, you'll learn how to integrate Medusa with Algolia.
+
+<Note title="Deprecated" type="warning">
+
+This guide is deprecated as of Medusa v2.21.1, which introduced the [Search Module](/infrastructure-modules/search). Rather than the custom module this guide builds, consider one of the following instead:
+
+- [Medusa Search](!cloud!/search), the managed search service for [Cloud](!cloud!) projects. Refer to [Medusa Search vs Algolia](!cloud!/search/algolia) for a comparison.
+- A [Search Module Provider](/references/search/provider) for Algolia, which keeps Algolia behind the Search Module's index definitions and `query.search`.
+
+If you already followed this guide, refer to [Migrate from Algolia to Medusa Search](!cloud!/search/migrate-from-algolia) for the migration steps.
+
+</Note>
 
 When you install a Medusa application, you get a fully-fledged commerce platform with a Framework for customization. Medusa's architecture supports integrating third-party services, such as a search engine, allowing you to build your unique requirements around core commerce flows.
 
@@ -74,7 +85,7 @@ By following this tutorial, you'll learn how to:
 
 <Prerequisites items={[
   {
-    text: "Node.js v20+",
+    text: "Node.js v20.19.0+ or v22.12.0+",
     link: "https://nodejs.org/en/download"
   },
   {
@@ -95,19 +106,19 @@ npx create-medusa-app@latest
 
 You'll first be asked for the project's name. Then, when asked whether you want to install the [Next.js Starter Storefront](../../../nextjs-starter/page.mdx), choose "Yes."
 
-Afterwards, the installation process will start, which will install the Medusa application in a directory with your project's name and the Next.js Starter Storefront in a separate directory named `{project-name}-storefront`.
-
-<Note title="Why is the storefront installed separately">
-
-The Medusa application is composed of a headless Node.js server and an admin dashboard. The storefront is installed or custom-built separately and connects to the Medusa application through its REST endpoints, called [API routes](!docs!/learn/fundamentals/api-routes). Learn more in [Medusa's Architecture documentation](!docs!/learn/introduction/architecture).
-
-</Note>
+Afterwards, the installation process will start, which will install the Medusa application as a monorepository in a directory with your project's name. The backend is installed in the `apps/backend` directory, and the Next.js Starter Storefront is installed in the `apps/storefront` directory.
 
 Once the installation finishes successfully, the Medusa Admin dashboard will open with a form to create a new user. Enter the user's credentials and submit the form. Afterwards, you can log in with the new user and explore the dashboard.
 
 <Note title="Ran into Errors">
 
 Check out the [troubleshooting guides](../../../troubleshooting/create-medusa-app-errors/page.mdx) for help.
+
+</Note>
+
+<Note>
+
+In this guide, all file paths of backend customizations are relative to the `apps/backend` directory of your Medusa project.
 
 </Note>
 
@@ -196,6 +207,8 @@ The first method you need to add to the service is a method that receives an arr
 Add the following methods to the `AlgoliaModuleService` class:
 
 ```ts title="src/modules/algolia/service.ts"
+import { MedusaError } from "@medusajs/framework/utils"
+
 export default class AlgoliaModuleService {
   // ...
   async getIndexName(type: AlgoliaIndexType) {
@@ -203,7 +216,10 @@ export default class AlgoliaModuleService {
       case "product":
         return this.options.productIndexName
       default:
-        throw new Error(`Invalid index type: ${type}`)
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `Invalid index type: ${type}`
+        )
     }
   }
 
@@ -223,7 +239,7 @@ export default class AlgoliaModuleService {
 
 You define two methods:
 
-1. `getIndexName`: A method that receives an `AlgoliaIndexType` (defined in the previous snippt) and returns the index name for that type. In this case, you only have one type, `product`, so you return the product index name.
+1. `getIndexName`: A method that receives an `AlgoliaIndexType` (defined in the previous snippet) and returns the index name for that type. In this case, you only have one type, `product`, so you return the product index name.
     - If you want to index other types of data, you can add more cases to the switch statement.
 2. `indexData`: A method that receives an array of data and an `AlgoliaIndexType`. The method indexes the data in the Algolia index for the given type.
     - Notice that you set the `objectID` property of each object to the object's `id`. This ensures that you later update the object instead of creating a new one.
@@ -690,7 +706,7 @@ It accepts as a second parameter a constructor function, which is the workflow's
 
 In the workflow's constructor function, you:
 
-1. Execute `useQueryGraphStep` to retrieve products from Medusa's database. This step uses Medusa's [Query](!docs!/learn/fundamentals/module-links/query) tool to retrieve data across modules. You pass it the pagination and filter parameters you received in the input.
+1. Execute `useQueryGraphStep` to retrieve products from Medusa's database. This step uses Medusa's [Query](!docs!/learn/fundamentals/query) tool to retrieve data across modules. You pass it the pagination and filter parameters you received in the input.
 2. Use [transform](!docs!/learn/fundamentals/workflows/variable-manipulation) to prepare two lists: one for published products to index in Algolia and another for unpublished products to delete from Algolia.
 2. Execute `syncProductsStep` to index the published products in Algolia.
 3. Execute `deleteProductsFromAlgoliaStep` to delete unpublished products from Algolia.
@@ -729,11 +745,16 @@ import {
   type SubscriberConfig,
 } from "@medusajs/framework"
 import { syncProductsWorkflow } from "../workflows/sync-products"
+import {
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 export default async function algoliaSyncHandler({ 
   container,
 }: SubscriberArgs) {
-  const logger = container.resolve("logger")
+  const logger = container.resolve(
+    ContainerRegistrationKeys.LOGGER
+  )
   
   let hasMore = true
   let offset = 0
@@ -852,7 +873,7 @@ import Medusa from "@medusajs/js-sdk"
 
 export const sdk = new Medusa({
   baseUrl: "http://localhost:9000",
-  debug: process.env.NODE_ENV === "development",
+  debug: import.meta.env.NODE_ENV === "development",
   auth: {
     type: "session",
   },
@@ -1102,11 +1123,17 @@ While you can implement the search functionality directly in the storefront to i
 
 To implement the API Route, create the file `src/api/store/products/search/route.ts` with the following content:
 
+<Note>
+
+As of [Medusa v2.13.0](https://github.com/medusajs/medusa/releases/tag/v2.13.0), Zod should be imported from `@medusajs/framework/zod`.
+
+</Note>
+
 ```ts title="src/api/store/products/search/route.ts"
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { ALGOLIA_MODULE } from "../../../../modules/algolia"
 import AlgoliaModuleService from "../../../../modules/algolia/service"
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 
 export const SearchSchema = z.object({
   query: z.string(),
@@ -1186,12 +1213,10 @@ In this step, you'll customize the Next.js Starter Storefront to add the search 
 
 <Note title="Reminder" forceMultiline>
 
-The Next.js Starter Storefront was installed in a separate directory from Medusa. The directory's name is `{your-project}-storefront`.
-
-So, if your Medusa application's directory is `medusa-search`, you can find the storefront by going back to the parent directory and changing to the `medusa-search-storefront` directory:
+The Next.js Starter Storefront is available in the `apps/storefront` directory of your project:
 
 ```bash
-cd ../medusa-search-storefront # change based on your project name
+cd apps/storefront
 ```
 
 </Note>

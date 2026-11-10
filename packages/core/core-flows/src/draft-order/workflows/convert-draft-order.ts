@@ -1,7 +1,10 @@
 import {
+  ChangeActionType,
+  EventPriority,
   Modules,
   OrderStatus,
   OrderWorkflowEvents,
+  ReservationItemWorkflowEvents,
 } from "@medusajs/framework/utils"
 import {
   createStep,
@@ -18,6 +21,7 @@ import type {
   OrderDTO,
 } from "@medusajs/framework/types"
 import { emitEventStep, useRemoteQueryStep } from "../../common"
+import { updateOrderTaxLinesWorkflow } from "../../order"
 import { validateDraftOrderStep } from "../steps/validate-draft-order"
 import { acquireLockStep, releaseLockStep } from "../../locking"
 import {
@@ -89,7 +93,7 @@ export const convertDraftOrderStep = createStep(
 
 /**
  * This workflow converts a draft order to a pending order. It's used by the
- * [Convert Draft Order to Order Admin API Route](https://docs.medusajs.com/api/admin#draft-orders_postdraftordersidconverttoorder).
+ * [Convert Draft Order to Order Admin API Route](https://docs.medusajs.com/api/admin/draft-orders/convert-to-order).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to wrap custom logic around
  * converting a draft order to a pending order.
@@ -129,6 +133,15 @@ export const convertDraftOrderWorkflow = createWorkflow(
 
     validateDraftOrderStep({ order })
 
+    // Safety net: recompute the order's tax lines before placing the order so it
+    // can never carry stale tax lines (e.g. from an address change that didn't
+    // re-tax). The recompute respects the region's `automatic_taxes` setting.
+    updateOrderTaxLinesWorkflow.runAsStep({
+      input: {
+        order_id: input.id,
+      },
+    })
+
     const orderItems = useRemoteQueryStep({
       entry_point: "order",
       fields: requiredOrderFieldsForInventoryConfirmation,
@@ -137,26 +150,48 @@ export const convertDraftOrderWorkflow = createWorkflow(
       throw_if_key_not_found: true,
     }).config({ name: "order-items-query" })
 
-    const { variants, items } = transform({ orderItems }, ({ orderItems }) => {
-      const items: ConfirmVariantInventoryWorkflowInputDTO["items"] = []
-      const variants: ConfirmVariantInventoryWorkflowInputDTO["variants"] = []
+    const orderChanges = useRemoteQueryStep({
+      entry_point: "order_change",
+      fields: ["id", "actions.action", "actions.details"],
+      variables: { filters: { order_id: input.id } },
+    }).config({ name: "order-changes-query" })
 
-      for (const orderItem of orderItems.items ?? []) {
-        items.push({
-          variant_id: orderItem.variant?.id,
-          quantity: orderItem.quantity,
-          id: orderItem.id,
-        })
-        if (orderItem.variant) {
-          variants.push(orderItem.variant)
+    const { variants, items } = transform(
+      { orderItems, orderChanges },
+      ({ orderItems, orderChanges }) => {
+        const items: ConfirmVariantInventoryWorkflowInputDTO["items"] = []
+        const variants: ConfirmVariantInventoryWorkflowInputDTO["variants"] =
+          []
+
+        const backorderItemIds = new Set(
+          (orderChanges ?? [])
+            .flatMap((change) => change.actions ?? [])
+            .filter(
+              (a) =>
+                a.action === ChangeActionType.ITEM_ADD &&
+                a.details?.allow_backorder
+            )
+            .map((a) => a.details?.reference_id)
+        )
+
+        for (const orderItem of orderItems.items ?? []) {
+          items.push({
+            variant_id: orderItem.variant?.id,
+            quantity: orderItem.quantity,
+            id: orderItem.id,
+            allow_backorder: backorderItemIds.has(orderItem.id),
+          })
+          if (orderItem.variant) {
+            variants.push(orderItem.variant)
+          }
+        }
+
+        return {
+          variants,
+          items,
         }
       }
-
-      return {
-        variants,
-        items,
-      }
-    })
+    )
 
     const formatedInventoryItems = transform(
       {
@@ -169,7 +204,22 @@ export const convertDraftOrderWorkflow = createWorkflow(
       prepareConfirmInventoryInput
     )
 
-    reserveInventoryStep(formatedInventoryItems)
+    const createdReservations = reserveInventoryStep(formatedInventoryItems)
+
+    const reservationCreatedEvents = transform(
+      { createdReservations, order },
+      ({ createdReservations, order }) => {
+        return (createdReservations ?? []).map((reservation) => ({
+          id: reservation.id,
+          order_id: order.id,
+        }))
+      }
+    )
+
+    emitEventStep({
+      eventName: ReservationItemWorkflowEvents.CREATED,
+      data: reservationCreatedEvents,
+    }).config({ name: "emit-reservation-item-created" })
 
     const updatedOrder = convertDraftOrderStep({ id: input.id })
 
@@ -180,6 +230,9 @@ export const convertDraftOrderWorkflow = createWorkflow(
       emitEventStep({
         eventName: OrderWorkflowEvents.PLACED,
         data: { id: updatedOrder.id },
+        options: {
+          priority: EventPriority.CRITICAL,
+        },
       })
     )
 

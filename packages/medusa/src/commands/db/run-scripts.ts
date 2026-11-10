@@ -1,6 +1,7 @@
 import { MedusaAppLoader } from "@medusajs/framework"
 import { LinkLoader } from "@medusajs/framework/links"
 import { MigrationScriptsMigrator } from "@medusajs/framework/migrations"
+import { WorkflowLoader } from "@medusajs/framework/workflows"
 import {
   ContainerRegistrationKeys,
   getResolvedPlugins,
@@ -9,8 +10,13 @@ import {
 import { dirname, join } from "path"
 
 import { MedusaModule } from "@medusajs/framework/modules-sdk"
-import { Logger, MedusaContainer, PluginDetails } from "@medusajs/types"
+import {
+  Logger,
+  MedusaContainer,
+  PluginDetails,
+} from "@medusajs/framework/types"
 import { initializeContainer } from "../../loaders"
+import { loadSearchIndexes } from "../../loaders/search"
 import { ensureDbExists } from "../utils"
 
 const TERMINAL_SIZE = process.stdout.columns
@@ -43,9 +49,9 @@ export async function runMigrationScripts({
 
     plugins = await getResolvedPlugins(directory, configModule, true)
 
-    mergePluginModules(configModule, plugins)
+    mergePluginModules(configModule, plugins, directory)
 
-    const resources = await loadResources(plugins, logger)
+    const resources = await loadResources(plugins, logger, container)
     onApplicationPrepareShutdown = resources.onApplicationPrepareShutdown
     onApplicationShutdown = resources.onApplicationShutdown
 
@@ -56,9 +62,8 @@ export async function runMigrationScripts({
 
     const migrator = new MigrationScriptsMigrator({ container: container })
     await migrator.ensureMigrationsTable()
-    const pendingScripts = await migrator.getPendingMigrations(
-      scriptsSourcePaths
-    )
+    const pendingScripts =
+      await migrator.getPendingMigrations(scriptsSourcePaths)
 
     if (!pendingScripts?.length) {
       logger.info("No pending migration scripts to execute")
@@ -85,7 +90,8 @@ export async function runMigrationScripts({
 
 async function loadResources(
   plugins: any,
-  logger: Logger
+  logger: Logger,
+  container: MedusaContainer
 ): Promise<{
   onApplicationPrepareShutdown: () => Promise<void>
   onApplicationShutdown: () => Promise<void>
@@ -104,11 +110,33 @@ async function loadResources(
   )
   await new LinkLoader(linksSourcePaths, logger).load()
 
-  const medusaAppResources = await new MedusaAppLoader().load()
+  // Cleared along with the module instances above, and the boot below seeds
+  // through `onApplicationStart`,.
+  await loadSearchIndexes({
+    plugins,
+    configModule: container.resolve(ContainerRegistrationKeys.CONFIG_MODULE),
+    logger,
+  })
+
+  // Pass the existing container so that registrations (e.g. ContainerRegistrationKeys.QUERY)
+  // are made on the same container that migration scripts will resolve from.
+  // Without this, `useQueryGraphStep` fails with AwilixResolutionError because
+  // `query` is registered in a separate MedusaAppLoader container instance.
+  const medusaAppResources = await new MedusaAppLoader({ container }).load()
   const onApplicationPrepareShutdown =
     medusaAppResources.onApplicationPrepareShutdown
   const onApplicationShutdown = medusaAppResources.onApplicationShutdown
   await medusaAppResources.onApplicationStart()
+
+  // Load workflow hooks from all plugins (including the app directory,
+  // which getResolvedPlugins already includes as a plugin entry).
+  // Without this, workflow hooks defined in src/workflows/ are never
+  // registered during `medusa db:migrate`, causing them to silently
+  // skip execution even though the workflows themselves run successfully.
+  const workflowsSourcePaths = plugins.map((plugin) =>
+    join(plugin.resolve, "workflows")
+  )
+  await new WorkflowLoader(workflowsSourcePaths, container).load()
 
   return {
     onApplicationPrepareShutdown,
@@ -123,10 +151,12 @@ const main = async function ({
   container?: MedusaContainer
 }) {
   process.env.MEDUSA_WORKER_MODE = "server"
-  const container = await initializeContainer(directory)
-  const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
+  let logger: Logger | undefined
 
   try {
+    const container = await initializeContainer(directory)
+    logger = container.resolve(ContainerRegistrationKeys.LOGGER)
+
     const migrated = await runMigrationScripts({
       directory,
       container: container,
@@ -134,7 +164,11 @@ const main = async function ({
     })
     process.exit(migrated ? 0 : 1)
   } catch (error) {
-    logger.error(error)
+    if (logger) {
+      logger.error(error as string | Error)
+    } else {
+      console.error(error)
+    }
     process.exit(1)
   }
 }

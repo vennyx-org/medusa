@@ -1,9 +1,11 @@
 import * as QueryConfig from "./query-config"
+import { Entities } from "./query-config"
 
 import {
   validateAndTransformBody,
   validateAndTransformQuery,
 } from "@medusajs/framework"
+import { PolicyOperation } from "@medusajs/framework/utils"
 import {
   AdminCreateTaxRate,
   AdminCreateTaxRateRule,
@@ -12,13 +14,34 @@ import {
   AdminUpdateTaxRate,
 } from "./validators"
 
-import { MiddlewareRoute } from "@medusajs/framework/http"
+import { authorize, MiddlewareRoute } from "@medusajs/framework/http"
 
 export const adminTaxRateRoutesMiddlewares: MiddlewareRoute[] = [
+  {
+    matcher: "/admin/tax-rates/*",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.tax_rate,
+          operation: PolicyOperation.read,
+        },
+      ]),
+    ],
+  },
   {
     method: "POST",
     matcher: "/admin/tax-rates",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.tax_rate,
+          operation: PolicyOperation.create,
+        },
+        {
+          resource: Entities.tax_region,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(AdminCreateTaxRate),
       validateAndTransformQuery(
         AdminGetTaxRateParams,
@@ -30,6 +53,16 @@ export const adminTaxRateRoutesMiddlewares: MiddlewareRoute[] = [
     method: "POST",
     matcher: "/admin/tax-rates/:id",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.tax_rate,
+          operation: PolicyOperation.update,
+        },
+        {
+          resource: Entities.tax_region,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(AdminUpdateTaxRate),
       validateAndTransformQuery(
         AdminGetTaxRateParams,
@@ -48,9 +81,31 @@ export const adminTaxRateRoutesMiddlewares: MiddlewareRoute[] = [
     ],
   },
   {
+    method: "DELETE",
+    matcher: "/admin/tax-rates/:id",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.tax_rate,
+          operation: PolicyOperation.delete,
+        },
+        {
+          resource: Entities.tax_region,
+          operation: PolicyOperation.update,
+        },
+      ]),
+    ],
+  },
+  {
     method: "GET",
     matcher: "/admin/tax-rates",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.tax_rate,
+          operation: PolicyOperation.read,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetTaxRatesParams,
         QueryConfig.listTransformQueryConfig
@@ -61,6 +116,16 @@ export const adminTaxRateRoutesMiddlewares: MiddlewareRoute[] = [
     method: "POST",
     matcher: "/admin/tax-rates/:id/rules",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.tax_rate,
+          operation: PolicyOperation.update,
+        },
+        {
+          resource: Entities.tax_region,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(AdminCreateTaxRateRule),
       validateAndTransformQuery(
         AdminGetTaxRateParams,
@@ -72,6 +137,16 @@ export const adminTaxRateRoutesMiddlewares: MiddlewareRoute[] = [
     method: "DELETE",
     matcher: "/admin/tax-rates/:id/rules/:rule_id",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.tax_rate,
+          operation: PolicyOperation.update,
+        },
+        {
+          resource: Entities.tax_region,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetTaxRateParams,
         QueryConfig.retrieveTransformQueryConfig

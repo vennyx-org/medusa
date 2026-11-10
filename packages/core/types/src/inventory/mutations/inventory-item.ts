@@ -1,8 +1,7 @@
 /**
  * The data to update in an inventory item.
  */
-export interface UpdateInventoryItemInput
-  extends Partial<CreateInventoryItemInput> {
+export interface UpdateInventoryItemInput extends Partial<CreateInventoryItemInput> {
   /**
    * The ID of the inventory item to update.
    */
@@ -30,6 +29,11 @@ export interface CreateInventoryItemInput {
    * The material of the inventory item.
    */
   material?: string | null
+
+  /**
+   * The unit of measure of the inventory item's quantities, such as `lb` or `kg`.
+   */
+  unit_of_measure?: string | null
   /**
    * The weight of the inventory item.
    */

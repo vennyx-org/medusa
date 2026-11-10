@@ -62,7 +62,7 @@ You can follow this guide whether you're new to Medusa or an advanced Medusa dev
 
 <Prerequisites items={[
   {
-    text: "Node.js v20+",
+    text: "Node.js v20.19.0+ or v22.12.0+",
     link: "https://nodejs.org/en/download"
   },
   {
@@ -83,21 +83,21 @@ npx create-medusa-app@latest
 
 You'll first be asked for the project's name. Then, when you're asked whether you want to install the Next.js Starter Storefront, choose `Y` for yes.
 
-Afterwards, the installation process will start, which will install the Medusa application in a directory with your project's name, and the Next.js Starter Storefront in a directory with the `{project-name}-storefront` name.
-
-<Note title="Why is the storefront installed separately?">
-
-The Medusa application is composed of a headless Node.js server and an admin dashboard. The storefront is installed or custom-built separately and connects to the Medusa application through its REST endpoints, called [API routes](!docs!/learn/fundamentals/api-routes). Learn more about Medusa's architecture in [this documentation](!docs!/learn/introduction/architecture).
-
-</Note>
+Afterwards, the installation process will start, which will install the Medusa application as a monorepository in a directory with your project's name. The backend is installed in the `apps/backend` directory, and the Next.js Starter Storefront is installed in the `apps/storefront` directory.
 
 Once the installation finishes successfully, the Medusa Admin dashboard will open with a form to create a new user. Enter the user's credential and submit the form.
 
-Afterwards, you can login with the new user and explore the dashboard. The Next.js Starter Storefront is also running at `http://localhost:8000`.
+Afterwards, you can log in with the new user and explore the dashboard. The Next.js Starter Storefront is also running at `http://localhost:8000`.
 
-<Note title="Ran to Errors?">
+<Note title="Ran into Errors?">
 
 Check out the [troubleshooting guides](../../../troubleshooting/create-medusa-app-errors/page.mdx) for help.
+
+</Note>
+
+<Note>
+
+In this guide, all file paths of backend customizations are relative to the `apps/backend` directory of your Medusa project.
 
 </Note>
 
@@ -107,10 +107,10 @@ Check out the [troubleshooting guides](../../../troubleshooting/create-medusa-ap
 
 In this step, you'll install [Sanity's JavaScript client SDK](https://www.sanity.io/docs/js-client) in the Medusa application, which you'll use later in your code when sending requests to Sanity.
 
-In your terminal, move to the Medusa application's directory and run the following command:
+In your terminal, move to the `apps/backend` directory and run the following command:
 
 ```bash npm2yarn
-cd project-name # replace with directory name
+cd apps/backend
 npm install @sanity/client
 ```
 
@@ -516,7 +516,7 @@ export default Module(SANITY_MODULE, {
 
 In the file, you export the `SANITY_MODULE` which is the Module's name. You'll use it later when you resolve the module from the Medusa container.
 
-You also export the module definition using `Module` from the Modueles SDK, which accepts as a first parameter the module's name, and as a second parameter an object having a `service` property, indicating the module's service.
+You also export the module definition using `Module` from the Modules SDK, which accepts as a first parameter the module's name, and as a second parameter an object having a `service` property, indicating the module's service.
 
 ### Add Module to Configurations
 
@@ -753,7 +753,7 @@ You define the `syncStep` using the `createStep` function, which accepts two par
 
 The step function accepts the step's input as a first parameter, and an object of options as a second. The object of options has a `container` property, which is an instance of the Medusa container that you can use to resolve resources.
 
-In the step, you resolve from the Medusa container Sanity Module's service and [Query](!docs!/learn/fundamentals/module-links/query), which is a tool that allows you to retrieve data across modules and links.
+In the step, you resolve from the Medusa container Sanity Module's service and [Query](!docs!/learn/fundamentals/query), which is a tool that allows you to retrieve data across modules and links.
 
 You use Query's `graph` method to retrieve products, filtering them by their IDs and applying pagination configurations. The `graph` method accepts a `fields` property in its object parameter, which indicates the product data model's fields and relations to retrieve.
 
@@ -991,7 +991,7 @@ In the next step, you'll setup Sanity with Next.js, and you can then monitor the
 
 In this step, you'll install Sanity in the Next.js Starter and configure it. You'll then have a Sanity studio in your Next.js Starter Storefront, where you'll later view the product documents being synced from Medusa, and update their content that you'll display in the storefront on the product details page.
 
-Sanity has a CLI tool that helps you with the setup. First, change to the Next.js Starter's directory (it's outside the Medusa application's directory and its name is `{project-name}-storefront`, where `{project-name}` is the name of the Medusa application's directory).
+Sanity has a CLI tool that helps you with the setup. First, change to the Next.js Starter's directory (`apps/storefront`).
 
 Then, run the following command:
 
@@ -1351,6 +1351,8 @@ In this section, you'll create the API route to retrieve a sanity document, and 
 To retrieve the URL to the Sanity studio, add the following method in the Sanity Module's service in `src/modules/sanity/service.ts`:
 
 ```ts title="src/modules/sanity/service.ts"
+import { MedusaError } from "@medusajs/framework/utils"
+
 class SanityModuleService {
   // ...
   async getStudioLink(
@@ -1360,7 +1362,10 @@ class SanityModuleService {
   ) {
     const resolvedType = config.explicit_type ? type : this.typeMap[type]
     if (!this.studioUrl) {
-      throw new Error("No studio URL provided")
+      throw new MedusaError(
+        MedusaError.Types.INVALID_ARGUMENT,
+        "No studio URL provided"
+      )
     }
     return `${this.studioUrl}/structure/${resolvedType};${id}`
   }
@@ -1557,7 +1562,7 @@ export const useSanityDocument = (
 }
 ```
 
-You define the hook `useSanityDocument` which retrieves the Sanity document of a product using Tankstack Query.
+You define the hook `useSanityDocument` which retrieves the Sanity document of a product using TanStack Query.
 
 You can now create the widget injected in a product's details page. Widgets are react components created in a file under the `src/admin/widgets` directory.
 
@@ -1565,7 +1570,10 @@ So, create the file `src/admin/widgets/sanity-product.tsx` with the following co
 
 ```tsx title="src/admin/widgets/sanity-product.tsx"
 import { defineWidgetConfig } from "@medusajs/admin-sdk"
-import { AdminProduct, DetailWidgetProps } from "@medusajs/types"
+import {
+  AdminProduct,
+  DetailWidgetProps,
+} from "@medusajs/types"
 import { ArrowUpRightOnBox } from "@medusajs/icons"
 import { Button, CodeBlock, Container, StatusBadge, toast } from "@medusajs/ui"
 import { useState } from "react"
@@ -1652,7 +1660,7 @@ const ProductWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
 
 // The widget's configurations
 export const config = defineWidgetConfig({
-  zone: "product.details.after",
+  zone: "product.details",
 })
 
 export default ProductWidget
@@ -1698,7 +1706,7 @@ Medusa has a [workflow engine](../../../infrastructure-modules/workflow-engine/p
 
 The workflow engine is an [Infrastructure Module](!docs!/learn/fundamentals/modules/infrastructure-modules), which can be replaced with a [Redis Workflow Engine](../../../infrastructure-modules/workflow-engine/redis/page.mdx), or a custom one of your choice, allowing you to take ownership of your application's tooling.
 
-In your customizations, you can resolve the workflow engine from the container and manage executions of a workflow, such as retrieve them and check their progress.
+In your customizations, you can resolve the workflow engine from the container and manage executions of a workflow, such as retrieving them and checking their progress.
 
 In this section, you'll create an API route to retrieve the stored executions of the `sanitySyncProductsWorkflow` workflow, so that you can display them later on the dashboard.
 
@@ -1756,7 +1764,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
 This adds a `POST` API route at `/admin/sanity/syncs`. In the route handler, you execute the `sanitySyncProductsWorkflow` without passing it a `product_ids` input. The step in the workflow will retrieve all products, instead of filtering them by ID, and sync them to Sanity.
 
-You return the transaction ID of the workflow, which you can use to track the execution's progress since the workflow will run in the background. This is not implemented in this guide, but Medusa has a [Get Execution API route](!api!/admin#workflows-executions_getworkflowsexecutionsworkflow_idtransaction_id) that you can use to get the details of a workflow's execution.
+You return the transaction ID of the workflow, which you can use to track the execution's progress since the workflow will run in the background. This is not implemented in this guide, but Medusa has a [Get Execution API route](!api!/admin/workflows-executions/get-exection) that you can use to get the details of a workflow's execution.
 
 ### Add Sanity UI Route
 

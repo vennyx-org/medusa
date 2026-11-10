@@ -1,4 +1,3 @@
-import React from "react"
 import { Heading, Input, Switch } from "@medusajs/ui"
 import { UseFormReturn, useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -61,7 +60,7 @@ function DetailsTab({ form, product }: DetailsTabProps) {
             }}
           />
 
-          {product.options.map((option: any) => (
+          {product.options?.map((option: any) => (
             <Form.Field
               key={option.id}
               control={form.control}
@@ -96,7 +95,7 @@ function DetailsTab({ form, product }: DetailsTabProps) {
             render={({ field: { value, onChange, ...field } }) => {
               return (
                 <Form.Item>
-                  <div className="bg-ui-bg-component shadow-elevation-card-rest flex gap-x-3 rounded-lg p-4">
+                  <div className="flex gap-x-3 rounded-lg bg-ui-bg-component p-4 shadow-elevation-card-rest">
                     <Form.Control>
                       <Switch
                         dir="ltr"
@@ -128,7 +127,7 @@ function DetailsTab({ form, product }: DetailsTabProps) {
             render={({ field: { value, onChange, ...field } }) => {
               return (
                 <Form.Item>
-                  <div className="bg-ui-bg-component shadow-elevation-card-rest flex gap-x-3 rounded-lg p-4">
+                  <div className="flex gap-x-3 rounded-lg bg-ui-bg-component p-4 shadow-elevation-card-rest">
                     <Form.Control>
                       <Switch
                         dir="ltr"
@@ -159,7 +158,7 @@ function DetailsTab({ form, product }: DetailsTabProps) {
             render={({ field: { value, onChange, ...field } }) => {
               return (
                 <Form.Item>
-                  <div className="bg-ui-bg-component shadow-elevation-card-rest flex gap-x-3 rounded-lg p-4">
+                  <div className="flex gap-x-3 rounded-lg bg-ui-bg-component p-4 shadow-elevation-card-rest">
                     <Form.Control>
                       <Switch
                         dir="ltr"

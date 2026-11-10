@@ -1,9 +1,5 @@
 export type TransactionStepStatus =
-  | "idle"
-  | "ok"
-  | "waiting_response"
-  | "temp_failure"
-  | "permanent_failure"
+  "idle" | "ok" | "waiting_response" | "temp_failure" | "permanent_failure"
 
 export type TransactionState =
   | "not_started"
@@ -114,7 +110,7 @@ export interface WorkflowExecutionDefinition {
   noCompensation?: boolean
   /**
    * Indicates whether the workflow should continue even if there is a permanent failure in this step.
-   * In case it is set to true, the the current step will be marked as TransactionStepState.PERMANENT_FAILURE and the next steps will be executed.
+   * In case it is set to true, the current step will be marked as TransactionStepState.PERMANENT_FAILURE and the next steps will be executed.
    */
   continueOnPermanentFailure?: boolean
   /**

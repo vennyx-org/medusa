@@ -10,7 +10,7 @@ In this chapter, you’ll learn about scheduled jobs and how to use them.
 
 When building your commerce application, you may need to automate tasks and run them repeatedly at a specific schedule. For example, you need to automatically sync products to a third-party service once a day.
 
-In other commerce platforms, this feature isn't natively supported. Instead, you have to setup a separate application to execute cron jobs, which adds complexity as to how you expose this task to be executed in a cron job, or how you debug it when it's not running within the platform's tooling.
+In other commerce platforms, this feature isn't natively supported. Instead, you have to set up a separate application to execute cron jobs, which adds complexity as to how you expose this task to be executed in a cron job, or how you debug it when it's not running within the platform's tooling.
 
 Medusa removes this overhead by supporting this feature natively with scheduled jobs. A scheduled job is an asynchronous function that the Medusa application runs at the interval you specify during the Medusa application's runtime. Your efforts are only spent on implementing the functionality performed by the job, such as syncing products to an ERP.
 
@@ -33,19 +33,24 @@ For example, create the file `src/jobs/hello-world.ts` with the following conten
 ![Example of scheduled job file in the application's directory structure](https://res.cloudinary.com/dza7lstvk/image/upload/v1732866423/Medusa%20Book/scheduled-job-dir-overview_ediqgm.jpg)
 
 export const highlights = [
-  ["3", "greetingJob", "The scheduled job function to execute at a specified interval."]
-  ["3", "container", "Receive the Medusa container as a parameter"],
-  ["4", "logger", "Resolve the logger from the container"],
-  ["9", "config", "The scheduled job's configurations."],
-  ["10", "name", "The job's unique name"],
-  ["11", "schedule", "The schedule to run the job on."]
+  ["6", "greetingJob", "The scheduled job function to execute at a specified interval."],
+  ["6", "container", "Receive the Medusa container as a parameter"],
+  ["7", "logger", "Resolve the logger from the container"],
+  ["14", "config", "The scheduled job's configurations."],
+  ["15", "name", "The job's unique name"],
+  ["16", "schedule", "The schedule to run the job on."]
 ]
 
 ```ts title="src/jobs/hello-world.ts" highlights={highlights}
 import { MedusaContainer } from "@medusajs/framework/types"
+import {
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 export default async function greetingJob(container: MedusaContainer) {
-  const logger = container.resolve("logger")
+  const logger = container.resolve(
+    ContainerRegistrationKeys.LOGGER
+  )
 
   logger.info("Greeting!")
 }
@@ -79,6 +84,12 @@ After a minute, the following message will be logged to the terminal:
 info:    Greeting!
 ```
 
+### Disable a Scheduled Job
+
+Do not disable a scheduled job by commenting out or removing the `config` export while keeping the file in `src/jobs/`. This will cause errors when you build or start your Medusa application.
+
+To disable a scheduled job, move its file out of the `src/jobs` directory. For example, move it to `src/scripts/` or any directory other than `src/jobs/`.
+
 ### Troubleshooting Scheduled Jobs
 
 If your scheduled job is not running at the expected times, refer to the [Scheduled Job Troubleshooting Guide](!resources!/troubleshooting/scheduled-job-not-running).
@@ -111,3 +122,45 @@ export const config = {
 In the scheduled job function, you execute the `syncProductToErpWorkflow` by invoking it and passing it the container, then invoking the `run` method. You also specify in the exported configurations the schedule `0 0 * * *` which indicates midnight time of every day.
 
 The next time you start the Medusa application, it will run this job every day at midnight.
+
+---
+
+## Check the Scheduled Time of a Job
+
+Medusa runs scheduled jobs at the pattern you specify in the `schedule` property of the job's configurations. During a run, you can check the exact date and time the job was scheduled to run at using the `context` parameter of the scheduled job function.
+
+<Note>
+
+The `context` parameter is available since Medusa [v2.17.0](https://github.com/medusajs/medusa/releases/tag/v2.17.0).
+
+</Note>
+
+For example:
+
+```ts title="src/jobs/hello-world.ts"
+import { MedusaContainer } from "@medusajs/framework/types"
+import { ScheduledJobContext } from "@medusajs/framework"
+import {
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
+
+export default async function greetingJob(
+  container: MedusaContainer,
+  context: ScheduledJobContext
+) {
+  const logger = container.resolve(
+    ContainerRegistrationKeys.LOGGER
+  )
+
+  logger.info(`Greeting! Scheduled for: ${context.scheduledFor}`)
+}
+
+export const config = {
+  name: "greeting-every-minute",
+  schedule: "* * * * *",
+}
+```
+
+The `context` parameter is an object that has the following property:
+
+- `scheduledFor`: A `Date` object indicating the exact date and time the job was scheduled to run at.

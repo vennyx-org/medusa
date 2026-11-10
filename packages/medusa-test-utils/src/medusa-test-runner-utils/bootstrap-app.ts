@@ -2,16 +2,15 @@ import { logger } from "@medusajs/framework/logger"
 import { MedusaContainer } from "@medusajs/framework/types"
 import { GracefulShutdownServer, promiseAll } from "@medusajs/framework/utils"
 import express from "express"
-import getPort from "get-port"
 import { resolve } from "path"
-import { applyEnvVarsToProcess, execOrTimeout } from "./utils"
+import { applyEnvVarsToProcess, execOrTimeout, getFreePort } from "./utils"
 
 async function bootstrapApp({
   cwd,
   env = {},
 }: { cwd?: string; env?: Record<any, any> } = {}) {
   const app = express()
-  applyEnvVarsToProcess(env)
+  const restoreEnvVars = applyEnvVarsToProcess(env)
 
   // Register a health check endpoint
   app.get("/health", (_, res) => {
@@ -26,15 +25,17 @@ async function bootstrapApp({
       expressApp: app,
     })
 
-    const PORT = process.env.PORT ? parseInt(process.env.PORT) : await getPort()
+    const PORT = process.env.PORT ? parseInt(process.env.PORT) : await getFreePort()
 
     return {
       shutdown,
       container,
       app,
       port: PORT,
+      restoreEnvVars,
     }
   } catch (error) {
+    restoreEnvVars()
     logger.error("Error bootstrapping app:", error)
     throw error
   }
@@ -58,6 +59,7 @@ export async function startApp({
       port,
       container: appContainer,
       shutdown: appShutdown,
+      restoreEnvVars,
     } = await bootstrapApp({
       cwd,
       env,
@@ -87,6 +89,8 @@ export async function startApp({
           logger.error("Error during forced cleanup:", cleanupError)
         }
         throw error
+      } finally {
+        restoreEnvVars()
       }
     }
 

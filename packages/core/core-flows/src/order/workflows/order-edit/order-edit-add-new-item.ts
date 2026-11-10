@@ -76,7 +76,7 @@ export const orderEditAddNewItemValidationStep = createStep(
 export const orderEditAddNewItemWorkflowId = "order-edit-add-new-item"
 /**
  * This workflow adds new items to an order edit. It's used by the
- * [Add Items to Order Edit Admin API Route](https://docs.medusajs.com/api/admin#order-edits_postordereditsiditems).
+ * [Add Items to Order Edit Admin API Route](https://docs.medusajs.com/api/admin/order-edits/add-items).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to add new items to an order edit
  * in your custom flows.
@@ -183,6 +183,7 @@ export const orderEditAddNewItemWorkflow = createWorkflow(
             compare_at_unit_price:
               item.compare_at_unit_price ??
               lineItems[index].compare_at_unit_price,
+            allow_backorder: item.allow_backorder,
             metadata: item.metadata,
           },
         }))

@@ -27,6 +27,7 @@ import {
   useRemoteQueryStep,
 } from "../../common"
 import { upsertVariantPricesWorkflow } from "./upsert-variant-prices"
+import { createProductVariantsDefaultInventoryStep } from "../steps/create-product-variants-default-inventory"
 import { dismissProductVariantsInventoryStep } from "../steps/dismiss-product-variants-inventory"
 
 /**
@@ -83,8 +84,7 @@ export type UpdateProductsWorkflowInputProducts = {
  * The data to update one or more products, along with custom data that's passed to the workflow's hooks.
  */
 export type UpdateProductWorkflowInput =
-  | UpdateProductsWorkflowInputSelector
-  | UpdateProductsWorkflowInputProducts
+  UpdateProductsWorkflowInputSelector | UpdateProductsWorkflowInputProducts
 
 function prepareUpdateProductInput({
   input,
@@ -131,7 +131,7 @@ function findProductsWithSalesChannels({
   updatedProducts: ProductTypes.ProductDTO[]
   input: UpdateProductWorkflowInput
 }) {
-  let productIds = updatedProducts.map((p) => p.id)
+  const productIds = updatedProducts.map((p) => p.id)
 
   if ("products" in input) {
     const discardedProductIds: string[] = input.products
@@ -150,7 +150,7 @@ function findProductsWithShippingProfiles({
   updatedProducts: ProductTypes.ProductDTO[]
   input: UpdateProductWorkflowInput
 }) {
-  let productIds = updatedProducts.map((p) => p.id)
+  const productIds = updatedProducts.map((p) => p.id)
 
   if ("products" in input) {
     const discardedProductIds: string[] = input.products
@@ -271,7 +271,7 @@ function prepareVariantPrices({
         return {
           product_id: updatedProduct.id,
           variant_id: updatedVariant.id,
-          prices: variant.prices,
+          prices: variant.prices as CreateMoneyAmountDTO[],
         }
       })
     })
@@ -282,7 +282,7 @@ function prepareVariantPrices({
       return input.update.variants!.map((variant, i) => ({
         product_id: p.id,
         variant_id: p.variants[i].id,
-        prices: variant.prices,
+        prices: variant.prices as CreateMoneyAmountDTO[],
       }))
     })
   }
@@ -338,7 +338,7 @@ function prepareToDeleteShippingProfileLinks({
 
 export const updateProductsWorkflowId = "update-products"
 /**
- * This workflow updates one or more products. It's used by the [Update Product Admin API Route](https://docs.medusajs.com/api/admin#products_postproductsid).
+ * This workflow updates one or more products. It's used by the [Update Product Admin API Route](https://docs.medusajs.com/api/admin/products/update-a-product).
  *
  * This workflow has a hook that allows you to perform custom actions on the updated products. For example, you can pass under `additional_data` custom data that
  * allows you to update custom data models linked to the products.
@@ -445,34 +445,51 @@ export const updateProductsWorkflow = createWorkflow(
     const toUpdateInput = transform({ input }, prepareUpdateProductInput)
     const updatedProducts = updateProductsStep(toUpdateInput)
 
-    const variantsToDismissInventory = transform(
+    const { variantsToDismissInventory, variantsToCreateInventory } = transform(
       { input, updatedProducts },
       (data) => {
-        const variantIds: string[] = []
+        const variantsToDismissInventory: string[] = []
+        const variantsToCreateInventory: string[] = []
+
+        const collect = (variant: {
+          id?: string
+          manage_inventory?: boolean
+        }) => {
+          if (!variant.id) {
+            return
+          }
+
+          if (variant.manage_inventory === false) {
+            variantsToDismissInventory.push(variant.id)
+          } else if (variant.manage_inventory === true) {
+            variantsToCreateInventory.push(variant.id)
+          }
+        }
 
         if ("products" in data.input) {
           for (const product of data.input.products) {
             for (const variant of product.variants ?? []) {
-              if (variant.id && variant.manage_inventory === false) {
-                variantIds.push(variant.id)
-              }
+              collect(variant)
             }
           }
         } else if (data.input.update?.variants?.length) {
           for (const variant of data.input.update.variants) {
-            if (variant.id && variant.manage_inventory === false) {
-              variantIds.push(variant.id)
-            }
+            collect(variant)
           }
         }
 
-        return variantIds
+        return { variantsToDismissInventory, variantsToCreateInventory }
       }
     )
 
-    dismissProductVariantsInventoryStep({
-      variantIds: variantsToDismissInventory,
-    })
+    parallelize(
+      dismissProductVariantsInventoryStep({
+        variantIds: variantsToDismissInventory,
+      }),
+      createProductVariantsDefaultInventoryStep({
+        variantIds: variantsToCreateInventory,
+      })
+    )
 
     const salesChannelLinks = transform(
       { input, updatedProducts },

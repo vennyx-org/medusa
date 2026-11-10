@@ -31,6 +31,14 @@
  *         fields. without prefix it will replace the entire default fields.
  *       externalDocs:
  *         url: "#select-fields-and-relations"
+ *   - name: version
+ *     in: query
+ *     description: The order's version.
+ *     required: false
+ *     schema:
+ *       type: number
+ *       title: version
+ *       description: The order's version.
  * security:
  *   - api_token: []
  *   - cookie_auth: []
@@ -90,6 +98,17 @@
  *       ```
  *     description: Emitted when an order is canceld.
  *     deprecated: false
+ *   - name: reservation-item.deleted
+ *     payload: |-
+ *       ```ts
+ *       {
+ *         id, // The ID of the reservation
+ *         order_id, // (optional) The ID of the order, if the reservation was deleted by an order flow
+ *       }
+ *       ```
+ *     description: Emitted when reservations are deleted.
+ *     deprecated: false
+ *     since: 2.18.0
  * 
 */
 

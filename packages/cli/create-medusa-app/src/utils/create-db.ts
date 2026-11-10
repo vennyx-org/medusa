@@ -9,6 +9,7 @@ import logMessage from "./log-message.js"
 import formatConnectionString from "./format-connection-string.js"
 import { Ora } from "ora"
 import { getCurrentOs } from "./get-current-os.js"
+import terminalLink from "terminal-link"
 
 type CreateDbOptions = {
   client: pg.Client
@@ -66,6 +67,23 @@ export async function runCreateDb({
   return newClient
 }
 
+/**
+ * Connects to the server's `postgres` maintenance database, falling back to the
+ * connection's default database (which Postgres resolves to the username).
+ */
+async function connectToMaintenanceDb(
+  connection: Parameters<typeof postgresClient>[0]
+): Promise<pg.Client> {
+  try {
+    return await postgresClient({
+      ...connection,
+      database: "postgres",
+    })
+  } catch (e) {
+    return await postgresClient(connection)
+  }
+}
+
 async function getForDbName({
   dbName,
   verbose = false,
@@ -95,10 +113,14 @@ async function getForDbName({
   } catch (e) {
     if (verbose) {
       logMessage({
-        message: `The following error occured when connecting to the database: ${e}`,
+        message: `The following error occurred when connecting to the database: ${e}`,
         type: "verbose",
       })
     }
+    logMessage({
+      message: `${EOL}Couldn't connect to PostgreSQL with the default credentials (user "postgres" without a password).${EOL}Medusa needs to connect to your PostgreSQL server to create the database of your project, so please enter your PostgreSQL credentials below.${EOL}`,
+    })
+
     // ask for the user's postgres credentials
     const answers = await inquirer.prompt([
       {
@@ -115,33 +137,34 @@ async function getForDbName({
         name: "postgresPassword",
         message: "Enter your Postgres password",
       },
-    ])
-
-    postgresUsername = answers.postgresUsername
-    postgresPassword = answers.postgresPassword
-
-    const { userDbName } = await inquirer.prompt([
       {
-        type: "database",
-        name: "userDbName",
-        message: "Enter your Postgres user's database name",
-        default: answers.postgresUsername,
+        type: "input",
+        name: "newDbName",
+        message:
+          "Enter the name of the database to create for your Medusa project",
+        default: dbName,
         validate: (input) => {
           return typeof input === "string" && input.length > 0
         },
       },
     ])
 
+    postgresUsername = answers.postgresUsername
+    postgresPassword = answers.postgresPassword
+    dbName = answers.newDbName
+
     try {
-      client = await postgresClient({
+      client = await connectToMaintenanceDb({
         user: postgresUsername,
         password: postgresPassword,
-        database: userDbName,
         ...defaultConnectionOptions,
       })
     } catch (e) {
       logMessage({
-        message: `Couldn't connect to PostgreSQL because of the following error: ${e}.${EOL}${EOL}Make sure you have PostgreSQL installed and the credentials you provided are correct.${EOL}${EOL}If you keep running into this issue despite having PostgreSQL installed, please check out our troubleshooting guidelines: https://docs.medusajs.com/resources/troubleshooting/database-errors`,
+        message: `Couldn't connect to PostgreSQL because of the following error: ${e}.${EOL}${EOL}Make sure you have PostgreSQL installed and the credentials you provided are correct.${EOL}${EOL}If you keep running into this issue despite having PostgreSQL installed, please check out our ${terminalLink(
+          "troubleshooting guides",
+          "https://docs.medusajs.com/resources/troubleshooting/database-errors"
+        )}.`,
         type: "error",
       })
     }
@@ -200,7 +223,7 @@ async function getForDbUrl({
   } catch (e) {
     if (verbose) {
       logMessage({
-        message: `The following error occured when connecting to the database: ${e}`,
+        message: `The following error occurred when connecting to the database: ${e}`,
         type: "verbose",
       })
     }

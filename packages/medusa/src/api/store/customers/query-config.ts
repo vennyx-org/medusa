@@ -1,3 +1,8 @@
+import {
+  buildAllowedFields,
+  prefixAllowedFields,
+} from "../utils/allowed-fields"
+
 const defaultStoreCustomersFields = [
   "id",
   "email",
@@ -13,17 +18,9 @@ const defaultStoreCustomersFields = [
   "*addresses",
 ]
 
-export const retrieveTransformQueryConfig = {
-  defaults: defaultStoreCustomersFields,
-  allowed: [
-    ...defaultStoreCustomersFields.map((f) => f.replace("*", "")),
-    "orders",
-  ],
-  isList: false,
-}
-
 export const defaultStoreCustomerAddressFields = [
   "id",
+  "address_name",
   "company",
   "customer_id",
   "first_name",
@@ -42,8 +39,24 @@ export const defaultStoreCustomerAddressFields = [
   "updated_at",
 ]
 
+const nestedStoreCustomerAddressFields = prefixAllowedFields(
+  "addresses",
+  defaultStoreCustomerAddressFields
+)
+
+export const retrieveTransformQueryConfig = {
+  defaults: defaultStoreCustomersFields,
+  allowed: buildAllowedFields(
+    defaultStoreCustomersFields,
+    ["orders"],
+    nestedStoreCustomerAddressFields
+  ),
+  isList: false,
+}
+
 export const retrieveAddressTransformQueryConfig = {
   defaults: defaultStoreCustomerAddressFields,
+  allowed: buildAllowedFields(defaultStoreCustomerAddressFields),
   isList: false,
 }
 

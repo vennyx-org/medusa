@@ -9,8 +9,7 @@ import { FindParams, SelectParams } from "../../common"
 export interface AdminGetPromotionParams extends SelectParams {}
 
 export interface AdminGetPromotionsParams
-  extends FindParams,
-    BaseFilterable<AdminGetPromotionsParams> {
+  extends FindParams, BaseFilterable<AdminGetPromotionsParams> {
   /**
    * Search for a promotion by its searchable
    */
@@ -37,10 +36,6 @@ export interface AdminGetPromotionsParams
     currency_code?: string | string[]
   }
   /**
-   * Filter by the promotion's currency code.
-   */
-  currency_code?: string | string[]
-  /**
    * Filter by the promotion's created date.
    */
   created_at?: OperatorMap<string>
@@ -52,12 +47,6 @@ export interface AdminGetPromotionsParams
    * Filter by the promotion's deleted date.
    */
   deleted_at?: OperatorMap<string>
-  /**
-   * Filter by the promotion's application method type.
-   */
-  application_method_type?:
-    | ApplicationMethodTypeValues
-    | ApplicationMethodTypeValues[]
   /**
    * An array of filters to apply on the entity, where each item in the array is joined with an "and" condition.
    */

@@ -8,10 +8,6 @@ import {
 import { BatchMethodRequest, HttpTypes } from "@medusajs/types"
 import TranslationFeatureFlag from "../../../../feature-flags/translation"
 import { defaultAdminTranslationFields } from "../query-config"
-import {
-  AdminCreateTranslationType,
-  AdminUpdateTranslationType,
-} from "../validators"
 
 /**
  * @since 2.12.3
@@ -19,7 +15,9 @@ import {
  */
 export const POST = async (
   req: AuthenticatedMedusaRequest<
-    BatchMethodRequest<AdminCreateTranslationType, AdminUpdateTranslationType>
+    BatchMethodRequest<
+      HttpTypes.AdminCreateTranslation, HttpTypes.AdminUpdateTranslation
+    >
   >,
   res: MedusaResponse<HttpTypes.AdminTranslationsBatchResponse>
 ) => {
@@ -49,12 +47,11 @@ export const POST = async (
     },
   })
 
-  const created = translations.filter((t) =>
-    result.created.some((r) => r.id === t.id)
-  )
-  const updated = translations.filter((t) =>
-    result.updated.some((r) => r.id === t.id)
-  )
+  const createdIds = new Set(result.created.map((r) => r.id))
+  const updatedIds = new Set(result.updated.map((r) => r.id))
+
+  const created = translations.filter((t) => createdIds.has(t.id))
+  const updated = translations.filter((t) => updatedIds.has(t.id))
 
   return res.status(200).json({
     created,

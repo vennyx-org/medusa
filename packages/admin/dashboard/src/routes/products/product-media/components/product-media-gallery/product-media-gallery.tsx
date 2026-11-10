@@ -56,7 +56,7 @@ export const ProductMediaGallery = ({ product }: ProductMediaGalleryProps) => {
   )
 
   const handleDownloadCurrent = () => {
-    if (isPending) {
+    if (isPending || !media[curr]) {
       return
     }
 
@@ -72,6 +72,10 @@ export const ProductMediaGallery = ({ product }: ProductMediaGalleryProps) => {
   }
 
   const handleDeleteCurrent = async () => {
+    if (!media[curr]) {
+      return
+    }
+
     const current = media[curr]
 
     const res = await prompt({
@@ -93,7 +97,7 @@ export const ProductMediaGallery = ({ product }: ProductMediaGalleryProps) => {
         .map((i) => ({ id: i.id, url: i.url })) || []
 
     if (curr === media.length - 1) {
-      setCurr((prev) => prev - 1)
+      setCurr((prev) => Math.max(0, prev - 1))
     }
 
     await mutateAsync({
@@ -172,7 +176,7 @@ const Canvas = ({ media, curr }: { media: Media[]; curr: number }) => {
 
   if (media.length === 0) {
     return (
-      <div className="bg-ui-bg-subtle flex size-full flex-col items-center justify-center gap-y-4 pb-8 pt-6">
+      <div className="flex size-full flex-col items-center justify-center gap-y-4 bg-ui-bg-subtle pb-8 pt-6">
         <div className="flex flex-col items-center">
           <Text
             size="small"
@@ -193,8 +197,12 @@ const Canvas = ({ media, curr }: { media: Media[]; curr: number }) => {
     )
   }
 
+  if (!media[curr]) {
+    return null
+  }
+
   return (
-    <div className="bg-ui-bg-subtle relative size-full overflow-hidden">
+    <div className="relative size-full overflow-hidden bg-ui-bg-subtle">
       <div className="flex size-full items-center justify-center p-6">
         <div className="relative inline-block max-h-full max-w-full">
           {media[curr].isThumbnail && (
@@ -207,7 +215,7 @@ const Canvas = ({ media, curr }: { media: Media[]; curr: number }) => {
           <img
             src={media[curr].url}
             alt=""
-            className="object-fit shadow-elevation-card-rest max-h-[calc(100vh-200px)] w-auto rounded-xl object-contain"
+            className="object-fit max-h-[calc(100vh-200px)] w-auto rounded-xl object-contain shadow-elevation-card-rest"
           />
         </div>
       </div>
@@ -265,7 +273,7 @@ const Preview = ({
       </IconButton>
       <div className="flex items-center gap-x-2">
         {visibleItems.map((item) => {
-          const isCurrentImage = item.id === media[curr].id
+          const isCurrentImage = item.id === media[curr]?.id
           const originalIndex = media.findIndex((i) => i.id === item.id)
 
           return (
@@ -273,7 +281,7 @@ const Preview = ({
               type="button"
               onClick={() => goTo(originalIndex)}
               className={clx(
-                "transition-fg size-7 overflow-hidden rounded-[4px] outline-none",
+                "size-7 overflow-hidden rounded-[4px] outline-none transition-fg",
                 {
                   "shadow-borders-focus": isCurrentImage,
                 }

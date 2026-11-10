@@ -1,23 +1,21 @@
 import { Buildings, XCircle } from "@medusajs/icons"
-import {
-  AdminOrder,
-  AdminOrderFulfillment,
-  AdminOrderLineItem,
-  HttpTypes,
-  OrderLineItemDTO,
-} from "@medusajs/types"
+import { AdminOrder, AdminOrderLineItem } from "@medusajs/types"
 import {
   Button,
   Container,
   Copy,
   Heading,
+  Label,
+  Prompt,
   StatusBadge,
+  Switch,
   Text,
   Tooltip,
   toast,
   usePrompt,
 } from "@medusajs/ui"
 import { format } from "date-fns"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
 import { ActionMenu } from "../../../../../components/common/action-menu"
@@ -28,12 +26,18 @@ import {
   useMarkOrderFulfillmentAsDelivered,
 } from "../../../../../hooks/api/orders"
 import { useStockLocation } from "../../../../../hooks/api/stock-locations"
+import {
+  useFulfillmentPermissions,
+  useOrderPermissions,
+  useStockLocationPermissions,
+} from "../../../../../hooks/use-resource-permissions"
 import { formatProvider } from "../../../../../lib/format-provider"
 import { getLocaleAmount } from "../../../../../lib/money-amount-helpers"
 import { FulfillmentSetType } from "../../../../locations/common/constants"
+import { ExtendedOrderFulfillment, ExtendedOrder } from "../../constants"
 
 type OrderFulfillmentSectionProps = {
-  order: AdminOrder
+  order: ExtendedOrder
 }
 
 export const OrderFulfillmentSection = ({
@@ -55,13 +59,13 @@ const UnfulfilledItem = ({
   item,
   currencyCode,
 }: {
-  item: OrderLineItemDTO & { variant: HttpTypes.AdminProductVariant }
+  item: AdminOrderLineItem
   currencyCode: string
 }) => {
   return (
     <div
       key={item.id}
-      className="text-ui-fg-subtle grid grid-cols-2 items-start px-6 py-4"
+      className="grid grid-cols-2 items-start px-6 py-4 text-ui-fg-subtle"
     >
       <div className="flex items-start gap-x-4">
         <Thumbnail src={item.thumbnail} />
@@ -81,7 +85,7 @@ const UnfulfilledItem = ({
             </div>
           )}
           <Text size="small">
-            {item.variant?.options.map((o) => o.value).join(" · ")}
+            {item.variant?.options?.map((o) => o.value).join(" · ")}
           </Text>
         </div>
       </div>
@@ -101,7 +105,7 @@ const UnfulfilledItem = ({
         </div>
         <div className="flex items-center justify-end">
           <Text size="small">
-            {getLocaleAmount(item.subtotal || 0, currencyCode)}
+            {getLocaleAmount((item.subtotal as number) || 0, currencyCode)}
           </Text>
         </div>
       </div>
@@ -150,6 +154,10 @@ const UnfulfilledItemDisplay = ({
   requiresShipping: boolean
 }) => {
   const { t } = useTranslation()
+  const { canUpdate: canUpdateOrder } = useOrderPermissions()
+  const { canCreate: canCreateFulfillment } = useFulfillmentPermissions()
+
+  const canFulfill = canCreateFulfillment && canUpdateOrder
 
   if (order.status === "canceled") {
     return
@@ -171,19 +179,21 @@ const UnfulfilledItemDisplay = ({
             {t("orders.fulfillment.awaitingFulfillmentBadge")}
           </StatusBadge>
 
-          <ActionMenu
-            groups={[
-              {
-                actions: [
-                  {
-                    label: t("orders.fulfillment.fulfillItems"),
-                    icon: <Buildings />,
-                    to: `/orders/${order.id}/fulfillment?requires_shipping=${requiresShipping}`,
-                  },
-                ],
-              },
-            ]}
-          />
+          {canFulfill && (
+            <ActionMenu
+              groups={[
+                {
+                  actions: [
+                    {
+                      label: t("orders.fulfillment.fulfillItems"),
+                      icon: <Buildings />,
+                      to: `/orders/${order.id}/fulfillment?requires_shipping=${requiresShipping}`,
+                    },
+                  ],
+                },
+              ]}
+            />
+          )}
         </div>
       </div>
       <div>
@@ -204,21 +214,26 @@ const Fulfillment = ({
   order,
   index,
 }: {
-  fulfillment: AdminOrderFulfillment
-  order: AdminOrder
+  fulfillment: ExtendedOrderFulfillment
+  order: ExtendedOrder
   index: number
 }) => {
   const { t } = useTranslation()
   const prompt = usePrompt()
   const navigate = useNavigate()
+  const { canUpdate: canUpdateOrder } = useOrderPermissions()
+  const { canUpdate: canUpdateFulfillment } = useFulfillmentPermissions()
+  const { canRead: canReadStockLocations } = useStockLocationPermissions()
 
-  const showLocation = !!fulfillment.location_id
+  const canManage = canUpdateFulfillment && canUpdateOrder
+
+  const showLocation = !!fulfillment.location_id && canReadStockLocations
 
   const isPickUpFulfillment =
-    fulfillment.shipping_option?.service_zone.fulfillment_set.type ===
+    fulfillment.shipping_option?.service_zone?.fulfillment_set?.type ===
     FulfillmentSetType.Pickup
 
-  const { stock_location, isError, error } = useStockLocation(
+  const { stock_location, isError } = useStockLocation(
     fulfillment.location_id!,
     undefined,
     {
@@ -228,22 +243,22 @@ const Fulfillment = ({
 
   let statusText = fulfillment.requires_shipping
     ? isPickUpFulfillment
-      ? "Awaiting pickup"
-      : "Awaiting shipping"
-    : "Awaiting delivery"
+      ? t("orders.fulfillment.status.awaitingPickup")
+      : t("orders.fulfillment.status.awaitingShipping")
+    : t("orders.fulfillment.status.awaitingDelivery")
   let statusColor: "blue" | "green" | "red" = "blue"
   let statusTimestamp = fulfillment.created_at
 
   if (fulfillment.canceled_at) {
-    statusText = "Canceled"
+    statusText = t("orders.fulfillment.status.canceled")
     statusColor = "red"
     statusTimestamp = fulfillment.canceled_at
   } else if (fulfillment.delivered_at) {
-    statusText = "Delivered"
+    statusText = t("orders.fulfillment.status.delivered")
     statusColor = "green"
     statusTimestamp = fulfillment.delivered_at
   } else if (fulfillment.shipped_at) {
-    statusText = "Shipped"
+    statusText = t("orders.fulfillment.status.shipped")
     statusColor = "green"
     statusTimestamp = fulfillment.shipped_at
   }
@@ -255,6 +270,7 @@ const Fulfillment = ({
   )
 
   const showShippingButton =
+    canManage &&
     !fulfillment.canceled_at &&
     !fulfillment.shipped_at &&
     !fulfillment.delivered_at &&
@@ -262,19 +278,26 @@ const Fulfillment = ({
     !isPickUpFulfillment
 
   const showDeliveryButton =
-    !fulfillment.canceled_at && !fulfillment.delivered_at
+    canManage && !fulfillment.canceled_at && !fulfillment.delivered_at
 
-  const handleMarkAsDelivered = async () => {
-    const res = await prompt({
-      title: t("general.areYouSure"),
-      description: t("orders.fulfillment.markAsDeliveredWarning"),
-      confirmText: t("actions.continue"),
-      cancelText: t("actions.cancel"),
-      variant: "confirmation",
-    })
+  const [sendNotification, setSendNotification] = useState(
+    !order.no_notification
+  )
+  const [showDeliveredPrompt, setShowDeliveredPrompt] = useState(false)
 
-    if (res) {
-      await markAsDelivered(undefined, {
+  const handleMarkAsDelivered = () => {
+    setShowDeliveredPrompt(true)
+  }
+
+  const handleCancelDeliveredPrompt = () => {
+    setShowDeliveredPrompt(false)
+  }
+
+  const handleConfirmDelivered = async () => {
+    setShowDeliveredPrompt(false)
+    await markAsDelivered(
+      { no_notification: !sendNotification },
+      {
         onSuccess: () => {
           toast.success(
             t(
@@ -287,8 +310,8 @@ const Fulfillment = ({
         onError: (e) => {
           toast.error(e.message)
         },
-      })
-    }
+      }
+    )
   }
 
   const handleCancel = async () => {
@@ -316,11 +339,17 @@ const Fulfillment = ({
     }
   }
 
-  if (isError) {
-    throw error
+  const isValidUrl = (url?: string) => {
+    if (!url || url.length === 0 || url === "#") {
+      return false
+    }
+    try {
+      const parsed = new URL(url)
+      return parsed.protocol === "http:" || parsed.protocol === "https:"
+    } catch {
+      return false
+    }
   }
-
-  const isValidUrl = (url?: string) => url && url.length > 0 && url !== "#"
 
   return (
     <Container className="divide-y p-0">
@@ -341,26 +370,28 @@ const Fulfillment = ({
               {statusText}
             </StatusBadge>
           </Tooltip>
-          <ActionMenu
-            groups={[
-              {
-                actions: [
-                  {
-                    label: t("actions.cancel"),
-                    icon: <XCircle />,
-                    onClick: handleCancel,
-                    disabled:
-                      !!fulfillment.canceled_at ||
-                      !!fulfillment.shipped_at ||
-                      !!fulfillment.delivered_at,
-                  },
-                ],
-              },
-            ]}
-          />
+          {canManage && (
+            <ActionMenu
+              groups={[
+                {
+                  actions: [
+                    {
+                      label: t("actions.cancel"),
+                      icon: <XCircle />,
+                      onClick: handleCancel,
+                      disabled:
+                        !!fulfillment.canceled_at ||
+                        !!fulfillment.shipped_at ||
+                        !!fulfillment.delivered_at,
+                    },
+                  ],
+                },
+              ]}
+            />
+          )}
         </div>
       </div>
-      <div className="text-ui-fg-subtle grid grid-cols-2 items-start px-6 py-4">
+      <div className="grid grid-cols-2 items-start px-6 py-4 text-ui-fg-subtle">
         <Text size="small" leading="compact" weight="plus">
           {t("orders.fulfillment.itemsLabel")}
         </Text>
@@ -375,14 +406,18 @@ const Fulfillment = ({
         </ul>
       </div>
       {showLocation && (
-        <div className="text-ui-fg-subtle grid grid-cols-2 items-center px-6 py-4">
+        <div className="grid grid-cols-2 items-center px-6 py-4 text-ui-fg-subtle">
           <Text size="small" leading="compact" weight="plus">
             {t("orders.fulfillment.shippingFromLabel")}
           </Text>
-          {stock_location ? (
+          {isError ? (
+            <Text size="small" leading="compact">
+              {t("orders.fulfillment.locationUnavailable")}
+            </Text>
+          ) : stock_location ? (
             <Link
               to={`/settings/locations/${stock_location.id}`}
-              className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover transition-fg"
+              className="text-ui-fg-interactive transition-fg hover:text-ui-fg-interactive-hover"
             >
               <Text size="small" leading="compact">
                 {stock_location.name}
@@ -393,7 +428,7 @@ const Fulfillment = ({
           )}
         </div>
       )}
-      <div className="text-ui-fg-subtle grid grid-cols-2 items-center px-6 py-4">
+      <div className="grid grid-cols-2 items-center px-6 py-4 text-ui-fg-subtle">
         <Text size="small" leading="compact" weight="plus">
           {t("fields.provider")}
         </Text>
@@ -402,7 +437,7 @@ const Fulfillment = ({
           {formatProvider(fulfillment.provider_id)}
         </Text>
       </div>
-      <div className="text-ui-fg-subtle grid grid-cols-2 items-start px-6 py-4">
+      <div className="grid grid-cols-2 items-start px-6 py-4 text-ui-fg-subtle">
         <Text size="small" leading="compact" weight="plus">
           {t("orders.fulfillment.trackingLabel")}
         </Text>
@@ -421,7 +456,7 @@ const Fulfillment = ({
                           href={tlink.tracking_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover transition-fg"
+                          className="text-ui-fg-interactive transition-fg hover:text-ui-fg-interactive-hover"
                         >
                           <Text size="small" leading="compact" as="span">
                             {tlink.tracking_number}
@@ -434,7 +469,7 @@ const Fulfillment = ({
                           href={tlink.label_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover transition-fg"
+                          className="text-ui-fg-interactive transition-fg hover:text-ui-fg-interactive-hover"
                         >
                           <Text size="small" leading="compact" as="span">
                             Label
@@ -463,7 +498,7 @@ const Fulfillment = ({
       </div>
 
       {(showShippingButton || showDeliveryButton) && (
-        <div className="bg-ui-bg-subtle flex items-center justify-end gap-x-2 rounded-b-xl px-4 py-4">
+        <div className="flex items-center justify-end gap-x-2 rounded-b-xl bg-ui-bg-subtle px-4 py-4">
           {showDeliveryButton && (
             <Button onClick={handleMarkAsDelivered} variant="secondary">
               {t(
@@ -484,6 +519,40 @@ const Fulfillment = ({
           )}
         </div>
       )}
+
+      <Prompt open={showDeliveredPrompt} variant="confirmation">
+        <Prompt.Content>
+          <Prompt.Header>
+            <Prompt.Title>{t("general.areYouSure")}</Prompt.Title>
+            <Prompt.Description>
+              {t("orders.fulfillment.markAsDeliveredWarning")}
+            </Prompt.Description>
+          </Prompt.Header>
+          <div className="mt-6 flex items-center justify-between border-y border-dotted border-ui-border-base p-6">
+            <Label
+              htmlFor={`send-notification-${fulfillment.id}`}
+              className="txt-compact-small text-ui-fg-subtle"
+            >
+              {t("orders.returns.sendNotification")}
+            </Label>
+            <Switch
+              id={`send-notification-${fulfillment.id}`}
+              dir="ltr"
+              className="rtl:rotate-180"
+              checked={sendNotification}
+              onCheckedChange={setSendNotification}
+            />
+          </div>
+          <Prompt.Footer>
+            <Prompt.Cancel onClick={handleCancelDeliveredPrompt}>
+              {t("actions.cancel")}
+            </Prompt.Cancel>
+            <Prompt.Action onClick={handleConfirmDelivered}>
+              {t("actions.continue")}
+            </Prompt.Action>
+          </Prompt.Footer>
+        </Prompt.Content>
+      </Prompt>
     </Container>
   )
 }

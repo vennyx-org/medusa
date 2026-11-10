@@ -144,7 +144,9 @@ export interface CalculatedPriceSet {
    */
   is_original_price_tax_inclusive?: boolean
   /**
-   * The amount of the original price, or `null` if there isn't a calculated price.
+   * The amount of the original price, or `null` if there isn't an original price.
+   * This happens when the price set has no default (non-price-list) price and only
+   * prices from price lists of type `sale` match the context.
    */
   original_amount: BigNumberValue | null
   raw_original_amount: BigNumberRawValue | null
@@ -220,8 +222,10 @@ export interface RuleWithOperator {
  * Each key of the object is a the attribute, and its value
  * is the values of the rule.
  */
-export interface CreatePriceSetPriceRules
-  extends Record<string, string | RuleWithOperator[]> {}
+export interface CreatePriceSetPriceRules extends Record<
+  string,
+  string | RuleWithOperator[]
+> {}
 
 /**
  * @interface
@@ -306,8 +310,7 @@ export interface UpdatePriceSetDTO {
  * Filters to apply on price sets.
  */
 export interface FilterablePriceSetProps
-  extends BaseFilterable<FilterablePriceSetProps>,
-    PricingContext {
+  extends BaseFilterable<FilterablePriceSetProps>, PricingContext {
   /**
    * IDs to filter price sets by.
    */

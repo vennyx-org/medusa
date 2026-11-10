@@ -7,19 +7,24 @@ import {
   Options,
   SqlEntityManager,
 } from "@medusajs/framework/mikro-orm/postgresql"
-import { createDatabase, dropDatabase } from "pg-god"
-import { execOrTimeout } from "./medusa-test-runner-utils"
+import {
+  createDatabase,
+  createPostgresDatabaseTemplate,
+  dropDatabase,
+  dropPostgresDatabaseTemplate,
+  execOrTimeout,
+  formatError,
+  restorePostgresDatabaseFromTemplate,
+} from "./medusa-test-runner-utils"
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
-const DB_HOST = process.env.DB_HOST ?? "localhost"
-const DB_USERNAME = process.env.DB_USERNAME ?? ""
-const DB_PASSWORD = process.env.DB_PASSWORD ?? ""
-const DB_PORT = process.env.DB_PORT ?? "5432"
-
-const pgGodCredentials = {
-  user: DB_USERNAME,
-  password: DB_PASSWORD,
-  host: DB_HOST,
-  port: parseInt(DB_PORT),
+function getDatabaseCredentials() {
+  return {
+    user: process.env.DB_USERNAME ?? "",
+    password: process.env.DB_PASSWORD ?? "",
+    host: process.env.DB_HOST ?? "localhost",
+    port: parseInt(process.env.DB_PORT ?? "5432"),
+  }
 }
 
 export function getDatabaseURL(dbName?: string): string {
@@ -29,8 +34,8 @@ export function getDatabaseURL(dbName?: string): string {
   const DB_PORT = process.env.DB_PORT ?? "5432"
   const DB_NAME = dbName ?? process.env.DB_TEMP_NAME
 
-  return `postgres://${DB_USERNAME}${
-    DB_PASSWORD ? `:${DB_PASSWORD}` : ""
+  return `postgres://${encodeURIComponent(DB_USERNAME)}${
+    DB_PASSWORD ? `:${encodeURIComponent(DB_PASSWORD)}` : ""
   }@${DB_HOST}:${DB_PORT}/${DB_NAME}`
 }
 
@@ -56,8 +61,12 @@ export function getMikroOrmConfig({
       min: 2,
     },
     migrations: {
+      path: pathToMigrations,
       pathTs: pathToMigrations,
       silent: true,
+      // Snapshots only matter when generating migrations, and writing them
+      // leaves stray `.snapshot-<test db>.json` files in the source tree.
+      snapshot: false,
     },
     extensions: [CustomDBMigrator],
   })
@@ -65,7 +74,7 @@ export function getMikroOrmConfig({
 
 export interface TestDatabase {
   mikroOrmEntities: any[]
-  pathToMigrations?: string
+  pathToMigrations?: string | string[]
   schema?: string
   clientUrl?: string
 
@@ -79,6 +88,33 @@ export interface TestDatabase {
   getOrm(): MikroORM
 }
 
+/**
+ * Applies the migrations of a single directory. Used when a suite lists several
+ * migration sources (e.g. a module plus the provider under test), since a
+ * MikroORM instance only ever reads one migrations directory.
+ */
+async function runMigrationsFromPath(
+  pathToMigrations: string,
+  clientUrl?: string,
+  schema?: string
+): Promise<void> {
+  const orm = await MikroORM.init({
+    ...getMikroOrmConfig({
+      mikroOrmEntities: [],
+      pathToMigrations,
+      clientUrl,
+      schema,
+    }),
+    discovery: { warnWhenNoEntities: false },
+  })
+
+  try {
+    await orm.getMigrator().up()
+  } finally {
+    await orm.close()
+  }
+}
+
 export function getMikroOrmWrapper({
   mikroOrmEntities,
   pathToMigrations,
@@ -86,7 +122,7 @@ export function getMikroOrmWrapper({
   schema,
 }: {
   mikroOrmEntities: any[]
-  pathToMigrations?: string
+  pathToMigrations?: string | string[]
   clientUrl?: string
   schema?: string
 }): TestDatabase {
@@ -124,9 +160,15 @@ export function getMikroOrmWrapper({
     },
 
     async setupDatabase() {
+      const migrationPaths = Array.isArray(this.pathToMigrations)
+        ? this.pathToMigrations
+        : this.pathToMigrations
+          ? [this.pathToMigrations]
+          : []
+
       const OrmConfig = getMikroOrmConfig({
         mikroOrmEntities: this.mikroOrmEntities,
-        pathToMigrations: this.pathToMigrations,
+        pathToMigrations: migrationPaths[0],
         clientUrl: this.clientUrl,
         schema: this.schema,
       })
@@ -145,6 +187,20 @@ export function getMikroOrmWrapper({
         await this.manager?.execute(
           `CREATE SCHEMA IF NOT EXISTS "${this.schema ?? "public"}";`
         )
+
+        if (migrationPaths.length > 1) {
+          // Explicit sources own the schema, so the entity-derived schema is
+          // never generated on top of them.
+          for (const migrationPath of migrationPaths) {
+            await runMigrationsFromPath(
+              migrationPath,
+              this.clientUrl,
+              this.schema
+            )
+          }
+
+          return
+        }
 
         const pendingMigrations = await this.orm
           .getMigrator()
@@ -211,10 +267,51 @@ export const dbTestUtilFactory = (): any => ({
     try {
       await createDatabase(
         { databaseName: dbName, errorIfExist: false },
-        pgGodCredentials
+        getDatabaseCredentials()
       )
     } catch (error) {
       logger.error("Error creating database:", error)
+      throw error
+    }
+  },
+
+  snapshot: async function ({
+    databaseName,
+    templateName,
+  }: {
+    databaseName: string
+    templateName: string
+  }) {
+    try {
+      await createPostgresDatabaseTemplate({ databaseName, templateName })
+    } catch (error) {
+      logger.error(`Error creating database template:\n${formatError(error)}`)
+      throw error
+    }
+  },
+
+  restore: async function ({
+    databaseName,
+    templateName,
+  }: {
+    databaseName: string
+    templateName: string
+  }) {
+    try {
+      await restorePostgresDatabaseFromTemplate({ databaseName, templateName })
+    } catch (error) {
+      logger.error(
+        `Error restoring database from template:\n${formatError(error)}`
+      )
+      throw error
+    }
+  },
+
+  dropTemplate: async function (templateName: string) {
+    try {
+      await dropPostgresDatabaseTemplate(templateName)
+    } catch (error) {
+      logger.error(`Error dropping database template:\n${formatError(error)}`)
       throw error
     }
   },
@@ -311,29 +408,18 @@ export const dbTestUtilFactory = (): any => ({
 
   shutdown: async function (dbName: string) {
     try {
-      const cleanupPromises: Promise<any>[] = []
-
-      if (this.pgConnection_?.context) {
-        cleanupPromises.push(
-          execOrTimeout(this.pgConnection_.context.destroy())
-        )
-      }
-
-      if (this.pgConnection_) {
-        cleanupPromises.push(execOrTimeout(this.pgConnection_.destroy()))
-      }
-
-      await Promise.all(cleanupPromises)
+      await closePgConnection(this.pgConnection_)
+      await unregisterFrameworkPgConnection(this.pgConnection_)
 
       return await dropDatabase(
         { databaseName: dbName, errorIfNonExist: false },
-        pgGodCredentials
+        getDatabaseCredentials()
       )
     } catch (error) {
       logger.error("Error during database shutdown:", error)
       try {
-        await this.pgConnection_?.context?.destroy()
-        await this.pgConnection_?.destroy()
+        await closePgConnection(this.pgConnection_)
+        await unregisterFrameworkPgConnection(this.pgConnection_)
       } catch (cleanupError) {
         logger.error("Error during forced cleanup:", cleanupError)
       }
@@ -343,3 +429,48 @@ export const dbTestUtilFactory = (): any => ({
     }
   },
 })
+
+async function closePgConnection(pgConnection: any) {
+  if (!pgConnection) {
+    return
+  }
+
+  const cleanupPromises: Promise<any>[] = []
+
+  if (pgConnection.context?.destroy) {
+    cleanupPromises.push(
+      execOrTimeout(pgConnection.context.destroy()).catch(() => void 0)
+    )
+  }
+
+  if (pgConnection.destroy) {
+    cleanupPromises.push(
+      execOrTimeout(pgConnection.destroy()).catch(() => void 0)
+    )
+  }
+
+  await Promise.all(cleanupPromises)
+}
+
+async function unregisterFrameworkPgConnection(pgConnection: any) {
+  if (!pgConnection) {
+    return
+  }
+
+  const { container } = await import("@medusajs/framework")
+
+  if (!container.hasRegistration(ContainerRegistrationKeys.PG_CONNECTION)) {
+    return
+  }
+
+  const registeredConnection = container.resolve(
+    ContainerRegistrationKeys.PG_CONNECTION
+  )
+
+  if (registeredConnection !== pgConnection) {
+    return
+  }
+
+  delete (container as { registrations?: Record<string, unknown> })
+    .registrations?.[ContainerRegistrationKeys.PG_CONNECTION]
+}

@@ -1,0 +1,244 @@
+import { Note, InlineIcon, CodeTab, CodeTabs } from "docs-ui"
+import { EllipsisHorizontal, TriangleRightMini } from "@medusajs/icons"
+
+export const metadata = {
+  title: `Environment Custom Domains`,
+}
+
+# {metadata.title}
+
+In this guide, you'll learn how to set up custom domains for your backend and storefront deployed on Cloud.
+
+## Custom Domains Overview
+
+By default, Medusa environments are deployed with `medusajs.app` (backend) and `medusajs.site` (storefront) subdomains. You can configure custom domains to use your own branded URLs for both your backend and storefront.
+
+<Note>
+
+To update the default `medusajs.app` and `medusajs.site` subdomains instead, see the [Update Subdomains](../subdomains/page.mdx) guide.
+
+</Note>
+
+You can configure multiple custom domains per environment, allowing you to use different domains for Production, Staging, and preview environments based on your needs.
+
+---
+
+## Backend Custom Domains
+
+Backend custom domains allow you to serve your Medusa backend from your own domain instead of the default `medusajs.app` subdomain.
+
+<Note>
+
+Backend custom domains are available for Scale and Enterprise plans only. Learn more about plan features on the [pricing page](../../pricing/page.mdx).
+
+</Note>
+
+### Prerequisites
+
+To set up a backend custom domain, you need:
+
+- A domain registered with a domain provider that supports CNAME records
+- Access to your domain's DNS settings
+
+### Set Up Backend Custom Domain
+
+To set up a backend custom domain:
+
+1. In the [environment's dashboard](../long-lived/page.mdx#open-environment-dashboard), click **Domains** in the sidebar.
+2. Under the **Custom backend domains** section, click the **Add domain** button.
+3. In the modal that opens, enter your custom domain name (for example, `api.acme.com`) and click **Continue**.
+
+After submitting, you are taken to the DNS configuration detail page where you can add the required DNS records with your domain provider.
+
+You can track each domain's setup progress with the [Domain Status Indicators](#domain-status-indicators).
+
+### Update Backend Domain in Storefront
+
+To avoid downtime in you storefront while DNS changes propagate for your backend's custom domain, Medusa doesn't update the backend URL set in the storefront automatically. The storefront will still point to the backend's original subdomain.
+
+Once you've verified that DNS changes have propagated and the custom domain is correctly pointing to the Medusa backend, you need to manually update the backend URL in your storefront's configuration to point to the new custom domain.
+
+Based on your storefront framework, update the backend environment variable:
+
+<CodeTabs group="storefront-framework">
+  <CodeTab label="Next.js" value="nextjs">
+
+```shell
+NEXT_PUBLIC_MEDUSA_BACKEND_URL= # Your Medusa backend's URL
+# Update any other environment variable that uses the Medusa backend URL
+# For example:
+MEDUSA_BACKEND_URL= # Your Medusa backend's URL
+```
+
+  </CodeTab>
+  <CodeTab label="SvelteKit / Tanstack Start" value="sveltekit-tanstack">
+
+```shell
+VITE_MEDUSA_BACKEND_URL= # Your Medusa backend's URL
+# Update any other environment variable that uses the Medusa backend URL
+# For example:
+MEDUSA_BACKEND_URL= # Your Medusa backend's URL
+```
+
+  </CodeTab>
+</CodeTabs>
+
+To learn how to update environment variables on Cloud, see the [Environment Variables](../environment-variables/page.mdx) guide.
+
+After updating the backend URL, [redeploy your environment](../../deployments/page.mdx#redeploy-a-deployment). Your live storefront will now connect to your Medusa backend through the new custom domain without any downtime.
+
+---
+
+## Storefront Custom Domains
+
+Storefront custom domains allow you to serve your storefront from your own domain instead of the default `medusajs.site` subdomain.
+
+<Note>
+
+Storefront custom domains are available for Launch, Scale, and Enterprise plans only. Learn more about plan features on the [pricing page](../../pricing/page.mdx).
+
+</Note>
+
+### Prerequisites
+
+To set up a storefront custom domain, you need:
+
+- A domain registered with a domain provider that supports either ALIAS records or top-level CNAME records
+- Access to your domain's DNS settings
+
+### Set Up Storefront Custom Domain
+
+1. In the [environment's dashboard](../long-lived/page.mdx#open-environment-dashboard), click **Domains** in the sidebar.
+2. Under the **Custom storefront domains** section, click the **Add domain** button.
+3. In the modal that opens, enter your custom domain name (for example, `shop.acme.com`) and click **Continue**.
+
+After submitting, you are taken to the DNS configuration detail page where you can add the required DNS records with your domain provider.
+
+You can track each domain's setup progress with the [Domain Status Indicators](#domain-status-indicators).
+
+---
+
+## Multiple Custom Domains for Storefront and Backend
+
+In some use cases, you may want to apply multiple domains to your project that apply for specific conditions. For example, you may want to have `myshop.uk` for your users in the United Kingdom, and `myshop.dk` for your users in Denmark.
+
+Medusa supports multiple domains on the [Scale and Enterprise plans](../../pricing/page.mdx), with a three-domain limit per project for Scale plans. If you're on these plans, you can add another domain by following the same flow for [storefront](#storefront-custom-domains) and [backend](#backend-custom-domains).
+
+After adding these multiple domains, you can choose which one to redirect to in your application's logic. For example, you can add a middleware in your storefront that redirects to the correct domain based on the user's location.
+
+If you need multiple custom domains for the storefront or backend, make sure to [update your plan to Scale or Enterprise](../../billing/plans/page.mdx#change-plan).
+
+---
+
+## Domain Status Indicators
+
+After adding a custom domain, a status badge next to the domain name helps you track the setup progress. The same status is shown in the domain list and on the DNS detail page:
+
+- **Pending** (gray clock icon): Domain has been added but DNS verification is pending
+- **Configured** (blue clock icon): DNS records are detected but verification is in progress
+- **Finalizing** (blue clock icon): All DNS records are verified on your end but the platform has not yet confirmed the domain as active
+- **Verified** (green checkmark icon): Domain is fully configured and active
+- **Failed**: DNS verification failed. Use the **Restart Verification** button on the DNS detail page to retry, or [troubleshoot the domain with AI](#troubleshoot-with-ai).
+- **Provisioning failed**: The domain could not be provisioned by the platform. The DNS detail page shows an alert explaining the failure instead of the DNS configuration instructions. Contact support if you see this status.
+
+Domain activation typically completes within a few minutes to 48 hours, depending on DNS propagation times.
+
+---
+
+## DNS Configuration Detail Page
+
+The DNS configuration detail page shows the records you need to add with your domain provider and tracks their verification status. To open it, click the domain name in the **Domains** list.
+
+The page is organized into check sections:
+
+- **Ownership**: Verifies that you own the domain.
+- **SSL**: Verifies that the SSL certificate is correctly configured.
+- **Proxy**: Verifies that traffic is correctly routed to Cloud. This section only appears for domains that require a proxy check.
+
+Each section shows whether the corresponding DNS records have been verified. The domain header also shows when the most recent verification check ran.
+
+### Provisioning Failure
+
+If the domain's status is **Provisioning failed**, the DNS detail page replaces the DNS configuration instructions with an alert explaining the failure. The **Check records** and **Restart verification** buttons are not available when provisioning has failed. Contact support if you encounter this state.
+
+### Verify DNS Records Manually
+
+You can trigger an immediate DNS check at any time instead of waiting for the next automatic check by clicking the **Check records** button at the top right of the DNS configuration detail page.
+
+### Restart DNS Verification
+
+To restart the verification process from the beginning at any time, click the **Restart Verification** button at the top right of the DNS configuration detail page.
+
+### Remove Custom Domain
+
+<Note type="warning">
+
+Removing a custom domain is permanent and may cause downtime if the domain is still in use.
+
+</Note>
+
+To remove a custom domain:
+
+1. In the [environment's dashboard](../long-lived/page.mdx#open-environment-dashboard), click **Domains** in the sidebar.
+2. Click the <InlineIcon Icon={EllipsisHorizontal} alt="three-dots" /> icon on the domain card you want to remove.
+3. Select **Remove domain** from the dropdown menu.
+
+---
+
+## Manage Custom Domains
+
+### View All Domains
+
+In the **Domains** settings of your environment, each custom domain is shown as a card with its domain name and DNS verification status. Click a domain card to open its DNS configuration detail page.
+
+### Remove Custom Domain
+
+<Note type="warning">
+
+Removing a custom domain will immediately stop serving traffic from that domain. Make sure to update any integrations or client applications before removing a domain.
+
+</Note>
+
+To remove a custom domain:
+
+1. In the [environment's dashboard](../long-lived/page.mdx#open-environment-dashboard), click **Domains** in the sidebar.
+2. Click the <InlineIcon Icon={EllipsisHorizontal} alt="three-dots" /> icon on the domain card you want to remove.
+3. Select **Remove domain** from the dropdown menu.
+4. In the confirmation dialog, type the domain name exactly as shown to confirm the removal.
+5. Click **Remove Domain** to complete the action.
+
+---
+
+## Troubleshooting
+
+### Re-verify DNS Records
+
+If you've updated your DNS records and want to trigger an immediate check, open the DNS configuration detail page for your domain and click the **Check records** button. This manually starts a fresh DNS check instead of waiting for the next automatic check. To restart the verification process from the beginning, click **Restart Verification**.
+
+### Diagnose DNS Record Issues
+
+On the DNS records detail page, you can click the <InlineIcon Icon={TriangleRightMini} alt="expand" /> icon for any record whose verification status is failing. This shows:
+
+- The actual DNS records currently found for that entry, if any.
+- A `dig` command (macOS/Linux) you can copy and run in your terminal to check the record yourself.
+- An `nslookup` command (Windows) you can copy and run in your terminal.
+- A link to [Google's Dig tool](https://toolbox.googleapps.com/apps/dig/) to check the record in your browser.
+
+The same expandable troubleshooting panel is available during the domain setup flow when you're configuring DNS records for a new domain.
+
+### Troubleshoot with AI
+
+When a domain's verification is failing, the DNS configuration detail page shows a **Troubleshoot with AI** button next to the button that re-checks the DNS records. Click it to start an AI-powered troubleshooting flow that helps you diagnose and resolve the domain's verification issues.
+
+### Domain Verification
+
+If your domain remains in **Pending** or **Configured** status:
+
+1. **Check DNS records**: Verify that you've added all required DNS records exactly as provided in the DNS setup instructions. Expand any rows marked as failed or unexpected in the DNS records table to see what records were found.
+2. **Re-verify**: Click the **Check records** button on the DNS configuration detail page to trigger a fresh check, or click **Restart Verification** to restart the verification process from the beginning.
+3. **Wait for propagation**: DNS changes can take up to 48 hours to propagate globally.
+4. **Contact support**: If your domain hasn't verified after 48 hours, contact support for assistance.
+
+### Storefront Not Connecting to Backend After Custom Domain Setup
+
+If your storefront isn't connecting to the backend after setting up a backend custom domain, make sure you [updated the backend URL in your storefront's environment variables](#update-backend-domain-in-storefront) and redeployed your environment.

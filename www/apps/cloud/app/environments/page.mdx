@@ -1,3 +1,5 @@
+import { Note, getOsShortcut, Kbd } from "docs-ui"
+
 export const metadata = {
   title: `Environments`,
 }
@@ -12,7 +14,7 @@ A Cloud project can have multiple environments, each representing a different st
 
 Each environment has its own deployed Medusa backend, admin dashboard, and storefront. It also has its own resources, such as a database and server instance.
 
-By default, a project has at least a Production environment, and you can create custom environments based on your development needs.
+By default, a project has at least a Production environment, and you can create custom environments based on your development needs. Medusa links the Production environment to your repository's default branch, such as `main`, when you [create the project](../projects/page.mdx#production-environments-branch). You can [change the environment's branch](./long-lived/page.mdx#change-environments-branch) later.
 
 Environments are useful to test changes in production-like conditions before actually pushing them to production. You can test out new features, bug fixes, and integrations without affecting the live application.
 
@@ -21,7 +23,7 @@ Environments are useful to test changes in production-like conditions before act
 There are two types of environments:
 
 - [Long-lived environments](./long-lived/page.mdx): These are environments that you create for specific branches in your GitHub repository, such as Production or Staging environments.
-- [Short-lived Preview environments](./preview/page.mdx): These are environments automatically created for each pull request (PR) towards a branch that has a long-lived environment in Cloud. They're created as a preview for the PR, and are destroyed once the PR is merged or closed.
+- [Short-lived Preview environments](./preview/page.mdx): These are environments automatically created for each pull request (PR) towards a branch that has an environment in Cloud. They're created as a preview for the PR, and are destroyed once the PR is merged or closed.
 
 ---
 
@@ -29,11 +31,15 @@ There are two types of environments:
 
 To view a project's environments:
 
-1. Make sure you're viewing the [correct organization's dashboard in Cloud](../organizations/page.mdx#switch-organization).
-2. Click on the project whose environments you want to view.
+<Note title="Tip">
 
-In the project's dashboard, you'll find a card for every long-lived environment in your project. For example, you may have Production and Staging cards.
+You can also navigate to an environment's overview page from the [command palette](../command-palette/page.mdx). Press <Kbd>{getOsShortcut()}</Kbd> + <Kbd>K</Kbd>, select **Project Overview**, then choose a project.
+
+</Note>
+
+1. If you're in a different organization, [switch to the organization](../organizations/page.mdx#switch-organization) whose settings you want to view.
+2. Click **Projects** in the sidebar and select the project you want to view.
+
+In the project's dashboard, you'll find a card for every long-lived environment in your project. Production environments are displayed first, followed by other environments. For example, you may have Production and Staging cards.
 
 You'll also find a table listing all the preview environments created for the project below the long-lived environment cards.
-
-![Project dashboard showing the environment cards](https://res.cloudinary.com/dza7lstvk/image/upload/v1767787582/Cloud/CleanShot_2026-01-07_at_14.06.03_2x_bane7m.png)

@@ -1,3 +1,7 @@
+export enum Entities {
+  promotion = "promotion",
+}
+
 export const defaultAdminPromotionFields = [
   "id",
   "code",
@@ -10,6 +14,7 @@ export const defaultAdminPromotionFields = [
   "created_at",
   "updated_at",
   "deleted_at",
+  "metadata",
   "*campaign",
   "*campaign.budget",
   "*application_method",
@@ -34,11 +39,13 @@ export const defaultAdminPromotionRuleFields = [
 export const retrieveTransformQueryConfig = {
   defaults: defaultAdminPromotionFields,
   isList: false,
+  entity: Entities.promotion,
 }
 
 export const listTransformQueryConfig = {
   ...retrieveTransformQueryConfig,
   isList: true,
+  entity: Entities.promotion,
 }
 
 export const retrieveRuleTransformQueryConfig = {

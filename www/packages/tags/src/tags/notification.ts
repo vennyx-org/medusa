@@ -1,5 +1,9 @@
 export const notification = [
   {
+    "title": "Send Email Verification",
+    "path": "https://docs.medusajs.com/resources/commerce-modules/auth/email-verification"
+  },
+  {
     "title": "Reset Password Email",
     "path": "https://docs.medusajs.com/resources/commerce-modules/auth/reset-password"
   },
@@ -22,6 +26,14 @@ export const notification = [
   {
     "title": "Integrate Slack",
     "path": "https://docs.medusajs.com/resources/integrations/guides/slack"
+  },
+  {
+    "title": "exportCustomersWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/exportCustomersWorkflow"
+  },
+  {
+    "title": "exportInventoryItemsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/exportInventoryItemsWorkflow"
   },
   {
     "title": "notifyOnFailureStep",

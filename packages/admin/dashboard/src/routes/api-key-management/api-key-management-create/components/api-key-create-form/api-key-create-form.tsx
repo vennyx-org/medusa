@@ -78,13 +78,22 @@ export const ApiKeyCreateForm = ({ keyType }: ApiKeyCreateFormProps) => {
     )
   })
 
-  const handleCopyToken = () => {
-    if (!createdKey) {
+  const handleCopyToken = async () => {
+    if (!createdKey?.token) {
       toast.error(t("apiKeyManagement.create.copySecretTokenFailure"))
+      return
     }
 
-    navigator.clipboard.writeText(createdKey?.token ?? "")
-    toast.success(t("apiKeyManagement.create.copySecretTokenSuccess"))
+    try {
+      if (!window.isSecureContext || !navigator.clipboard?.writeText) {
+        throw new Error("Clipboard API unavailable")
+      }
+
+      await navigator.clipboard.writeText(createdKey.token)
+      toast.success(t("apiKeyManagement.create.copySecretTokenSuccess"))
+    } catch {
+      toast.error(t("apiKeyManagement.create.copySecretTokenFailure"))
+    }
   }
 
   const handleGoToSecretKey = () => {
@@ -167,7 +176,7 @@ export const ApiKeyCreateForm = ({ keyType }: ApiKeyCreateFormProps) => {
             </Prompt.Description>
           </Prompt.Header>
           <div className="flex flex-col gap-y-3 px-6 py-4">
-            <div className="shadow-borders-base bg-ui-bg-component grid h-8 grid-cols-[1fr_32px] items-center overflow-hidden rounded-md">
+            <div className="grid h-8 grid-cols-[1fr_32px] items-center overflow-hidden rounded-md bg-ui-bg-component shadow-borders-base">
               <div className="flex items-center px-2">
                 <Text family="mono" size="small">
                   {showRedactedKey
@@ -176,7 +185,7 @@ export const ApiKeyCreateForm = ({ keyType }: ApiKeyCreateFormProps) => {
                 </Text>
               </div>
               <button
-                className="transition-fg hover:bg-ui-bg-base-hover active:bg-ui-bg-base-pressed text-ui-fg-muted active:text-ui-fg-subtle flex size-8 appearance-none items-center justify-center border-l"
+                className="flex size-8 appearance-none items-center justify-center border-l text-ui-fg-muted transition-fg hover:bg-ui-bg-base-hover active:bg-ui-bg-base-pressed active:text-ui-fg-subtle"
                 type="button"
                 onClick={() => setShowRedactedKey(!showRedactedKey)}
               >
@@ -188,7 +197,9 @@ export const ApiKeyCreateForm = ({ keyType }: ApiKeyCreateFormProps) => {
               variant="secondary"
               type="button"
               className="w-full"
-              onClick={handleCopyToken}
+              onClick={() => {
+                void handleCopyToken()
+              }}
             >
               {t("apiKeyManagement.actions.copy")}
             </Button>

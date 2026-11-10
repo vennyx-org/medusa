@@ -1,4 +1,4 @@
-import { CodeTab, CodeTabs } from "docs-ui"
+import { CodeTab, CodeTabs, Note } from "docs-ui"
 
 export const metadata = {
   title: `Storefront Deployment on Cloud`,
@@ -18,7 +18,9 @@ To deploy a storefront with your Medusa application on Cloud, you need a monorep
 
 ### Storefront Deployment Per Environment
 
-Similar to the Medusa backend, Medusa deploys a storefront for every long-lived and preview environment, based on your plan's limits. This allows you to test and preview changes in isolation.
+Similar to the Medusa backend, Medusa deploys a storefront for every long-lived and preview environment, based on your plan's limits. This includes the Production environment. This allows you to test and preview changes in isolation.
+
+You don't add a storefront to each environment separately. When you create a project with a storefront or [add a storefront to an existing project](../projects/page.mdx#add-storefront-to-existing-project), Medusa deploys it in all of the project's environments, including Production. Medusa also deploys it in long-lived and preview environments that you create later.
 
 Medusa also automatically configures the necessary settings for each environment, such as URLs, API keys, and Cross-Origin Resource Sharing (CORS) settings, to ensure seamless connectivity between the storefront and Medusa application.
 
@@ -27,7 +29,7 @@ Medusa also automatically configures the necessary settings for each environment
 To deploy a storefront with your Medusa application on Cloud, you can either:
 
 1. [Create a new project](../projects/page.mdx#create-a-project) with a monorepo structure that includes both the Medusa application and storefront code.
-2. [Add a storefront to an existing project](../projects/page.mdx#add-storefront) that already has a Medusa application deployed on Cloud.
+2. [Add a storefront to an existing project](../projects/page.mdx#add-storefront-to-existing-project) that already has a Medusa application deployed on Cloud.
 
 Unless you create a new project from a starter, you'll need to set up the monorepo structure. Learn how to create the monorepo in the [Prerequisites](../projects/prerequisites/page.mdx#prerequisites-for-medusa-application-with-storefront) guide.
 
@@ -59,9 +61,10 @@ Exceeding these limits may incur [Flex Usage](../usage/page.mdx#what-is-flex-usa
 
 Cloud currently supports deploying storefronts built with the following frameworks:
 
-1. [Next.js](https://nextjs.org/) v15+
+1. [Next.js](https://nextjs.org/) v15. v16 is also supported if you're not using a [proxy](https://nextjs.org/docs/app/getting-started/proxy).
+  - Cloud also supports Incremental Static Regeneration (ISR) for Next.js storefronts with revalidation. Learn more in the [Next.js ISR Caching](#nextjs-isr-caching) section.
 2. [SvelteKit](https://kit.svelte.dev/) v2.40.0+
-3. [Tanstack Start](https://tanstack.com/start) v1.132.0+
+3. [Tanstack Start](https://tanstack.com/start) v1.132.0+ (React and Solid)
 
 If you're using a different framework for your storefront, contact support to request it.
 
@@ -71,29 +74,7 @@ If you're using a different framework for your storefront, contact support to re
 
 By default, storefronts are deployed at the `medusajs.site` subdomain. The domain prefix is the same as the Medusa application's subdomain. For example, if your Medusa application is at `my-store.medusajs.app`, your storefront will be at `my-store.medusajs.site`.
 
-You can also set up a custom domain for your storefront to use a branded URL.
-
-### Prerequisites
-
-To set up a custom domain for your storefront, you need a domain registered with a domain provider that supports either ALIAS records or top-level CNAME records.
-
-### Set Up Storefront Custom Domain
-
-You can set up storefront custom domains per environment. For example, you can set up a custom domain for the Production environment while keeping the default domain for the Staging and preview environments.
-
-To set up a storefront custom domain for an environment:
-
-1. Go to a [project's dashboard](../projects/page.mdx#open-project-dashboard) in Cloud.
-2. Click on the environment's card where you want to set up the custom domain. For example, the Production environment.
-3. In the environment's dashboard, click on the "Settings" tab.
-4. Choose the "Storefront Domains" tab from the sidebar.
-5. Click on the "Add domain" button.
-6. A form with two steps will open:
-    - **Domain Step**: Enter your custom domain name. For example, `acme.com`.
-    - **DNS Step**: Follow the instructions to add the necessary DNS records with your domain provider.
-7. Once you're done, click the "Done" button.
-
-Your custom domain will be active once the DNS changes propagate, which may take up to 48 hours.
+You can also set up a custom domain for your storefront to use a branded URL. For detailed instructions on setting up and managing custom domains for your storefront, refer to the [Custom Domains](../environments/custom-domains/page.mdx#storefront-custom-domains) guide.
 
 ---
 
@@ -113,9 +94,36 @@ When deploying your storefront to Cloud, you don't need to add any specific conf
 
 Medusa automatically injects the necessary configurations during the deployment process to ensure your storefront is correctly set up on Cloud.
 
+For Next.js storefronts, this includes the `open-next.config.ts` file. If your repository has its own `open-next.config.ts`, Medusa replaces it during the build.
+
+### Next.js ISR Caching
+
+Next.js storefronts on Cloud support [Incremental Static Regeneration (ISR)](https://nextjs.org/docs/app/guides/incremental-static-regeneration), which caches rendered pages and refreshes them periodically or on demand.
+
+Medusa stores ISR pages and cached `fetch` responses in a persistent cache shared by all instances of your storefront. So, a page that you revalidate every five minutes, such as with `export const revalidate = 300`, is regenerated once when it becomes stale, not once for every instance that serves it.
+
+The cache works as follows:
+
+- When a request arrives for a stale page, your storefront serves the cached page and regenerates it in the background. Medusa deduplicates concurrent regenerations of the same page.
+- On-demand revalidation with `revalidatePath` and `revalidateTag` clears the cached page for all instances.
+- The cache is scoped to a deployment. After a new deployment, your storefront renders each page again on its first request.
+- Cached pages expire one day after they're generated. Your storefront renders an expired page again on its next request.
+
+<Note title="Tip">
+
+If your backend receives more storefront requests than expected, check that your pages are cacheable. Next.js renders a page on every request, without caching it, if the page reads `cookies()`, `headers()`, or `searchParams`, or if it calls `fetch` with `cache: "no-store"`.
+
+</Note>
+
+### Next.js Image Optimization
+
+Cloud currently does not support Next.js image optimization for storefronts. The image optimization feature that uses the Next.js Image component's automatic optimization capabilities will not function as expected when deployed on Cloud.
+
+If your storefront relies on Next.js image optimization, you should configure an external image optimization service or disable the feature in your Next.js configuration.
+
 ### Injected Environment Variables
 
-When deploying your storefront to Cloud, Medusa automatically injects the following environment variables into your storefront's build process:
+When deploying your storefront to Cloud, Medusa automatically injects the following environment variables into your storefront's build and runtime process:
 
 <CodeTabs group="storefront-framework">
   <CodeTab label="Next.js" value="nextjs">
@@ -123,7 +131,9 @@ When deploying your storefront to Cloud, Medusa automatically injects the follow
 ```shell
 NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY # Your Medusa application's publishable key
 NEXT_PUBLIC_MEDUSA_BACKEND_URL # Your Medusa backend's URL
-MEDUSA_BACKEND_URL # Your Medusa backend's URL, compatible with Next.js Starter Storefront
+NEXT_PUBLIC_BASE_URL # Your storefront's URL
+MEDUSA_BACKEND_URL # Your Medusa backend's URL
+BASE_URL # Your storefront's URL
 ```
 
   </CodeTab>
@@ -132,6 +142,9 @@ MEDUSA_BACKEND_URL # Your Medusa backend's URL, compatible with Next.js Starter 
 ```shell
 VITE_MEDUSA_PUBLISHABLE_KEY # Your Medusa application's publishable key
 VITE_MEDUSA_BACKEND_URL # Your Medusa backend's URL
+VITE_BASE_URL # Your storefront's URL
+MEDUSA_BACKEND_URL # Your Medusa backend's URL
+BASE_URL # Your storefront's URL
 ```
 
   </CodeTab>

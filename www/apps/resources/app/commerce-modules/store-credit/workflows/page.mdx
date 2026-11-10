@@ -1,0 +1,164 @@
+import { ChildDocs } from "docs-ui"
+
+export const metadata = {
+  title: `Store Credit Module Workflows`,
+}
+
+# {metadata.title}
+
+[Workflows](!docs!/learn/fundamentals/workflows) are a series of queries and actions, called steps, that complete a task. By using workflows, you benefit from features like data consistency and a reliable roll-back mechanism.
+
+The Store Credit Module provides workflows and steps to manage store credit accounts and their usage in carts. These are provided by the `@medusajs/loyalty-plugin` package.
+
+## Store Credit Account Management Workflows
+
+### Create Store Credit Accounts
+
+Create new store credit accounts for customers:
+
+```ts
+import { createStoreCreditAccountsWorkflow } from "@medusajs/loyalty-plugin/workflows"
+
+const { result } = await createStoreCreditAccountsWorkflow(container)
+  .run({
+    input: {
+      customer_id: "cust_123",
+      currency_code: "usd",
+      code: "SC-XXXX", // optional, auto-generated if not provided
+    },
+  })
+```
+
+### Claim Store Credit Account
+
+Claim a store credit account for a customer:
+
+```ts
+import { claimStoreCreditAccountWorkflow } from "@medusajs/loyalty-plugin/workflows"
+
+const { result } = await claimStoreCreditAccountWorkflow(container)
+  .run({
+    input: {
+      customer_id: "cust_123",
+      code: "SC-XXXX",
+    },
+  })
+```
+
+## Credit and Debit Operations
+
+### Credit Store Credit Account
+
+Add credits to a store credit account:
+
+```ts
+import { creditStoreCreditAccountWorkflow } from "@medusajs/loyalty-plugin/workflows"
+
+const { result } = await creditStoreCreditAccountWorkflow(container)
+  .run({
+    input: {
+      account_id: "sca_123",
+      amount: 100,
+      note: "Refund for order #1234",
+      reference: "order",
+      reference_id: "order_123",
+    },
+  })
+```
+
+### Credit Accounts Workflow
+
+Credit multiple store credit accounts:
+
+```ts
+import { creditAccountsWorkflow } from "@medusajs/loyalty-plugin/workflows"
+
+const { result } = await creditAccountsWorkflow(container)
+  .run({
+    input: [
+      {
+        account_id: "sca_123",
+        amount: 100,
+        reference: "order",
+        reference_id: "order_123",
+      },
+      {
+        account_id: "sca_456",
+        amount: 50,
+        reference: "refund",
+        reference_id: "refund_123",
+      },
+    ],
+  })
+```
+
+### Debit Store Credit Account
+
+Debit a single store credit account by a specified amount. The workflow validates that the amount is greater than zero and that the account exists before debiting. The debit is rejected if the account's balance doesn't cover the amount:
+
+<Note>
+
+This feature is available since [Medusa v2.21.1](https://github.com/medusajs/medusa/releases/tag/v2.21.1).
+
+</Note>
+
+```ts
+import { debitStoreCreditAccountWorkflow } from "@medusajs/loyalty-plugin/workflows"
+
+await debitStoreCreditAccountWorkflow(container)
+  .run({
+    input: {
+      account_id: "sca_123",
+      amount: 100,
+      note: "Credit issued by mistake",
+      reference: "user",
+      reference_id: "user_123",
+    },
+  })
+```
+
+### Debit Accounts Workflow
+
+Debit multiple store credit accounts:
+
+```ts
+import { debitAccountsWorkflow } from "@medusajs/loyalty-plugin/workflows"
+
+const { result } = await debitAccountsWorkflow(container)
+  .run({
+    input: [
+      {
+        account_id: "sca_123",
+        amount: 25,
+        reference: "cart",
+        reference_id: "cart_123",
+      },
+    ],
+  })
+```
+
+## Cart Integration Workflows
+
+### Add Store Credits to Cart
+
+Apply store credits to a cart as a credit line:
+
+```ts
+import { addStoreCreditsToCartWorkflow } from "@medusajs/loyalty-plugin/workflows"
+
+await addStoreCreditsToCartWorkflow(container)
+  .run({
+    input: {
+      cart_id: "cart_123",
+      amount: 50, // optional, uses full balance if not provided
+    },
+  })
+```
+
+---
+
+## Reference Documentation
+
+For complete API references and additional workflows, refer to the [Medusa Core Workflows reference](/medusa-workflows-reference).
+
+<ChildDocs type="item" defaultItemsPerRow={2} />

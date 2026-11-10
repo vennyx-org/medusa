@@ -26,7 +26,7 @@ import {
   TransactionStepState,
 } from "@medusajs/framework/utils"
 import { WorkflowOrchestratorService } from "@services"
-import { type CronExpression, parseExpression } from "cron-parser"
+import { type CronExpression, CronExpressionParser } from "cron-parser"
 import { WorkflowExecution } from "../models/workflow-execution"
 
 const THIRTY_MINUTES_IN_MS = 1000 * 60 * 30
@@ -70,7 +70,7 @@ function parseNextExecution(
 ) {
   if (typeof optionsOrExpression === "object") {
     if ("cron" in optionsOrExpression) {
-      const expression = parseExpression(optionsOrExpression.cron)
+      const expression = CronExpressionParser.parse(optionsOrExpression.cron)
       return calculateDelayFromExpression(expression)
     }
 
@@ -84,7 +84,7 @@ function parseNextExecution(
   const result = parseInt(`${optionsOrExpression}`)
 
   if (isNaN(result)) {
-    const expression = parseExpression(`${optionsOrExpression}`)
+    const expression = CronExpressionParser.parse(`${optionsOrExpression}`)
     return calculateDelayFromExpression(expression)
   }
 
@@ -161,6 +161,29 @@ export class InMemoryDistributedTransactionStorage
 
   setWorkflowOrchestratorService(workflowOrchestratorService) {
     this.workflowOrchestratorService_ = workflowOrchestratorService
+  }
+
+  private async executeTransaction(
+    workflowId: string,
+    transactionId: string,
+    transactionMetadata: TransactionFlow["metadata"] = {}
+  ) {
+    try {
+      await this.workflowOrchestratorService_.run(workflowId, {
+        transactionId,
+        logOnError: true,
+        throwOnError: false,
+        context: {
+          eventGroupId: transactionMetadata.eventGroupId,
+          parentStepIdempotencyKey: transactionMetadata.parentStepIdempotencyKey,
+          preventReleaseEvents: transactionMetadata.preventReleaseEvents,
+        },
+      })
+    } catch (error) {
+      if (!SkipExecutionError.isSkipExecutionError(error)) {
+        throw error
+      }
+    }
   }
 
   private createManagedTimer(
@@ -511,17 +534,11 @@ export class InMemoryDistributedTransactionStorage
 
     const timer = this.createManagedTimer(async () => {
       this.retries.delete(key)
-      const context = transaction.getFlow().metadata ?? {}
-      await this.workflowOrchestratorService_.run(workflowId, {
+      await this.executeTransaction(
+        workflowId,
         transactionId,
-        logOnError: true,
-        throwOnError: false,
-        context: {
-          eventGroupId: context.eventGroupId,
-          parentStepIdempotencyKey: context.parentStepIdempotencyKey,
-          preventReleaseEvents: context.preventReleaseEvents,
-        },
-      })
+        transaction.getFlow().metadata ?? {}
+      )
     }, interval * 1e3)
 
     this.retries.set(key, timer)
@@ -558,17 +575,11 @@ export class InMemoryDistributedTransactionStorage
 
     const timer = this.createManagedTimer(async () => {
       this.timeouts.delete(key)
-      const context = transaction.getFlow().metadata ?? {}
-      await this.workflowOrchestratorService_.run(workflowId, {
+      await this.executeTransaction(
+        workflowId,
         transactionId,
-        logOnError: true,
-        throwOnError: false,
-        context: {
-          eventGroupId: context.eventGroupId,
-          parentStepIdempotencyKey: context.parentStepIdempotencyKey,
-          preventReleaseEvents: context.preventReleaseEvents,
-        },
-      })
+        transaction.getFlow().metadata ?? {}
+      )
     }, interval * 1e3)
 
     this.timeouts.set(key, timer)
@@ -605,17 +616,11 @@ export class InMemoryDistributedTransactionStorage
 
     const timer = this.createManagedTimer(async () => {
       this.timeouts.delete(key)
-      const context = transaction.getFlow().metadata ?? {}
-      await this.workflowOrchestratorService_.run(workflowId, {
+      await this.executeTransaction(
+        workflowId,
         transactionId,
-        logOnError: true,
-        throwOnError: false,
-        context: {
-          eventGroupId: context.eventGroupId,
-          parentStepIdempotencyKey: context.parentStepIdempotencyKey,
-          preventReleaseEvents: context.preventReleaseEvents,
-        },
-      })
+        transaction.getFlow().metadata ?? {}
+      )
     }, interval * 1e3)
 
     this.timeouts.set(key, timer)
@@ -648,11 +653,10 @@ export class InMemoryDistributedTransactionStorage
     await this.remove(jobId)
 
     let expression: CronExpression | number
-    let nextExecution = parseNextExecution(schedulerOptions)
 
     if ("cron" in schedulerOptions) {
       // Cache the parsed expression to avoid repeated parsing
-      expression = parseExpression(schedulerOptions.cron)
+      expression = CronExpressionParser.parse(schedulerOptions.cron)
     } else if ("interval" in schedulerOptions) {
       expression = schedulerOptions.interval
     } else {
@@ -662,9 +666,12 @@ export class InMemoryDistributedTransactionStorage
       )
     }
 
+    const delay = parseNextExecution(schedulerOptions)
+    const scheduledFor = new Date(Date.now() + delay)
+
     const timer = setTimeout(async () => {
-      this.jobHandler(jobId)
-    }, nextExecution)
+      await this.jobHandler(jobId, scheduledFor)
+    }, delay)
 
     // Set the timer's unref to prevent it from keeping the process alive
     timer.unref()
@@ -693,7 +700,7 @@ export class InMemoryDistributedTransactionStorage
     }
   }
 
-  async jobHandler(jobId: string) {
+  async jobHandler(jobId: string, scheduledFor: Date = new Date()) {
     const job = this.scheduled.get(jobId)
     if (!job) {
       return
@@ -708,15 +715,19 @@ export class InMemoryDistributedTransactionStorage
     }
 
     const nextExecution = parseNextExecution(job.expression)
+    const nextScheduledFor = new Date(Date.now() + nextExecution)
 
     try {
       await this.workflowOrchestratorService_.run(jobId, {
         logOnError: true,
         throwOnError: false,
+        input: {
+          scheduledFor: scheduledFor.toISOString(),
+        },
       })
 
       const timer = this.createManagedTimer(() => {
-        this.jobHandler(jobId)
+        void this.jobHandler(jobId, nextScheduledFor)
       }, nextExecution)
 
       // Prevent timer from keeping the process alive

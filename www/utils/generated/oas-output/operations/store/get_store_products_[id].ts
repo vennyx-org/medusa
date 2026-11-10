@@ -2,12 +2,10 @@
  * @oas [get] /store/products/{id}
  * operationId: GetProductsId
  * summary: Get a Product
- * description: >
+ * description: |
  *   Retrieve a product by its ID. You can expand the product's relations or select the fields that should be returned.
  * 
- * 
  *   You can retrieve the content of the product translated to a specific locale either by passing the `locale` query parameter or by setting the `x-medusa-locale` header to the desired locale code in BCP 47 format. If you don't pass a locale, and your store has a default locale, the default locale will be used.
- * 
  * 
  *   With localization, the product's content like title and description will be in the specified locale if a translation is available,  and fallback to the original content otherwise. Learn more in the [Localization](#localization) section.
  * x-authenticated: false
@@ -148,6 +146,95 @@
  *     $ref: "#/components/responses/invalid_request_error"
  *   "500":
  *     $ref: "#/components/responses/500_error"
+ * x-allowed:
+ *   - id
+ *   - title
+ *   - subtitle
+ *   - description
+ *   - handle
+ *   - is_giftcard
+ *   - discountable
+ *   - thumbnail
+ *   - collection_id
+ *   - type_id
+ *   - weight
+ *   - length
+ *   - height
+ *   - width
+ *   - hs_code
+ *   - origin_country
+ *   - mid_code
+ *   - material
+ *   - created_at
+ *   - updated_at
+ *   - type
+ *   - collection
+ *   - options
+ *   - options.values
+ *   - tags
+ *   - images
+ *   - variants
+ *   - variants.options
+ *   - metadata
+ *   - categories
+ *   - status
+ *   - external_id
+ *   - deleted_at
+ *   - variants.calculated_price
+ *   - variants.inventory_quantity
+ *   - variants.manage_inventory
+ *   - variants.allow_backorder
+ *   - variants.images
+ *   - variants.thumbnail
+ *   - variants.options.option
+ *   - variants.inventory_items
+ *   - variants.inventory_items.inventory_item_id
+ *   - variants.inventory_items.required_quantity
+ *   - variants.inventory_items.inventory
+ *   - variants.inventory_items.inventory.location_levels
+ *   - variants.prices
+ *   - variants.id
+ *   - variants.title
+ *   - variants.sku
+ *   - variants.barcode
+ *   - variants.ean
+ *   - variants.upc
+ *   - variants.hs_code
+ *   - variants.origin_country
+ *   - variants.mid_code
+ *   - variants.material
+ *   - variants.weight
+ *   - variants.length
+ *   - variants.height
+ *   - variants.width
+ *   - variants.created_at
+ *   - variants.updated_at
+ *   - variants.deleted_at
+ *   - variants.options.id
+ *   - variants.options.value
+ *   - options.id
+ *   - options.title
+ *   - options.is_exclusive
+ *   - options.values.id
+ *   - options.values.value
+ *   - images.id
+ *   - images.url
+ *   - images.rank
+ *   - type.id
+ *   - type.value
+ *   - type.created_at
+ *   - type.updated_at
+ *   - tags.id
+ *   - tags.value
+ *   - tags.created_at
+ *   - tags.updated_at
+ *   - collection.id
+ *   - collection.title
+ *   - collection.handle
+ *   - collection.created_at
+ *   - collection.updated_at
+ *   - collection.deleted_at
+ *   - collection.metadata
  * 
 */
 

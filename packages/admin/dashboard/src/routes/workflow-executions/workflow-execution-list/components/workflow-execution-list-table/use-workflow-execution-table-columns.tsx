@@ -6,6 +6,10 @@ import { StatusCell } from "../../../../../components/table/table-cells/common/s
 import { TransactionStepState } from "../../../types"
 import { getTransactionState, getTransactionStateColor } from "../../../utils"
 import { HttpTypes } from "@medusajs/types"
+import {
+  DateCell,
+  DateHeader,
+} from "../../../../../components/table/table-cells/common/date-cell"
 
 const columnHelper =
   createColumnHelper<
@@ -20,12 +24,16 @@ export const useWorkflowExecutionTableColumns = (): ColumnDef<
 
   return useMemo(
     () => [
+      columnHelper.accessor("workflow_id", {
+        header: t("workflowExecutions.workflowIdLabel"),
+        cell: ({ getValue }) => <Badge size="2xsmall">{getValue()}</Badge>,
+      }),
       columnHelper.accessor("transaction_id", {
         header: t("workflowExecutions.transactionIdLabel"),
         cell: ({ getValue }) => <Badge size="2xsmall">{getValue()}</Badge>,
       }),
       columnHelper.accessor("state", {
-        header: t("fields.state"),
+        header: t("workflowExecutions.stateLabel"),
         cell: ({ getValue }) => {
           const state = getValue()
 
@@ -43,8 +51,7 @@ export const useWorkflowExecutionTableColumns = (): ColumnDef<
         header: t("workflowExecutions.progressLabel"),
         cell: ({ getValue }) => {
           const steps = getValue()?.steps as
-            | Record<string, HttpTypes.AdminWorkflowExecutionStep>
-            | undefined
+            Record<string, HttpTypes.AdminWorkflowExecutionStep> | undefined
 
           if (!steps) {
             return "0 of 0 steps"
@@ -62,6 +69,13 @@ export const useWorkflowExecutionTableColumns = (): ColumnDef<
             completed: completedSteps.length,
             count: actionableSteps.length,
           })
+        },
+      }),
+      columnHelper.accessor("created_at", {
+        header: () => <DateHeader />,
+        cell: ({ getValue }) => {
+          const date = new Date(getValue())
+          return <DateCell date={date} />
         },
       }),
     ],

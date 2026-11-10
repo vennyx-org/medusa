@@ -13,7 +13,6 @@ const sidebars = [
         type: "link",
         title: "sidebar_1_item_1",
         link: "/sidebar_1_item_1",
-        isPathHref: true,
         path: "/sidebar_1_item_1",
       },
     ],
@@ -26,8 +25,19 @@ const sidebars = [
         type: "link",
         title: "sidebar_2_item_1",
         link: "/sidebar_2_item_1",
-        isPathHref: true,
         path: "/sidebar_2_item_1",
+      },
+    ],
+  },
+  {
+    sidebar_id: "sidebar_duplicate",
+    title: "sidebar_duplicate",
+    items: [
+      {
+        type: "link",
+        title: "sidebar_1_item_1",
+        link: "/sidebar_1_item_1",
+        path: "/sidebar_1_item_1",
       },
     ],
   },
@@ -49,6 +59,12 @@ const mockUseSidebar = vi.fn(() => ({
 }))
 
 // mock components
+vi.mock("next/link", () => ({
+  default: ({ children, ...props }: React.ComponentProps<"a">) => (
+    <a {...props}>{children}</a>
+  ),
+}))
+
 vi.mock("@/providers/Sidebar", () => ({
   useSidebar: () => mockUseSidebar(),
 }))
@@ -119,6 +135,22 @@ describe("rendering", () => {
     expect(breadcrumbs[1]).toHaveAttribute("href", "/sidebar_1_item_1")
     expect(breadcrumbs[2]).toHaveTextContent("sidebar_2")
     expect(breadcrumbs[2]).toHaveAttribute("href", "/sidebar_2_item_1")
+  })
+
+  test("deduplicates breadcrumb items with the same link", () => {
+    mockUseSidebar.mockReturnValue({
+      sidebarHistory: ["sidebar_1", "sidebar_duplicate"],
+      getSidebarFirstLinkChild,
+      getSidebar,
+    })
+    const { container } = render(<Breadcrumbs />)
+    expect(container).toBeInTheDocument()
+    const breadcrumbs = container.querySelectorAll("a")
+    // start + sidebar_1 only (sidebar_duplicate has same link, deduplicated)
+    expect(breadcrumbs).toHaveLength(2)
+    expect(breadcrumbs[0]).toHaveTextContent("start")
+    expect(breadcrumbs[1]).toHaveTextContent("sidebar_1")
+    expect(breadcrumbs[1]).toHaveAttribute("href", "/sidebar_1_item_1")
   })
 
   test("renders json-ld breadcrumb list", () => {

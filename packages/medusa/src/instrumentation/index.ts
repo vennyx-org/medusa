@@ -4,8 +4,8 @@ import {
   MedusaResponse,
   Query,
 } from "@medusajs/framework"
-import { ApiLoader } from "@medusajs/framework/http"
-import { SpanStatusCode } from "@medusajs/framework/opentelemetry/api"
+import { ApiLoader, getHttpResponseFromError } from "@medusajs/framework/http"
+import { Span, SpanStatusCode } from "@medusajs/framework/opentelemetry/api"
 import type { NodeSDKConfiguration } from "@medusajs/framework/opentelemetry/sdk-node"
 import type { SpanExporter } from "@medusajs/framework/opentelemetry/sdk-trace-node"
 import { TransactionOrchestrator } from "@medusajs/framework/orchestration"
@@ -22,11 +22,128 @@ function shouldExcludeResource(resource: string) {
   )
 }
 
+const SENSITIVE_HEADER_PATTERN =
+  /authorization|cookie|key|token|secret|session|password|credential/i
+
+/**
+ * Request headers reported as span attributes, without the ones that can carry
+ * credentials or session identifiers.
+ */
+function getSafeHeaders(headers: Record<string, unknown> = {}) {
+  return Object.fromEntries(
+    Object.entries(headers).filter(
+      ([name]) => !SENSITIVE_HEADER_PATTERN.test(name)
+    )
+  )
+}
+
+export type HttpInstrumentationOptions = {
+  /**
+   * The query parameters whose values are reported in the `url.query` span
+   * attribute. The values of other parameters are replaced with `REDACTED`.
+   * Pass `"*"` to report the full query string.
+   *
+   * @defaultValue ["fields", "expand", "limit", "offset", "order", "with_deleted"]
+   */
+  allowedQueryParams?: string[] | "*"
+}
+
+const DEFAULT_ALLOWED_QUERY_PARAMS = [
+  "fields",
+  "expand",
+  "limit",
+  "offset",
+  "order",
+  "with_deleted",
+]
+
+function stripQueryString(url: string = "") {
+  return url.split("?")[0]
+}
+
+function decodeQueryParamName(name: string) {
+  try {
+    return decodeURIComponent(name.replace(/\+/g, " "))
+  } catch {
+    return name
+  }
+}
+
+function getRedactedQueryString(
+  url: string = "",
+  allowedQueryParams: string[] | "*"
+) {
+  const queryIndex = url.indexOf("?")
+  const query = queryIndex === -1 ? "" : url.slice(queryIndex + 1)
+
+  if (!query || allowedQueryParams === "*") {
+    return query
+  }
+
+  const allowed = new Set(allowedQueryParams)
+
+  return query
+    .split("&")
+    .map((param) => {
+      const [rawName] = param.split("=")
+      const name = decodeQueryParamName(rawName)
+
+      return allowed.has(name.split("[")[0]) ? param : `${rawName}=REDACTED`
+    })
+    .join("&")
+}
+
+function setHttpStatusCode(span: Span, statusCode: number) {
+  span.setAttributes({
+    // "http.statusCode" is not a semantic convention, but it has been
+    // reported for a while. Keep it alongside the canonical attribute, which
+    // is what tracing backends use to classify the span.
+    "http.statusCode": statusCode,
+    "http.status_code": statusCode,
+  })
+}
+
+/**
+ * Errors thrown by a middleware or a route handler are converted into an HTTP
+ * response by the error handler, which only runs once the span has already
+ * been ended. Classifying the span from the status code the error maps to
+ * keeps handled client errors (eg. INVALID_DATA -> 400) from being reported
+ * as internal errors.
+ */
+function setSpanStatusFromError(span: Span, error: any) {
+  const { statusCode } = getHttpResponseFromError(error)
+  setHttpStatusCode(span, statusCode)
+
+  if (statusCode >= 500) {
+    span.setStatus({
+      code: SpanStatusCode.ERROR,
+      message: error.message || "Failed",
+    })
+  }
+}
+
+/**
+ * Express hands back control before the response has been written, so the
+ * final status code is only known once the response is flushed.
+ */
+function onResponseFinished(res: any): Promise<void> | void {
+  if (res.writableEnded) {
+    return
+  }
+
+  return new Promise<void>((resolve) => {
+    res.once("finish", () => resolve())
+    res.once("close", () => resolve())
+  })
+}
+
 /**
  * Instrument the first touch point of the HTTP layer to report traces to
  * OpenTelemetry
  */
-export function instrumentHttpLayer() {
+export function instrumentHttpLayer(options: HttpInstrumentationOptions = {}) {
+  const allowedQueryParams =
+    options.allowedQueryParams ?? DEFAULT_ALLOWED_QUERY_PARAMS
   const startCommand = require("../commands/start")
   const HTTPTracer = new Tracer("@medusajs/http", "2.0.0")
 
@@ -40,17 +157,21 @@ export function instrumentHttpLayer() {
       return await requestHandler()
     }
 
-    const traceName = handlerPath ?? `${req.method} ${req.url}`
+    const url = stripQueryString(req.url)
+    const query = getRedactedQueryString(req.url, allowedQueryParams)
+    const traceName = handlerPath ?? `${req.method} ${url}`
     await HTTPTracer.trace(traceName, async (span) => {
       span.setAttributes({
+        ...getSafeHeaders(req.headers),
         "http.route": handlerPath,
-        "http.url": req.url,
+        "http.url": url,
         "http.method": req.method,
-        ...req.headers,
+        ...(query ? { "url.query": query } : {}),
       })
 
       try {
         await requestHandler()
+        await onResponseFinished(res)
       } finally {
         if (res.statusCode >= 500) {
           span.setStatus({
@@ -58,7 +179,7 @@ export function instrumentHttpLayer() {
             message: `Failed with ${res.statusMessage}`,
           })
         }
-        span.setAttributes({ "http.statusCode": res.statusCode })
+        setHttpStatusCode(span, res.statusCode)
         span.end()
       }
     })
@@ -74,17 +195,15 @@ export function instrumentHttpLayer() {
         return await handler(req, res)
       }
 
-      const label = req.route?.path ?? `${req.method} ${req.originalUrl}`
+      const label =
+        req.route?.path ?? `${req.method} ${stripQueryString(req.originalUrl)}`
       const traceName = `route handler: ${label}`
 
       await HTTPTracer.trace(traceName, async (span) => {
         try {
           await handler(req, res)
         } catch (error) {
-          span.setStatus({
-            code: SpanStatusCode.ERROR,
-            message: error.message || "Failed",
-          })
+          setSpanStatusFromError(span, error)
           throw error
         } finally {
           span.end()
@@ -115,10 +234,7 @@ export function instrumentHttpLayer() {
         try {
           await handler(req, res, next)
         } catch (error) {
-          span.setStatus({
-            code: SpanStatusCode.ERROR,
-            message: error.message || "Failed",
-          })
+          setSpanStatusFromError(span, error)
           throw error
         } finally {
           span.end()
@@ -161,10 +277,10 @@ export function instrumentRemoteQuery() {
       "entryPoint" in queryOptions
         ? queryOptions.entryPoint
         : "service" in queryOptions
-        ? queryOptions.service
-        : "__value" in queryOptions
-        ? Object.keys(queryOptions.__value)[0]
-        : "unknown source"
+          ? queryOptions.service
+          : "__value" in queryOptions
+            ? Object.keys(queryOptions.__value)[0]
+            : "unknown source"
 
     return await QueryTracer.trace(
       `remoteQuery: ${traceIdentifier}`,
@@ -188,34 +304,31 @@ export function instrumentRemoteQuery() {
     )
   })
 
-  Query.instrument.remoteDataFetch(async function (
-    fetchFn,
-    serviceName,
-    method,
-    options
-  ) {
-    return await QueryTracer.trace(
-      `${camelToSnakeCase(serviceName)}.${camelToSnakeCase(method)}`,
-      async (span) => {
-        span.setAttributes({
-          "fetch.select": options.select,
-          "fetch.relations": options.relations,
-        })
-
-        try {
-          return await fetchFn()
-        } catch (error) {
-          span.setStatus({
-            code: SpanStatusCode.ERROR,
-            message: error.message,
+  Query.instrument.remoteDataFetch(
+    async function (fetchFn, serviceName, method, options) {
+      return await QueryTracer.trace(
+        `${camelToSnakeCase(serviceName)}.${camelToSnakeCase(method)}`,
+        async (span) => {
+          span.setAttributes({
+            "fetch.select": options.select,
+            "fetch.relations": options.relations,
           })
-          throw error
-        } finally {
-          span.end()
+
+          try {
+            return await fetchFn()
+          } catch (error) {
+            span.setStatus({
+              code: SpanStatusCode.ERROR,
+              message: error.message,
+            })
+            throw error
+          } finally {
+            span.end()
+          }
         }
-      }
-    )
-  })
+      )
+    }
+  )
 }
 
 /**
@@ -384,7 +497,7 @@ export function registerOtel(
     serviceName: string
     exporter?: SpanExporter
     instrument?: Partial<{
-      http: boolean
+      http: boolean | HttpInstrumentationOptions
       query: boolean
       workflows: boolean
       db: boolean
@@ -420,7 +533,9 @@ export function registerOtel(
     instrumentations.push(new PgInstrumentation())
   }
   if (instrument.http) {
-    instrumentHttpLayer()
+    instrumentHttpLayer(
+      typeof instrument.http === "object" ? instrument.http : undefined
+    )
   }
   if (instrument.query) {
     instrumentRemoteQuery()

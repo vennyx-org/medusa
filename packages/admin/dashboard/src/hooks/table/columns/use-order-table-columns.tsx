@@ -35,6 +35,10 @@ import {
   TotalCell,
   TotalHeader,
 } from "../../../components/table/table-cells/order/total-cell"
+import {
+  useCustomerPermissions,
+  useSalesChannelPermissions,
+} from "../../use-resource-permissions"
 
 // We have to use any here, as the type of Order is so complex that it lags the TS server
 const columnHelper = createColumnHelper<HttpTypes.AdminOrder>()
@@ -44,6 +48,9 @@ type UseOrderTableColumnsProps = {
 }
 
 export const useOrderTableColumns = (props: UseOrderTableColumnsProps) => {
+  const { canRead: canReadCustomers } = useCustomerPermissions()
+  const { canRead: canReadSalesChannels } = useSalesChannelPermissions()
+
   const { exclude = [] } = props ?? {}
 
   const columns = useMemo(
@@ -64,22 +71,30 @@ export const useOrderTableColumns = (props: UseOrderTableColumnsProps) => {
           return <DateCell date={date} />
         },
       }),
-      columnHelper.accessor("customer", {
-        header: () => <CustomerHeader />,
-        cell: ({ getValue }) => {
-          const customer = getValue()
+      ...(canReadCustomers
+        ? [
+            columnHelper.accessor("customer", {
+              header: () => <CustomerHeader />,
+              cell: ({ getValue }) => {
+                const customer = getValue()
 
-          return <CustomerCell customer={customer} />
-        },
-      }),
-      columnHelper.accessor("sales_channel", {
-        header: () => <SalesChannelHeader />,
-        cell: ({ getValue }) => {
-          const channel = getValue()
+                return <CustomerCell customer={customer} />
+              },
+            }),
+          ]
+        : []),
+      ...(canReadSalesChannels
+        ? [
+            columnHelper.accessor("sales_channel", {
+              header: () => <SalesChannelHeader />,
+              cell: ({ getValue }) => {
+                const channel = getValue()
 
-          return <SalesChannelCell channel={channel} />
-        },
-      }),
+                return <SalesChannelCell channel={channel} />
+              },
+            }),
+          ]
+        : []),
       columnHelper.accessor("payment_status", {
         header: () => <PaymentStatusHeader />,
         cell: ({ getValue }) => {
@@ -99,28 +114,26 @@ export const useOrderTableColumns = (props: UseOrderTableColumnsProps) => {
       columnHelper.accessor("total", {
         header: () => <TotalHeader />,
         cell: ({ getValue, row }) => {
-            const isFullyRefunded = row.original.payment_status === "refunded"
-            const total = !isFullyRefunded
-              ? getValue()
-              : row.original.payment_collections?.reduce(
-                  (acc, payCol) => acc + (payCol.refunded_amount ?? 0),
-                  0
-                ) || 0
-            const currencyCode = row.original.currency_code
+          const isFullyRefunded = row.original.payment_status === "refunded"
+          const total = !isFullyRefunded
+            ? getValue()
+            : (row.original.payment_collections?.reduce(
+                (acc, payCol) => acc + (payCol.refunded_amount ?? 0),
+                0
+              ) ?? 0)
+          const currencyCode = row.original.currency_code
 
-            return (
-              <TotalCell
-                currencyCode={currencyCode}
-                total={total}
-                className={
-                  isFullyRefunded ? "text-ui-fg-muted line-through" : ""
-                }
-              />
-            )
+          return (
+            <TotalCell
+              currencyCode={currencyCode}
+              total={total}
+              className={isFullyRefunded ? "text-ui-fg-muted line-through" : ""}
+            />
+          )
         },
       }),
       columnHelper.display({
-        id: "actions",
+        id: "country",
         cell: ({ row }) => {
           const countryCode = row.original.shipping_address?.country_code
           const country = countries.find((c) => c.iso_2 === countryCode)

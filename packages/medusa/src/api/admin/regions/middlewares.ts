@@ -1,9 +1,11 @@
-import * as QueryConfig from "./query-config"
-import { MiddlewareRoute } from "@medusajs/framework/http"
 import {
   validateAndTransformBody,
   validateAndTransformQuery,
 } from "@medusajs/framework"
+import { authorize, MiddlewareRoute } from "@medusajs/framework/http"
+import { PolicyOperation } from "@medusajs/framework/utils"
+import * as QueryConfig from "./query-config"
+import { Entities } from "./query-config"
 import {
   AdminCreateRegion,
   AdminGetRegionParams,
@@ -13,9 +15,26 @@ import {
 
 export const adminRegionRoutesMiddlewares: MiddlewareRoute[] = [
   {
+    matcher: "/admin/regions/*",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.region,
+          operation: PolicyOperation.read,
+        },
+      ]),
+    ],
+  },
+  {
     method: ["GET"],
     matcher: "/admin/regions",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.region,
+          operation: PolicyOperation.read,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetRegionsParams,
         QueryConfig.listTransformQueryConfig
@@ -36,6 +55,12 @@ export const adminRegionRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/regions",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.region,
+          operation: PolicyOperation.create,
+        },
+      ]),
       validateAndTransformBody(AdminCreateRegion),
       validateAndTransformQuery(
         AdminGetRegionParams,
@@ -47,11 +72,29 @@ export const adminRegionRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/regions/:id",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.region,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(AdminUpdateRegion),
       validateAndTransformQuery(
         AdminGetRegionParams,
         QueryConfig.retrieveTransformQueryConfig
       ),
+    ],
+  },
+  {
+    method: ["DELETE"],
+    matcher: "/admin/regions/:id",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.region,
+          operation: PolicyOperation.delete,
+        },
+      ]),
     ],
   },
 ]

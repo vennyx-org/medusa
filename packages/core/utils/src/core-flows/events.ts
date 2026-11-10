@@ -1,3 +1,6 @@
+// TODO: Comment temporarely and we will re enable it in the near future #14478
+// import { EventOptions } from "@medusajs/types"
+
 /**
  * @category Cart
  * @customNamespace Cart
@@ -63,7 +66,7 @@ export const CartWorkflowEvents = {
    * ```
    */
   CUSTOMER_TRANSFERRED: "cart.customer_transferred",
-}
+} as const
 
 /**
  * @category Customer
@@ -103,7 +106,7 @@ export const CustomerWorkflowEvents = {
    * ```
    */
   DELETED: "customer.deleted",
-}
+} as const
 
 /**
  * @category Order
@@ -259,7 +262,7 @@ export const OrderWorkflowEvents = {
    * ```
    */
   TRANSFER_REQUESTED: "order.transfer_requested",
-}
+} as const
 
 /**
  * @category Order Edit
@@ -276,6 +279,7 @@ export const OrderEditWorkflowEvents = {
    * {
    *   order_id, // The ID of the order
    *   actions, // (array) The [actions](https://docs.medusajs.com/resources/references/fulfillment/interfaces/fulfillment.OrderChangeActionDTO) to edit the order
+   *   no_notification, // (boolean) Whether the customer shouldn't be notified of the requested order edit. Available since v2.19.0.
    * }
    * ```
    */
@@ -290,6 +294,7 @@ export const OrderEditWorkflowEvents = {
    * {
    *   order_id, // The ID of the order
    *   actions, // (array) The [actions](https://docs.medusajs.com/resources/references/fulfillment/interfaces/fulfillment.OrderChangeActionDTO) to edit the order
+   *   no_notification, // (boolean) Whether the customer shouldn't be notified of the order edit, as stored on the order change when the edit was requested. Available since v2.19.0.
    * }
    * ```
    */
@@ -308,7 +313,7 @@ export const OrderEditWorkflowEvents = {
    * ```
    */
   CANCELED: "order-edit.canceled",
-}
+} as const
 
 /**
  * @category User
@@ -348,7 +353,7 @@ export const UserWorkflowEvents = {
    * ```
    */
   DELETED: "user.deleted",
-}
+} as const
 
 /**
  * @category Auth
@@ -370,7 +375,31 @@ export const AuthWorkflowEvents = {
    * ```
    */
   PASSWORD_RESET: "auth.password_reset",
-}
+  /**
+   * Emitted when a verification code is generated. You can listen to
+   * this event and decide how to deliver the code to the user or customer.
+   * The payload changed in v2.17.0:
+   * `actor_type` and `provider_identity_id` were removed,
+   * `provider` was renamed to `code_provider`, and `entity_type` was added.
+   * Subscribers written before v2.17.0 must be updated to use the payload below.
+   *
+   * @since 2.15.5
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   entity_id, // The identifier of the entity being verified. For example, an email address.
+   *   entity_type, // The kind of entity being verified. For example, "email".
+   *   code_provider, // The verification provider that generated the code. For example, "token".
+   *   auth_identity_id, // The ID of the auth identity being verified.
+   *   code, // The generated verification code.
+   *   expires_at, // (Date) The code expiry date.
+   *   metadata, // (object) Optional custom metadata passed from the request.
+   * }
+   * ```
+   */
+  VERIFICATION_REQUESTED: "auth.verification_requested",
+} as const
 
 /**
  * @category Sales Channel
@@ -410,7 +439,7 @@ export const SalesChannelWorkflowEvents = {
    * ```
    */
   DELETED: "sales-channel.deleted",
-}
+} as const
 
 /**
  * @category Product Category
@@ -450,7 +479,7 @@ export const ProductCategoryWorkflowEvents = {
    * ```
    */
   DELETED: "product-category.deleted",
-}
+} as const
 
 /**
  * @category Product Collection
@@ -490,7 +519,7 @@ export const ProductCollectionWorkflowEvents = {
    * ```
    */
   DELETED: "product-collection.deleted",
-}
+} as const
 
 /**
  * @category Product Variant
@@ -530,7 +559,7 @@ export const ProductVariantWorkflowEvents = {
    * ```
    */
   DELETED: "product-variant.deleted",
-}
+} as const
 
 /**
  * @category Product
@@ -570,7 +599,7 @@ export const ProductWorkflowEvents = {
    * ```
    */
   DELETED: "product.deleted",
-}
+} as const
 
 /**
  * @category Product Type
@@ -610,7 +639,7 @@ export const ProductTypeWorkflowEvents = {
    * ```
    */
   DELETED: "product-type.deleted",
-}
+} as const
 
 /**
  * @category Product Tag
@@ -650,7 +679,7 @@ export const ProductTagWorkflowEvents = {
    * ```
    */
   DELETED: "product-tag.deleted",
-}
+} as const
 
 /**
  * @category Product Option
@@ -690,7 +719,128 @@ export const ProductOptionWorkflowEvents = {
    * ```
    */
   DELETED: "product-option.deleted",
-}
+} as const
+
+/**
+ * @category Product Option Value
+ * @customNamespace Product
+ */
+export const ProductOptionValueWorkflowEvents = {
+  /**
+   * Emitted when product option values are updated.
+   *
+   * @since 2.20.0
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the product option value
+   * }
+   * ```
+   */
+  UPDATED: "product-option-value.updated",
+  /**
+   * Emitted when product option values are deleted.
+   *
+   * @since 2.20.0
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the product option value
+   * }
+   * ```
+   */
+  DELETED: "product-option-value.deleted",
+} as const
+
+/**
+ * @category Price List
+ * @customNamespace Pricing
+ */
+export const PriceListWorkflowEvents = {
+  /**
+   * Emitted when price lists are created.
+   *
+   * @since 2.21.3
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the price list
+   * }
+   * ```
+   */
+  CREATED: "price-list.created",
+  /**
+   * Emitted when price lists are updated.
+   *
+   * @since 2.21.3
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the price list
+   * }
+   * ```
+   */
+  UPDATED: "price-list.updated",
+  /**
+   * Emitted when price lists are deleted.
+   *
+   * @since 2.21.3
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the price list
+   * }
+   * ```
+   */
+  DELETED: "price-list.deleted",
+  /**
+   * Emitted when prices are added to a price list.
+   *
+   * @since 2.21.3
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the price list
+   *   price_set_ids, // The IDs of the price sets whose prices were added
+   * }
+   * ```
+   */
+  PRICES_ADDED: "price-list.prices_added",
+  /**
+   * Emitted when prices in a price list are updated.
+   *
+   * @since 2.21.3
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the price list
+   *   price_set_ids, // The IDs of the price sets whose prices were updated
+   * }
+   * ```
+   */
+  PRICES_UPDATED: "price-list.prices_updated",
+  /**
+   * Emitted when prices are removed from a price list.
+   *
+   * @since 2.21.3
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the price list
+   *   price_set_ids, // The IDs of the price sets whose prices were removed
+   * }
+   * ```
+   */
+  PRICES_REMOVED: "price-list.prices_removed",
+} as const
 
 /**
  * @category Invite
@@ -744,7 +894,7 @@ export const InviteWorkflowEvents = {
    * ```
    */
   RESENT: "invite.resent",
-}
+} as const
 
 /**
  * @category Region
@@ -784,7 +934,7 @@ export const RegionWorkflowEvents = {
    * ```
    */
   DELETED: "region.deleted",
-}
+} as const
 
 /**
  * @category Fulfillment
@@ -814,7 +964,7 @@ export const FulfillmentWorkflowEvents = {
    * ```
    */
   DELIVERY_CREATED: "delivery.created",
-}
+} as const
 
 /**
  * @category Shipping Option Type
@@ -860,7 +1010,7 @@ export const ShippingOptionTypeWorkflowEvents = {
    * ```
    */
   DELETED: "shipping-option-type.deleted",
-}
+} as const
 
 /**
  * @category Shipping Option
@@ -906,7 +1056,7 @@ export const ShippingOptionWorkflowEvents = {
    * ```
    */
   DELETED: "shipping-option.deleted",
-}
+} as const
 
 /**
  * @category Payment
@@ -935,7 +1085,7 @@ export const PaymentEvents = {
    * ```
    */
   REFUNDED: "payment.refunded",
-}
+} as const
 
 /**
  * @category Translation
@@ -981,4 +1131,265 @@ export const TranslationWorkflowEvents = {
    * ```
    */
   DELETED: "translation.deleted",
-}
+} as const
+
+/**
+ * @category Inventory Item
+ * @customNamespace Inventory
+ */
+export const InventoryItemWorkflowEvents = {
+  /**
+   * Emitted when inventory items are created.
+   *
+   * @since 2.18.0
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the inventory item
+   * }
+   * ```
+   */
+  CREATED: "inventory-item.created",
+  /**
+   * Emitted when inventory items are updated.
+   *
+   * @since 2.18.0
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the inventory item
+   * }
+   * ```
+   */
+  UPDATED: "inventory-item.updated",
+  /**
+   * Emitted when inventory items are deleted.
+   *
+   * @since 2.18.0
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the inventory item
+   * }
+   * ```
+   */
+  DELETED: "inventory-item.deleted",
+} as const
+
+/**
+ * @category Inventory Level
+ * @customNamespace Inventory
+ */
+export const InventoryLevelWorkflowEvents = {
+  /**
+   * Emitted when inventory levels are created.
+   *
+   * @since 2.18.0
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the inventory level
+   * }
+   * ```
+   */
+  CREATED: "inventory-level.created",
+  /**
+   * Emitted when inventory levels are updated. This includes adjustments to
+   * the stocked or reserved quantity, such as during order fulfillment.
+   *
+   * @since 2.18.0
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the inventory level
+   *   order_id, // (optional) The ID of the order, if the update was triggered by an order flow
+   * }
+   * ```
+   */
+  UPDATED: "inventory-level.updated",
+  /**
+   * Emitted when inventory levels are deleted.
+   *
+   * @since 2.18.0
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the inventory level
+   * }
+   * ```
+   */
+  DELETED: "inventory-level.deleted",
+} as const
+
+/**
+ * @category Reservation Item
+ * @customNamespace Inventory
+ */
+export const ReservationItemWorkflowEvents = {
+  /**
+   * Emitted when reservations are created.
+   *
+   * @since 2.18.0
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the reservation
+   *   order_id, // (optional) The ID of the order, if the reservation was created by an order flow
+   * }
+   * ```
+   */
+  CREATED: "reservation-item.created",
+  /**
+   * Emitted when reservations are updated.
+   *
+   * @since 2.18.0
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the reservation
+   *   order_id, // (optional) The ID of the order, if the reservation was updated by an order flow
+   * }
+   * ```
+   */
+  UPDATED: "reservation-item.updated",
+  /**
+   * Emitted when reservations are deleted.
+   *
+   * @since 2.18.0
+   *
+   * @eventPayload
+   * ```ts
+   * {
+   *   id, // The ID of the reservation
+   *   order_id, // (optional) The ID of the order, if the reservation was deleted by an order flow
+   * }
+   * ```
+   */
+  DELETED: "reservation-item.deleted",
+} as const
+
+// TODO: Comment temporarely and we will re enable it in the near future #14478
+// declare module "@medusajs/types" {
+//   export interface EventBusEventsOptions {
+//     // Cart events
+//     [CartWorkflowEvents.CREATED]?: EventOptions
+//     [CartWorkflowEvents.UPDATED]?: EventOptions
+//     [CartWorkflowEvents.CUSTOMER_UPDATED]?: EventOptions
+//     [CartWorkflowEvents.REGION_UPDATED]?: EventOptions
+//     [CartWorkflowEvents.CUSTOMER_TRANSFERRED]?: EventOptions
+
+//     // Customer events
+//     [CustomerWorkflowEvents.CREATED]?: EventOptions
+//     [CustomerWorkflowEvents.UPDATED]?: EventOptions
+//     [CustomerWorkflowEvents.DELETED]?: EventOptions
+
+//     // Order events
+//     [OrderWorkflowEvents.UPDATED]?: EventOptions
+//     [OrderWorkflowEvents.PLACED]?: EventOptions
+//     [OrderWorkflowEvents.CANCELED]?: EventOptions
+//     [OrderWorkflowEvents.COMPLETED]?: EventOptions
+//     [OrderWorkflowEvents.ARCHIVED]?: EventOptions
+//     [OrderWorkflowEvents.FULFILLMENT_CREATED]?: EventOptions
+//     [OrderWorkflowEvents.FULFILLMENT_CANCELED]?: EventOptions
+//     [OrderWorkflowEvents.RETURN_REQUESTED]?: EventOptions
+//     [OrderWorkflowEvents.RETURN_RECEIVED]?: EventOptions
+//     [OrderWorkflowEvents.CLAIM_CREATED]?: EventOptions
+//     [OrderWorkflowEvents.EXCHANGE_CREATED]?: EventOptions
+//     [OrderWorkflowEvents.TRANSFER_REQUESTED]?: EventOptions
+
+//     // Order Edit events
+//     [OrderEditWorkflowEvents.REQUESTED]?: EventOptions
+//     [OrderEditWorkflowEvents.CONFIRMED]?: EventOptions
+//     [OrderEditWorkflowEvents.CANCELED]?: EventOptions
+
+//     // User events
+//     [UserWorkflowEvents.CREATED]?: EventOptions
+//     [UserWorkflowEvents.UPDATED]?: EventOptions
+//     [UserWorkflowEvents.DELETED]?: EventOptions
+
+//     // Auth events
+//     [AuthWorkflowEvents.PASSWORD_RESET]?: EventOptions
+
+//     // Sales Channel events
+//     [SalesChannelWorkflowEvents.CREATED]?: EventOptions
+//     [SalesChannelWorkflowEvents.UPDATED]?: EventOptions
+//     [SalesChannelWorkflowEvents.DELETED]?: EventOptions
+
+//     // Product Category events
+//     [ProductCategoryWorkflowEvents.CREATED]?: EventOptions
+//     [ProductCategoryWorkflowEvents.UPDATED]?: EventOptions
+//     [ProductCategoryWorkflowEvents.DELETED]?: EventOptions
+
+//     // Product Collection events
+//     [ProductCollectionWorkflowEvents.CREATED]?: EventOptions
+//     [ProductCollectionWorkflowEvents.UPDATED]?: EventOptions
+//     [ProductCollectionWorkflowEvents.DELETED]?: EventOptions
+
+//     // Product Variant events
+//     [ProductVariantWorkflowEvents.CREATED]?: EventOptions
+//     [ProductVariantWorkflowEvents.UPDATED]?: EventOptions
+//     [ProductVariantWorkflowEvents.DELETED]?: EventOptions
+
+//     // Product events
+//     [ProductWorkflowEvents.CREATED]?: EventOptions
+//     [ProductWorkflowEvents.UPDATED]?: EventOptions
+//     [ProductWorkflowEvents.DELETED]?: EventOptions
+
+//     // Product Type events
+//     [ProductTypeWorkflowEvents.CREATED]?: EventOptions
+//     [ProductTypeWorkflowEvents.UPDATED]?: EventOptions
+//     [ProductTypeWorkflowEvents.DELETED]?: EventOptions
+
+//     // Product Tag events
+//     [ProductTagWorkflowEvents.CREATED]?: EventOptions
+//     [ProductTagWorkflowEvents.UPDATED]?: EventOptions
+//     [ProductTagWorkflowEvents.DELETED]?: EventOptions
+
+//     // Product Option events
+//     [ProductOptionWorkflowEvents.CREATED]?: EventOptions
+//     [ProductOptionWorkflowEvents.UPDATED]?: EventOptions
+//     [ProductOptionWorkflowEvents.DELETED]?: EventOptions
+
+//     // Invite events
+//     [InviteWorkflowEvents.ACCEPTED]?: EventOptions
+//     [InviteWorkflowEvents.CREATED]?: EventOptions
+//     [InviteWorkflowEvents.DELETED]?: EventOptions
+//     [InviteWorkflowEvents.RESENT]?: EventOptions
+
+//     // Region events
+//     [RegionWorkflowEvents.CREATED]?: EventOptions
+//     [RegionWorkflowEvents.UPDATED]?: EventOptions
+//     [RegionWorkflowEvents.DELETED]?: EventOptions
+
+//     // Fulfillment events
+//     [FulfillmentWorkflowEvents.SHIPMENT_CREATED]?: EventOptions
+//     [FulfillmentWorkflowEvents.DELIVERY_CREATED]?: EventOptions
+
+//     // Shipping Option Type events
+//     [ShippingOptionTypeWorkflowEvents.CREATED]?: EventOptions
+//     [ShippingOptionTypeWorkflowEvents.UPDATED]?: EventOptions
+//     [ShippingOptionTypeWorkflowEvents.DELETED]?: EventOptions
+
+//     // Shipping Option events
+//     [ShippingOptionWorkflowEvents.CREATED]?: EventOptions
+//     [ShippingOptionWorkflowEvents.UPDATED]?: EventOptions
+//     [ShippingOptionWorkflowEvents.DELETED]?: EventOptions
+
+//     // Payment events
+//     [PaymentEvents.CAPTURED]?: EventOptions
+//     [PaymentEvents.REFUNDED]?: EventOptions
+
+//     // Translation events
+//     [TranslationWorkflowEvents.CREATED]?: EventOptions
+//     [TranslationWorkflowEvents.UPDATED]?: EventOptions
+//     [TranslationWorkflowEvents.DELETED]?: EventOptions
+//   }
+// }

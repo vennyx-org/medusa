@@ -8,9 +8,11 @@ const promiseExec = util.promisify(exec)
 
 const projectBasePath = path.resolve()
 const rootPath = path.resolve("..", "..", "..")
-const monorepoRelativePath = projectBasePath
-  .replace(rootPath, "")
-  .replace(/^\//, "")
+// git outputs paths with forward slashes on all platforms
+const monorepoRelativePath = path
+  .relative(rootPath, projectBasePath)
+  .split(path.sep)
+  .join("/")
 const generatedFilePath = path.join(
   projectBasePath,
   "generated",
@@ -73,12 +75,19 @@ const getChangedFiles = async (): Promise<string[]> => {
     changedFiles.push(path.relative(projectBasePath, file))
   })
 
-  // get tracked files
-  const trackedFiles = await promiseExec(
-    `{ git diff --name-only ; git diff --name-only --staged ; } | sort | uniq`
+  // get tracked files. The commands are run separately and deduplicated here
+  // since shell grouping and pipes aren't supported by all shells (e.g. cmd.exe)
+  const [unstagedFiles, stagedFiles] = await Promise.all([
+    promiseExec(`git diff --name-only`),
+    promiseExec(`git diff --name-only --staged`),
+  ])
+  const trackedFiles = new Set(
+    `${unstagedFiles.stdout}\n${stagedFiles.stdout}`
+      .split("\n")
+      .map((file) => file.trim())
   )
 
-  trackedFiles.stdout.split("\n").forEach((file) => {
+  trackedFiles.forEach((file) => {
     // The above command retrieve the full file path relative to the monorepo
     // so all parts before the project's path should be removed.
     if (
@@ -134,7 +143,7 @@ export const generateEditedDates = async () => {
     editDates = await getOsLastEditDates(files)
   }
 
-  if (!files.length) {
+  if (!files.length && !generatedFileExists) {
     return
   }
 
@@ -150,9 +159,11 @@ export const generateEditedDates = async () => {
 
     editDates = Object.assign(existingEditDates, editDates)
 
-    // delete items that don't exist anymore (their value is undefined)
+    // delete items that don't exist anymore. Entries are only ever refreshed for
+    // changed files, so anything else in the generated file survives forever
+    // unless it's pruned here.
     Object.keys(editDates)
-      .filter((key) => editDates[key] === undefined)
+      .filter((key) => !existsSync(path.join(projectBasePath, key)))
       .forEach((key) => delete editDates[key])
   }
 

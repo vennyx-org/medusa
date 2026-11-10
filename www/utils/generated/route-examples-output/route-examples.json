@@ -116,6 +116,9 @@
   "GET /admin/customers": {
     "js-sdk": "sdk.admin.customer.list()\n.then(({ customers, count, limit, offset }) => {\n  console.log(customers)\n})"
   },
+  "POST /admin/customers/export": {
+    "js-sdk": "sdk.admin.customer.export({\n  format: \"json\"\n}, {\n  fields: \"id,email,*addresses,*orders\",\n  id: \"cus_123\"\n})\n.then(({ transaction_id }) => {\n  console.log(transaction_id)\n})"
+  },
   "GET /admin/customers/{id}": {
     "js-sdk": "sdk.admin.customer.retrieve(\"cus_123\")\n.then(({ customer }) => {\n  console.log(customer)\n})"
   },
@@ -135,7 +138,7 @@
     "js-sdk": "sdk.admin.customer.deleteAddress(\"cus_123\", \"cus_addr_123\")\n.then(({ customer }) => {\n  console.log(customer)\n})"
   },
   "GET /admin/customers/{id}/addresses/{addressid}": {
-    "js-sdk": "sdk.admin.customer.retrieveAddress(\"cus_123\", \"cus_addr_123\")\n.then(({ customer }) => {\n  console.log(customer)\n})"
+    "js-sdk": "sdk.admin.customer.retrieveAddress(\"cus_123\", \"cus_addr_123\")\n.then(({ address }) => {\n  console.log(address)\n})"
   },
   "GET /admin/customers/{id}/addresses": {
     "js-sdk": "sdk.admin.customer.listAddresses(\"cus_123\")\n.then(({ addresses }) => {\n  console.log(addresses)\n})"
@@ -311,6 +314,9 @@
   "POST /admin/inventory-items/{id}": {
     "js-sdk": "sdk.admin.inventoryItem.update(\"iitem_123\", {\n  sku: \"SHIRT\"\n})\n.then(({ inventory_item }) => {\n  console.log(inventory_item)\n})"
   },
+  "POST /admin/inventory-items/export": {
+    "js-sdk": "sdk.admin.inventoryItem.export({})\n.then(({ transaction_id }) => {\n  console.log(transaction_id)\n})"
+  },
   "GET /admin/inventory-items": {
     "js-sdk": "sdk.admin.inventoryItem.list()\n.then(({ inventory_items, count, limit, offset }) => {\n  console.log(inventory_items)\n})"
   },
@@ -383,6 +389,9 @@
   "POST /admin/orders/{id}/transfer": {
     "js-sdk": "sdk.admin.order.requestTransfer(\"order_123\", {\n  customer_id: \"cus_123\",\n  internal_note: \"Internal note\",\n})\n.then(({ order }) => {\n  console.log(order)\n})"
   },
+  "POST /admin/orders/{id}/transfer/guest": {
+    "js-sdk": "sdk.admin.order.transferToGuest(\"order_123\", {\n  email: \"customer@example.com\",\n  internal_note: \"Internal note\",\n})\n.then(({ order }) => {\n  console.log(order)\n})"
+  },
   "POST /admin/orders/{id}/transfer/cancel": {
     "js-sdk": "sdk.admin.order.cancelTransfer(\"order_123\")\n.then(({ order }) => {\n  console.log(order)\n})"
   },
@@ -410,6 +419,9 @@
   "POST /admin/orders/{orderid}/credit-lines": {
     "js-sdk": "sdk.admin.order.createCreditLine(\n  \"order_123\",\n  {\n    amount: 100,\n    reference: \"order\",\n    reference_id: \"order_123\",\n  }\n)\n.then(({ order }) => {\n  console.log(order)\n})"
   },
+  "POST /admin/orders/{id}/payment-sessions/authorize": {
+    "js-sdk": "sdk.admin.order.authorizePaymentSession(\"order_123\", \"payses_123\")\n.then(({ order, is_authorized }) => {\n  console.log(order, is_authorized)\n})"
+  },
   "POST /admin/order-changes/{id}": {
     "js-sdk": "sdk.admin.order.updateOrderChange(\n  \"ordch_123\",\n  {\n    carry_over_promotions: true\n  }\n)\n.then(({ order_change }) => {\n  console.log(order_change)\n})"
   },
@@ -420,25 +432,25 @@
     "js-sdk": "sdk.admin.orderEdit.initiateRequest({\n  order_id: \"order_123\"\n})\n.then(({ order_change }) => {\n  console.log(order_change)\n})"
   },
   "POST /admin/order-edits/{id}/request": {
-    "js-sdk": "sdk.admin.orderEdit.request(\"ordch_123\")\n.then(({ order_preview }) => {\n  console.log(order_preview)\n})"
+    "js-sdk": "sdk.admin.orderEdit.request(\"order_123\", {\n  no_notification: false\n})\n.then(({ order_preview }) => {\n  console.log(order_preview)\n})"
   },
   "POST /admin/order-edits/{id}/confirm": {
-    "js-sdk": "sdk.admin.orderEdit.confirm(\"ordch_123\")\n.then(({ order_preview }) => {\n  console.log(order_preview)\n})"
+    "js-sdk": "sdk.admin.orderEdit.confirm(\"order_123\")\n.then(({ order_preview }) => {\n  console.log(order_preview)\n})"
   },
   "DELETE /admin/order-edits/{id}": {
-    "js-sdk": "sdk.admin.orderEdit.cancelRequest(\"ordch_123\")\n.then(({ deleted }) => {\n  console.log(deleted)\n})"
+    "js-sdk": "sdk.admin.orderEdit.cancelRequest(\"order_123\")\n.then(({ deleted }) => {\n  console.log(deleted)\n})"
   },
   "POST /admin/order-edits/{id}/items": {
-    "js-sdk": "sdk.admin.orderEdit.addItems(\"ordch_123\", {\n  items: [\n    {\n      variant_id: \"variant_123\",\n      quantity: 1\n    }\n  ]\n})\n.then(({ order_preview }) => {\n  console.log(order_preview)\n})"
+    "js-sdk": "sdk.admin.orderEdit.addItems(\"order_123\", {\n  items: [\n    {\n      variant_id: \"variant_123\",\n      quantity: 1\n    }\n  ]\n})\n.then(({ order_preview }) => {\n  console.log(order_preview)\n})"
   },
   "POST /admin/order-edits/{id}/items/item/{itemid}": {
-    "js-sdk": "sdk.admin.orderEdit.updateOriginalItem(\n  \"ordch_123\", \n  \"orli_123\",\n  {\n    quantity: 1\n  }\n)\n.then(({ order_preview }) => {\n  console.log(order_preview)\n})"
+    "js-sdk": "sdk.admin.orderEdit.updateOriginalItem(\n  \"order_123\",\n  \"orli_123\",\n  {\n    quantity: 1\n  }\n)\n.then(({ order_preview }) => {\n  console.log(order_preview)\n})"
   },
   "POST /admin/order-edits/{id}/items/{actionid}": {
-    "js-sdk": "sdk.admin.orderEdit.updateAddedItem(\n  \"ordch_123\", \n  \"orli_123\",\n  {\n    quantity: 1\n  }\n)\n.then(({ order_preview }) => {\n  console.log(order_preview)\n})"
+    "js-sdk": "sdk.admin.orderEdit.updateAddedItem(\n  \"order_123\",\n  \"orli_123\",\n  {\n    quantity: 1\n  }\n)\n.then(({ order_preview }) => {\n  console.log(order_preview)\n})"
   },
   "DELETE /admin/order-edits/{id}/items/{actionid}": {
-    "js-sdk": "sdk.admin.orderEdit.removeAddedItem(\n  \"ordch_123\", \n  \"orli_123\",\n)\n.then(({ order_preview }) => {\n  console.log(order_preview)\n})"
+    "js-sdk": "sdk.admin.orderEdit.removeAddedItem(\n  \"order_123\",\n  \"orli_123\",\n)\n.then(({ order_preview }) => {\n  console.log(order_preview)\n})"
   },
   "GET /admin/payments": {
     "js-sdk": "sdk.admin.payment.list()\n.then(({ payments, count, limit, offset }) => {\n  console.log(payments)\n})"
@@ -462,7 +474,13 @@
     "js-sdk": "sdk.admin.paymentCollection.delete(\"paycol_123\")\n.then(({ deleted }) => {\n  console.log(deleted)\n})"
   },
   "POST /admin/payment-collections/{id}/mark-as-paid": {
-    "js-sdk": "sdk.admin.paymentCollection.markAsPaid(\"paycol_123\", {\n  order_id: \"order_123\"\n})\n.then(({ payment_collection }) => {\n  console.log(payment_collection)\n})"
+    "js-sdk": "sdk.admin.paymentCollection.markAsPaid(\"paycol_123\", {\n  order_id: \"order_123\",\n  // optional: record the payment under a specific provider\n  provider_id: \"pp_system_default\"\n})\n.then(({ payment_collection }) => {\n  console.log(payment_collection)\n})"
+  },
+  "POST /admin/payment-collections/{id}/payment-sessions": {
+    "js-sdk": "sdk.admin.paymentCollection.createPaymentSession(\"paycol_123\", {\n  provider_id: \"pp_stripe_stripe\"\n})\n.then(({ payment_collection }) => {\n  console.log(payment_collection)\n})"
+  },
+  "GET /admin/modules": {
+    "js-sdk": "sdk.admin.module.list()\n.then(({ modules }) => {\n  const isRbacInstalled = modules.some((module) => module.key === \"rbac\")\n})"
   },
   "GET /admin/plugins": {
     "js-sdk": "sdk.admin.plugin.list()\n.then(({ plugins }) => {\n  console.log(plugins)\n})"
@@ -557,26 +575,17 @@
   "POST /admin/products/{productid}/variants/inventory-items/batch": {
     "js-sdk": "sdk.admin.product.batchVariantInventoryItems(\n  \"prod_123\",\n  {\n    create: [\n      {\n        inventory_item_id: \"iitem_123\",\n        variant_id: \"variant_123\",\n        required_quantity: 10\n      }\n    ],\n    update: [\n      {\n        inventory_item_id: \"iitem_1234\",\n        variant_id: \"variant_1234\",\n        required_quantity: 20\n      }\n    ],\n    delete: [\n      {\n        inventory_item_id: \"iitem_321\",\n        variant_id: \"variant_321\"\n      }\n    ]\n  }\n)\n.then(({ created, updated, deleted }) => {\n  console.log(created, updated, deleted)\n})"
   },
-  "POST /admin/products/{productid}/options": {
-    "js-sdk": "sdk.admin.product.createOption(\n  \"prod_123\",\n  {\n    title: \"Color\",\n    values: [\"Green\", \"Blue\"]\n  }\n)\n.then(({ product }) => {\n  console.log(product)\n})"
-  },
-  "POST /admin/products/{productid}/options/{id}": {
-    "js-sdk": "sdk.admin.product.updateOption(\n  \"prod_123\",\n  \"prodopt_123\",\n  {\n    title: \"Color\"\n  }\n)\n.then(({ product }) => {\n  console.log(product)\n})"
-  },
   "GET /admin/products/{productid}/options": {
     "js-sdk": "sdk.admin.product.listOptions(\"prod_123\")\n.then(({ product_options, count, limit, offset }) => {\n  console.log(product_options)\n})"
-  },
-  "GET /admin/products/{productid}/options/{id}": {
-    "js-sdk": "sdk.admin.product.retrieveOption(\n  \"prod_123\",\n  \"prodopt_123\"\n)\n.then(({ product_option }) => {\n  console.log(product_option)\n})"
-  },
-  "DELETE /admin/products/{productid}/options/{id}": {
-    "js-sdk": "sdk.admin.product.deleteOption(\"prod_123\", \"prodopt_123\")\n.then(({ deleted }) => {\n  console.log(deleted)\n})"
   },
   "POST /admin/products/{productid}/images/{imageid}/variants/batch": {
     "js-sdk": "sdk.admin.product.batchImageVariants(\"prod_123\", \"img_123\", {\n  add: [\"variant_123\", \"variant_456\"],\n  remove: [\"variant_789\"]\n})\n.then(({ added, removed }) => {\n  console.log(added, removed)\n})"
   },
   "POST /admin/products/{productid}/variants/{variantid}/images/batch": {
     "js-sdk": "sdk.admin.product.batchVariantImages(\"prod_123\", \"variant_123\", {\n  add: [\"img_123\", \"img_456\"],\n  remove: [\"img_789\"]\n})\n.then(({ added, removed }) => {\n  console.log(added, removed)\n})"
+  },
+  "POST /admin/products/{productid}/options/batch": {
+    "js-sdk": "sdk.admin.product.linkOptions(\"prod_123\", {\n  add: [\n      \"opt_123\",\n      {\n        id: \"opt_123\",\n        value_ids: [\"optval_1\", \"optval_2\"]\n      }\n    ],\n    remove: [\"opt_456\"]\n})\n.then(({ product }) => {\n  console.log(product)\n})"
   },
   "POST /admin/product-categories": {
     "js-sdk": "sdk.admin.productCategory.create({\n  name: \"Shirts\"\n})\n.then(({ product_category }) => {\n  console.log(product_category)\n})"
@@ -818,6 +827,18 @@
   "POST /admin/sales-channels/{id}/products": {
     "js-sdk": "sdk.admin.salesChannel.batchProducts(\"sc_123\", {\n  add: [\"prod_123\", \"prod_456\"],\n  remove: [\"prod_789\"]\n})\n.then(({ sales_channel }) => {\n  console.log(sales_channel)\n})"
   },
+  "GET /admin/search": {
+    "js-sdk": "sdk.admin.search.list({ q: \"shirt\", limit: 5 })\n.then(({ results }) => {\n  console.log(results)\n})"
+  },
+  "GET /admin/search-indexes": {
+    "js-sdk": "sdk.admin.search.listIndexes()\n.then(({ search_indexes, enabled }) => {\n  console.log(search_indexes, enabled)\n})"
+  },
+  "DELETE /admin/search-indexes/{id}": {
+    "js-sdk": "sdk.admin.search.deleteIndex(\"product\")\n.then(({ deleted, deleted_versions }) => {\n  console.log(deleted, deleted_versions)\n})"
+  },
+  "POST /admin/search-indexes/{id}/reindex": {
+    "js-sdk": "sdk.admin.search.reindex(\"product\")\n.then(({ job_id, indexes }) => {\n  console.log(job_id, indexes)\n})"
+  },
   "POST /admin/shipping-options": {
     "js-sdk": "sdk.admin.shippingOption.create({\n  name: \"Standard Shipping\",\n  profile_id: \"shp_123\",\n})\n.then(({ shipping_option }) => {\n  console.log(shipping_option)\n})"
   },
@@ -938,11 +959,62 @@
   "GET /admin/users/{id}": {
     "js-sdk": "sdk.admin.user.retrieve(\"user_123\")\n.then(({ user }) => {\n  console.log(user)\n})"
   },
+  "GET /admin/users/{id}/auth-providers": {
+    "js-sdk": "sdk.admin.user.listAuthProviders(\"user_123\")\n.then(({ providers }) => {\n  console.log(providers)\n})"
+  },
+  "POST /admin/users/{id}/reset-password": {
+    "js-sdk": "sdk.admin.user.generateResetPasswordToken(\"user_123\")\n.then(({ token }) => {\n  console.log(token)\n})"
+  },
+  "GET /admin/users/{id}/roles": {
+    "js-sdk": "sdk.admin.user.listRoles(\"user_123\")\n.then(({ roles, count, limit, offset }) => {\n  console.log(roles)\n})"
+  },
+  "POST /admin/users/{id}/roles": {
+    "js-sdk": "sdk.admin.user.addRoles(\"user_123\", {\n  assignments: [{ role_id: \"role_123\" }]\n})\n.then(({ roles }) => {\n  console.log(roles)\n})"
+  },
+  "DELETE /admin/users/{id}/roles/{roleid}": {
+    "js-sdk": "sdk.admin.user.removeRole(\"user_123\", \"role_123\")\n.then(({ deleted }) => {\n  console.log(deleted)\n})"
+  },
+  "DELETE /admin/users/{id}/roles": {
+    "js-sdk": "sdk.admin.user.removeRoles(\"user_123\", {\n  assignments: [{ role_id: \"role_123\" }]\n})\n.then(({ deleted }) => {\n  console.log(deleted)\n})"
+  },
   "DELETE /admin/users/{id}": {
     "js-sdk": "sdk.admin.user.delete(\"user_123\")\n.then(({ deleted }) => {\n  console.log(deleted)\n})"
   },
   "GET /admin/users/me": {
     "js-sdk": "sdk.admin.user.me()\n.then(({ user }) => {\n  console.log(user)\n})"
+  },
+  "POST /admin/users/me": {
+    "js-sdk": "sdk.admin.user.updateMe({\n  first_name: \"John\",\n  last_name: \"Doe\",\n})\n.then(({ user }) => {\n  console.log(user)\n})"
+  },
+  "GET /admin/views/entities": {
+    "js-sdk": "sdk.admin.views.listEntities()\n.then(({ entities }) => {\n  console.log(entities)\n})"
+  },
+  "GET /admin/views/{entity}/columns": {
+    "js-sdk": "const { columns } = await sdk.admin.views.columns(\"orders\")"
+  },
+  "GET /admin/views/{entity}/configurations": {
+    "js-sdk": "sdk.admin.views.listConfigurations(\"orders\")\n.then(({ view_configurations, count, limit, offset }) => {\n  console.log(view_configurations)\n})"
+  },
+  "POST /admin/views/{entity}/configurations": {
+    "js-sdk": "const { view_configuration } = await sdk.admin.views.createConfiguration(\n  \"orders\",\n  {\n    name: \"My Orders View\",\n    configuration: {\n      visible_columns: [\"display_id\", \"status\"],\n      column_order: [\"display_id\", \"status\"],\n    },\n  }\n)"
+  },
+  "GET /admin/views/{entity}/configurations/{id}": {
+    "js-sdk": "sdk.admin.views.retrieveConfiguration(\"orders\", \"viewconfig_123\")\n.then(({ view_configuration }) => {\n  console.log(view_configuration)\n})"
+  },
+  "POST /admin/views/{entity}/configurations/{id}": {
+    "js-sdk": "const { view_configuration } = await sdk.admin.views.updateConfiguration(\n  \"orders\",\n  \"viewconfig_123\",\n  {\n    name: \"Updated View\",\n  }\n)"
+  },
+  "DELETE /admin/views/{entity}/configurations/{id}": {
+    "js-sdk": "const { id, object, deleted } = await sdk.admin.views.deleteConfiguration(\n  \"orders\",\n  \"viewconfig_123\"\n)"
+  },
+  "GET /admin/views/{entity}/configurations/active": {
+    "js-sdk": "sdk.admin.views.retrieveActiveConfiguration(\"orders\")\n.then(({ view_configuration, active_view_configuration_id }) => {\n  console.log(view_configuration)\n})"
+  },
+  "POST /admin/views/{entity}/configurations/active": {
+    "js-sdk": "await sdk.admin.views.setActiveConfiguration(\"orders\", {\n  view_configuration_id: \"viewconfig_123\",\n})"
+  },
+  "GET /admin/layouts/configurations": {
+    "js-sdk": "const { layout_configurations } = await sdk.admin.layouts.listConfigurations()"
   },
   "GET /admin/workflows-executions": {
     "js-sdk": "sdk.admin.workflowExecution.list()\n.then(({ workflow_executions, count, limit, offset }) => {\n  console.log(workflow_executions)\n})"
@@ -975,16 +1047,64 @@
     "js-sdk": "sdk.admin.translation.list()\n.then(({ translations, count, limit, offset }) => {\n  console.log(translations)\n})"
   },
   "POST /admin/translations/batch": {
-    "js-sdk": "sdk.admin.translation.batch({\n  create: [\n    {\n      reference_id: \"prod_123\",\n      reference: \"product\",\n      locale_code: \"en-US\",\n      translations: { title: \"Shirt\" }\n    }\n  ],\n  update: [\n    {\n      id: \"trans_123\",\n      translations: { title: \"Pants\" }\n    }\n  ],\n  delete: [\"trans_321\"]\n})\n.then(({ created, updated, deleted }) => {\n  console.log(created, updated, deleted)\n})\n```"
+    "js-sdk": "sdk.admin.translation.batch({\n  create: [\n    {\n      reference_id: \"prod_123\",\n      reference: \"product\",\n      locale_code: \"en-US\",\n      translations: { title: \"Shirt\" }\n    }\n  ],\n  update: [\n    {\n      id: \"trans_123\",\n      translations: { title: \"Pants\" }\n    }\n  ],\n  delete: [\"trans_321\"]\n})\n.then(({ created, updated, deleted }) => {\n  console.log(created, updated, deleted)\n})"
   },
   "GET /admin/translations/settings": {
-    "js-sdk": "sdk.admin.translation.settings({\n  entity_type: \"product\"\n})\n.then(({ translatable_fields }) => {\n  console.log(translatable_fields)\n})"
+    "js-sdk": "sdk.admin.translation.settings({\n  entity_type: \"product\"\n})\n.then(({ translation_settings }) => {\n  console.log(translation_settings)\n})"
+  },
+  "POST /admin/translations/settings/batch": {
+    "js-sdk": "sdk.admin.translation.batchSettings({\n  create: [\n    {\n      entity_type: \"product\",\n      fields: [\"title\", \"description\"],\n      is_active: true\n    }\n  ],\n  update: [\n    {\n      id: \"trset_123\",\n      fields: [\"title\", \"description\", \"subtitle\"],\n      is_active: true\n    }\n  ],\n  delete: [\"trset_456\"]\n})\n.then(({ created, updated, deleted }) => {\n  console.log(created, updated, deleted)\n})"
   },
   "GET /admin/translations/entities": {
     "js-sdk": "sdk.admin.translation.entities({\n  type: \"product\"\n})\n.then(({ data, count, offset, limit }) => {\n  console.log(data)\n})"
   },
   "GET /admin/translations/statistics": {
     "js-sdk": "sdk.admin.translation.statistics({\n  entity_type: \"product\"\n})\n.then(({ statistics }) => {\n  console.log(statistics)\n})"
+  },
+  "POST /admin/product-options": {
+    "js-sdk": "sdk.admin.productOption.create({\n  title: \"Size\",\n  values: [\"S\", \"M\"]\n})\n.then(({ product_option }) => {\n  console.log(product_option)\n})"
+  },
+  "POST /admin/product-options/{id}": {
+    "js-sdk": "sdk.admin.productOption.update(\"opt_123\", {\n  title: \"Size\"\n})\n.then(({ product_option }) => {\n  console.log(product_option)\n})"
+  },
+  "GET /admin/product-options": {
+    "js-sdk": "sdk.admin.productOption.list()\n.then(({ product_options, count, limit, offset }) => {\n  console.log(product_options)\n})"
+  },
+  "GET /admin/product-options/{id}": {
+    "js-sdk": "sdk.admin.productOption.retrieve(\"opt_123\")\n.then(({ product_option }) => {\n  console.log(product_option)\n})"
+  },
+  "DELETE /admin/product-options/{id}": {
+    "js-sdk": "sdk.admin.productOption.delete(\"opt_123\")\n.then(({ deleted }) => {\n  console.log(deleted)\n})"
+  },
+  "GET /admin/product-options/{optionid}/values": {
+    "js-sdk": "sdk.admin.productOption.listValues(\"opt_123\", { q: \"red\" })\n.then(({ product_option_values, count, limit, offset }) => {\n  console.log(product_option_values)\n})"
+  },
+  "GET /admin/product-options/{optionid}/values/{valueid}": {
+    "js-sdk": "sdk.admin.productOption.retrieveValue(\"opt_123\", \"optval_123\")\n.then(({ product_option_value }) => {\n  console.log(product_option_value)\n})"
+  },
+  "POST /admin/product-options/{optionid}/values/{valueid}": {
+    "js-sdk": "sdk.admin.productOption.updateValue(\"opt_123\", \"optval_123\", {\n  metadata: { is_default: true }\n})\n.then(({ product_option_value }) => {\n  console.log(product_option_value)\n})"
+  },
+  "DELETE /admin/product-options/{optionid}/values/{valueid}": {
+    "js-sdk": "sdk.admin.productOption.deleteValue(\"opt_123\", \"optval_123\")\n.then(({ deleted }) => {\n  console.log(deleted)\n})"
+  },
+  "GET /auth/mfa/factors": {
+    "js-sdk": "const { mfa_factors } = await sdk.auth.mfa.list()"
+  },
+  "POST /auth/mfa/factors": {
+    "js-sdk": "const setup = await sdk.auth.mfa.start({\n  provider: \"totp\",\n  label: \"Authenticator app\"\n})\n\n// Render setup.otpauth_url as a QR code or show setup.secret manually."
+  },
+  "POST /auth/mfa/factors/{id}/verify": {
+    "js-sdk": "const { mfa_factor } = await sdk.auth.mfa.verify(\"authmfa_123\", {\n  code: \"123456\"\n})"
+  },
+  "DELETE /auth/mfa/factors/{id}": {
+    "js-sdk": "const { mfa_factor } = await sdk.auth.mfa.disable(\"authmfa_123\")"
+  },
+  "POST /auth/mfa/recovery-codes": {
+    "js-sdk": "const { recovery_codes } = await sdk.auth.mfa.generateRecoveryCodes()"
+  },
+  "POST /auth/mfa/challenges/{id}/verify": {
+    "js-sdk": "const result = await sdk.auth.login(\"user\", \"emailpass\", {\n  email: \"user@example.com\",\n  password: \"secret\"\n})\n\nif (typeof result === \"object\" && \"mfa_challenge\" in result) {\n  await sdk.auth.mfa.verifyChallenge(result.mfa_challenge.id, {\n    method: \"totp\",\n    code: \"123456\"\n  })\n}"
   },
   "POST /auth/{actor}/{method}/register": {
     "js-sdk": "await sdk.auth.register(\n  \"customer\",\n  \"emailpass\",\n  {\n    email: \"customer@gmail.com\",\n    password: \"supersecret\"\n  }\n)\n\n// all subsequent requests will use the token in the header\nconst { customer } = await sdk.store.customer.create({\n  email: \"customer@gmail.com\",\n  password: \"supersecret\"\n})"
@@ -1007,6 +1127,12 @@
   "POST /auth/{actor}/{provider}/update": {
     "js-sdk": "sdk.auth.updateProvider(\n  \"customer\",\n  \"emailpass\",\n  {\n    password: \"supersecret\"\n  },\n  token\n)\n.then(() => {\n  // password updated\n})"
   },
+  "GET /auth/{actor}/providers": {
+    "js-sdk": "const { providers } = await sdk.auth.listProviders(\"user\")"
+  },
+  "POST /auth/{provider}/user": {
+    "js-sdk": "const token = await sdk.auth.callback(\"user\", \"okta\", queryParams)\nawait sdk.auth.createUser(\"okta\", { Authorization: `Bearer ${token}` })\nawait sdk.auth.refresh()"
+  },
   "GET /store/regions": {
     "js-sdk": "sdk.store.region.list()\n.then(({ regions, count, limit, offset }) => {\n  console.log(regions)\n})"
   },
@@ -1024,6 +1150,12 @@
   },
   "GET /store/product-categories/{id}": {
     "js-sdk": "sdk.store.category.retrieve(\"pcat_123\")\n.then(({ product_category }) => {\n  console.log(product_category)\n})"
+  },
+  "GET /store/product-options": {
+    "js-sdk": "sdk.store.productOption.list()\n.then(({ product_options, count, offset, limit }) => {\n  console.log(product_options)\n})"
+  },
+  "GET /store/product-options/{id}": {
+    "js-sdk": "sdk.store.productOption.retrieve(\"opt_123\")\n.then(({ product_option }) => {\n  console.log(product_option)\n})"
   },
   "GET /store/products": {
     "js-sdk": "sdk.store.product.list()\n.then(({ products, count, offset, limit }) => {\n  console.log(products)\n})"
@@ -1052,6 +1184,12 @@
   "POST /store/carts/{cartid}/shipping-methods": {
     "js-sdk": "sdk.store.cart.addShippingMethod(\"cart_123\", {\n  option_id: \"so_123\",\n  data: {\n    // custom data for fulfillment provider.\n  }\n})\n.then(({ cart }) => {\n  console.log(cart)\n})"
   },
+  "POST /store/carts/{cartid}/promotions": {
+    "js-sdk": "sdk.store.cart.addPromotions(\"cart_123\", {\n  promo_codes: [\"20OFF\"]\n})\n.then(({ cart }) => {\n  console.log(cart)\n})"
+  },
+  "DELETE /store/carts/{cartid}/promotions": {
+    "js-sdk": "sdk.store.cart.removePromotions(\"cart_123\", {\n  promo_codes: [\"20OFF\"]\n})\n.then(({ cart }) => {\n  console.log(cart)\n})"
+  },
   "POST /store/carts/{cartid}/complete": {
     "js-sdk": "sdk.store.cart.complete(\"cart_123\")\n.then((data) => {\n  if(data.type === \"cart\") {\n    // an error occurred\n    console.log(data.error, data.cart)\n  } else {\n    // order placed successfully\n    console.log(data.order)\n  }\n})"
   },
@@ -1069,6 +1207,9 @@
   },
   "POST /store/payment-collections": {
     "js-sdk": "sdk.store.payment.initiatePaymentSession(\n  cart, // assuming you already have the cart object.\n  {\n    provider_id: \"pp_stripe_stripe\",\n    data: {\n      // any data relevant for the provider.\n    }\n  }\n)\n.then(({ payment_collection }) => {\n  console.log(payment_collection)\n})"
+  },
+  "POST /store/payment-collections/{paymentcollectionid}/payment-sessions/{paymentsessionid}": {
+    "js-sdk": "sdk.store.payment.updatePaymentSession(\n  \"paycol_123\",\n  \"payses_123\",\n  {\n    client_data: {\n      // any data relevant for the provider.\n    }\n  }\n)\n.then(({ payment_collection }) => {\n  console.log(payment_collection)\n})"
   },
   "GET /store/orders": {
     "js-sdk": "// TODO must be authenticated as the customer to list their orders\nsdk.store.order.list()\n.then(({ orders, count, offset, limit }) => {\n  console.log(orders)\n})"

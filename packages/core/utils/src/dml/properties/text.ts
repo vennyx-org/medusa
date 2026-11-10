@@ -21,6 +21,7 @@ export class TextProperty extends BaseProperty<string> {
 
   /**
    * This method indicates that the property is the data model's primary key.
+   * See [Set Primary Key Property](https://docs.medusajs.com/learn/fundamentals/data-models/properties#set-primary-key-property) for more information.
    *
    * @example
    * import { model } from "@medusajs/framework/utils"
@@ -40,6 +41,7 @@ export class TextProperty extends BaseProperty<string> {
 
   /**
    * This method indicates that a text property is searchable.
+   * See [Define a Searchable Property](https://docs.medusajs.com/learn/fundamentals/data-models/properties#define-a-searchable-property) for more information.
    *
    * @example
    * import { model } from "@medusajs/framework/utils"
@@ -62,6 +64,7 @@ export class TextProperty extends BaseProperty<string> {
   /**
    * This method indicates that a text property is translatable.
    * Translatable properties can have different values per locale.
+   * See [Translate Custom Data Models](https://docs.medusajs.com/resources/commerce-modules/translation/custom-data-models) for more information.
    *
    * @example
    * import { model } from "@medusajs/framework/utils"
@@ -74,6 +77,7 @@ export class TextProperty extends BaseProperty<string> {
    * export default Store
    *
    * @customNamespace Property Configuration Methods
+   * @since 2.13.0
    */
   translatable() {
     this.dataType.options.translatable = true

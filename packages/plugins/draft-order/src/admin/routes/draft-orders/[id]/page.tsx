@@ -1,11 +1,7 @@
-import { Fragment } from "react"
-import {
-  LoaderFunctionArgs,
-  Outlet,
-  UIMatch,
-  useParams,
-} from "react-router-dom"
+import { LoaderFunctionArgs, UIMatch, useParams } from "react-router-dom"
 
+import { LayoutComposer } from "@medusajs/dashboard/components"
+import { PermissionGuard } from "@medusajs/dashboard/hooks"
 import { HttpTypes } from "@medusajs/types"
 import { PageSkeleton } from "../../../components/common/page-skeleton"
 import { ActiveOrderChange } from "../../../components/draft-orders/active-order-changes"
@@ -17,6 +13,7 @@ import { MetadataSection } from "../../../components/draft-orders/metadata-secti
 import { ShippingSection } from "../../../components/draft-orders/shipping-section"
 import { SummarySection } from "../../../components/draft-orders/summary-section"
 import { useOrder, useOrderChanges } from "../../../hooks/api/orders"
+import { VIEW_DRAFT_ORDER_PERMISSIONS } from "../../../lib/permissions"
 import { sdk } from "../../../lib/queries/sdk"
 
 type AdminDraftOrderSummary = HttpTypes.AdminOrder & {
@@ -35,7 +32,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 export const handle = {
   breadcrumb: (match: UIMatch<HttpTypes.AdminOrderResponse>) =>
-    `#${match.data.order.display_id}`,
+    `#${match.loaderData.order.display_id}`,
+  permissions: VIEW_DRAFT_ORDER_PERMISSIONS,
 }
 
 const ID = () => {
@@ -78,31 +76,47 @@ const ID = () => {
   }
 
   return (
-    <Fragment>
-      <div className="flex w-full flex-col gap-y-3">
-        <div className="flex w-full flex-col items-start gap-x-4 gap-y-3 xl:grid xl:grid-cols-[minmax(0,_1fr)_440px]">
-          <div className="flex w-full min-w-0 flex-col gap-y-3">
-            <ActiveOrderChange orderId={order.id} />
-            <GeneralSection order={order} />
-            <SummarySection order={order as AdminDraftOrderSummary} />
-            <ShippingSection order={order} />
-            <div className="hidden flex-col gap-y-3 xl:flex">
+    <LayoutComposer
+      widgetsZonePrefix="draft_order.details"
+      preferredLayoutId="core:two-column"
+      data={order}
+      sections={{
+        main: (
+          <>
+            <LayoutComposer.Entry id="ActiveOrderChange">
+              <ActiveOrderChange orderId={order.id} />
+            </LayoutComposer.Entry>
+            <LayoutComposer.Entry id="GeneralSection">
+              <GeneralSection order={order} />
+            </LayoutComposer.Entry>
+            <LayoutComposer.Entry id="SummarySection">
+              <SummarySection order={order as AdminDraftOrderSummary} />
+            </LayoutComposer.Entry>
+            <LayoutComposer.Entry id="ShippingSection">
+              <PermissionGuard permission="shipping_option:read">
+                <ShippingSection order={order} />
+              </PermissionGuard>
+            </LayoutComposer.Entry>
+            <LayoutComposer.Entry id="MetadataSection">
               <MetadataSection order={order} />
+            </LayoutComposer.Entry>
+            <LayoutComposer.Entry id="JsonViewSection">
               <JsonViewSection data={order} />
-            </div>
-          </div>
-          <div className="flex w-full flex-col gap-y-3 xl:mt-0">
-            <CustomerSection order={order} />
-            <ActivitySection order={order} changes={order_changes} />
-            <div className="flex flex-col gap-y-3 xl:hidden">
-              <MetadataSection order={order} />
-              <JsonViewSection data={order} />
-            </div>
-          </div>
-        </div>
-      </div>
-      <Outlet />
-    </Fragment>
+            </LayoutComposer.Entry>
+          </>
+        ),
+        side: (
+          <>
+            <LayoutComposer.Entry id="CustomerSection">
+              <CustomerSection order={order} />
+            </LayoutComposer.Entry>
+            <LayoutComposer.Entry id="ActivitySection">
+              <ActivitySection order={order} changes={order_changes} />
+            </LayoutComposer.Entry>
+          </>
+        ),
+      }}
+    />
   )
 }
 

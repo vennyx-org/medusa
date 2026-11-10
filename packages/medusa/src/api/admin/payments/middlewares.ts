@@ -1,9 +1,11 @@
-import { MiddlewareRoute } from "@medusajs/framework/http"
 import {
   validateAndTransformBody,
   validateAndTransformQuery,
 } from "@medusajs/framework"
+import { authorize, MiddlewareRoute } from "@medusajs/framework/http"
+import { PolicyOperation } from "@medusajs/framework/utils"
 import * as queryConfig from "./query-config"
+import { Entities } from "./query-config"
 import {
   AdminCreatePaymentCapture,
   AdminCreatePaymentRefund,
@@ -14,9 +16,26 @@ import {
 
 export const adminPaymentRoutesMiddlewares: MiddlewareRoute[] = [
   {
+    matcher: "/admin/payments/*",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.payment,
+          operation: PolicyOperation.read,
+        },
+      ]),
+    ],
+  },
+  {
     method: ["GET"],
     matcher: "/admin/payments",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.payment,
+          operation: PolicyOperation.read,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetPaymentsParams,
         queryConfig.listTransformQueryConfig
@@ -47,6 +66,16 @@ export const adminPaymentRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/payments/:id/capture",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.capture,
+          operation: PolicyOperation.create,
+        },
+        {
+          resource: Entities.order,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(AdminCreatePaymentCapture),
       validateAndTransformQuery(
         AdminGetPaymentParams,
@@ -58,6 +87,16 @@ export const adminPaymentRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/payments/:id/refund",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.refund,
+          operation: PolicyOperation.create,
+        },
+        {
+          resource: Entities.order,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(AdminCreatePaymentRefund),
       validateAndTransformQuery(
         AdminGetPaymentParams,

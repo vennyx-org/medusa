@@ -1,5 +1,17 @@
 export const admin = [
   {
+    "title": "Manage Products with Admin API",
+    "path": "https://docs.medusajs.com/resources/commerce-modules/product/guides/manage-with-admin-api"
+  },
+  {
+    "title": "Configure View Configurations",
+    "path": "https://docs.medusajs.com/resources/commerce-modules/settings/configure-view-configurations"
+  },
+  {
+    "title": "Check Permissions in Admin Customizations",
+    "path": "https://docs.medusajs.com/resources/enterprise/rbac/admin-customizations"
+  },
+  {
     "title": "apiKey",
     "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/apiKey"
   },
@@ -52,8 +64,16 @@ export const admin = [
     "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/invite"
   },
   {
+    "title": "layouts",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/layouts"
+  },
+  {
     "title": "locale",
     "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/locale"
+  },
+  {
+    "title": "module",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/module"
   },
   {
     "title": "notification",
@@ -100,6 +120,10 @@ export const admin = [
     "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/productCollection"
   },
   {
+    "title": "productOption",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/productOption"
+  },
+  {
     "title": "productTag",
     "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/productTag"
   },
@@ -114,6 +138,18 @@ export const admin = [
   {
     "title": "promotion",
     "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/promotion"
+  },
+  {
+    "title": "propertyLabel",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/propertyLabel"
+  },
+  {
+    "title": "rbacPolicy",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/rbacPolicy"
+  },
+  {
+    "title": "rbacRole",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/rbacRole"
   },
   {
     "title": "refundReason",
@@ -138,6 +174,10 @@ export const admin = [
   {
     "title": "salesChannel",
     "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/salesChannel"
+  },
+  {
+    "title": "search",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/search"
   },
   {
     "title": "shippingOption",

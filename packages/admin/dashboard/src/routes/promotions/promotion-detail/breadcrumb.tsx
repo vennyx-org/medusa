@@ -10,7 +10,7 @@ export const PromotionDetailBreadcrumb = (
   const { id } = props.params || {}
 
   const { promotion } = usePromotion(id!, {
-    initialData: props.data,
+    initialData: props.loaderData,
     enabled: Boolean(id),
   })
 
@@ -20,3 +20,7 @@ export const PromotionDetailBreadcrumb = (
 
   return <span>{promotion.code}</span>
 }
+
+export const seo = (match: UIMatch<HttpTypes.AdminPromotionResponse>) => ({
+  title: match.loaderData?.promotion?.code,
+})

@@ -2,8 +2,16 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useTranslation } from "react-i18next"
 import * as zod from "zod"
 
-import { AdminFulfillment, AdminOrder } from "@medusajs/types"
-import { Button, clx, Heading, Input, Switch, toast } from "@medusajs/ui"
+import { XMarkMini } from "@medusajs/icons"
+import {
+  Button,
+  clx,
+  Heading,
+  IconButton,
+  Input,
+  Switch,
+  toast,
+} from "@medusajs/ui"
 import { useFieldArray, useForm } from "react-hook-form"
 
 import { Form } from "../../../../../components/common/form"
@@ -14,10 +22,14 @@ import {
 import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
 import { useCreateOrderShipment } from "../../../../../hooks/api"
 import { CreateShipmentSchema } from "./constants"
+import {
+  ExtendedOrderFulfillment,
+  ExtendedOrder,
+} from "../../../order-detail/constants"
 
 type OrderCreateFulfillmentFormProps = {
-  order: AdminOrder
-  fulfillment: AdminFulfillment
+  order: ExtendedOrder
+  fulfillment?: ExtendedOrderFulfillment
 }
 
 export function OrderCreateShipmentForm({
@@ -28,7 +40,7 @@ export function OrderCreateShipmentForm({
   const { handleSuccess } = useRouteModal()
 
   const { mutateAsync: createShipment, isPending: isMutating } =
-    useCreateOrderShipment(order.id, fulfillment?.id)
+    useCreateOrderShipment(order.id, fulfillment?.id ?? "")
 
   const form = useForm<zod.infer<typeof CreateShipmentSchema>>({
     defaultValues: {
@@ -37,7 +49,11 @@ export function OrderCreateShipmentForm({
     resolver: zodResolver(CreateShipmentSchema),
   })
 
-  const { fields: labels, append } = useFieldArray({
+  const {
+    fields: labels,
+    append,
+    remove,
+  } = useFieldArray({
     name: "labels",
     control: form.control,
   })
@@ -53,10 +69,13 @@ export function OrderCreateShipmentForm({
 
     await createShipment(
       {
-        items: fulfillment?.items?.map((i) => ({
-          id: i.line_item_id,
-          quantity: i.quantity,
-        })),
+        items:
+          fulfillment?.items
+            ?.filter((i) => !!i.line_item_id)
+            .map((i) => ({
+              id: i.line_item_id!,
+              quantity: i.quantity,
+            })) || [],
         labels: [...addedLabels, ...(fulfillment?.labels || [])],
         no_notification: !data.send_notification,
       },
@@ -94,7 +113,7 @@ export function OrderCreateShipmentForm({
                       <div
                         key={label.id}
                         className={clx(
-                          "grid grid-cols-1 gap-x-4 md:grid-cols-3",
+                          "grid grid-cols-1 gap-x-4 md:grid-cols-[repeat(3,minmax(0,1fr))_auto]",
                           { "max-md:pt-4": index > 0 }
                         )}
                       >
@@ -162,6 +181,15 @@ export function OrderCreateShipmentForm({
                             )
                           }}
                         />
+                        <IconButton
+                          type="button"
+                          variant="transparent"
+                          className="mb-2 self-end justify-self-end text-ui-fg-muted"
+                          aria-label={t("actions.remove")}
+                          onClick={() => remove(index)}
+                        >
+                          <XMarkMini />
+                        </IconButton>
                       </div>
                     ))}
                   </div>
@@ -182,7 +210,7 @@ export function OrderCreateShipmentForm({
                   </Button>
                 </div>
 
-                <div className="mt-8 pt-8 ">
+                <div className="mt-8 pt-8">
                   <Form.Field
                     control={form.control}
                     name="send_notification"

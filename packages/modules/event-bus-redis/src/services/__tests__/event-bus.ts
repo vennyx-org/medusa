@@ -12,6 +12,14 @@ const loggerMock = {
   error: jest.fn().mockImplementation(console.error),
 } as unknown as Logger
 
+const pipelineMock = {
+  rpush: jest.fn(),
+  expire: jest.fn(),
+  pexpire: jest.fn(),
+  del: jest.fn(),
+  exec: jest.fn().mockResolvedValue([]),
+}
+
 const redisMock = {
   del: () => jest.fn(),
   rpush: () => jest.fn(),
@@ -19,6 +27,8 @@ const redisMock = {
   disconnect: () => jest.fn(),
   expire: () => jest.fn(),
   unlink: () => jest.fn(),
+  pipeline: jest.fn(() => pipelineMock),
+  multi: jest.fn(() => pipelineMock),
 } as unknown as Redis
 
 const moduleDeps = {
@@ -84,7 +94,6 @@ describe("RedisEventBusService", () => {
         queue = (eventBus as any).queue_
         queue.addBulk = jest.fn()
         redis = (eventBus as any).eventBusRedisConnection_
-        redis.rpush = jest.fn()
       })
 
       it("should add job to queue with default options", async () => {
@@ -103,10 +112,11 @@ describe("RedisEventBusService", () => {
         expect(queue.addBulk).toHaveBeenCalledWith([
           {
             name: "eventName",
-            data: { data: { hi: "1234" } },
+            data: { data: { hi: "1234" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
             opts: {
               attempts: 1,
               removeOnComplete: true,
+              priority: 100,
             },
           },
         ])
@@ -125,12 +135,13 @@ describe("RedisEventBusService", () => {
         expect(queue.addBulk).toHaveBeenCalledWith([
           {
             name: "eventName",
-            data: { data: { hi: "1234" } },
+            data: { data: { hi: "1234" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
             opts: {
               attempts: 3,
               backoff: 5000,
               delay: 1000,
               removeOnComplete: true,
+              priority: 100,
             },
           },
         ])
@@ -168,7 +179,7 @@ describe("RedisEventBusService", () => {
         expect(queue.addBulk).toHaveBeenCalledWith([
           {
             name: "eventName",
-            data: { data: { hi: "1234" } },
+            data: { data: { hi: "1234" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
             opts: {
               attempts: 3,
               backoff: 5000,
@@ -176,6 +187,7 @@ describe("RedisEventBusService", () => {
               removeOnComplete: {
                 age: 5,
               },
+              priority: 100,
             },
           },
         ])
@@ -210,11 +222,12 @@ describe("RedisEventBusService", () => {
         expect(queue.addBulk).toHaveBeenCalledWith([
           {
             name: "eventName",
-            data: { data: { hi: "1234" } },
+            data: { data: { hi: "1234" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
             opts: {
               attempts: 1,
               removeOnComplete: 5,
               delay: 1000,
+              priority: 100,
             },
           },
         ])
@@ -228,16 +241,28 @@ describe("RedisEventBusService", () => {
           metadata: { eventGroupId: "test-group-1" },
         }
 
-        const [builtEvent] = (eventBus as any).buildEvents([event], options)
-
         await eventBus.emit(event, options)
 
         expect(queue.addBulk).toHaveBeenCalledTimes(0)
-        expect(redis.rpush).toHaveBeenCalledTimes(1)
-        expect(redis.rpush).toHaveBeenCalledWith(
+        expect(pipelineMock.rpush).toHaveBeenCalledTimes(1)
+        expect(pipelineMock.rpush).toHaveBeenCalledWith(
           "staging:test-group-1",
-          JSON.stringify(builtEvent)
+          expect.any(String)
         )
+        expect(pipelineMock.expire).toHaveBeenCalledWith(
+          "staging:test-group-1",
+          600
+        )
+        expect(pipelineMock.exec).toHaveBeenCalledTimes(1)
+
+        const stagedEvent = JSON.parse(pipelineMock.rpush.mock.calls[0][1])
+        expect(stagedEvent.data.metadata).toEqual(
+          expect.objectContaining({
+            eventGroupId: "test-group-1",
+            created_at: expect.any(String),
+          })
+        )
+        expect(stagedEvent.data.metadata.published_at).toBeUndefined()
       })
 
       it("should successfully group, release and clear events", async () => {
@@ -274,7 +299,7 @@ describe("RedisEventBusService", () => {
         await eventBus.emit(events, options)
 
         expect(queue.addBulk).toHaveBeenCalledTimes(1)
-        expect(redis.rpush).toHaveBeenCalledTimes(2)
+        expect(pipelineMock.rpush).toHaveBeenCalledTimes(2)
         expect(redis.unlink).not.toHaveBeenCalled()
 
         const [testGroup1Event] = (eventBus as any).buildEvents(
@@ -290,16 +315,20 @@ describe("RedisEventBusService", () => {
           options
         )
 
+        const stagedGroup1Event = pipelineMock.rpush.mock.calls.find(
+          (call) => call[0] === "staging:test-group-1"
+        )![1]
+        const stagedGroup2Events = pipelineMock.rpush.mock.calls
+          .filter((call) => call[0] === "staging:test-group-2")
+          .flatMap((call) => call.slice(1))
+
         redis.lrange = jest.fn((key) => {
           if (key === "staging:test-group-1") {
-            return Promise.resolve([JSON.stringify(testGroup1Event)])
+            return Promise.resolve([stagedGroup1Event])
           }
 
           if (key === "staging:test-group-2") {
-            return Promise.resolve([
-              JSON.stringify(testGroup2Event),
-              JSON.stringify(testGroup2Event2),
-            ])
+            return Promise.resolve(stagedGroup2Events)
           }
 
           return
@@ -311,7 +340,20 @@ describe("RedisEventBusService", () => {
         await eventBus.releaseGroupedEvents("test-group-1")
 
         expect(queue.addBulk).toHaveBeenCalledTimes(1)
-        expect(queue.addBulk).toHaveBeenCalledWith([testGroup1Event])
+        expect(queue.addBulk).toHaveBeenCalledWith([
+          expect.objectContaining({
+            name: testGroup1Event.name,
+            data: {
+              data: testGroup1Event.data.data,
+              metadata: expect.objectContaining({
+                eventGroupId: "test-group-1",
+                created_at: expect.any(String),
+                published_at: expect.any(Date),
+              }),
+            },
+            opts: testGroup1Event.opts,
+          }),
+        ])
         expect(redis.unlink).toHaveBeenCalledTimes(1)
         expect(redis.unlink).toHaveBeenCalledWith("staging:test-group-1")
 
@@ -323,11 +365,578 @@ describe("RedisEventBusService", () => {
 
         expect(queue.addBulk).toHaveBeenCalledTimes(1)
         expect(queue.addBulk).toHaveBeenCalledWith([
-          testGroup2Event,
-          testGroup2Event2,
+          expect.objectContaining({
+            name: testGroup2Event.name,
+            data: {
+              data: testGroup2Event.data.data,
+              metadata: expect.objectContaining({
+                eventGroupId: "test-group-2",
+                created_at: expect.any(String),
+                published_at: expect.any(Date),
+              }),
+            },
+            opts: testGroup2Event.opts,
+          }),
+          expect.objectContaining({
+            name: testGroup2Event2.name,
+            data: {
+              data: testGroup2Event2.data.data,
+              metadata: expect.objectContaining({
+                eventGroupId: "test-group-2",
+                created_at: expect.any(String),
+                published_at: expect.any(Date),
+              }),
+            },
+            opts: testGroup2Event2.opts,
+          }),
         ])
         expect(redis.unlink).toHaveBeenCalledTimes(1)
         expect(redis.unlink).toHaveBeenCalledWith("staging:test-group-2")
+      })
+    })
+
+    describe("Priority levels", () => {
+      beforeEach(async () => {
+        jest.clearAllMocks()
+
+        eventBus = new RedisEventBusService(moduleDeps, {}, moduleDeclaration)
+
+        queue = (eventBus as any).queue_
+        queue.addBulk = jest.fn()
+        redis = (eventBus as any).eventBusRedisConnection_
+      })
+
+      it("should add job to queue with default priority (100) for normal events", async () => {
+        eventBus.subscribe("eventName", () => Promise.resolve())
+
+        await eventBus.emit([
+          {
+            name: "eventName",
+            data: { hi: "1234" },
+          },
+        ])
+
+        expect(queue.addBulk).toHaveBeenCalledTimes(1)
+        expect(queue.addBulk).toHaveBeenCalledWith([
+          {
+            name: "eventName",
+            data: { data: { hi: "1234" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
+            opts: {
+              attempts: 1,
+              removeOnComplete: true,
+              priority: 100,
+            },
+          },
+        ])
+      })
+
+      it("should add job to queue with lowest priority (2097152) for internal events", async () => {
+        eventBus.subscribe("eventName", () => Promise.resolve())
+
+        await eventBus.emit(
+          [
+            {
+              name: "eventName",
+              data: { hi: "1234" },
+            },
+          ],
+          { internal: true }
+        )
+
+        expect(queue.addBulk).toHaveBeenCalledTimes(1)
+        expect(queue.addBulk).toHaveBeenCalledWith([
+          {
+            name: "eventName",
+            data: { data: { hi: "1234" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
+            opts: {
+              attempts: 1,
+              removeOnComplete: true,
+              priority: 2097152,
+              internal: true,
+            },
+          },
+        ])
+      })
+
+      it("should add job to queue with custom priority override at emit time", async () => {
+        eventBus.subscribe("eventName", () => Promise.resolve())
+
+        await eventBus.emit(
+          [
+            {
+              name: "eventName",
+              data: { hi: "1234" },
+            },
+          ],
+          { priority: 50 }
+        )
+
+        expect(queue.addBulk).toHaveBeenCalledTimes(1)
+        expect(queue.addBulk).toHaveBeenCalledWith([
+          {
+            name: "eventName",
+            data: { data: { hi: "1234" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
+            opts: {
+              attempts: 1,
+              removeOnComplete: true,
+              priority: 50,
+            },
+          },
+        ])
+      })
+
+      it("should add job to queue with custom priority via module job options", async () => {
+        eventBus = new RedisEventBusService(
+          {
+            ...moduleDeps,
+            eventBusRedisJobOptions: {
+              priority: 200,
+            },
+          },
+          {},
+          moduleDeclaration
+        )
+
+        queue = (eventBus as any).queue_
+        queue.addBulk = jest.fn()
+
+        eventBus.subscribe("eventName", () => Promise.resolve())
+
+        await eventBus.emit([
+          {
+            name: "eventName",
+            data: { hi: "1234" },
+          },
+        ])
+
+        expect(queue.addBulk).toHaveBeenCalledTimes(1)
+        expect(queue.addBulk).toHaveBeenCalledWith([
+          {
+            name: "eventName",
+            data: { data: { hi: "1234" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
+            opts: {
+              attempts: 1,
+              removeOnComplete: true,
+              priority: 200,
+            },
+          },
+        ])
+      })
+
+      it("should override module priority with emit options priority", async () => {
+        eventBus = new RedisEventBusService(
+          {
+            ...moduleDeps,
+            eventBusRedisJobOptions: {
+              priority: 200,
+            },
+          },
+          {},
+          moduleDeclaration
+        )
+
+        queue = (eventBus as any).queue_
+        queue.addBulk = jest.fn()
+
+        eventBus.subscribe("eventName", () => Promise.resolve())
+
+        await eventBus.emit(
+          [
+            {
+              name: "eventName",
+              data: { hi: "1234" },
+            },
+          ],
+          { priority: 25 }
+        )
+
+        expect(queue.addBulk).toHaveBeenCalledTimes(1)
+        expect(queue.addBulk).toHaveBeenCalledWith([
+          {
+            name: "eventName",
+            data: { data: { hi: "1234" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
+            opts: {
+              attempts: 1,
+              removeOnComplete: true,
+              priority: 25,
+            },
+          },
+        ])
+      })
+
+      it("should allow module priority to override internal flag default", async () => {
+        eventBus = new RedisEventBusService(
+          {
+            ...moduleDeps,
+            eventBusRedisJobOptions: {
+              priority: 200,
+            },
+          },
+          {},
+          moduleDeclaration
+        )
+
+        queue = (eventBus as any).queue_
+        queue.addBulk = jest.fn()
+
+        eventBus.subscribe("eventName", () => Promise.resolve())
+
+        await eventBus.emit(
+          [
+            {
+              name: "eventName",
+              data: { hi: "1234" },
+            },
+          ],
+          { internal: true }
+        )
+
+        expect(queue.addBulk).toHaveBeenCalledTimes(1)
+        expect(queue.addBulk).toHaveBeenCalledWith([
+          {
+            name: "eventName",
+            data: { data: { hi: "1234" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
+            opts: {
+              attempts: 1,
+              removeOnComplete: true,
+              priority: 200,
+              internal: true,
+            },
+          },
+        ])
+      })
+
+      it("should allow explicit priority to override internal flag default", async () => {
+        eventBus.subscribe("eventName", () => Promise.resolve())
+
+        await eventBus.emit(
+          [
+            {
+              name: "eventName",
+              data: { hi: "1234" },
+            },
+          ],
+          { internal: true, priority: 50 }
+        )
+
+        expect(queue.addBulk).toHaveBeenCalledTimes(1)
+        expect(queue.addBulk).toHaveBeenCalledWith([
+          {
+            name: "eventName",
+            data: { data: { hi: "1234" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
+            opts: {
+              attempts: 1,
+              removeOnComplete: true,
+              priority: 50,
+              internal: true,
+            },
+          },
+        ])
+      })
+
+      describe("Message-level options", () => {
+        it("should allow message-level priority to override emit-level priority", async () => {
+          eventBus.subscribe("eventName", () => Promise.resolve())
+
+          await eventBus.emit(
+            [
+              {
+                name: "eventName",
+                data: { hi: "1234" },
+                options: { priority: 10 },
+              },
+            ],
+            { priority: 100 }
+          )
+
+          expect(queue.addBulk).toHaveBeenCalledTimes(1)
+          expect(queue.addBulk).toHaveBeenCalledWith([
+            {
+              name: "eventName",
+              data: { data: { hi: "1234" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
+              opts: {
+                attempts: 1,
+                removeOnComplete: true,
+                priority: 10,
+              },
+            },
+          ])
+        })
+
+        it("should allow different priorities per message in same emit call", async () => {
+          eventBus.subscribe("eventName1", () => Promise.resolve())
+          eventBus.subscribe("eventName2", () => Promise.resolve())
+          eventBus.subscribe("eventName3", () => Promise.resolve())
+
+          await eventBus.emit(
+            [
+              {
+                name: "eventName1",
+                data: { id: "1" },
+                options: { priority: 10 },
+              },
+              {
+                name: "eventName2",
+                data: { id: "2" },
+                options: { priority: 50 },
+              },
+              {
+                name: "eventName3",
+                data: { id: "3" },
+                // No options - should use emit-level priority
+              },
+            ],
+            { priority: 200 }
+          )
+
+          expect(queue.addBulk).toHaveBeenCalledTimes(1)
+          expect(queue.addBulk).toHaveBeenCalledWith([
+            {
+              name: "eventName1",
+              data: { data: { id: "1" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
+              opts: {
+                attempts: 1,
+                removeOnComplete: true,
+                priority: 10,
+              },
+            },
+            {
+              name: "eventName2",
+              data: { data: { id: "2" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
+              opts: {
+                attempts: 1,
+                removeOnComplete: true,
+                priority: 50,
+              },
+            },
+            {
+              name: "eventName3",
+              data: { data: { id: "3" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
+              opts: {
+                attempts: 1,
+                removeOnComplete: true,
+                priority: 200,
+              },
+            },
+          ])
+        })
+
+        it("should allow message-level priority to override module-level priority", async () => {
+          eventBus = new RedisEventBusService(
+            {
+              ...moduleDeps,
+              eventBusRedisJobOptions: {
+                priority: 300,
+              },
+            },
+            {},
+            moduleDeclaration
+          )
+
+          queue = (eventBus as any).queue_
+          queue.addBulk = jest.fn()
+
+          eventBus.subscribe("eventName", () => Promise.resolve())
+
+          await eventBus.emit([
+            {
+              name: "eventName",
+              data: { hi: "1234" },
+              options: { priority: 5 },
+            },
+          ])
+
+          expect(queue.addBulk).toHaveBeenCalledTimes(1)
+          expect(queue.addBulk).toHaveBeenCalledWith([
+            {
+              name: "eventName",
+              data: { data: { hi: "1234" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
+              opts: {
+                attempts: 1,
+                removeOnComplete: true,
+                priority: 5,
+              },
+            },
+          ])
+        })
+
+        it("should allow message-level priority to override internal flag", async () => {
+          eventBus.subscribe("eventName", () => Promise.resolve())
+
+          await eventBus.emit(
+            [
+              {
+                name: "eventName",
+                data: { hi: "1234" },
+                options: { priority: 15 },
+              },
+            ],
+            { internal: true }
+          )
+
+          expect(queue.addBulk).toHaveBeenCalledTimes(1)
+          expect(queue.addBulk).toHaveBeenCalledWith([
+            {
+              name: "eventName",
+              data: { data: { hi: "1234" }, metadata: { created_at: expect.any(Date), published_at: expect.any(Date) } },
+              opts: {
+                attempts: 1,
+                removeOnComplete: true,
+                priority: 15,
+                internal: true,
+              },
+            },
+          ])
+        })
+      })
+
+      describe("Grouped events priority", () => {
+        it("should stage grouped events with default priority (100)", async () => {
+          const event = {
+            name: "grouped-event",
+            data: { hi: "1234" },
+            metadata: { eventGroupId: "test-group-priority" },
+          }
+
+          await eventBus.emit(event)
+
+          expect(pipelineMock.rpush).toHaveBeenCalledTimes(1)
+          const calledWith = pipelineMock.rpush.mock.calls[0]
+          const stagedEvent = JSON.parse(calledWith[1])
+
+          expect(stagedEvent.opts.priority).toBe(100)
+        })
+
+        it("should stage grouped events with lowest priority (2097152) for internal events", async () => {
+          const event = {
+            name: "grouped-event",
+            data: { hi: "1234" },
+            metadata: { eventGroupId: "test-group-priority" },
+          }
+
+          await eventBus.emit(event, { internal: true })
+
+          expect(pipelineMock.rpush).toHaveBeenCalledTimes(1)
+          const calledWith = pipelineMock.rpush.mock.calls[0]
+          const stagedEvent = JSON.parse(calledWith[1])
+
+          expect(stagedEvent.opts.priority).toBe(2097152)
+          expect(stagedEvent.opts.internal).toBe(true)
+        })
+
+        it("should stage grouped events with custom priority", async () => {
+          const event = {
+            name: "grouped-event",
+            data: { hi: "1234" },
+            metadata: { eventGroupId: "test-group-priority" },
+          }
+
+          await eventBus.emit(event, { priority: 50 })
+
+          expect(pipelineMock.rpush).toHaveBeenCalledTimes(1)
+          const calledWith = pipelineMock.rpush.mock.calls[0]
+          const stagedEvent = JSON.parse(calledWith[1])
+
+          expect(stagedEvent.opts.priority).toBe(50)
+        })
+
+        it("should preserve priority when releasing grouped events", async () => {
+          const event = {
+            name: "grouped-event",
+            data: { hi: "1234" },
+            metadata: { eventGroupId: "test-group-priority" },
+          }
+
+          eventBus.subscribe("grouped-event", () => Promise.resolve())
+
+          await eventBus.emit(event, { priority: 75 })
+
+          const stagedEvent = pipelineMock.rpush.mock.calls.find(
+            (call) => call[0] === "staging:test-group-priority"
+          )![1]
+          const builtEvent = JSON.parse(stagedEvent)
+
+          redis.lrange = jest.fn((key) => {
+            if (key === "staging:test-group-priority") {
+              return Promise.resolve([stagedEvent])
+            }
+            return Promise.resolve([])
+          })
+          redis.unlink = jest.fn()
+
+          await eventBus.releaseGroupedEvents("test-group-priority")
+
+          expect(queue.addBulk).toHaveBeenCalledTimes(1)
+          expect(queue.addBulk).toHaveBeenCalledWith([
+            expect.objectContaining({
+              name: builtEvent.name,
+              data: {
+                data: builtEvent.data.data,
+                metadata: expect.objectContaining({
+                  eventGroupId: "test-group-priority",
+                  created_at: expect.any(String),
+                  published_at: expect.any(Date),
+                }),
+              },
+              opts: builtEvent.opts,
+            }),
+          ])
+          expect(builtEvent.opts.priority).toBe(75)
+        })
+
+        it("should stage grouped events with message-level priority overriding emit-level priority", async () => {
+          const event = {
+            name: "grouped-event",
+            data: { hi: "1234" },
+            metadata: { eventGroupId: "test-group-priority" },
+            options: { priority: 20 },
+          }
+
+          await eventBus.emit(event, { priority: 100 })
+
+          expect(pipelineMock.rpush).toHaveBeenCalledTimes(1)
+          const calledWith = pipelineMock.rpush.mock.calls[0]
+          const stagedEvent = JSON.parse(calledWith[1])
+
+          expect(stagedEvent.opts.priority).toBe(20)
+        })
+
+        it("should allow different priorities per grouped message in same emit call", async () => {
+          const events = [
+            {
+              name: "grouped-event-1",
+              data: { id: "1" },
+              metadata: { eventGroupId: "test-group-multi" },
+              options: { priority: 10 },
+            },
+            {
+              name: "grouped-event-2",
+              data: { id: "2" },
+              metadata: { eventGroupId: "test-group-multi" },
+              options: { priority: 50 },
+            },
+            {
+              name: "grouped-event-3",
+              data: { id: "3" },
+              metadata: { eventGroupId: "test-group-multi" },
+              // No options - should use emit-level priority
+            },
+          ]
+
+          await eventBus.emit(events, { priority: 200 })
+
+          expect(pipelineMock.rpush).toHaveBeenCalledTimes(1)
+          const calledWith = pipelineMock.rpush.mock.calls[0]
+
+          // First argument is the key, rest are the events
+          const stagedEvent1 = JSON.parse(calledWith[1])
+          const stagedEvent2 = JSON.parse(calledWith[2])
+          const stagedEvent3 = JSON.parse(calledWith[3])
+
+          expect(stagedEvent1.opts.priority).toBe(10)
+          expect(stagedEvent2.opts.priority).toBe(50)
+          expect(stagedEvent3.opts.priority).toBe(200)
+        })
       })
     })
 
@@ -340,7 +949,6 @@ describe("RedisEventBusService", () => {
         queue = (eventBus as any).queue_
         queue.addBulk = jest.fn()
         redis = (eventBus as any).eventBusRedisConnection_
-        redis.rpush = jest.fn()
       })
 
       it("should not add events to queue when there are no subscribers", async () => {
@@ -372,6 +980,9 @@ describe("RedisEventBusService", () => {
           {
             name: "eventWithoutSubscribers",
             data: { test: "data" },
+            metadata: {
+              created_at: expect.any(Date),
+            },
           },
           { isGrouped: false }
         )
@@ -404,7 +1015,7 @@ describe("RedisEventBusService", () => {
 
         await eventBus.emit(event, options)
 
-        expect(redis.rpush).toHaveBeenCalledTimes(1)
+        expect(pipelineMock.rpush).toHaveBeenCalledTimes(1)
         expect(queue.addBulk).not.toHaveBeenCalled()
 
         const [builtEvent] = (eventBus as any).buildEvents([event], options)
@@ -436,11 +1047,13 @@ describe("RedisEventBusService", () => {
 
         await eventBus.emit(event, options)
 
-        const [builtEvent] = (eventBus as any).buildEvents([event], options)
+        const stagedEvent = pipelineMock.rpush.mock.calls.find(
+          (call) => call[0] === "staging:test-group-no-sub-2"
+        )![1]
 
         redis.lrange = jest.fn((key) => {
           if (key === "staging:test-group-no-sub-2") {
-            return Promise.resolve([JSON.stringify(builtEvent)])
+            return Promise.resolve([stagedEvent])
           }
           return Promise.resolve([])
         })
@@ -459,6 +1072,10 @@ describe("RedisEventBusService", () => {
         expect(callInterceptorsSpy).toHaveBeenCalledWith(
           expect.objectContaining({
             name: "grouped-event-no-sub-2",
+            metadata: expect.objectContaining({
+              eventGroupId: "test-group-no-sub-2",
+              created_at: expect.any(String),
+            }),
           }),
           {
             isGrouped: true,
@@ -470,6 +1087,73 @@ describe("RedisEventBusService", () => {
 
         callInterceptorsSpy.mockRestore()
       })
+    })
+  })
+
+  describe("clearGroupedEvents", () => {
+    beforeEach(async () => {
+      jest.clearAllMocks()
+
+      eventBus = new RedisEventBusService(moduleDeps, {}, moduleDeclaration)
+      redis = (eventBus as any).eventBusRedisConnection_
+    })
+
+    it("should re-stage a large number of kept events without overflowing the call stack and keep the TTL", async () => {
+      const keptCount = 300_000
+      const staged = Array.from({ length: keptCount }, (_, i) =>
+        JSON.stringify({ name: "kept-event", data: { data: { i } } })
+      )
+      staged.push(JSON.stringify({ name: "cleared-event", data: {} }))
+
+      redis.lrange = jest.fn().mockResolvedValue(staged)
+      redis.pttl = jest.fn().mockResolvedValue(600_000)
+
+      await eventBus.clearGroupedEvents("large-group", {
+        eventNames: ["cleared-event"],
+      })
+
+      expect(pipelineMock.del).toHaveBeenCalledWith("staging:large-group")
+
+      const pushed = pipelineMock.rpush.mock.calls.flatMap((call) => {
+        expect(call[0]).toEqual("staging:large-group")
+        return call.slice(1)
+      })
+      expect(pushed).toHaveLength(keptCount)
+      expect(pushed[0]).toEqual(staged[0])
+      expect(pushed[keptCount - 1]).toEqual(staged[keptCount - 1])
+
+      expect(pipelineMock.pexpire).toHaveBeenCalledWith(
+        "staging:large-group",
+        600_000
+      )
+      expect(pipelineMock.exec).toHaveBeenCalledTimes(1)
+    })
+
+    it("should re-stage kept events in a transaction and throw when a command in it fails", async () => {
+      const staged = [
+        JSON.stringify({ name: "kept-event", data: {} }),
+        JSON.stringify({ name: "cleared-event", data: {} }),
+      ]
+      const rpushError = new Error(
+        "OOM command not allowed when used memory > 'maxmemory'."
+      )
+
+      redis.lrange = jest.fn().mockResolvedValue(staged)
+      redis.pttl = jest.fn().mockResolvedValue(600_000)
+      pipelineMock.exec.mockResolvedValueOnce([
+        [null, 1],
+        [rpushError, null],
+        [null, 1],
+      ])
+
+      await expect(
+        eventBus.clearGroupedEvents("failing-group", {
+          eventNames: ["cleared-event"],
+        })
+      ).rejects.toThrow(rpushError)
+
+      expect(redis.multi).toHaveBeenCalledTimes(1)
+      expect(redis.pipeline).not.toHaveBeenCalled()
     })
   })
 
@@ -502,6 +1186,33 @@ describe("RedisEventBusService", () => {
         )
 
         expect(test).toEqual(["success"])
+      })
+
+      it("should parse published_at and created_at as Dates after JSON serialization", async () => {
+        const publishedAt = "2026-06-20T12:00:00.000Z"
+        const createdAt = "2026-06-20T11:00:00.000Z"
+        let receivedPublishedAt: unknown
+        let receivedCreatedAt: unknown
+
+        eventBus.subscribe("eventName", (event) => {
+          receivedPublishedAt = event.metadata?.published_at
+          receivedCreatedAt = event.metadata?.created_at
+          return Promise.resolve()
+        })
+
+        await eventBus.worker_({
+          name: "eventName",
+          data: {
+            data: { test: 1 },
+            metadata: { published_at: publishedAt, created_at: createdAt },
+          },
+          opts: { attempts: 1 },
+        } as any)
+
+        expect(receivedPublishedAt).toBeInstanceOf(Date)
+        expect(receivedPublishedAt).toEqual(new Date(publishedAt))
+        expect(receivedCreatedAt).toBeInstanceOf(Date)
+        expect(receivedCreatedAt).toEqual(new Date(createdAt))
       })
 
       it("should process event with failing subscribers", async () => {

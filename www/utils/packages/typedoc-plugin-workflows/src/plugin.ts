@@ -8,12 +8,11 @@ import {
   DocumentReflection,
   ParameterReflection,
   ParameterType,
-  ReferenceType,
   ReflectionKind,
   SignatureReflection,
 } from "typedoc"
 import ts, { SyntaxKind, VariableStatement } from "typescript"
-import { WorkflowManager, WorkflowDefinition } from "@medusajs/orchestration"
+import { WorkflowManager, WorkflowDefinition } from "@medusajs/framework/orchestration"
 import Helper, { WORKFLOW_AS_STEP_SUFFIX } from "./utils/helper.js"
 import {
   findReflectionInNamespaces,
@@ -101,14 +100,15 @@ class WorkflowsPlugin {
     for (const reflection of context.project.getReflectionsByKind(
       ReflectionKind.All
     )) {
-      if (!(reflection instanceof SignatureReflection)) {
+      const isIgnored = reflection.comment?.modifierTags.has("@ignore")
+      if (!(reflection instanceof SignatureReflection) || isIgnored) {
         continue
       }
 
       if (isWorkflow(reflection)) {
         const { initializer } =
           this.helper.getReflectionSymbolAndInitializer({
-            project: context.project,
+            context,
             reflection: reflection.parent,
           }) || {}
 
@@ -350,7 +350,7 @@ class WorkflowsPlugin {
 
         const { initializer: originalInitializer } =
           this.helper.getReflectionSymbolAndInitializer({
-            project: context.project,
+            context,
             reflection: initializerReflection,
           }) || {}
 
@@ -608,8 +608,8 @@ class WorkflowsPlugin {
       workflowReflection.signatures?.length
     parameter.type = isParameterWorkflowInput
       ? getWorkflowInputType(workflowReflection.signatures![0]) ||
-        ReferenceType.createSymbolReference(inputSymbol, context)
-      : ReferenceType.createSymbolReference(inputSymbol, context)
+        context.createSymbolReference(inputSymbol, context)
+      : context.createSymbolReference(inputSymbol, context)
 
     if (parameter.type.type === "reference") {
       if (parameter.type.name === "__object") {
@@ -974,7 +974,7 @@ class WorkflowsPlugin {
   }) {
     const { initializer: workflowInitializer } =
       this.helper.getReflectionSymbolAndInitializer({
-        project: context.project,
+        context,
         reflection: workflowReflection,
       }) || {}
     // check if the workflow acquires a lock
@@ -994,9 +994,6 @@ class WorkflowsPlugin {
       })
     }
 
-    if (workflowReflection.name === "completeCartWorkflow") {
-      console.log("here")
-    }
     const hasAcquireLockStep = checkHasAcquireLockStep(
       workflowReflection.documents || []
     )

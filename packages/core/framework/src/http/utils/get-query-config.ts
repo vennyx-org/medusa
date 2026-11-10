@@ -1,12 +1,31 @@
-import { FindConfig, QueryConfig, RequestQueryFields } from "@medusajs/types"
 import {
+  FindConfig,
+  QueryConfig,
+  RbacContext,
+  RequestQueryFields,
+} from "@medusajs/types"
+import { MedusaModule } from "@medusajs/modules-sdk"
+import {
+  buildOrder,
   isDefined,
   isPresent,
   MedusaError,
-  buildOrder,
-  stringToSelectRelationObject,
+  Modules,
   pickDeep,
+  promiseAll,
+  stringToSelectRelationObject,
 } from "@medusajs/utils"
+import { listRolePermissions } from "../../policies/has-permission"
+import { AuthContext, MedusaRequest } from "../types"
+import {
+  AllowedFieldFilter,
+  DisallowedFieldFilter,
+  FieldParser,
+  IFieldFilter,
+  RestrictedFieldFilter,
+} from "./field-filtering"
+import { RBACFieldFilter } from "./policies/rbac-field-filter"
+import { resolveRoles } from "./resolve-roles"
 
 export function pickByConfig<TModel>(
   obj: TModel | TModel[],
@@ -24,82 +43,22 @@ export function pickByConfig<TModel>(
   return obj
 }
 
-function checkRestrictedFields({
-  fields,
-  restricted,
-}: {
-  fields: string[]
-  restricted: string[]
-}): string[] {
-  const notAllowedFields: string[] = []
-
-  fields.forEach((field) => {
-    const fieldSegments = field.split(".")
-    const hasRestrictedField = restricted.some((restrictedField) =>
-      fieldSegments.includes(restrictedField)
-    )
-    if (hasRestrictedField) {
-      notAllowedFields.push(field)
-      return
-    }
-
-    return
-  })
-
-  return notAllowedFields
-}
-
-function checkAllowedFields({
-  fields,
-  allowed,
-  starFields,
-}: {
-  fields: string[]
-  starFields: Set<string>
-  allowed: string[]
-}): string[] {
-  const notAllowedFields: string[] = []
-
-  fields.forEach((field) => {
-    const hasAllowedField = allowed.includes(field)
-
-    if (hasAllowedField) {
-      return
-    }
-
-    // Select full relation in that case it must match an allowed field fully
-    // e.g product.variants in that case we must have a product.variants in the allowedFields
-    if (starFields.has(field)) {
-      if (hasAllowedField) {
-        return
-      }
-      notAllowedFields.push(field)
-      return
-    }
-
-    const fieldStartsWithAllowedField = allowed.some((allowedField) =>
-      field.startsWith(allowedField)
-    )
-
-    if (!fieldStartsWithAllowedField) {
-      notAllowedFields.push(field)
-      return
-    }
-  })
-
-  return notAllowedFields
-}
-
-export function prepareListQuery<T extends RequestQueryFields, TEntity>(
+export async function prepareListQuery<T extends RequestQueryFields, TEntity>(
   validated: T,
-  queryConfig: QueryConfig<TEntity> & { restricted?: string[] } = {}
+  queryConfig: QueryConfig<TEntity> & { restricted?: string[] } = {},
+  req?: MedusaRequest & {
+    auth_context?: AuthContext
+    rbac_context?: RbacContext
+  }
 ) {
-  let {
+  const {
     allowed = [],
     restricted = [],
+    disallowed = [],
     defaults = [],
     defaultLimit = 50,
     isList,
+    entity,
   } = queryConfig
   const {
     order,
@@ -109,86 +68,66 @@ export function prepareListQuery<T extends RequestQueryFields, TEntity>(
     with_deleted,
   } = validated
 
-  // e.g *product.variants meaning that we want all fields from the product.variants
-  // in that case it wont be part of the select but it will be part of the relations.
-  // For the remote query we will have to add the fields to the fields array as product.variants.*
-  const starFields: Set<string> = new Set()
+  const parsedFields = FieldParser.parse(fields, defaults as string[])
+  const { fields: allFields, starFields } = parsedFields
 
-  let allFields = new Set(defaults) as Set<string>
+  const filters: IFieldFilter[] = []
 
-  if (isDefined(fields)) {
-    const customFields = fields.split(",").filter(Boolean)
-    const shouldReplaceDefaultFields =
-      !customFields.length ||
-      customFields.some((field) => {
-        return !(
-          field.startsWith("-") ||
-          field.startsWith("+") ||
-          field.startsWith(" ") ||
-          field.startsWith("*") ||
-          field.endsWith(".*")
-        )
+  if (
+    req?.rbac_context?.policies?.length &&
+    req?.auth_context &&
+    entity &&
+    MedusaModule.isInstalled(Modules.RBAC)
+  ) {
+    filters.push(
+      new RBACFieldFilter({
+        getPermissions: async () =>
+          req.rbac_context?.permissions ??
+          listRolePermissions({
+            roles:
+              req.rbac_context?.role_ids ??
+              (await resolveRoles({
+                authContext: req.auth_context!,
+                container: req.scope,
+                scope: req.rbac_context?.scope,
+              })),
+            container: req.scope,
+          }),
+        container: req.scope,
       })
-
-    if (shouldReplaceDefaultFields) {
-      allFields = new Set(customFields.map((f) => f.replace(/^[+ -]/, "")))
-    } else {
-      customFields.forEach((field) => {
-        if (field.startsWith("+") || field.startsWith(" ")) {
-          allFields.add(field.trim().replace(/^\+/, ""))
-        } else if (field.startsWith("-")) {
-          const fieldName = field.replace(/^-/, "")
-          for (const reqField of allFields) {
-            const reqFieldName = reqField.replace(/^\*/, "")
-            if (
-              reqFieldName === fieldName ||
-              reqFieldName.startsWith(fieldName + ".")
-            ) {
-              allFields.delete(reqField)
-            }
-          }
-        } else {
-          allFields.add(field)
-        }
-      })
-    }
-
-    allFields.add("id")
+    )
   }
 
-  allFields.forEach((field) => {
-    if (field.startsWith("*") || field.endsWith(".*")) {
-      starFields.add(field.replace(/(^\*|\.\*$)/, ""))
-      allFields.delete(field)
-    }
+  if (allowed.length) {
+    filters.push(new AllowedFieldFilter({ allowed }))
+  } else if (restricted.length) {
+    filters.push(new RestrictedFieldFilter({ restricted }))
+  }
+
+  const notAllowedArrays = await promiseAll(
+    filters.map((f) =>
+      f.getNotAllowedFields({ entity: entity as string, parsedFields })
+    )
+  )
+  const notAllowedFields = [...new Set(notAllowedArrays.flat())]
+
+  notAllowedFields.forEach((field) => {
+    allFields.delete(field)
+    starFields.delete(field)
   })
 
-  let notAllowedFields: string[] = []
+  // Disallowed fields are a hard security boundary and are always stripped,
+  // independent of any feature flag, so sensitive relations (order, customer,
+  // payment, ...) can never be resolved on the configured endpoint.
+  if (disallowed.length) {
+    const disallowedFields = new DisallowedFieldFilter({
+      disallowed,
+    }).getNotAllowedFields({ entity: entity as string, parsedFields })
 
-  if (allowed.length || restricted.length) {
-    const fieldsToCheck = [...allFields, ...Array.from(starFields)]
-
-    if (allowed.length) {
-      notAllowedFields = checkAllowedFields({
-        fields: fieldsToCheck,
-        starFields,
-        allowed,
-      })
-    } else if (restricted.length) {
-      notAllowedFields = checkRestrictedFields({
-        fields: fieldsToCheck,
-        restricted,
-      })
-    }
-  }
-
-  if (notAllowedFields.length) {
-    throw new MedusaError(
-      MedusaError.Types.INVALID_DATA,
-      `Requested fields [${Array.from(notAllowedFields).join(
-        ", "
-      )}] are not valid`
-    )
+    disallowedFields.forEach((field) => {
+      allFields.delete(field)
+      starFields.delete(field)
+    })
   }
 
   // TODO: maintain backward compatibility, remove in the future
@@ -196,7 +135,7 @@ export function prepareListQuery<T extends RequestQueryFields, TEntity>(
     Array.from(allFields)
   )
 
-  let allRelations = new Set([...relations, ...Array.from(starFields)])
+  const allRelations = new Set([...relations, ...Array.from(starFields)])
 
   // End of expand compatibility
 
@@ -229,6 +168,7 @@ export function prepareListQuery<T extends RequestQueryFields, TEntity>(
       withDeleted: with_deleted,
     },
     remoteQueryConfig: {
+      ...(entity ? { entity } : {}),
       // Add starFields that are relations only on which we want all properties with a dedicated format to the remote query
       fields: [
         ...Array.from(allFields),
@@ -246,13 +186,21 @@ export function prepareListQuery<T extends RequestQueryFields, TEntity>(
   }
 }
 
-export function prepareRetrieveQuery<T extends RequestQueryFields, TEntity>(
+export async function prepareRetrieveQuery<
+  T extends RequestQueryFields,
+  TEntity,
+>(
   validated: T,
-  queryConfig?: QueryConfig<TEntity> & { restricted?: string[] }
+  queryConfig?: QueryConfig<TEntity> & { restricted?: string[] },
+  req?: MedusaRequest & {
+    auth_context?: AuthContext
+    rbac_context?: RbacContext
+  }
 ) {
-  const { listConfig, remoteQueryConfig } = prepareListQuery(
+  const { listConfig, remoteQueryConfig } = await prepareListQuery(
     validated,
-    queryConfig
+    queryConfig,
+    req
   )
 
   return {

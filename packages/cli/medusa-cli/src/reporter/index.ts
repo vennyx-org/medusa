@@ -1,10 +1,28 @@
 import { track } from "@medusajs/telemetry"
-import ora from "ora"
-import stackTrace from "stack-trace"
 import { ulid } from "ulid"
 import { inspect } from "util"
 import winston from "winston"
 import { panicHandler } from "./panic-handler"
+
+// ora and stack-trace are ESM-only. This logger is loaded by @medusajs/framework,
+// including in Jest (which can't load ESM from node_modules), so both are optional.
+function loadOra(): ActivityLogger | undefined {
+  try {
+    return require("ora").default
+  } catch {
+    return undefined
+  }
+}
+
+function parseStackTrace(error: Error): unknown[] {
+  try {
+    return require("stack-trace").parse(error)
+  } catch {
+    return []
+  }
+}
+
+type ActivityLogger = (text: string) => { start(): unknown }
 
 const LOG_LEVEL = process.env.LOG_LEVEL || "http"
 const LOG_FILE = process.env.LOG_FILE || ""
@@ -53,7 +71,7 @@ const loggerInstance = winston.createLogger({
 export class Reporter {
   protected activities_: Record<string, any>
   protected loggerInstance_: winston.Logger
-  protected ora_: typeof ora
+  protected ora_?: ActivityLogger
 
   constructor({ logger, activityLogger }) {
     this.activities_ = {}
@@ -114,7 +132,7 @@ export class Reporter {
    */
   activity(message: string, config: any = {}) {
     const id = ulid()
-    if (IS_DEV && this.shouldLog("info")) {
+    if (IS_DEV && this.ora_ && this.shouldLog("info")) {
       const activity = this.ora_(message).start()
 
       this.activities_[id] = {
@@ -179,13 +197,11 @@ export class Reporter {
     let errorAsObject: Error | undefined
 
     if (messageOrError && typeof messageOrError === "object") {
+      message = ""
       errorAsObject = messageOrError
-      message = messageOrError.message
-    } else if (error) {
-      message = messageOrError
-      errorAsObject = error
     } else {
       message = messageOrError
+      errorAsObject = error
     }
 
     const toLog = {
@@ -194,8 +210,10 @@ export class Reporter {
     }
 
     if (errorAsObject) {
-      toLog["message"] = errorAsObject.message
-      toLog["stack"] = stackTrace.parse(errorAsObject)
+      toLog["message"] = toLog.message
+        ? `${toLog.message}: ${errorAsObject.message}`
+        : errorAsObject.message
+      toLog["stack"] = parseStackTrace(errorAsObject)
       /**
        * Winston only logs the error properties when they are
        * string values. Hence we will have to self convert
@@ -207,17 +225,6 @@ export class Reporter {
       }
     }
 
-    /**
-     * If "errorAsObject" has a message property, then we will
-     * print the standalone message as one log item and then
-     * the actual error object as another log item.
-     *
-     * Otherwise, we always loose the message property from the
-     * actual error object
-     */
-    if (errorAsObject?.message && errorAsObject?.message !== message) {
-      this.loggerInstance_.log({ level: "error", message })
-    }
     this.loggerInstance_.log(toLog)
 
     /**
@@ -332,13 +339,13 @@ export class Reporter {
   }
 
   /**
-   * Logs a message at the vebose level.
+   * Logs a message at the verbose level.
    * @param {string} message - the message to log
    * Level 4
    */
   verbose(message: string) {
     this.loggerInstance_.log({
-      level: "vebose",
+      level: "verbose",
       message,
     })
   }
@@ -398,7 +405,7 @@ export class Reporter {
 
 const logger = new Reporter({
   logger: loggerInstance,
-  activityLogger: ora,
+  activityLogger: loadOra(),
 })
 
 export default logger

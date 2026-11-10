@@ -16,6 +16,12 @@ export async function useCache<T>(
     enable?: boolean
     key: string | any[]
     tags?: string[]
+    /**
+     * Whether the automatically computed tags should be applied along with the ones
+     * given in `tags`, rather than `tags` being used on its own. No effect when `tags`
+     * is omitted.
+     */
+    computeAutomaticTags?: boolean
     ttl?: number
     /**
      * Whethere the default strategy should auto invalidate the cache whenever it is possible.
@@ -63,6 +69,7 @@ export async function useCache<T>(
     .set({
       key,
       tags: options.tags,
+      computeAutomaticTags: options.computeAutomaticTags,
       ttl: options.ttl,
       data: result as object,
       options: { autoInvalidate: options.autoInvalidate },
@@ -74,7 +81,7 @@ export async function useCache<T>(
           allowUnregistered: true,
         }) ?? (console as unknown as Logger)
       logger.error(
-        `An error occured while setting cache for key: ${key}\n${e.message}\n${e.stack}`
+        `An error occurred while setting cache for key: ${key}\n${e.message}\n${e.stack}`
       )
     })
 
@@ -94,7 +101,7 @@ type TargetMethodArgs<Target, PropertyKey> = Target[PropertyKey &
  */
 export function Cached<
   const Target extends object,
-  const PropertyKey extends keyof Target
+  const PropertyKey extends keyof Target,
 >(options: {
   /**
    * The key to use for the cache.
@@ -120,6 +127,17 @@ export function Cached<
   tags?:
     | string[]
     | ((args: TargetMethodArgs<Target, PropertyKey>) => string[] | undefined)
+  /**
+   * Whether the automatically computed tags should be applied along with the ones given
+   * in `tags`, rather than `tags` being used on its own. No effect when `tags` is
+   * omitted.
+   *
+   * The function form exists so the option can be resolved from the decorated method's
+   * arguments, the same way `tags` is.
+   */
+  computeAutomaticTags?:
+    | boolean
+    | ((args: TargetMethodArgs<Target, PropertyKey>) => boolean | undefined)
   /**
    * The time-to-live (TTL) value in seconds.
    */
@@ -203,6 +221,7 @@ export function Cached<
         "enable",
         "key",
         "tags",
+        "computeAutomaticTags",
         "ttl",
         "autoInvalidate",
         "providers",

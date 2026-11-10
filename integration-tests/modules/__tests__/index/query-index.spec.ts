@@ -109,20 +109,18 @@ medusaIntegrationTestRunner({
       })
     },
   },
-  testSuite: ({ getContainer, dbConnection, api, dbConfig }) => {
+  testSuite: ({ getContainer, dbConnection, api, dbUtils, utils }) => {
     let appContainer
 
     describe("Index engine - Query.index", () => {
-      beforeAll(() => {
+      beforeAll(async () => {
         appContainer = getContainer()
+        await createAdminUser(dbConnection, adminHeaders, appContainer)
+        await dbUtils.snapshot()
       })
 
       afterAll(() => {
         process.env.ENABLE_INDEX_MODULE = "false"
-      })
-
-      beforeEach(async () => {
-        await createAdminUser(dbConnection, adminHeaders, appContainer)
       })
 
       it("should use query.index to query the index module and hydrate the data", async () => {
@@ -236,6 +234,13 @@ medusaIntegrationTestRunner({
           skip: 0,
           take: 10,
         })
+
+        // Pagination ordering only refers to the root queried entity(product)
+        // Ordering is dropped for hydrated entities (variants, prices, etc)
+        for (const product of resultset.data) {
+          product.variants?.sort((a, b) => a.sku.localeCompare(b.sku))
+        }
+
         expect(resultset.data).toEqual([
           {
             id: expect.any(String),
@@ -270,12 +275,12 @@ medusaIntegrationTestRunner({
                 ],
                 prices: expect.arrayContaining([
                   {
-                    currency_code: "CAD",
+                    currency_code: "cad",
                     amount: 20,
                     id: expect.any(String),
                   },
                   {
-                    currency_code: "USD",
+                    currency_code: "usd",
                     amount: 80,
                     id: expect.any(String),
                   },
@@ -294,12 +299,12 @@ medusaIntegrationTestRunner({
                 prices: expect.arrayContaining([
                   {
                     amount: 20,
-                    currency_code: "CAD",
+                    currency_code: "cad",
                     id: expect.any(String),
                   },
                   {
                     amount: 80,
-                    currency_code: "USD",
+                    currency_code: "usd",
                     id: expect.any(String),
                   },
                 ]),
@@ -337,12 +342,12 @@ medusaIntegrationTestRunner({
                 prices: expect.arrayContaining([
                   {
                     amount: 30,
-                    currency_code: "USD",
+                    currency_code: "usd",
                     id: expect.any(String),
                   },
                   {
                     amount: 50,
-                    currency_code: "EUR",
+                    currency_code: "eur",
                     id: expect.any(String),
                   },
                 ]),
@@ -400,7 +405,7 @@ medusaIntegrationTestRunner({
                 "variants.prices.currency_code",
               ],
               filters: {
-                "variants.prices.currency_code": "USD",
+                "variants.prices.currency_code": "usd",
               },
               pagination: {
                 take: 1,
@@ -422,12 +427,12 @@ medusaIntegrationTestRunner({
                 prices: expect.arrayContaining([
                   {
                     amount: 20,
-                    currency_code: "CAD",
+                    currency_code: "cad",
                     id: expect.any(String),
                   },
                   {
                     amount: 80,
-                    currency_code: "USD",
+                    currency_code: "usd",
                     id: expect.any(String),
                   },
                 ]),
@@ -448,7 +453,7 @@ medusaIntegrationTestRunner({
               filters: {
                 variants: {
                   prices: {
-                    currency_code: "USD",
+                    currency_code: "usd",
                   },
                 },
               },
@@ -476,12 +481,12 @@ medusaIntegrationTestRunner({
                 prices: expect.arrayContaining([
                   {
                     amount: 30,
-                    currency_code: "USD",
+                    currency_code: "usd",
                     id: expect.any(String),
                   },
                   {
                     amount: 50,
-                    currency_code: "EUR",
+                    currency_code: "eur",
                     id: expect.any(String),
                   },
                 ]),

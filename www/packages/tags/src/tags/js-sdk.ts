@@ -52,8 +52,16 @@ export const jsSdk = [
     "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/invite"
   },
   {
+    "title": "layouts",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/layouts"
+  },
+  {
     "title": "locale",
     "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/locale"
+  },
+  {
+    "title": "module",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/module"
   },
   {
     "title": "notification",
@@ -100,6 +108,10 @@ export const jsSdk = [
     "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/productCollection"
   },
   {
+    "title": "productOption",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/productOption"
+  },
+  {
     "title": "productTag",
     "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/productTag"
   },
@@ -114,6 +126,18 @@ export const jsSdk = [
   {
     "title": "promotion",
     "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/promotion"
+  },
+  {
+    "title": "propertyLabel",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/propertyLabel"
+  },
+  {
+    "title": "rbacPolicy",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/rbacPolicy"
+  },
+  {
+    "title": "rbacRole",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/rbacRole"
   },
   {
     "title": "refundReason",
@@ -138,6 +162,10 @@ export const jsSdk = [
   {
     "title": "salesChannel",
     "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/salesChannel"
+  },
+  {
+    "title": "search",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/admin/search"
   },
   {
     "title": "shippingOption",
@@ -194,6 +222,14 @@ export const jsSdk = [
   {
     "title": "callback",
     "path": "https://docs.medusajs.com/resources/references/js-sdk/auth/callback"
+  },
+  {
+    "title": "createUser",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/auth/createUser"
+  },
+  {
+    "title": "listProviders",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/auth/listProviders"
   },
   {
     "title": "login",
@@ -258,6 +294,10 @@ export const jsSdk = [
   {
     "title": "product",
     "path": "https://docs.medusajs.com/resources/references/js-sdk/store/product"
+  },
+  {
+    "title": "productOption",
+    "path": "https://docs.medusajs.com/resources/references/js-sdk/store/productOption"
   },
   {
     "title": "region",

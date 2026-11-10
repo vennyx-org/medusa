@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: 2.0.0
+  version: 2.22.5
   title: Medusa Storefront API
   license:
     name: MIT
@@ -37,8 +37,7 @@ tags:
       These API routes allow customers to browse collections and their products.
     externalDocs:
       description: How to list product collections in a storefront.
-      url: >-
-        https://docs.medusajs.com/resources/storefront-development/products/collections/list
+      url: https://docs.medusajs.com/resources/storefront-development/products/collections/list
     x-associatedSchema:
       $ref: ./components/schemas/StoreCollection.yaml
   - name: Currencies
@@ -54,8 +53,7 @@ tags:
       These API routes allow customers to browse currencies.
     externalDocs:
       description: How to retrieve product variant prices in a storefront.
-      url: >-
-        https://docs.medusajs.com/resources/storefront-development/products/price
+      url: https://docs.medusajs.com/resources/storefront-development/products/price
     x-associatedSchema:
       $ref: ./components/schemas/StoreCurrency.yaml
   - name: Customers
@@ -86,8 +84,8 @@ tags:
 
       <Note>
 
-      Gift Cards are only available for Cloud users using the [Loyalty
-      Plugin](https://docs.medusajs.com/cloud/loyalty-plugin).
+      Gift Cards are available through the [Loyalty
+      Plugin](https://docs.medusajs.com/resources/commerce-modules/loyalty).
 
       </Note>
     x-associatedSchema:
@@ -101,10 +99,20 @@ tags:
       supported locales in the store.
     externalDocs:
       description: Learn more about locales and translations.
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/translation/concepts
+      url: https://docs.medusajs.com/resources/commerce-modules/translation/concepts
     x-associatedSchema:
       $ref: ./components/schemas/StoreLocale.yaml
+  - name: Multi-Factor Authentication (MFA) Factors
+    description: >
+      Multi-factor authentication (MFA) factors are additional ways to verify a
+      customer's identity during login, in addition to their password. Examples
+      of MFA factors include authenticator apps, SMS messages, and email.
+
+      These API routes allow customers to manage their MFA factors, such as
+      enabling an authenticator app or generating recovery codes.
+    externalDocs:
+      description: Learn more about MFA in Medusa
+      url: https://docs.medusajs.com/resources/commerce-modules/auth/mfa
   - name: Orders
     description: |
       Guest and registered customers can view orders they placed.
@@ -121,8 +129,7 @@ tags:
       and authorize its payment session.
     externalDocs:
       description: How to implement payment during checkout.
-      url: >-
-        https://docs.medusajs.com/resources/storefront-development/checkout/payment
+      url: https://docs.medusajs.com/resources/storefront-development/checkout/payment
     x-associatedSchema:
       $ref: ./components/schemas/StorePaymentCollection.yaml
   - name: Payment Providers
@@ -139,8 +146,7 @@ tags:
       their region.
     externalDocs:
       description: How to implement payment during checkout.
-      url: >-
-        https://docs.medusajs.com/resources/storefront-development/checkout/payment
+      url: https://docs.medusajs.com/resources/storefront-development/checkout/payment
     x-associatedSchema:
       $ref: ./components/schemas/StorePaymentProvider.yaml
   - name: Product Categories
@@ -150,16 +156,30 @@ tags:
       These API routes allow customers to browse categories and their products.
     externalDocs:
       description: How to list product categories in a storefront.
-      url: >-
-        https://docs.medusajs.com/resources/storefront-development/products/categories/list
+      url: https://docs.medusajs.com/resources/storefront-development/products/categories/list
     x-associatedSchema:
       $ref: ./components/schemas/StoreProductCategory.yaml
+  - name: Product Options
+    x-associatedSchema:
+      $ref: ./components/schemas/StoreProductOption.yaml
+    description: >
+      A product option is a way to define different options for a product, such
+      as "Size" or "Color". Product options can be created globally and used by
+      multiple products, or they can be exclusive to a specific product.
+
+      These API routes allow customers to view product options.
+    externalDocs:
+      description: Use Product Options in a Storefront
+      url: https://docs.medusajs.com/resources/storefront-development/products/options
   - name: Product Tags
     x-associatedSchema:
       $ref: ./components/schemas/StoreProductTag.yaml
   - name: Product Types
     x-associatedSchema:
       $ref: ./components/schemas/StoreProductType.yaml
+  - name: Product Variants
+    x-associatedSchema:
+      $ref: ./components/schemas/StoreProductVariant.yaml
   - name: Products
     description: >
       Customers browse products for their purchase.
@@ -209,6 +229,13 @@ tags:
       These API routes allows customers to create a return.
     x-associatedSchema:
       $ref: ./components/schemas/StoreReturn.yaml
+  - name: Search
+    description: >
+      Search the indexes that your application exposes to the storefront.
+
+
+      An index is only searchable through these API routes once it's allowed
+      with the `configureStoreSearch` middleware.
   - name: Shipping Options
     description: >
       A shipping option is a way of shipping an item to or from the customer.
@@ -222,8 +249,7 @@ tags:
       for their context.
     externalDocs:
       description: How to implement shipping during checkout.
-      url: >-
-        https://docs.medusajs.com/resources/storefront-development/checkout/shipping
+      url: https://docs.medusajs.com/resources/storefront-development/checkout/shipping
     x-associatedSchema:
       $ref: ./components/schemas/StoreShippingOption.yaml
   - name: Store Credit Accounts
@@ -237,12 +263,16 @@ tags:
 
         <Note>
 
-        Store Credit Accounts are only available for Cloud users using the
-        [Loyalty Plugin](https://docs.medusajs.com/cloud/loyalty-plugin).
+        Store Credit Accounts are only available through the [Loyalty
+        Plugin](https://docs.medusajs.com/resources/commerce-modules/loyalty).
 
         </Note>
       $ref: ./components/schemas/StoreStoreCreditAccount.yaml
 paths:
+  /auth/customer/emailpass/verification/confirm:
+    $ref: paths/auth_customer_emailpass_verification_confirm.yaml
+  /auth/customer/providers:
+    $ref: paths/auth_customer_providers.yaml
   /auth/customer/{auth_provider}:
     $ref: paths/auth_customer_{auth_provider}.yaml
   /auth/customer/{auth_provider}/callback:
@@ -253,10 +283,24 @@ paths:
     $ref: paths/auth_customer_{auth_provider}_reset-password.yaml
   /auth/customer/{auth_provider}/update:
     $ref: paths/auth_customer_{auth_provider}_update.yaml
+  /auth/mfa/challenges/{id}/verify:
+    $ref: paths/auth_mfa_challenges_{id}_verify.yaml
+  /auth/mfa/factors:
+    $ref: paths/auth_mfa_factors.yaml
+  /auth/mfa/factors/{id}:
+    $ref: paths/auth_mfa_factors_{id}.yaml
+  /auth/mfa/factors/{id}/verify:
+    $ref: paths/auth_mfa_factors_{id}_verify.yaml
+  /auth/mfa/recovery-codes:
+    $ref: paths/auth_mfa_recovery-codes.yaml
   /auth/session:
     $ref: paths/auth_session.yaml
   /auth/token/refresh:
     $ref: paths/auth_token_refresh.yaml
+  /auth/verification/confirm:
+    $ref: paths/auth_verification_confirm.yaml
+  /auth/verification/request:
+    $ref: paths/auth_verification_request.yaml
   /store/carts:
     $ref: paths/store_carts.yaml
   /store/carts/{id}:
@@ -297,8 +341,6 @@ paths:
     $ref: paths/store_customers_me_addresses_{address_id}.yaml
   /store/gift-cards/{idOrCode}:
     $ref: paths/store_gift-cards_{idOrCode}.yaml
-  /store/gift-cards/{idOrCode}/redeem:
-    $ref: paths/store_gift-cards_{idOrCode}_redeem.yaml
   /store/locales:
     $ref: paths/store_locales.yaml
   /store/orders:
@@ -317,12 +359,18 @@ paths:
     $ref: paths/store_payment-collections.yaml
   /store/payment-collections/{id}/payment-sessions:
     $ref: paths/store_payment-collections_{id}_payment-sessions.yaml
+  /store/payment-collections/{id}/payment-sessions/{session_id}:
+    $ref: paths/store_payment-collections_{id}_payment-sessions_{session_id}.yaml
   /store/payment-providers:
     $ref: paths/store_payment-providers.yaml
   /store/product-categories:
     $ref: paths/store_product-categories.yaml
   /store/product-categories/{id}:
     $ref: paths/store_product-categories_{id}.yaml
+  /store/product-options:
+    $ref: paths/store_product-options.yaml
+  /store/product-options/{id}:
+    $ref: paths/store_product-options_{id}.yaml
   /store/product-tags:
     $ref: paths/store_product-tags.yaml
   /store/product-tags/{id}:
@@ -331,6 +379,8 @@ paths:
     $ref: paths/store_product-types.yaml
   /store/product-types/{id}:
     $ref: paths/store_product-types_{id}.yaml
+  /store/product-variants:
+    $ref: paths/store_product-variants.yaml
   /store/products:
     $ref: paths/store_products.yaml
   /store/products/{id}:
@@ -345,12 +395,16 @@ paths:
     $ref: paths/store_return-reasons_{id}.yaml
   /store/returns:
     $ref: paths/store_returns.yaml
+  /store/search:
+    $ref: paths/store_search.yaml
   /store/shipping-options:
     $ref: paths/store_shipping-options.yaml
   /store/shipping-options/{id}/calculate:
     $ref: paths/store_shipping-options_{id}_calculate.yaml
   /store/store-credit-accounts:
     $ref: paths/store_store-credit-accounts.yaml
+  /store/store-credit-accounts/claim:
+    $ref: paths/store_store-credit-accounts_claim.yaml
   /store/store-credit-accounts/{id}:
     $ref: paths/store_store-credit-accounts_{id}.yaml
 components:

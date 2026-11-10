@@ -6,7 +6,6 @@ import {
 import { isPresent, Modules } from "@medusajs/framework/utils"
 import {
   createWorkflow,
-  parallelize,
   transform,
   when,
   WorkflowData,
@@ -16,6 +15,8 @@ import { createRemoteLinkStep, useRemoteQueryStep } from "../../common"
 import {
   createPaymentAccountHolderStep,
   createPaymentSessionStep,
+  validatePaymentProviderInRegionStep,
+  validatePaymentSessionsDeletableStep,
 } from "../steps"
 import { deletePaymentSessionsWorkflow } from "./delete-payment-sessions"
 
@@ -52,7 +53,7 @@ export interface CreatePaymentSessionsWorkflowInput {
 export const createPaymentSessionsWorkflowId = "create-payment-sessions"
 /**
  * This workflow creates payment sessions. It's used by the
- * [Initialize Payment Session Store API Route](https://docs.medusajs.com/api/store#payment-collections_postpaymentcollectionsidpaymentsessions).
+ * [Initialize Payment Session Store API Route](https://docs.medusajs.com/api/store/payment-collections/initialize-payment-session).
  *
  * You can use this workflow within your own customizations or custom workflows, allowing you
  * to create payment sessions in your custom flows.
@@ -77,10 +78,30 @@ export const createPaymentSessionsWorkflow = createWorkflow(
   ): WorkflowResponse<PaymentSessionDTO> => {
     const paymentCollection = useRemoteQueryStep({
       entry_point: "payment_collection",
-      fields: ["id", "amount", "currency_code", "payment_sessions.*"],
+      fields: [
+        "id",
+        "amount",
+        "currency_code",
+        "payment_sessions.*",
+        "payment_sessions.payment.id",
+        "payment_sessions.payment.canceled_at",
+        "payment_sessions.payment.captured_at",
+        "payment_sessions.payment.amount",
+        "payment_sessions.payment.raw_amount",
+        "payment_sessions.payment.refunds.raw_amount",
+      ],
       variables: { id: input.payment_collection_id },
       list: false,
     }).config({ name: "get-payment-collection" })
+
+    validatePaymentProviderInRegionStep({
+      payment_collection_id: input.payment_collection_id,
+      provider_id: input.provider_id,
+    })
+
+    validatePaymentSessionsDeletableStep({
+      payment_sessions: paymentCollection.payment_sessions,
+    })
 
     const { paymentCustomer, accountHolder, existingAccountHolder } = when(
       "customer-id-exists",
@@ -89,7 +110,7 @@ export const createPaymentSessionsWorkflow = createWorkflow(
         return !!data.input.customer_id
       }
     ).then(() => {
-      const customer: CustomerDTO & { account_holders: AccountHolderDTO[] } =
+      const customer: CustomerDTO & { account_holders?: AccountHolderDTO[] } =
         useRemoteQueryStep({
           entry_point: "customer",
           fields: [
@@ -117,8 +138,8 @@ export const createPaymentSessionsWorkflow = createWorkflow(
       })
 
       const existingAccountHolder = transform({ customer, input }, (data) => {
-        return data.customer.account_holders.find(
-          (ac) => ac.provider_id === data.input.provider_id
+        return (data.customer.account_holders ?? []).find(
+          (ac) => ac?.provider_id === data.input.provider_id
         )
       })
 
@@ -136,7 +157,11 @@ export const createPaymentSessionsWorkflow = createWorkflow(
         }
       )
 
-      const accountHolder = createPaymentAccountHolderStep(accountHolderInput)
+      const accountHolder = createPaymentAccountHolderStep(
+        accountHolderInput
+      ).config({
+        noCompensation: true,
+      })
 
       return { paymentCustomer, accountHolder, existingAccountHolder }
     })
@@ -157,7 +182,9 @@ export const createPaymentSessionsWorkflow = createWorkflow(
             account_holder_id: accountHolder.id,
           },
         },
-      ])
+      ]).config({
+        noCompensation: true,
+      })
     })
 
     const paymentSessionInput = transform(
@@ -192,12 +219,11 @@ export const createPaymentSessionsWorkflow = createWorkflow(
     // for a payment collection as we don't support split payments at the moment.
     // When we are ready to accept split payments, this along with other workflows
     // need to be handled correctly
-    const [created] = parallelize(
-      createPaymentSessionStep(paymentSessionInput),
-      deletePaymentSessionsWorkflow.runAsStep({
-        input: deletePaymentSessionInput,
-      })
-    )
+    deletePaymentSessionsWorkflow.runAsStep({
+      input: deletePaymentSessionInput,
+    })
+
+    const created = createPaymentSessionStep(paymentSessionInput)
 
     return new WorkflowResponse(created)
   }

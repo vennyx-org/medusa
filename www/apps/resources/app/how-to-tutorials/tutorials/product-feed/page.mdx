@@ -58,7 +58,7 @@ You can follow this tutorial whether you're new to Medusa or an advanced Medusa 
 
 <Prerequisites items={[
   {
-    text: "Node.js v20+",
+    text: "Node.js v22.22.0+",
     link: "https://nodejs.org/en/download"
   },
   {
@@ -73,25 +73,25 @@ You can follow this tutorial whether you're new to Medusa or an advanced Medusa 
 
 Start by installing the Medusa application on your machine with the following command:
 
-```bash
+```bash npx2yarnExec
 npx create-medusa-app@latest
 ```
 
 You'll first be asked for the project's name. Then, when asked whether you want to install the [Next.js Starter Storefront](../../../nextjs-starter/page.mdx), choose Yes.
 
-Afterward, the installation process will start, which will install the Medusa application in a directory with your project's name, and the Next.js Starter Storefront in a separate directory with the `{project-name}-storefront` name.
-
-<Note title="Why is the storefront installed separately?">
-
-The Medusa application is composed of a headless Node.js server and an admin dashboard. The storefront is installed or custom-built separately and connects to the Medusa application through its REST endpoints, called [API routes](!docs!/learn/fundamentals/api-routes). Learn more in [Medusa's Architecture documentation](!docs!/learn/introduction/architecture).
-
-</Note>
+Afterward, the installation process will start, which will install the Medusa application as a monorepository in a directory with your project's name. The backend is installed in the `apps/backend` directory, and the Next.js Starter Storefront is installed in the `apps/storefront` directory.
 
 Once the installation finishes successfully, the Medusa Admin dashboard will open with a form to create a new user. Enter the user's credentials and submit the form. Afterward, you can log in with the new user and explore the dashboard.
 
 <Note title="Ran into Errors?">
 
 Check out the [troubleshooting guides](../../../troubleshooting/create-medusa-app-errors/page.mdx) for help.
+
+</Note>
+
+<Note>
+
+In this guide, all file paths of backend customizations are relative to the `apps/backend` directory of your Medusa project.
 
 </Note>
 
@@ -200,15 +200,17 @@ Next, you'll implement the step's logic. Add the following in the step function:
 
 export const getProductFeedItemsHighlights2 = [
   ["1", "feedItems", "The items to be added to the product feed."],
-  ["4", "storefrontUrl", "The storefront URL to format the product links."],
-  ["15", "products", "Retrieve the products with pagintion"],
-  ["55", "feedItems", "Return the feed items."]
+  ["6", "storefrontUrl", "The storefront URL to format the product links."],
+  ["17", "products", "Retrieve the products with pagination"],
+  ["57", "feedItems", "Return the feed items."]
 ]
 
 ```ts title="src/workflows/steps/get-product-feed-items.ts" highlights={getProductFeedItemsHighlights2}
 const feedItems: FeedItem[] = []
-const query = container.resolve("query")
-const configModule = container.resolve("configModule")
+const query = container.resolve(ContainerRegistrationKeys.QUERY)
+const configModule = container.resolve(
+  ContainerRegistrationKeys.CONFIG_MODULE
+)
 const storefrontUrl = configModule.admin.storefrontUrl || 
   process.env.STOREFRONT_URL
 
@@ -267,7 +269,7 @@ You first initialize an empty array of `FeedItem` objects that you'll populate l
 
 Then, you resolve the following resources from the Medusa container:
 
-- [Query](!docs!/learn/fundamentals/module-links/query) that allows you to retrieve data across modules.
+- [Query](!docs!/learn/fundamentals/query) that allows you to retrieve data across modules.
 - [Medusa Configurations](!docs!/learn/configurations/medusa-config) that are defined in `medusa-config.ts`.
 
 You use the Medusa configurations to retrieve the storefront URL, which you'll use to build the product links in the feed. If the storefront URL is not set in the configurations, you fall back to the `STOREFRONT_URL` environment variable.
@@ -276,7 +278,7 @@ After that, you use Query to retrieve product data with pagination. For each pro
 
 <Note>
 
-To retrieve the product variant prices for a currency code, you must pass the currency code as a [query context](!docs!/learn/fundamentals/module-links/query-context). Learn more in the [Get Variant Prices](../../../commerce-modules/product/guides/price/page.mdx) chapter.
+To retrieve the product variant prices for a currency code, you must pass the currency code as a [query context](!docs!/learn/fundamentals/query/query-context). Learn more in the [Get Variant Prices](../../../commerce-modules/product/guides/price/page.mdx) chapter.
 
 </Note>
 
@@ -290,11 +292,11 @@ export const getProductFeedItemsHighlights3 = [
   ["2", "", "Skip products without variants"],
   ["3", "salesChannel", "Retrieve the product's sales channel with stock locations in the requested country code"],
   ["9", "availability", "Retrieve inventory availability for the product's variants."],
-  ["17", "hasOriginalPrice", "Check if the product variant is on sale."],
-  ["18", "originalPrice", "The regular price of the product variant."],
-  ["20", "salePrice", "The sale price of the product variant."],
-  ["22", "stockStatus", "The stock status of the product variant."],
-  ["38", "item_group_id", "Group the variants by their product."]
+  ["17", "hasOriginalPrice", "Check if the product variant is on sale by comparing original and calculated amounts."],
+  ["19", "originalPrice", "The regular price of the product variant."],
+  ["21", "salePrice", "The sale price of the product variant."],
+  ["23", "stockStatus", "The stock status of the product variant."],
+  ["39", "item_group_id", "Group the variants by their product."]
 ]
 
 ```ts title="src/workflows/steps/get-product-feed-items.ts" highlights={getProductFeedItemsHighlights3}
@@ -314,7 +316,8 @@ for (const product of products) {
   for (const variant of product.variants) {
     // @ts-ignore
     const calculatedPrice = variant.calculated_price as CalculatedPriceSet
-    const hasOriginalPrice = calculatedPrice?.original_amount
+    const hasOriginalPrice = calculatedPrice?.original_amount && 
+      calculatedPrice.original_amount !== calculatedPrice.calculated_amount
     const originalPrice = hasOriginalPrice ? calculatedPrice.original_amount : 
     calculatedPrice.calculated_amount
     const salePrice = hasOriginalPrice ? calculatedPrice.calculated_amount : 
@@ -434,7 +437,7 @@ Create the file `src/workflows/generate-product-feed.ts` with the following cont
 ```ts title="src/workflows/generate-product-feed.ts"
 import { createWorkflow, WorkflowResponse } from "@medusajs/framework/workflows-sdk"
 import { getProductFeedItemsStep } from "./steps/get-product-feed-items"
-import { buildProductFeedXmlStep } from "./steps/build-product-field-xml"
+import { buildProductFeedXmlStep } from "./steps/build-product-feed-xml"
 
 type GenerateProductFeedWorkflowInput = {
   currency_code: string
@@ -531,9 +534,15 @@ A [middleware](!docs!/learn/fundamentals/api-routes/middlewares) is a function t
 
 To apply a middleware on the API route, create the file `src/api/middlewares.ts` with the following content:
 
+<Note>
+
+As of [Medusa v2.13.0](https://github.com/medusajs/medusa/releases/tag/v2.13.0), Zod should be imported from `@medusajs/framework/zod`.
+
+</Note>
+
 ```ts title="src/api/middlewares.ts"
 import { defineMiddlewares, validateAndTransformQuery } from "@medusajs/framework/http"
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 
 export default defineMiddlewares({
   routes: [
@@ -637,6 +646,8 @@ Then, wait until Meta finishes processing and uploading your products. Once it's
 You've now set up the product feed API route for your Medusa application. Meta and Google will pull products from this feed periodically, ensuring your product listings are always up to date.
 
 You can add more fields to the product feed based on your use case. Refer to [Meta](https://www.facebook.com/business/help/120325381656392) and [Google](https://support.google.com/merchants/answer/7052112)'s product feed specifications for more details on available fields and their formats.
+
+To sell on other marketplaces and channels, such as Amazon, TikTok Shop, or Pinterest, refer to the [Marketplace Integrations](../../../recipes/omnichannel/marketplaces/page.mdx) guide.
 
 ### Learn More about Medusa
 

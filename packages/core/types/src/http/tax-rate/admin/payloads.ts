@@ -51,7 +51,7 @@ export interface AdminCreateTaxRate {
   /**
    * Custom key-value pairs that can be added to the tax rate.
    */
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown> | null
 }
 
 export interface AdminUpdateTaxRate {
@@ -66,7 +66,7 @@ export interface AdminUpdateTaxRate {
   /**
    * The code of the tax rate.
    */
-  code: string
+  code?: string
   /**
    * The rules of the tax rate.
    */
@@ -86,5 +86,5 @@ export interface AdminUpdateTaxRate {
   /**
    * Custom key-value pairs that can be added to the tax rate.
    */
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown> | null
 }

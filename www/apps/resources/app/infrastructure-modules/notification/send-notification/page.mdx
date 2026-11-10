@@ -16,6 +16,12 @@ export const metadata = {
 
 In this guide, you'll learn about the different ways to send notifications using the Notification Module.
 
+<Note type="warning">
+
+Medusa stores the `data` property of every notification, and the [List Notifications](!api!/admin/notifications/list-notifications) and [Get Notification](!api!/admin/notifications/get-a-notification) API routes return it. Any admin user with the `notification:read` [RBAC policy](../../../enterprise/rbac/concepts/page.mdx#policy) can view it, so don't pass data that those users shouldn't see.
+
+</Note>
+
 ## Using the Create Method
 
 In your resource, such as a [subscriber](!docs!/learn/fundamentals/events-and-subscribers), resolve the Notification Module's main service and use its `create` method:
@@ -113,7 +119,10 @@ If you want to send a notification as part of a workflow, You can use the [sendN
 For example:
 
 ```ts title="src/workflows/send-email.ts"
-import { createWorkflow } from "@medusajs/framework/workflows-sdk"
+import {
+  createWorkflow,
+  transform,
+} from "@medusajs/framework/workflows-sdk"
 import { 
   sendNotificationsStep, 
   useQueryGraphStep,
@@ -137,14 +146,19 @@ export const sendEmailWorkflow = createWorkflow(
       },
     })
 
+    const notificationData = transform(
+      { products },
+      ({ products }) => ({
+        product_title: products[0].title,
+        product_image: products[0].images[0]?.url,
+      })
+    )
+
     sendNotificationsStep({
       to: "user@gmail.com",
       channel: "email",
       template: "product-created",
-      data: {
-        product_title: product[0].title,
-        product_image: product[0].images[0]?.url,
-      },
+      data: notificationData,
     })
   }
 )

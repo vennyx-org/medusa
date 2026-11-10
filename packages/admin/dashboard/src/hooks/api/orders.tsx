@@ -17,7 +17,7 @@ const ORDERS_QUERY_KEY = "orders" as const
 const _orderKeys = queryKeysFactory(ORDERS_QUERY_KEY) as TQueryKey<"orders"> & {
   preview: (orderId: string) => any
   changes: (orderId: string) => any
-  lineItems: (orderId: string) => any
+  lineItems: (orderId: string, query?: any) => any
   shippingOptions: (orderId: string) => any
 }
 
@@ -29,8 +29,10 @@ _orderKeys.changes = function (id: string) {
   return [this.detail(id), "changes"]
 }
 
-_orderKeys.lineItems = function (id: string) {
-  return [this.detail(id), "lineItems"]
+_orderKeys.lineItems = function (id: string, query?: any) {
+  return [this.detail(id), query ? { query } : undefined, "lineItems"].filter(
+    (k) => !!k
+  )
 }
 
 _orderKeys.shippingOptions = function (id: string) {
@@ -43,7 +45,12 @@ export const useOrder = (
   id: string,
   query?: Record<string, any>,
   options?: Omit<
-    UseQueryOptions<any, FetchError, any, QueryKey>,
+    UseQueryOptions<
+      HttpTypes.AdminOrderResponse,
+      FetchError,
+      HttpTypes.AdminOrderResponse,
+      QueryKey
+    >,
     "queryFn" | "queryKey"
   >
 ) => {
@@ -189,7 +196,7 @@ export const useOrderLineItems = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: async () => sdk.admin.order.listLineItems(id, query),
-    queryKey: ordersQueryKeys.lineItems(id),
+    queryKey: ordersQueryKeys.lineItems(id, query),
     ...options,
   })
 
@@ -294,11 +301,12 @@ export const useMarkOrderFulfillmentAsDelivered = (
   options?: UseMutationOptions<
     { order: HttpTypes.AdminOrder },
     FetchError,
-    void
+    HttpTypes.AdminMarkOrderFulfillmentAsDelivered
   >
 ) => {
   return useMutation({
-    mutationFn: () => sdk.admin.order.markAsDelivered(orderId, fulfillmentId),
+    mutationFn: (payload: HttpTypes.AdminMarkOrderFulfillmentAsDelivered) =>
+      sdk.admin.order.markAsDelivered(orderId, fulfillmentId, payload),
     onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({
         queryKey: ordersQueryKeys.all,
@@ -361,6 +369,36 @@ export const useRequestTransferOrder = (
   })
 }
 
+export const useTransferOrderToGuest = (
+  orderId: string,
+  options?: UseMutationOptions<
+    HttpTypes.AdminOrderResponse,
+    FetchError,
+    HttpTypes.AdminTransferOrderToGuest
+  >
+) => {
+  return useMutation({
+    mutationFn: (payload: HttpTypes.AdminTransferOrderToGuest) =>
+      sdk.admin.order.transferToGuest(orderId, payload),
+    onSuccess: (data: any, variables: any, context: any) => {
+      queryClient.invalidateQueries({
+        queryKey: ordersQueryKeys.preview(orderId),
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ordersQueryKeys.changes(orderId),
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ordersQueryKeys.detail(orderId),
+      })
+
+      options?.onSuccess?.(data, variables, context)
+    },
+    ...options,
+  })
+}
+
 export const useCancelOrderTransfer = (
   orderId: string,
   options?: UseMutationOptions<any, FetchError, void>
@@ -407,17 +445,45 @@ export const useCreateOrderCreditLine = (
   })
 }
 
+export const useAuthorizePaymentSession = (
+  orderId: string,
+  sessionId: string,
+  options?: UseMutationOptions<
+    HttpTypes.AdminAuthorizeOrderPaymentSessionResponse,
+    FetchError,
+    void
+  >
+) => {
+  return useMutation({
+    mutationFn: () =>
+      sdk.admin.order.authorizePaymentSession(orderId, sessionId),
+    onSuccess: (data, variables, context) => {
+      queryClient.invalidateQueries({
+        queryKey: ordersQueryKeys.detail(orderId),
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ordersQueryKeys.preview(orderId),
+      })
+
+      options?.onSuccess?.(data, variables, context)
+    },
+    ...options,
+  })
+}
+
 export const useUpdateOrderChange = (
   orderChangeId: string,
   options?: UseMutationOptions<
     HttpTypes.AdminOrderChangeResponse,
     FetchError,
-    { carry_over_promotions: boolean }
+    { carry_over_promotions?: boolean; internal_note?: string | null }
   >
 ) => {
   return useMutation({
-    mutationFn: (payload: { carry_over_promotions: boolean }) =>
-      sdk.admin.order.updateOrderChange(orderChangeId, payload),
+    mutationFn: (
+      payload: { carry_over_promotions?: boolean; internal_note?: string | null }
+    ) => sdk.admin.order.updateOrderChange(orderChangeId, payload),
     onSuccess: (data, variables, context) => {
       const orderId = data.order_change.order_id
 

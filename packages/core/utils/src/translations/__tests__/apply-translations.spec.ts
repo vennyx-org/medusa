@@ -53,6 +53,57 @@ describe("applyTranslations", () => {
     expect(inputObjects[0].title).toBe("Translated Title")
   })
 
+  it("should not overwrite fields when translation value is empty or whitespace-only", async () => {
+    const inputObjects = [
+      {
+        id: "prod_1",
+        title: "Original Title",
+        description: "Original description",
+      },
+    ]
+
+    mockQuery.graph.mockResolvedValue({
+      data: [
+        {
+          reference_id: "prod_1",
+          translations: {
+            title: "",
+            description: "Translated description",
+          },
+        },
+      ],
+    })
+
+    await applyTranslations({
+      localeCode: mockReq.locale as string,
+      objects: inputObjects,
+      container: mockContainer as any,
+    })
+
+    expect(inputObjects[0].title).toBe("Original Title")
+    expect(inputObjects[0].description).toBe("Translated description")
+
+    const inputObjects2 = [
+      { id: "prod_2", title: "Original Title 2" },
+    ]
+    mockQuery.graph.mockResolvedValue({
+      data: [
+        {
+          reference_id: "prod_2",
+          translations: { title: "   " },
+        },
+      ],
+    })
+
+    await applyTranslations({
+      localeCode: mockReq.locale as string,
+      objects: inputObjects2,
+      container: mockContainer as any,
+    })
+
+    expect(inputObjects2[0].title).toBe("Original Title 2")
+  })
+
   it("should apply translations to nested objects", async () => {
     const inputObjects = [
       {
@@ -359,5 +410,59 @@ describe("applyTranslations", () => {
     expect(inputObjects[0].title).toBe("Translated Product")
     expect(inputObjects[0].category.name).toBe("Translated Category")
     expect(inputObjects[0].category.parent.name).toBe("Translated Parent")
+  })
+
+  it("should only query translations for string ids and ignore non-string ids from linked services", async () => {
+    const inputObjects = [
+      {
+        id: "prod_1",
+        title: "Product",
+        cms: {
+          id: 770,
+          meta_description: "Description",
+          sections: [{ id: 12, label: "Section" }],
+        },
+      },
+    ]
+
+    mockQuery.graph.mockResolvedValue({
+      data: [
+        {
+          reference_id: "prod_1",
+          translations: { title: "Translated Product" },
+        },
+      ],
+    })
+
+    await applyTranslations({
+      localeCode: mockReq.locale as string,
+      objects: inputObjects,
+      container: mockContainer as any,
+    })
+
+    expect(mockQuery.graph).toHaveBeenCalledTimes(1)
+    expect(mockQuery.graph.mock.calls[0][0].filters.reference_id).toEqual([
+      "prod_1",
+    ])
+    expect(inputObjects[0].title).toBe("Translated Product")
+    expect(inputObjects[0].cms.id).toBe(770)
+    expect(inputObjects[0].cms.meta_description).toBe("Description")
+  })
+
+  it("should gracefully handle arrays of primitives without crashing", async () => {
+    const data = [
+      {
+        id: "obj_1",
+        documents: ["/path/to/file.pdf", "/path/to/other.pdf"],
+      },
+    ]
+
+    await applyTranslations({
+      localeCode: "ar",
+      objects: data,
+      container: mockContainer as any,
+    })
+
+    expect(data[0].documents).toHaveLength(2)
   })
 })

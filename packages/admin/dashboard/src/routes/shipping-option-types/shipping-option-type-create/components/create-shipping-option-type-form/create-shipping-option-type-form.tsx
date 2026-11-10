@@ -4,7 +4,10 @@ import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod"
 import { Form } from "../../../../../components/common/form"
-import { RouteFocusModal, useRouteModal, } from "../../../../../components/modals"
+import {
+  RouteFocusModal,
+  useRouteModal,
+} from "../../../../../components/modals"
 import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
 import { useCreateShippingOptionType } from "../../../../../hooks/api"
 
@@ -129,7 +132,7 @@ export const CreateShippingOptionTypeForm = () => {
                         <Text
                           size="small"
                           leading="compact"
-                          className="text-ui-fg-muted ml-1 inline"
+                          className="ml-1 inline text-ui-fg-muted"
                         >
                           ({t("fields.optional")})
                         </Text>

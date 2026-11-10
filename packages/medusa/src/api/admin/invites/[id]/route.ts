@@ -5,15 +5,15 @@ import {
 import { MedusaError } from "@medusajs/framework/utils"
 
 import { deleteInvitesWorkflow } from "@medusajs/core-flows"
-import { refetchInvite } from "../helpers"
 import { HttpTypes } from "@medusajs/framework/types"
+import { refetchInvite } from "../helpers"
 
 export const GET = async (
-  req: AuthenticatedMedusaRequest<HttpTypes.SelectParams>,
+  req: AuthenticatedMedusaRequest<HttpTypes.AdminGetInviteParams>,
   res: MedusaResponse<HttpTypes.AdminInviteResponse>
 ) => {
   const { id } = req.params
-  const invite = await refetchInvite(id, req.scope, req.queryConfig.fields)
+  const invite = await refetchInvite(req, id)
 
   if (!invite) {
     throw new MedusaError(
@@ -42,5 +42,3 @@ export const DELETE = async (
     deleted: true,
   })
 }
-
-export const AUTHENTICATE = false

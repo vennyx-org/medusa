@@ -30,9 +30,20 @@ export async function getViteConfig(
   const baseConfig: InlineConfig = {
     root,
     base: options.path,
+    resolve: {
+      dedupe: ["react", "react-dom"],
+    },
     build: {
       emptyOutDir: true,
       outDir: path.resolve(process.cwd(), options.outDir),
+      /**
+       * Pinned rather than left to Vite's default. Vite 7 changed the default
+       * from `modules` (Chrome 87 / Firefox 78 / Safari 14 / Edge 88) to
+       * `baseline-widely-available` (Chrome 107 / Firefox 104 / Safari 16 /
+       * Edge 107). Setting it explicitly keeps the admin's supported browser
+       * matrix stable across future Vite majors, which move this default.
+       */
+      target: "baseline-widely-available",
     },
     optimizeDeps: {
       include: [
@@ -40,6 +51,8 @@ export async function getViteConfig(
         "react/jsx-runtime",
         "react-dom/client",
         "react-router-dom",
+        "react-router",
+        "react-router/dom",
         "react-i18next",
         "@medusajs/ui",
         "@medusajs/dashboard",
@@ -54,6 +67,10 @@ export async function getViteConfig(
       __AUTH_TYPE__: JSON.stringify(authType),
       __JWT_TOKEN_STORAGE_KEY__: JSON.stringify(jwtTokenStorageKey),
       __STOREFRONT_URL__: JSON.stringify(storefrontUrl),
+      __MAX_UPLOAD_FILE_SIZE__:
+        options.maxUploadFileSize === Infinity
+          ? "Infinity"
+          : JSON.stringify(options.maxUploadFileSize ?? 1024 * 1024),
     },
     server: {
       fs: {

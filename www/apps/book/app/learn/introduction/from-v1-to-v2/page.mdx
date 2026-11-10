@@ -28,7 +28,7 @@ This chapter is also useful for developers who are already familiar with Medusa 
 
 ### Node.js Version
 
-While Medusa v1 supported Node.js v16+, Medusa v2 requires Node.js v20+. So, make sure to update your Node.js version if it's older.
+While Medusa v1 supported Node.js v16+, Medusa v2 requires Node.js v22.22.0+. So, make sure to update your Node.js version if it's older.
 
 Refer to the [Node.js documentation](https://nodejs.org/en/docs/) for instructions on how to update your Node.js version.
 
@@ -406,7 +406,7 @@ You can change `medusa-v2` to any database name you prefer.
 
 Then, run the following commands to create the database and tables:
 
-```bash npm2yarn
+```bash npx2yarn
 npx medusa db:setup
 ```
 
@@ -438,7 +438,7 @@ This section doesn't cover changes related to Medusa Admin customizations. They'
 
 </Note>
 
-The Medusa Admin is now available out-of-the-box. It's built with [Vite v5](https://vite.dev/) and runs at `http://localhost:9000/app` by default when you start your Medusa application.
+The Medusa Admin is now available out-of-the-box. It's built with [Vite v7](https://vite.dev/) and runs at `http://localhost:9000/app` by default when you start your Medusa application.
 
 ### Admin Configurations
 
@@ -530,7 +530,7 @@ In addition, you can build the Medusa Admin separately from the Medusa applicati
 
 ## Medusa CLI Changes
 
-The Medusa CLI for v2 is now in the `@medusajs/cli` package. However, you don't need to install it globally. You can just use `npx medusa` in your Medusa projects.
+The Medusa CLI for v2 is now in the `@medusajs/cli` package. However, you don't need to install it globally. You can just use `npx medusa`, `yarn medusa`, or `pnpm medusa` in your Medusa projects.
 
 Refer to the [Medusa CLI reference](!resources!/medusa-cli) for the full list of commands and options. The following table highlights the main changes between v1 and v2:
 
@@ -641,7 +641,7 @@ The following table highlights the alternatives for the Medusa v1 plugins:
     </Table.Row>
     <Table.Row>
       <Table.Cell>
-        Contenful
+        Contentful
       </Table.Cell>
       <Table.Cell>
         [Guide](!resources!/integrations/guides/contentful)
@@ -948,7 +948,7 @@ In Medusa v1, you had to write migrations manually to create or update tables in
 
 In Medusa v2, you can use the Medusa CLI to generate migrations based on MikroORM. For example:
 
-```bash npm2yarn
+```bash npx2yarn
 npx medusa db:generate brand
 ```
 
@@ -1369,7 +1369,7 @@ Learn more in the [Middlewares](../../fundamentals/api-routes/middlewares/page.m
 
 In Medusa v1, you disabled the body parser in API routes by setting `bodyParser: false` in the route's middleware configuration.
 
-In Medusa v2, you disable the body parser by setting `bodyParser.preserveRawBody` to `true` in the route's middleware configuration. For example:
+In Medusa v2, `bodyParser: false` still disables the body parser the same way. If you only need access to the raw request body instead of disabling parsing entirely, set `bodyParser.preserveRawBody` to `true` in the route's middleware configuration instead. For example:
 
 ```ts title="src/api/middlewares.ts"
 import { defineMiddlewares } from "@medusajs/framework/http"
@@ -1397,7 +1397,7 @@ For example:
 
 ```ts title="src/api/middlewares.ts"
 import { defineMiddlewares } from "@medusajs/framework/http"
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 
 export default defineMiddlewares({
   routes: [
@@ -1552,12 +1552,17 @@ For example:
 import {
   LoaderOptions,
 } from "@medusajs/framework/types"
+import {
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 export default async function helloWorldLoader({
   container,
   options,
 }: LoaderOptions) {
-  const logger = container.resolve("logger")
+  const logger = container.resolve(
+    ContainerRegistrationKeys.LOGGER
+  )
 
   logger.info("[HELLO MODULE] Just started the Medusa application!")
 }
@@ -1579,9 +1584,14 @@ In Medusa v2, a scheduled job function receives only the Medusa container as a p
 
 ```ts title="src/jobs/hello-world.ts"
 import { MedusaContainer } from "@medusajs/framework/types"
+import {
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 export default async function greetingJob(container: MedusaContainer) {
-  const logger = container.resolve("logger")
+  const logger = container.resolve(
+    ContainerRegistrationKeys.LOGGER
+  )
 
   logger.info("Greeting!")
 }
@@ -1706,7 +1716,7 @@ const ProductWidget = () => {
 
 // The widget's configurations
 export const config = defineWidgetConfig({
-  zone: "product.details.before",
+  zone: "product.details",
 })
 
 export default ProductWidget
@@ -1808,7 +1818,7 @@ const ProductWidget = () => {
 
 // The widget's configurations
 export const config = defineWidgetConfig({
-  zone: "product.details.before",
+  zone: "product.details",
 })
 
 export default ProductWidget

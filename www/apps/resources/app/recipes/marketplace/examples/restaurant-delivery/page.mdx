@@ -18,7 +18,7 @@ export const metadata = {
 
 In this guide, you'll learn how to build a restaurant-delivery marketplace platform, similar to Uber Eats, with Medusa.
 
-When you install a Medusa application, you get a fully-fledged commerce platform with support for customizations. While Medusa doesn't provide marketeplace functionalities natively, it provides features that you can extend and a Framework to support all your customization needs to build a marketplace.
+When you install a Medusa application, you get a fully-fledged commerce platform with support for customizations. While Medusa doesn't provide marketplace functionalities natively, it provides features that you can extend and a Framework to support all your customization needs to build a marketplace.
 
 In this guide, you'll customize Medusa to build a restaurant-delivery platform with the following features:
 
@@ -53,7 +53,7 @@ This recipe is adapted from [Medusa Eats](https://github.com/medusajs/medusa-eat
 
 <Prerequisites items={[
   {
-    text: "Node.js v20+",
+    text: "Node.js v20.19.0+ or v22.12.0+",
     link: "https://nodejs.org/en/download"
   },
   {
@@ -68,25 +68,25 @@ This recipe is adapted from [Medusa Eats](https://github.com/medusajs/medusa-eat
 
 Start by installing the Medusa application on your machine with the following command:
 
-```bash
+```bash npx2yarnExec
 npx create-medusa-app@latest
 ```
 
 You'll first be asked for the project's name. You can also optionally choose to install the [Next.js Starter Storefront](../../../../nextjs-starter/page.mdx).
 
-Afterwards, the installation process will start, which will install the Medusa application in a directory with your project's name. If you chose to install the Next.js starter, it'll be installed in a separate directory with the `{project-name}-storefront` name.
+the installation process will start, which will install the Medusa application as a monorepository in a directory with your project's name. The backend is installed in the `apps/backend` directory. If you chose to install the Next.js Starter Storefront, it'll be in the `apps/storefront` directory.
 
-<Note title="Why is the storefront installed separately?">
+Once the installation finishes successfully, the Medusa Admin dashboard will open with a form to create a new user. Enter the user's credential and submit the form. Afterwards, you can log in with the new user and explore the dashboard.
 
-The Medusa application is composed of a headless Node.js server and an admin dashboard. The storefront is installed or custom-built separately and connects to the Medusa application through its REST endpoints, called [API routes](!docs!/learn/fundamentals/api-routes). Learn more about Medusa's architecture in [this documentation](!docs!/learn/introduction/architecture).
+<Note title="Ran into Errors?">
+
+Check out the [troubleshooting guides](../../../../troubleshooting/create-medusa-app-errors/page.mdx) for help.
 
 </Note>
 
-Once the installation finishes successfully, the Medusa Admin dashboard will open with a form to create a new user. Enter the user's credential and submit the form. Afterwards, you can login with the new user and explore the dashboard.
+<Note>
 
-<Note title="Ran to Errors?">
-
-Check out the [troubleshooting guides](../../../../troubleshooting/create-medusa-app-errors/page.mdx) for help.
+In this guide, all file paths of backend customizations are relative to the `apps/backend` directory of your Medusa project.
 
 </Note>
 
@@ -448,7 +448,7 @@ This defines a link between the Delivery Module’s `delivery` data model and th
 
 To create tables for the above data models in the database, start by generating the migrations for the Restaurant and Delivery Modules with the following commands:
 
-```bash
+```bash npx2yarn
 npx medusa db:generate restaurantModuleService
 npx medusa db:generate deliveryModuleService
 ```
@@ -457,7 +457,7 @@ This generates migrations in the `src/modules/restaurant/migrations` and `src/mo
 
 Then, to reflect the migration and links in the database, run the following command:
 
-```bash
+```bash npx2yarn
 npx medusa db:migrate
 ```
 
@@ -569,8 +569,14 @@ You’ll now create the API route that executes the workflow.
 
 Start by creating the file `src/api/restaurants/validation-schemas.ts` that holds the schema to validate the request body:
 
+<Note>
+
+As of [Medusa v2.13.0](https://github.com/medusajs/medusa/releases/tag/v2.13.0), Zod should be imported from `@medusajs/framework/zod`.
+
+</Note>
+
 ```ts title="src/api/restaurants/validation-schemas.ts"
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 
 export const restaurantSchema = z.object({
   name: z.string(),
@@ -627,7 +633,7 @@ To test the API route out, start the Medusa application:
 npm run dev
 ```
 
-Then, send a `POST` request to `/restaurants` :
+Then, send a `POST` request to `/restaurants`:
 
 ```bash
 curl -X POST 'http://localhost:9000/restaurants' \
@@ -724,7 +730,7 @@ This returns the list of restaurants in the response.
 
 ### Further Reads
 
-- [What is and how to use it](!docs!/learn/fundamentals/module-links/query)
+- [What is and how to use it](!docs!/learn/fundamentals/query)
 - [How to Retrieve Prices for Product Variants](../../../../commerce-modules/product/guides/price/page.mdx)
 
 ---
@@ -935,18 +941,17 @@ You’ll now create the API route to create a new user using the `createUserWork
 Start by creating the file `src/api/users/validation-schemas.ts` that holds the schema necessary to validate the request body:
 
 ```ts title="src/api/users/validation-schemas.ts"
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 
-export const createUserSchema = z
-  .object({
-    email: z.string().email(),
-    first_name: z.string(),
-    last_name: z.string(),
-    phone: z.string(),
-    avatar_url: z.string().optional(),
-    restaurant_id: z.string().optional(),
-    actor_type: z.ZodEnum.create(["restaurant", "driver"]),
-  })
+export const createUserSchema = z.object({
+  email: z.email(),
+  first_name: z.string(),
+  last_name: z.string(),
+  phone: z.string(),
+  avatar_url: z.string().optional(),
+  restaurant_id: z.string().optional(),
+  actor_type: z.enum(["restaurant", "driver"]),
+})
 ```
 
 Then, create the file `src/api/users/route.ts` with the following content:
@@ -1369,7 +1374,7 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { 
   AdminCreateProduct,
 } from "@medusajs/medusa/api/admin/products/validators"
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 import { 
   createRestaurantProductsWorkflow,
 } from "../../../../workflows/restaurant/workflows/create-restaurant-products"
@@ -1438,7 +1443,7 @@ curl -X POST 'http://localhost:9000/restaurants/res_01J5X704WQTFSZMRC7Z6S3YAC7/p
 }'
 ```
 
-Make sure to replace the sales channel’s ID with the ID of a sales channel in your store. This is necessary when you later create an order, as the cart must have the same sales channel as the product.
+Make sure to replace the sales channel’s ID with the ID of a sales channel in your store. You'll use the same sales channel for the cart you create later, so that the product shows up in the storefront requests scoped to that sales channel.
 
 The request returns the created product in the response.
 
@@ -1812,6 +1817,9 @@ Create the file `src/workflows/delivery/steps/await-driver-claim.ts` with the fo
 
 ```ts title="src/workflows/delivery/steps/await-driver-claim.ts"
 import { createStep } from "@medusajs/framework/workflows-sdk"
+import {
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 export const awaitDriverClaimStepId = "await-driver-claim-step"
 export const awaitDriverClaimStep = createStep(
@@ -1822,7 +1830,9 @@ export const awaitDriverClaimStep = createStep(
     maxRetries: 2,
   },
   async function (_, { container }) {
-    const logger = container.resolve("logger")
+    const logger = container.resolve(
+      ContainerRegistrationKeys.LOGGER
+    )
     logger.info("Awaiting driver to claim...")
   }
 )
@@ -1982,12 +1992,17 @@ Create the file `src/workflows/delivery/steps/await-start-preparation.ts` with t
 
 ```ts title="src/workflows/delivery/steps/await-start-preparation.ts"
 import { createStep } from "@medusajs/framework/workflows-sdk"
+import {
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 export const awaitStartPreparationStepId = "await-start-preparation-step"
 export const awaitStartPreparationStep = createStep(
   { name: awaitStartPreparationStepId, async: true, timeout: 60 * 15 },
   async function (_, { container }) {
-    const logger = container.resolve("logger")
+    const logger = container.resolve(
+      ContainerRegistrationKeys.LOGGER
+    )
     logger.info("Awaiting start of preparation...")
   }
 )
@@ -2001,12 +2016,17 @@ Create the file `src/workflows/delivery/steps/await-preparation.ts` with the fol
 
 ```ts title="src/workflows/delivery/steps/await-preparation.ts"
 import { createStep } from "@medusajs/framework/workflows-sdk"
+import {
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 export const awaitPreparationStepId = "await-preparation-step"
 export const awaitPreparationStep = createStep(
   { name: awaitPreparationStepId, async: true, timeout: 60 * 15 },
   async function (_, { container }) {
-    const logger = container.resolve("logger")
+    const logger = container.resolve(
+      ContainerRegistrationKeys.LOGGER
+    )
     logger.info("Awaiting preparation...")
   }
 )
@@ -2074,12 +2094,17 @@ Create the file `src/workflows/delivery/steps/await-pick-up.ts` with the followi
 
 ```ts title="src/workflows/delivery/steps/await-pick-up.ts"
 import { createStep } from "@medusajs/framework/workflows-sdk"
+import {
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 export const awaitPickUpStepId = "await-pick-up-step"
 export const awaitPickUpStep = createStep(
   { name: awaitPickUpStepId, async: true, timeout: 60 * 15 },
   async function (_, { container }) {
-    const logger = container.resolve("logger")
+    const logger = container.resolve(
+      ContainerRegistrationKeys.LOGGER
+    )
     logger.info("Awaiting pick up by driver...")
   }
 )
@@ -2094,12 +2119,17 @@ Create the file `src/workflows/delivery/steps/await-delivery.ts` with the follow
 
 ```ts title="src/workflows/delivery/steps/await-delivery.ts"
 import { createStep } from "@medusajs/framework/workflows-sdk"
+import {
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 export const awaitDeliveryStepId = "await-delivery-step"
 export const awaitDeliveryStep = createStep(
   { name: awaitDeliveryStepId, async: true, timeout: 60 * 15 },
   async function (_, { container }) {
-    const logger = container.resolve("logger")
+    const logger = container.resolve(
+      ContainerRegistrationKeys.LOGGER
+    )
     logger.info("Awaiting delivery by driver...")
   }
 )
@@ -2201,14 +2231,14 @@ export const createDeliveryRouteHighlights = [
 ```ts title="src/api/store/deliveries/route.ts" highlights={createDeliveryRouteHighlights} collapsibleLines="1-7" expandButtonLabel="Show Imports"
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { MedusaError } from "@medusajs/framework/utils"
-import zod from "zod"
+import { z } from "@medusajs/framework/zod"
 import { DELIVERY_MODULE } from "../../../modules/delivery"
 import { createDeliveryWorkflow } from "../../../workflows/delivery/workflows/create-delivery"
 import { handleDeliveryWorkflow } from "../../../workflows/delivery/workflows/handle-delivery"
 
-const schema = zod.object({
-  cart_id: zod.string(),
-  restaurant_id: zod.string(),
+const schema = z.object({
+  cart_id: z.string(),
+  restaurant_id: z.string(),
 })
 
 export async function POST(req: MedusaRequest, res: MedusaResponse) {

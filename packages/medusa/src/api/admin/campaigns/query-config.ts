@@ -1,3 +1,8 @@
+export enum Entities {
+  campaign = "campaign",
+  promotion = "promotion",
+}
+
 export const defaultAdminCampaignFields = [
   "id",
   "name",
@@ -15,9 +20,11 @@ export const defaultAdminCampaignFields = [
 export const retrieveTransformQueryConfig = {
   defaults: defaultAdminCampaignFields,
   isList: false,
+  entity: Entities.campaign,
 }
 
 export const listTransformQueryConfig = {
   ...retrieveTransformQueryConfig,
   isList: true,
+  entity: Entities.campaign,
 }

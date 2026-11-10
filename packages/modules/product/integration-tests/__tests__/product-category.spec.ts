@@ -36,13 +36,14 @@ moduleIntegrationTestRunner<Service>({
           const productCategoryResults = await service.list(
             {},
             {
-              select: ["id", "parent_category_id"],
+              select: ["id", "external_id", "parent_category_id"],
             }
           )
 
           expect(productCategoryResults).toEqual([
             expect.objectContaining({
               id: "category-0",
+              external_id: "ext-id-0",
             }),
             expect.objectContaining({
               id: "category-1",
@@ -105,6 +106,17 @@ moduleIntegrationTestRunner<Service>({
             }),
             expect.objectContaining({
               id: "category-1-b-1",
+            }),
+          ])
+
+
+          productCategoryResults = await service.list({
+            external_id: "ext-id-0",
+          })
+
+          expect(productCategoryResults).toEqual([
+            expect.objectContaining({
+              id: "category-0",
             }),
           ])
         })
@@ -920,6 +932,33 @@ moduleIntegrationTestRunner<Service>({
           )
         })
 
+        it("should create a category with external_id successfully", async () => {  
+          await service.create([
+            {
+              name: "New Category Ext Id",
+              handle: "new-category-ext-id",
+              parent_category_id: null,
+              external_id: "external-id",
+            },
+          ])
+          
+          const [productCategory] = await service.list(
+            {
+              name: "New Category Ext Id",
+            },
+            {
+              select: ["name", "external_id"],
+            }
+          )
+
+          expect(JSON.parse(JSON.stringify(productCategory))).toEqual(
+            expect.objectContaining({
+              name: "New Category Ext Id",
+              external_id: "external-id",
+            })
+          )
+        });
+
         it("should append rank from an existing category depending on parent", async () => {
           await service.create([
             {
@@ -1153,6 +1192,24 @@ moduleIntegrationTestRunner<Service>({
           )
         })
 
+        it('should update the external_id of the category successfully', async () => {
+          await service.update([
+            {
+              id: productCategoryZero.id,
+              external_id: "new-external-id",
+            },
+          ])
+
+          const productCategory = await service.retrieve(
+            productCategoryZero.id,
+            {
+              select: ["external_id"],
+            }
+          )
+
+          expect(productCategory.external_id).toEqual("new-external-id")
+        })
+
         it(`should update the mpath of the full descendent tree successfully when moving the grand parent in the hierarchy`, async () => {
           for (const entry of eletronicsCategoriesData) {
             await service.create([entry])
@@ -1202,15 +1259,15 @@ moduleIntegrationTestRunner<Service>({
                         "electronics.computers.desktops.gaming-desktops.laptops.gaming-laptops.high-performance",
                       category_children: [
                         expect.objectContaining({
-                          id: "4k-gaming",
-                          mpath:
-                            "electronics.computers.desktops.gaming-desktops.laptops.gaming-laptops.high-performance.4k-gaming",
-                          parent_category_id: "high-performance",
-                        }),
-                        expect.objectContaining({
                           id: "vr-ready",
                           mpath:
                             "electronics.computers.desktops.gaming-desktops.laptops.gaming-laptops.high-performance.vr-ready",
+                          parent_category_id: "high-performance",
+                        }),
+                        expect.objectContaining({
+                          id: "4k-gaming",
+                          mpath:
+                            "electronics.computers.desktops.gaming-desktops.laptops.gaming-laptops.high-performance.4k-gaming",
                           parent_category_id: "high-performance",
                         }),
                       ],
@@ -1224,30 +1281,30 @@ moduleIntegrationTestRunner<Service>({
                   parent_category_id: "laptops",
                   category_children: [
                     expect.objectContaining({
+                      id: "thin-light",
+                      mpath:
+                        "electronics.computers.desktops.gaming-desktops.laptops.ultrabooks.thin-light",
+                      parent_category_id: "ultrabooks",
+                    }),
+                    expect.objectContaining({
                       id: "convertible-ultrabooks",
                       mpath:
                         "electronics.computers.desktops.gaming-desktops.laptops.ultrabooks.convertible-ultrabooks",
                       parent_category_id: "ultrabooks",
                       category_children: [
                         expect.objectContaining({
-                          id: "detachable-ultrabooks",
-                          mpath:
-                            "electronics.computers.desktops.gaming-desktops.laptops.ultrabooks.convertible-ultrabooks.detachable-ultrabooks",
-                          parent_category_id: "convertible-ultrabooks",
-                        }),
-                        expect.objectContaining({
                           id: "touchscreen-ultrabooks",
                           mpath:
                             "electronics.computers.desktops.gaming-desktops.laptops.ultrabooks.convertible-ultrabooks.touchscreen-ultrabooks",
                           parent_category_id: "convertible-ultrabooks",
                         }),
+                        expect.objectContaining({
+                          id: "detachable-ultrabooks",
+                          mpath:
+                            "electronics.computers.desktops.gaming-desktops.laptops.ultrabooks.convertible-ultrabooks.detachable-ultrabooks",
+                          parent_category_id: "convertible-ultrabooks",
+                        }),
                       ],
-                    }),
-                    expect.objectContaining({
-                      id: "thin-light",
-                      mpath:
-                        "electronics.computers.desktops.gaming-desktops.laptops.ultrabooks.thin-light",
-                      parent_category_id: "ultrabooks",
                     }),
                   ],
                 }),

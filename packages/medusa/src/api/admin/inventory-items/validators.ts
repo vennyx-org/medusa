@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 import {
   applyAndAndOrOperators,
   booleanString,
@@ -123,11 +123,12 @@ export const AdminCreateInventoryItem = z
     origin_country: z.string().nullish(),
     mid_code: z.string().nullish(),
     material: z.string().nullish(),
+    unit_of_measure: z.string().nullish(),
     title: z.string().nullish(),
     description: z.string().nullish(),
     requires_shipping: z.boolean().optional(),
     thumbnail: z.string().nullish(),
-    metadata: z.record(z.unknown()).nullish(),
+    metadata: z.record(z.string(), z.unknown()).nullish(),
     location_levels: z.array(AdminCreateInventoryLocationLevel).optional(),
   })
   .strict()
@@ -146,11 +147,12 @@ export const AdminUpdateInventoryItem = z
     origin_country: z.string().nullish(),
     mid_code: z.string().nullish(),
     material: z.string().nullish(),
+    unit_of_measure: z.string().nullish(),
     title: z.string().nullish(),
     description: z.string().nullish(),
     requires_shipping: z.boolean().optional(),
     thumbnail: z.string().nullish(),
-    metadata: z.record(z.unknown()).nullish(),
+    metadata: z.record(z.string(), z.unknown()).nullish(),
   })
   .strict()
 

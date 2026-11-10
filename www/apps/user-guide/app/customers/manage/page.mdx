@@ -9,7 +9,7 @@ products:
 ---
 
 import { EllipsisHorizontal, ArrowUpRightOnBox, EllipsisVertical } from "@medusajs/icons"
-import { Table } from "docs-ui"
+import { Table, Prerequisites } from "docs-ui"
 
 export const metadata = {
   title: `Manage Customers in Medusa Admin`,
@@ -20,6 +20,8 @@ export const metadata = {
 In this guide, you’ll learn how to create and manage customers and their details.
 
 ## Create a Customer
+
+<PermissionsBadge permissions={["customer:create"]} />
 
 You can create a customer through the Medusa Admin, which is useful if a customer is creating an order offline. The customer will be a guest customer; to register, the customer must register through the storefront.
 
@@ -36,6 +38,8 @@ To create a customer from the Medusa Admin:
 
 ## View Customer Details
 
+<PermissionsBadge permissions={["customer:read"]} />
+
 To view a customer’s details:
 
 1. Go to the Customers page.
@@ -50,8 +54,12 @@ In the first section's header, you can see a badge with the customer's type:
 <Table>
   <Table.Header>
     <Table.Row>
-      <Table.HeaderCell>Customer Type</Table.HeaderCell>
-      <Table.HeaderCell>Description</Table.HeaderCell>
+      <Table.HeaderCell>
+        Customer Type
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Description
+      </Table.HeaderCell>
     </Table.Row>
   </Table.Header>
   <Table.Body>
@@ -69,6 +77,8 @@ In the first section's header, you can see a badge with the customer's type:
 ---
 
 ## Edit Customer Details
+
+<PermissionsBadge permissions={["customer:update"]} />
 
 <Note>
 
@@ -90,9 +100,13 @@ To edit a customer’s details:
 
 ## View Customer Orders
 
+<PermissionsBadge permissions={["customer:read", "order:read"]} />
+
 You can view a customer’s orders from their details page in the Orders section. By clicking on an order, you can view its details.
 
 ### Transfer Order to Another Customer
+
+<PermissionsBadge permissions={["customer:update", "order:read", "order:update"]} />
 
 You can transfer an order to another customer. For example, a guest customer registered, or a customer created an order offline.
 
@@ -130,6 +144,8 @@ You can add a customer to multiple groups, allowing you to offer different promo
 
 ### Add Customer to Groups
 
+<PermissionsBadge permissions={["customer:update", "customer_group:update"]} />
+
 To add a customer to customer groups:
 
 1. Go to the customer's details page.
@@ -140,6 +156,8 @@ To add a customer to customer groups:
 ![Add groups form](https://res.cloudinary.com/dza7lstvk/image/upload/v1739888065/User%20Guide/Screenshot_2025-02-18_at_4.14.13_PM_jntqs2.png)
 
 ### Remove Customer from Groups
+
+<PermissionsBadge permissions={["customer:update", "customer_group:update"]} />
 
 To remove a customer from customer groups:
 
@@ -153,6 +171,8 @@ To remove a customer from customer groups:
 ---
 
 ## Edit Customer Metadata
+
+<PermissionsBadge permissions={["customer:update"]} />
 
 Metadata is custom data that can be associated with the customer in key-value pairs. This is usually used by developers for custom integrations or to store additional information about the customer.
 
@@ -184,6 +204,8 @@ The Address section and management features are only available after  This injec
 
 ### Add Customer Address
 
+<PermissionsBadge permissions={["customer:update", "customer_address:create"]} />
+
 To add an address to a customer:
 
 1. Go to the customer's details page.
@@ -194,6 +216,8 @@ To add an address to a customer:
 ![Add address form](https://res.cloudinary.com/dza7lstvk/image/upload/v1744363680/User%20Guide/Screenshot_2025-04-11_at_12.27.45_PM_h0fkqm.png)
 
 ### Delete Customer Address
+
+<PermissionsBadge permissions={["customer:update", "customer_address:delete"]} />
 
 <Note type="warning">
 
@@ -211,7 +235,31 @@ To delete a customer address:
 
 ---
 
+## View Customer's Store Credits
+
+<Prerequisites
+  items={[
+    {
+      text: "Loyalty plugin installed",
+      link: "!resources!/commerce-modules/store-credit#1-install-the-loyalty-plugin",
+    },
+  ]}
+/>
+
+If you have the Loyalty plugin installed, customers can have [store credit accounts](../../loyalty/store-credits/page.mdx). These accounts allow you to credit customers manually, or when you issue a refund for an order. Customers can then apply the store credit balance at checkout.
+
+To view a customer's store credit accounts:
+
+1. Go to the customer's details page.
+2. In the "Store Credits" section, you can see all store credit accounts linked to the customer, along with their current balance and currency.
+
+By clicking on an account, you can view its details and transaction history, and credit the account. See the [Manage Store Credits](../../loyalty/store-credits/manage/page.mdx) guide for more details.
+
+---
+
 ## Delete a Customer
+
+<PermissionsBadge permissions={["customer:delete"]} />
 
 <Note type="warning">
 

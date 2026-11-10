@@ -100,6 +100,11 @@ export interface TranslationSettingsDTO {
   fields: string[]
 
   /**
+   * Whether the entity translatable status is enabled.
+   */
+  is_active: boolean
+
+  /**
    * The date and time the settings were created.
    */
   created_at: Date | string
@@ -118,8 +123,7 @@ export interface TranslationSettingsDTO {
 /**
  * The filters to apply on the retrieved locales.
  */
-export interface FilterableLocaleProps
-  extends BaseFilterable<FilterableLocaleProps> {
+export interface FilterableLocaleProps extends BaseFilterable<FilterableLocaleProps> {
   /**
    * The IDs to filter the locales by.
    */
@@ -139,8 +143,7 @@ export interface FilterableLocaleProps
 /**
  * The filters to apply on the retrieved translations.
  */
-export interface FilterableTranslationProps
-  extends BaseFilterable<FilterableTranslationProps> {
+export interface FilterableTranslationProps extends BaseFilterable<FilterableTranslationProps> {
   /**
    * Search through translated content using this search term.
    * This searches within the JSONB translations field values.
@@ -168,13 +171,29 @@ export interface FilterableTranslationProps
   locale_code?: string | string[] | OperatorMap<string>
 }
 
+export interface FilterableTranslationSettingsProps extends BaseFilterable<FilterableTranslationSettingsProps> {
+  /**
+   * The IDs to filter the translation settings by.
+   */
+  id?: string[] | string | OperatorMap<string | string[]>
+
+  /**
+   * Filter translation settings by entity type.
+   */
+  entity_type?: string | string[] | OperatorMap<string | string[]>
+  /**
+   * Filter translation settings by active status.
+   */
+  is_active?: boolean | OperatorMap<boolean>
+}
+
 /**
  * Input for getStatistics method.
  */
 export interface TranslationStatisticsInput {
   /**
    * Locales to check translations for.
-   * 
+   *
    * @example
    * ["en-US", "fr-FR"]
    */
@@ -183,15 +202,18 @@ export interface TranslationStatisticsInput {
   /**
    * Key-value pairs of entity types and their configurations.
    */
-  entities: Record<string, {
-    /**
-     * Total number of records for the entity type.
-     * For example, total number of products.
-     * 
-     * This is necessary to compute expected translation counts.
-     */ 
-    count: number
-  }>
+  entities: Record<
+    string,
+    {
+      /**
+       * Total number of records for the entity type.
+       * For example, total number of products.
+       *
+       * This is necessary to compute expected translation counts.
+       */
+      count: number
+    }
+  >
 }
 
 /**

@@ -221,10 +221,10 @@ function retrieveLinkModuleAndAlias({
   for (const linkModuleJoinerConfig of moduleJoinerConfigs.filter(
     (config) => config.isLink && !config.isReadOnlyLink
   )) {
-    const linkPrimary =
-      linkModuleJoinerConfig.relationships![0] as ModuleJoinerRelationship
-    const linkForeign =
-      linkModuleJoinerConfig.relationships![1] as ModuleJoinerRelationship
+    const linkPrimary = linkModuleJoinerConfig
+      .relationships![0] as ModuleJoinerRelationship
+    const linkForeign = linkModuleJoinerConfig
+      .relationships![1] as ModuleJoinerRelationship
 
     const isDirectMatch =
       linkPrimary.serviceName === primaryModuleConfig.serviceName &&
@@ -842,6 +842,11 @@ function processEntity(
               objectName: intermediateEntityName,
               prefix: kebabCasedServiceName,
             }),
+            buildModuleResourceEventName({
+              action: CommonEvents.RESTORED,
+              objectName: intermediateEntityName,
+              prefix: kebabCasedServiceName,
+            }),
           ]
           intermediateEntityObjectRepresentationRef.moduleConfig =
             intermediateEntityModule
@@ -915,14 +920,14 @@ function processEntity(
           servicesEntityMap: servicesEntityMap,
         })?.isArray
 
-        const parentAlreadyExists = currentObjectRepresentationRef.parents.some(
+        const existingParent = currentObjectRepresentationRef.parents.find(
           (existingParent) =>
             existingParent.ref?.entity ===
               currentParentIntermediateRef.entity &&
             existingParent.targetProp === entityTargetPropertyNameInParent
         )
 
-        if (!parentAlreadyExists) {
+        if (!existingParent) {
           currentObjectRepresentationRef.parents.push({
             ref: currentParentIntermediateRef,
             inSchemaRef: parentObjectRepresentationRef,
@@ -930,6 +935,8 @@ function processEntity(
             inverseSideProp: parentPropertyNameWithinCurrentEntity?.name!,
             isList: entityTargetPropertyIsListInParent,
           })
+        } else if (!existingParent.inSchemaRef) {
+          existingParent.inSchemaRef = parentObjectRepresentationRef
         }
       }
     }
@@ -1205,7 +1212,7 @@ function buildSchemaFromFilterableLinks(
       }
 
       const normalizedEntity = lowerCaseFirst(kebabCase(entity))
-      const events = `@Listeners(values: ["${serviceName}.${normalizedEntity}.created", "${serviceName}.${normalizedEntity}.updated", "${serviceName}.${normalizedEntity}.deleted"])`
+      const events = `@Listeners(values: ["${serviceName}.${normalizedEntity}.created", "${serviceName}.${normalizedEntity}.updated", "${serviceName}.${normalizedEntity}.deleted", "${serviceName}.${normalizedEntity}.restored"])`
 
       const fieldDefinitions = fields
         .map((field) => {

@@ -11,7 +11,7 @@ export const CustomerDetailBreadcrumb = (
   const { id } = props.params || {}
 
   const { customer } = useCustomer(id!, undefined, {
-    initialData: props.data,
+    initialData: props.loaderData,
     enabled: Boolean(id),
   })
 
@@ -26,4 +26,18 @@ export const CustomerDetailBreadcrumb = (
   const display = name || customer.email
 
   return <span>{display}</span>
+}
+
+export const seo = (match: UIMatch<HttpTypes.AdminCustomerResponse>) => {
+  const customer = match.loaderData?.customer
+
+  if (!customer) {
+    return { title: undefined }
+  }
+
+  const name = [customer.first_name, customer.last_name]
+    .filter(Boolean)
+    .join(" ")
+
+  return { title: name || customer.email }
 }

@@ -21,8 +21,7 @@ post:
     - lang: JavaScript
       label: JS SDK
       source:
-        $ref: >-
-          ../code_samples/JavaScript/admin_draft-orders_{id}_convert-to-order/post.js
+        $ref: ../code_samples/JavaScript/admin_draft-orders_{id}_convert-to-order/post.js
     - lang: Shell
       label: cURL
       source:
@@ -63,6 +62,17 @@ post:
 
         order.
       deprecated: false
+    - name: reservation-item.created
+      payload: |-
+        ```ts
+        {
+          id, // The ID of the reservation
+          order_id, // (optional) The ID of the order, if the reservation was created by an order flow
+        }
+        ```
+      description: Emitted when reservations are created.
+      deprecated: false
+      since: 2.18.0
   requestBody:
     content:
       application/json:

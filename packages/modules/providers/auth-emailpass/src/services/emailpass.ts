@@ -6,18 +6,39 @@ import {
   EmailPassAuthProviderOptions,
   Logger,
 } from "@medusajs/framework/types"
-import { AbstractAuthModuleProvider, isString, MedusaError, } from "@medusajs/framework/utils"
-import Scrypt from "scrypt-kdf"
+import {
+  AbstractAuthModuleProvider,
+  isString,
+  MedusaError,
+} from "@medusajs/framework/utils"
 import { isPresent } from "@medusajs/utils"
+
+type ScryptKdf = typeof import("scrypt-kdf", {
+  with: { "resolution-mode": "import" },
+})
+
+let scryptKdf: ScryptKdf | undefined
+
+// scrypt-kdf is ESM-only, and Jest run with --experimental-vm-modules rejects require() of ESM
+async function loadScrypt(): Promise<ScryptKdf> {
+  scryptKdf ??= (
+    (await import("scrypt-kdf")) as unknown as { default: ScryptKdf }
+  ).default
+  return scryptKdf
+}
 
 type InjectedDependencies = {
   logger: Logger
 }
 
 type AuthIdentityParams = {
-  email: string;
-  password: string;
+  email: string
+  password: string
   authIdentityService: AuthIdentityProviderService
+}
+
+type ProviderMetadata = {
+  password?: unknown
 }
 
 interface LocalServiceConfig extends EmailPassAuthProviderOptions {}
@@ -41,8 +62,9 @@ export class EmailPassAuthService extends AbstractAuthModuleProvider {
 
   protected async hashPassword(password: string) {
     const hashConfig = this.config_.hashConfig ?? { logN: 15, r: 8, p: 1 }
+    const Scrypt = await loadScrypt()
     const passwordHash = await Scrypt.kdf(password, hashConfig)
-    return passwordHash.toString("base64")
+    return Buffer.from(passwordHash).toString("base64")
   }
 
   async update(
@@ -66,9 +88,14 @@ export class EmailPassAuthService extends AbstractAuthModuleProvider {
 
     try {
       const passwordHash = await this.hashPassword(password)
+      const providerMetadata = await this.getProviderMetadata_(
+        entity_id,
+        authIdentityService
+      )
 
       authIdentity = await authIdentityService.update(entity_id, {
         provider_metadata: {
+          ...providerMetadata,
           password: passwordHash,
         },
       })
@@ -78,7 +105,7 @@ export class EmailPassAuthService extends AbstractAuthModuleProvider {
 
     return {
       success: true,
-      authIdentity,
+      authIdentity: this.sanitizeAuthIdentity_(authIdentity),
     }
   }
 
@@ -119,26 +146,10 @@ export class EmailPassAuthService extends AbstractAuthModuleProvider {
       return { success: false, error: error.message }
     }
 
-    const providerIdentity = authIdentity.provider_identities?.find(
-      (pi) => pi.provider === this.provider
-    )!
-    const passwordHash = providerIdentity.provider_metadata?.password
-
-    if (isString(passwordHash)) {
-      const buf = Buffer.from(passwordHash as string, "base64")
-      const success = await Scrypt.verify(buf, password)
-
-      if (success) {
-        const copy = JSON.parse(JSON.stringify(authIdentity))
-        const providerIdentity = copy.provider_identities?.find(
-          (pi) => pi.provider === this.provider
-        )!
-        delete providerIdentity.provider_metadata?.password
-
-        return {
-          success,
-          authIdentity: copy,
-        }
+    if (await this.isPasswordMatch_(password, authIdentity)) {
+      return {
+        success: true,
+        authIdentity: this.sanitizeAuthIdentity_(authIdentity),
       }
     }
 
@@ -173,17 +184,13 @@ export class EmailPassAuthService extends AbstractAuthModuleProvider {
         entity_id: email,
       })
 
-      // If app_metadata is not defined or empty, it means no actor was assigned to the auth_identity yet (still "claimable")
-      if (!isPresent(identity.app_metadata)) {
-        const updatedAuthIdentity = await this.upsertAuthIdentity('update', {
-          email,
-          password,
-          authIdentityService,
-        })
-
+      if (
+        !isPresent(identity.app_metadata) &&
+        (await this.isPasswordMatch_(password, identity))
+      ) {
         return {
           success: true,
-          authIdentity: updatedAuthIdentity,
+          authIdentity: this.sanitizeAuthIdentity_(identity),
         }
       }
 
@@ -193,7 +200,7 @@ export class EmailPassAuthService extends AbstractAuthModuleProvider {
       }
     } catch (error) {
       if (error.type === MedusaError.Types.NOT_FOUND) {
-        const createdAuthIdentity = await this.upsertAuthIdentity('create', {
+        const createdAuthIdentity = await this.createAuthIdentity({
           email,
           password,
           authIdentityService,
@@ -209,26 +216,64 @@ export class EmailPassAuthService extends AbstractAuthModuleProvider {
     }
   }
 
-  private async upsertAuthIdentity(type: 'update' | 'create', { email, password, authIdentityService }: AuthIdentityParams) {
-    const passwordHash = await this.hashPassword(password)
-
-    const authIdentity = type === 'create' ? await authIdentityService.create({
-        entity_id: email,
-        provider_metadata: {
-          password: passwordHash,
-        },
-      }) : await authIdentityService.update(email, {
+  private async createAuthIdentity({
+    email,
+    password,
+    authIdentityService,
+  }: AuthIdentityParams) {
+    const authIdentity = await authIdentityService.create({
+      entity_id: email,
       provider_metadata: {
-        password: passwordHash,
+        password: await this.hashPassword(password),
       },
     })
 
+    return this.sanitizeAuthIdentity_(authIdentity)
+  }
+
+  private async isPasswordMatch_(
+    password: string,
+    authIdentity: AuthIdentityDTO
+  ): Promise<boolean> {
+    const providerIdentity = this.getProviderIdentity_(authIdentity)
+    const passwordHash = providerIdentity?.provider_metadata?.password
+
+    if (!isString(passwordHash)) {
+      return false
+    }
+
+    const Scrypt = await loadScrypt()
+    return await Scrypt.verify(Buffer.from(passwordHash, "base64"), password)
+  }
+
+  private async getProviderMetadata_(
+    entityId: string,
+    authIdentityService: AuthIdentityProviderService
+  ): Promise<ProviderMetadata> {
+    const authIdentity = await authIdentityService.retrieve({
+      entity_id: entityId,
+    })
+    const providerIdentity = this.getProviderIdentity_(authIdentity)
+
+    return {
+      ...(providerIdentity.provider_metadata ?? {}),
+    }
+  }
+
+  private sanitizeAuthIdentity_(
+    authIdentity: AuthIdentityDTO
+  ): AuthIdentityDTO {
     const copy = JSON.parse(JSON.stringify(authIdentity))
-    const providerIdentity = copy.provider_identities?.find(
-      (pi) => pi.provider === this.provider
-    )!
+    const providerIdentity = this.getProviderIdentity_(copy)
+
     delete providerIdentity.provider_metadata?.password
 
     return copy
+  }
+
+  private getProviderIdentity_(authIdentity: AuthIdentityDTO) {
+    return authIdentity.provider_identities?.find(
+      (pi) => pi.provider === this.provider
+    )!
   }
 }

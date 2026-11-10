@@ -29,7 +29,7 @@ export type ActionGroup = {
   actions: Action[]
 }
 
-type ActionMenuProps = PropsWithChildren<{
+export type ActionMenuProps = PropsWithChildren<{
   groups: ActionGroup[]
   variant?: "transparent" | "primary"
 }>
@@ -82,7 +82,7 @@ export const ActionMenu = ({
                           action.onClick()
                         }}
                         className={clx(
-                          "[&_svg]:text-ui-fg-subtle flex items-center gap-x-2",
+                          "flex items-center gap-x-2 [&_svg]:text-ui-fg-subtle",
                           {
                             "[&_svg]:text-ui-fg-disabled": action.disabled,
                           }
@@ -99,7 +99,7 @@ export const ActionMenu = ({
                   <Wrapper key={index}>
                     <DropdownMenu.Item
                       className={clx(
-                        "[&_svg]:text-ui-fg-subtle flex items-center gap-x-2",
+                        "flex items-center gap-x-2 [&_svg]:text-ui-fg-subtle",
                         {
                           "[&_svg]:text-ui-fg-disabled": action.disabled,
                         }

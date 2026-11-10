@@ -1,28 +1,38 @@
 import * as QueryConfig from "./query-config"
+import { Entities } from "./query-config"
 
 import {
   AdminCreateInvite,
+  AdminCreateInviteType,
   AdminGetInviteAcceptParams,
   AdminGetInviteParams,
   AdminGetInvitesParams,
   AdminInviteAccept,
 } from "./validators"
 
-import { MiddlewareRoute } from "@medusajs/framework/http"
-import { authenticate } from "../../../utils/middlewares/authenticate-middleware"
 import {
   validateAndTransformBody,
   validateAndTransformQuery,
 } from "@medusajs/framework"
+import {
+  authorize,
+  authorizeIfNecessary,
+  MiddlewareRoute,
+} from "@medusajs/framework/http"
+import { PolicyOperation } from "@medusajs/framework/utils"
+import { authenticate } from "../../../utils/middlewares/authenticate-middleware"
 
-// TODO: Due to issues with our routing (and using router.use for applying middlewares), we have to opt-out of global auth in all routes, and then reapply it here.
-// See https://medusacorp.slack.com/archives/C025KMS13SA/p1716455350491879 for details.
 export const adminInviteRoutesMiddlewares: MiddlewareRoute[] = [
   {
     method: ["GET"],
     matcher: "/admin/invites",
     middlewares: [
-      authenticate("user", ["session", "bearer", "api-key"]),
+      authorize([
+        {
+          resource: Entities.invite,
+          operation: PolicyOperation.read,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetInvitesParams,
         QueryConfig.listTransformQueryConfig
@@ -33,8 +43,20 @@ export const adminInviteRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/invites",
     middlewares: [
-      authenticate("user", ["session", "bearer", "api-key"]),
+      authorize([
+        {
+          resource: Entities.invite,
+          operation: PolicyOperation.create,
+        },
+      ]),
       validateAndTransformBody(AdminCreateInvite),
+      authorizeIfNecessary<AdminCreateInviteType>(
+        (req) => !!req.validatedBody?.roles?.length,
+        {
+          resource: "rbac_role_assignment",
+          operation: PolicyOperation.create,
+        }
+      ),
       validateAndTransformQuery(
         AdminGetInviteParams,
         QueryConfig.retrieveTransformQueryConfig
@@ -59,7 +81,12 @@ export const adminInviteRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["GET"],
     matcher: "/admin/invites/:id",
     middlewares: [
-      authenticate("user", ["session", "bearer", "api-key"]),
+      authorize([
+        {
+          resource: Entities.invite,
+          operation: PolicyOperation.read,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetInviteParams,
         QueryConfig.retrieveTransformQueryConfig
@@ -69,13 +96,25 @@ export const adminInviteRoutesMiddlewares: MiddlewareRoute[] = [
   {
     method: ["DELETE"],
     matcher: "/admin/invites/:id",
-    middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.invite,
+          operation: PolicyOperation.delete,
+        },
+      ]),
+    ],
   },
   {
     method: "POST",
     matcher: "/admin/invites/:id/resend",
     middlewares: [
-      authenticate("user", ["session", "bearer", "api-key"]),
+      authorize([
+        {
+          resource: Entities.invite,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetInviteParams,
         QueryConfig.retrieveTransformQueryConfig

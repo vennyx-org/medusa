@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 import {
   createFindParams,
   createOperatorMap,
@@ -44,7 +44,7 @@ export const AdminCreateTaxRate = z.object({
   is_combinable: z.boolean().optional(),
   is_compound: z.boolean().optional(),
   tax_region_id: z.string(),
-  metadata: z.record(z.unknown()).nullish(),
+  metadata: z.record(z.string(), z.unknown()).nullish(),
 })
 
 export type AdminUpdateTaxRateType = z.infer<typeof AdminUpdateTaxRate>
@@ -56,5 +56,5 @@ export const AdminUpdateTaxRate = z.object({
   is_default: z.boolean().optional(),
   is_combinable: z.boolean().optional(),
   is_compound: z.boolean().optional(),
-  metadata: z.record(z.unknown()).nullish(),
+  metadata: z.record(z.string(), z.unknown()).nullish(),
 })

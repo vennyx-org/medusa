@@ -4,7 +4,7 @@ import { Button, Input, toast } from "@medusajs/ui"
 import { RouteDrawer, useRouteModal } from "../../../../../../components/modals"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { InventoryTypes } from "@medusajs/types"
+import { AdminInventoryItem } from "@medusajs/types"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod"
@@ -15,7 +15,7 @@ import { KeyboundForm } from "../../../../../../components/utilities/keybound-fo
 import { useUpdateInventoryItem } from "../../../../../../hooks/api/inventory"
 
 type EditInventoryItemAttributeFormProps = {
-  item: InventoryTypes.InventoryItemDTO
+  item: AdminInventoryItem
 }
 
 const EditInventoryItemAttributesSchema = z.object({
@@ -25,11 +25,12 @@ const EditInventoryItemAttributesSchema = z.object({
   weight: z.number().positive().optional(),
   mid_code: z.string().optional(),
   material: z.string().optional(),
+  unit_of_measure: z.string().optional(),
   hs_code: z.string().optional(),
   origin_country: z.string().optional(),
 })
 
-const getDefaultValues = (item: InventoryTypes.InventoryItemDTO) => {
+const getDefaultValues = (item: AdminInventoryItem) => {
   return {
     height: item.height ?? undefined,
     width: item.width ?? undefined,
@@ -37,6 +38,7 @@ const getDefaultValues = (item: InventoryTypes.InventoryItemDTO) => {
     weight: item.weight ?? undefined,
     mid_code: item.mid_code ?? undefined,
     material: item.material ?? undefined,
+    unit_of_measure: item.unit_of_measure ?? undefined,
     hs_code: item.hs_code ?? undefined,
     origin_country: item.origin_country ?? undefined,
   }
@@ -56,13 +58,20 @@ export const EditInventoryItemAttributesForm = ({
   const { mutateAsync, isPending: isLoading } = useUpdateInventoryItem(item.id)
 
   const handleSubmit = form.handleSubmit(async (values) => {
-    await mutateAsync(values, {
-      onSuccess: () => {
-        toast.success(t("inventory.toast.updateItem"))
-        handleSuccess()
+    await mutateAsync(
+      {
+        ...values,
+        origin_country: values.origin_country || null,
+        unit_of_measure: values.unit_of_measure || null,
       },
-      onError: (error) => toast.error(error.message),
-    })
+      {
+        onSuccess: () => {
+          toast.success(t("inventory.toast.updateItem"))
+          handleSuccess()
+        },
+        onError: (error) => toast.error(error.message),
+      }
+    )
   })
 
   return (
@@ -233,6 +242,25 @@ export const EditInventoryItemAttributesForm = ({
               )
             }}
           />
+          <Form.Field
+            control={form.control}
+            name="unit_of_measure"
+            render={({ field }) => {
+              return (
+                <Form.Item>
+                  <Form.Label optional>{t("fields.unitOfMeasure")}</Form.Label>
+                  <Form.Control>
+                    <Input
+                      {...field}
+                      placeholder={t("inventory.unitOfMeasurePlaceholder")}
+                    />
+                  </Form.Control>
+                  <Form.Hint>{t("inventory.unitOfMeasureHint")}</Form.Hint>
+                  <Form.ErrorMessage />
+                </Form.Item>
+              )
+            }}
+          />
 
           <Form.Field
             control={form.control}
@@ -244,7 +272,7 @@ export const EditInventoryItemAttributesForm = ({
                     {t("fields.countryOfOrigin")}
                   </Form.Label>
                   <Form.Control>
-                    <CountrySelect {...field} />
+                    <CountrySelect {...field} allowClear />
                   </Form.Control>
                   <Form.ErrorMessage />
                 </Form.Item>

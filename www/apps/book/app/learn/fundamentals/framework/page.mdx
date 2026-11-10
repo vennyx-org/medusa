@@ -14,7 +14,7 @@ All commerce application require some degree of customization. So, it's importan
 
 When you build customizations with other ecommerce platforms, they require you to pull data through HTTP APIs, run custom logic that span across systems in a separate application, and manually ensure data consistency across systems. This adds significant overhead and slows down development as you spend time managing complex distributed systems.
 
-The Medusa Framework eliminates this overhead by providing powerful low-level APIs and tools that let you build any type of customization directly within your Medusa project. You can build custom features, orchestrate operations and query data seamlessy across systems, extend core functionality, and automate tasks in your Medusa application.
+The Medusa Framework eliminates this overhead by providing powerful low-level APIs and tools that let you build any type of customization directly within your Medusa project. You can build custom features, orchestrate operations and query data seamlessly across systems, extend core functionality, and automate tasks in your Medusa application.
 
 With the Medusa Framework, you can focus your efforts on building meaningful business customizations and continuously delivering new features.
 
@@ -45,7 +45,7 @@ Using the Medusa Framework, you can build customizations like:
     },
     {
       title: "Query",
-      link: "/learn/fundamentals/module-links/query",
+      link: "/learn/fundamentals/query",
     },
     {
       title: "Data Models",
@@ -154,7 +154,7 @@ type Input = {
   title: string
 }
 
-const createPostStep = createStep(
+export const createPostStep = createStep(
   "create-post", 
   async (input: Input, { container }) => {
     const blogModuleService: BlogModuleService = container.resolve(
@@ -790,7 +790,7 @@ export default Module(BRAND_MODULE, {
   </CodeTab>
 </CodeTabs>
 
-Then, you can use [Query](../module-links/query/page.mdx) to retrieve a product and its brand from the third-party service in a single query.
+Then, you can use [Query](../query/page.mdx) to retrieve a product and its brand from the third-party service in a single query.
 
 export const queryHighlights = [
   ["1", "graph", "Query a product and its brand from the\nthird-party service in a single query."],
@@ -849,7 +849,7 @@ To learn more about the different concepts useful for querying data across syste
     },
     {
       title: "Query",
-      href: "/learn/fundamentals/module-links/query",
+      href: "/learn/fundamentals/query",
     }
   ]}
   className="mb-2"

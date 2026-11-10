@@ -43,8 +43,8 @@ export async function createOrderSeeder({
   const shippingProfileOverrideArray = !shippingProfileOverride
     ? undefined
     : Array.isArray(shippingProfileOverride)
-    ? shippingProfileOverride
-    : [shippingProfileOverride]
+      ? shippingProfileOverride
+      : [shippingProfileOverride]
 
   const storeHeaders =
     storeHeaderOverride ??
@@ -55,7 +55,11 @@ export async function createOrderSeeder({
   const region = (
     await api.post(
       "/admin/regions",
-      { name: "Test region", currency_code: "usd" },
+      {
+        payment_providers: ["pp_system_default"],
+        name: "Test region",
+        currency_code: "usd",
+      },
       adminHeaders
     )
   ).data.region

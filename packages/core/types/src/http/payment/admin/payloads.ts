@@ -1,3 +1,6 @@
+/**
+ * The details to capture a payment.
+ */
 export interface AdminCapturePayment {
   /**
    * Custom amount to capture. If not specified, the
@@ -6,6 +9,9 @@ export interface AdminCapturePayment {
   amount?: number
 }
 
+/**
+ * The details to refund a payment.
+ */
 export interface AdminRefundPayment {
   /**
    * Custom amount to refund. If not specified, the
@@ -20,8 +26,20 @@ export interface AdminRefundPayment {
    * A note to attach to the refund.
    */
   note?: string
+  /**
+   * A key that makes the refund idempotent at the payment provider. Retrying
+   * the request with the same key never refunds twice, even when the response
+   * of the original request was lost.
+   *
+   * When omitted, every request starts a new refund, so a retry after a lost
+   * response can refund twice.
+   */
+  idempotency_key?: string
 }
 
+/**
+ * The details to create a payment collection.
+ */
 export interface AdminCreatePaymentCollection {
   /**
    * The ID of the order this payment collection belongs to.
@@ -33,6 +51,34 @@ export interface AdminCreatePaymentCollection {
   amount: number
 }
 
+/**
+ * The details to mark a payment collection as paid.
+ */
 export interface AdminMarkPaymentCollectionAsPaid {
+  /**
+   * The ID of the order this payment collection belongs to.
+   */
   order_id: string
+  /**
+   * The ID of the payment provider to record the captured payment under.
+   * Defaults to the system (manual) payment provider when omitted.
+   */
+  provider_id?: string
+}
+
+/**
+ * The details of a payment session to initialize for a payment collection.
+ * @since 2.14.2
+ */
+export interface AdminInitializePaymentSession {
+  /**
+   * The ID of the provider to initialize a payment session for.
+   */
+  provider_id: string
+  /**
+   * Any data necessary for the payment provider to process the payment.
+   *
+   * Learn more in [this documentation](https://docs.medusajs.com/resources/commerce-modules/payment/payment-session#data-property).
+   */
+  data?: Record<string, unknown>
 }

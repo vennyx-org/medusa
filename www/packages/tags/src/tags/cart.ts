@@ -8,6 +8,10 @@ export const cart = [
     "path": "https://docs.medusajs.com/resources/commerce-modules/cart/extend"
   },
   {
+    "title": "Enforce Sales Channel Availability",
+    "path": "https://docs.medusajs.com/resources/commerce-modules/cart/sales-channel-availability"
+  },
+  {
     "title": "Implement Custom Line Item Pricing in Medusa",
     "path": "https://docs.medusajs.com/resources/examples/guides/custom-item-price"
   },
@@ -124,6 +128,10 @@ export const cart = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/getLineItemActionsStep"
   },
   {
+    "title": "getLineItemPricingQuantitiesStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/getLineItemPricingQuantitiesStep"
+  },
+  {
     "title": "removeLineItemAdjustmentsStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/removeLineItemAdjustmentsStep"
   },
@@ -152,8 +160,16 @@ export const cart = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/updateShippingMethodsStep"
   },
   {
+    "title": "addGiftCardToCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addGiftCardToCartWorkflow"
+  },
+  {
     "title": "addShippingMethodToCartWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addShippingMethodToCartWorkflow"
+  },
+  {
+    "title": "addStoreCreditsToCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addStoreCreditsToCartWorkflow"
   },
   {
     "title": "addToCartWorkflow",
@@ -174,6 +190,10 @@ export const cart = [
   {
     "title": "refreshCartShippingMethodsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/refreshCartShippingMethodsWorkflow"
+  },
+  {
+    "title": "removeGiftCardFromCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/removeGiftCardFromCartWorkflow"
   },
   {
     "title": "transferCartCustomerWorkflow",

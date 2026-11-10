@@ -1,10 +1,16 @@
-import { maybeApplyLinkFilter, MiddlewareRoute } from "@medusajs/framework/http"
 import {
   validateAndTransformBody,
   validateAndTransformQuery,
 } from "@medusajs/framework"
+import {
+  authorize,
+  maybeApplyLinkFilter,
+  MiddlewareRoute,
+} from "@medusajs/framework/http"
+import { PolicyOperation } from "@medusajs/framework/utils"
 import { createLinkBody } from "../../utils/validators"
 import * as QueryConfig from "./query-config"
+import { Entities } from "./query-config"
 import {
   AdminCreateSalesChannel,
   AdminGetSalesChannelParams,
@@ -14,9 +20,26 @@ import {
 
 export const adminSalesChannelRoutesMiddlewares: MiddlewareRoute[] = [
   {
+    matcher: "/admin/sales-channels/*",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.sales_channel,
+          operation: PolicyOperation.read,
+        },
+      ]),
+    ],
+  },
+  {
     method: ["GET"],
     matcher: "/admin/sales-channels",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.sales_channel,
+          operation: PolicyOperation.read,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetSalesChannelsParams,
         QueryConfig.listTransformQueryConfig
@@ -47,6 +70,12 @@ export const adminSalesChannelRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/sales-channels",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.sales_channel,
+          operation: PolicyOperation.create,
+        },
+      ]),
       validateAndTransformBody(AdminCreateSalesChannel),
       validateAndTransformQuery(
         AdminGetSalesChannelParams,
@@ -58,6 +87,12 @@ export const adminSalesChannelRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/sales-channels/:id",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.sales_channel,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(AdminUpdateSalesChannel),
       validateAndTransformQuery(
         AdminGetSalesChannelParams,
@@ -68,12 +103,29 @@ export const adminSalesChannelRoutesMiddlewares: MiddlewareRoute[] = [
   {
     method: ["DELETE"],
     matcher: "/admin/sales-channels/:id",
-    middlewares: [],
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.sales_channel,
+          operation: PolicyOperation.delete,
+        },
+      ]),
+    ],
   },
   {
     method: ["POST"],
     matcher: "/admin/sales-channels/:id/products",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.sales_channel,
+          operation: PolicyOperation.update,
+        },
+        {
+          resource: Entities.product,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(createLinkBody()),
       validateAndTransformQuery(
         AdminGetSalesChannelParams,

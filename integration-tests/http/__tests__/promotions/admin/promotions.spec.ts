@@ -1,5 +1,10 @@
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
-import { Modules, ProductStatus, PromotionStatus, PromotionType } from "@medusajs/utils"
+import {
+  Modules,
+  ProductStatus,
+  PromotionStatus,
+  PromotionType,
+} from "@medusajs/utils"
 import {
   createAdminUser,
   generatePublishableKey,
@@ -7,6 +12,11 @@ import {
 } from "../../../../helpers/create-admin-user"
 import { setupTaxStructure } from "../../../../modules/__tests__/fixtures/tax"
 import { medusaTshirtProduct } from "../../../__fixtures__/product"
+import {
+  updateCampaignsWorkflow,
+  updatePromotionRulesWorkflow,
+  updatePromotionsWorkflow,
+} from "@medusajs/core-flows"
 
 jest.setTimeout(500000)
 
@@ -52,9 +62,13 @@ const standardPromotionPayload = {
 }
 
 medusaIntegrationTestRunner({
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
+    let appContainer
+    beforeAll(async () => {
+      appContainer = getContainer()
+    })
+
     describe("Admin Promotions API", () => {
-      let appContainer
       let promotion
       let standardPromotion
       let shippingProfile
@@ -66,10 +80,6 @@ medusaIntegrationTestRunner({
       }
 
       beforeAll(async () => {
-        appContainer = getContainer()
-      })
-
-      beforeEach(async () => {
         await createAdminUser(dbConnection, adminHeaders, appContainer)
 
         await setupTaxStructure(appContainer.resolve(Modules.TAX))
@@ -102,6 +112,8 @@ medusaIntegrationTestRunner({
             adminHeaders
           )
         ).data.shipping_profile
+
+        await dbUtils.snapshot()
       })
 
       describe("GET /admin/promotions/:id", () => {
@@ -500,6 +512,165 @@ medusaIntegrationTestRunner({
           )
         })
 
+        describe("target_selection_strategy", () => {
+          const buygetApplicationMethod = {
+            target_type: "items",
+            type: "percentage",
+            allocation: "each",
+            value: 100,
+            max_quantity: 1,
+            apply_to_quantity: 1,
+            buy_rules_min_quantity: 3,
+            target_rules: [promotionRule],
+            buy_rules: [promotionRule],
+          }
+
+          it("should create a buyget promotion with cheapest_first", async () => {
+            const response = await api.post(
+              `/admin/promotions`,
+              {
+                code: "BUY4PAY3",
+                type: PromotionType.BUYGET,
+                status: PromotionStatus.ACTIVE,
+                application_method: {
+                  ...buygetApplicationMethod,
+                  target_selection_strategy: "cheapest_first",
+                },
+              },
+              adminHeaders
+            )
+
+            expect(response.status).toEqual(200)
+            expect(response.data.promotion).toEqual(
+              expect.objectContaining({
+                code: "BUY4PAY3",
+                type: "buyget",
+                application_method: expect.objectContaining({
+                  target_selection_strategy: "cheapest_first",
+                }),
+              })
+            )
+          })
+
+          it("should default to most_expensive_first when not set", async () => {
+            const response = await api.post(
+              `/admin/promotions`,
+              {
+                code: "BUY4PAY3_DEFAULT",
+                type: PromotionType.BUYGET,
+                status: PromotionStatus.ACTIVE,
+                application_method: buygetApplicationMethod,
+              },
+              adminHeaders
+            )
+
+            expect(response.status).toEqual(200)
+            expect(
+              response.data.promotion.application_method
+                .target_selection_strategy
+            ).toEqual("most_expensive_first")
+          })
+
+          it("should throw an error when cheapest_first is set on a standard promotion", async () => {
+            const { response } = await api
+              .post(
+                `/admin/promotions`,
+                {
+                  code: "STANDARD_CHEAPEST",
+                  type: PromotionType.STANDARD,
+                  status: PromotionStatus.ACTIVE,
+                  application_method: {
+                    target_type: "items",
+                    type: "fixed",
+                    allocation: "each",
+                    value: 100,
+                    max_quantity: 1,
+                    currency_code: "usd",
+                    target_rules: [promotionRule],
+                    target_selection_strategy: "cheapest_first",
+                  },
+                },
+                adminHeaders
+              )
+              .catch((e) => e)
+
+            expect(response.status).toEqual(400)
+            expect(response.data.message).toEqual(
+              "application_method.target_selection_strategy 'cheapest_first' is only allowed for Promotion type of buyget"
+            )
+          })
+
+          it("should throw an error when the value is unknown", async () => {
+            const { response } = await api
+              .post(
+                `/admin/promotions`,
+                {
+                  code: "BUY4PAY3_UNKNOWN",
+                  type: PromotionType.BUYGET,
+                  status: PromotionStatus.ACTIVE,
+                  application_method: {
+                    ...buygetApplicationMethod,
+                    target_selection_strategy: "random_first",
+                  },
+                },
+                adminHeaders
+              )
+              .catch((e) => e)
+
+            expect(response.status).toEqual(400)
+          })
+
+          it("should update target_selection_strategy on a buyget promotion", async () => {
+            const buygetPromotion = (
+              await api.post(
+                `/admin/promotions`,
+                {
+                  code: "BUY4PAY3_UPDATE",
+                  type: PromotionType.BUYGET,
+                  status: PromotionStatus.ACTIVE,
+                  application_method: buygetApplicationMethod,
+                },
+                adminHeaders
+              )
+            ).data.promotion
+
+            const response = await api.post(
+              `/admin/promotions/${buygetPromotion.id}`,
+              {
+                application_method: {
+                  target_selection_strategy: "cheapest_first",
+                },
+              },
+              adminHeaders
+            )
+
+            expect(response.status).toEqual(200)
+            expect(
+              response.data.promotion.application_method
+                .target_selection_strategy
+            ).toEqual("cheapest_first")
+          })
+
+          it("should throw an error when updating a standard promotion to cheapest_first", async () => {
+            const { response } = await api
+              .post(
+                `/admin/promotions/${standardPromotion.id}`,
+                {
+                  application_method: {
+                    target_selection_strategy: "cheapest_first",
+                  },
+                },
+                adminHeaders
+              )
+              .catch((e) => e)
+
+            expect(response.status).toEqual(400)
+            expect(response.data.message).toEqual(
+              "application_method.target_selection_strategy 'cheapest_first' is only allowed for Promotion type of buyget"
+            )
+          })
+        })
+
         describe("with cart", () => {
           it("should add promotion to cart only when gte rule matches", async () => {
             const publishableKey = await generatePublishableKey(appContainer)
@@ -516,7 +687,12 @@ medusaIntegrationTestRunner({
             const region = (
               await api.post(
                 "/admin/regions",
-                { name: "US", currency_code: "usd", countries: ["us"] },
+                {
+                  payment_providers: ["pp_system_default"],
+                  name: "US",
+                  currency_code: "usd",
+                  countries: ["us"],
+                },
                 adminHeaders
               )
             ).data.region
@@ -661,7 +837,12 @@ medusaIntegrationTestRunner({
             const region = (
               await api.post(
                 "/admin/regions",
-                { name: "US", currency_code: "usd", countries: ["us"] },
+                {
+                  payment_providers: ["pp_system_default"],
+                  name: "US",
+                  currency_code: "usd",
+                  countries: ["us"],
+                },
                 adminHeaders
               )
             ).data.region
@@ -802,7 +983,12 @@ medusaIntegrationTestRunner({
             const region = (
               await api.post(
                 "/admin/regions",
-                { name: "US", currency_code: "usd", countries: ["us"] },
+                {
+                  payment_providers: ["pp_system_default"],
+                  name: "US",
+                  currency_code: "usd",
+                  countries: ["us"],
+                },
                 adminHeaders
               )
             ).data.region
@@ -1063,7 +1249,12 @@ medusaIntegrationTestRunner({
             const region = (
               await api.post(
                 "/admin/regions",
-                { name: "US", currency_code: "usd", countries: ["us"] },
+                {
+                  payment_providers: ["pp_system_default"],
+                  name: "US",
+                  currency_code: "usd",
+                  countries: ["us"],
+                },
                 adminHeaders
               )
             ).data.region
@@ -1227,7 +1418,12 @@ medusaIntegrationTestRunner({
             const region = (
               await api.post(
                 "/admin/regions",
-                { name: "US", currency_code: "usd", countries: ["us"] },
+                {
+                  payment_providers: ["pp_system_default"],
+                  name: "US",
+                  currency_code: "usd",
+                  countries: ["us"],
+                },
                 adminHeaders
               )
             ).data.region
@@ -1323,7 +1519,12 @@ medusaIntegrationTestRunner({
             const region = (
               await api.post(
                 "/admin/regions",
-                { name: "US", currency_code: "usd", countries: ["us"] },
+                {
+                  payment_providers: ["pp_system_default"],
+                  name: "US",
+                  currency_code: "usd",
+                  countries: ["us"],
+                },
                 adminHeaders
               )
             ).data.region
@@ -1475,7 +1676,12 @@ medusaIntegrationTestRunner({
             const region = (
               await api.post(
                 "/admin/regions",
-                { name: "US", currency_code: "usd", countries: ["us"] },
+                {
+                  payment_providers: ["pp_system_default"],
+                  name: "US",
+                  currency_code: "usd",
+                  countries: ["us"],
+                },
                 adminHeaders
               )
             ).data.region
@@ -1602,7 +1808,12 @@ medusaIntegrationTestRunner({
             const region = (
               await api.post(
                 "/admin/regions",
-                { name: "US", currency_code: "usd", countries: ["us"] },
+                {
+                  payment_providers: ["pp_system_default"],
+                  name: "US",
+                  currency_code: "usd",
+                  countries: ["us"],
+                },
                 adminHeaders
               )
             ).data.region
@@ -1760,7 +1971,12 @@ medusaIntegrationTestRunner({
             const region = (
               await api.post(
                 "/admin/regions",
-                { name: "US", currency_code: "usd", countries: ["us"] },
+                {
+                  payment_providers: ["pp_system_default"],
+                  name: "US",
+                  currency_code: "usd",
+                  countries: ["us"],
+                },
                 adminHeaders
               )
             ).data.region
@@ -1986,6 +2202,7 @@ medusaIntegrationTestRunner({
             await api.post(
               "/admin/regions",
               {
+                payment_providers: ["pp_system_default"],
                 name: "DK",
                 currency_code: "dkk",
                 countries: ["dk"],
@@ -2232,6 +2449,7 @@ medusaIntegrationTestRunner({
             await api.post(
               "/admin/regions",
               {
+                payment_providers: ["pp_system_default"],
                 name: "DK",
                 currency_code: "dkk",
                 countries: ["dk"],
@@ -2568,6 +2786,7 @@ medusaIntegrationTestRunner({
             await api.post(
               "/admin/regions",
               {
+                payment_providers: ["pp_system_default"],
                 name: "DK",
                 currency_code: "dkk",
                 countries: ["dk"],
@@ -2803,6 +3022,7 @@ medusaIntegrationTestRunner({
             await api.post(
               "/admin/regions",
               {
+                payment_providers: ["pp_system_default"],
                 name: "DK",
                 currency_code: "dkk",
                 countries: ["dk"],
@@ -3095,6 +3315,52 @@ medusaIntegrationTestRunner({
                 value: 200,
                 buy_rules_min_quantity: 6,
               }),
+            })
+          )
+        })
+
+        it("should update a buyget promotion when type is passed in the payload", async () => {
+          const buygetPromotion = (
+            await api.post(
+              `/admin/promotions`,
+              {
+                code: "BUYGET_UPDATE",
+                type: PromotionType.BUYGET,
+                status: PromotionStatus.ACTIVE,
+                application_method: {
+                  target_type: "items",
+                  type: "fixed",
+                  allocation: "each",
+                  value: 100,
+                  max_quantity: 100,
+                  apply_to_quantity: 1,
+                  buy_rules_min_quantity: 1,
+                  currency_code: "usd",
+                  target_rules: [promotionRule],
+                  buy_rules: [promotionRule],
+                },
+              },
+              adminHeaders
+            )
+          ).data.promotion
+
+          // Buy rules already exist on the persisted promotion, so a partial
+          // update that echoes back the type should not require them again.
+          const response = await api.post(
+            `/admin/promotions/${buygetPromotion.id}`,
+            {
+              type: PromotionType.BUYGET,
+              status: PromotionStatus.INACTIVE,
+            },
+            adminHeaders
+          )
+
+          expect(response.status).toEqual(200)
+          expect(response.data.promotion).toEqual(
+            expect.objectContaining({
+              id: buygetPromotion.id,
+              type: "buyget",
+              status: "inactive",
             })
           )
         })
@@ -3846,11 +4112,30 @@ medusaIntegrationTestRunner({
           })
         })
 
+        it("should throw 400 (not 500) when ruleAttributeId is invalid and a value filter is provided", async () => {
+          const { response } = await api
+            .get(
+              `/admin/promotions/rule-value-options/rules/does-not-exist?value=test`,
+              adminHeaders
+            )
+            .catch((e) => e)
+
+          expect(response.status).toEqual(400)
+          expect(response.data).toEqual({
+            type: "invalid_data",
+            message: "Invalid rule attribute - does-not-exist",
+          })
+        })
+
         it("should return all values based on rule types", async () => {
           const region1 = (
             await api.post(
               "/admin/regions",
-              { name: "North America", currency_code: "usd" },
+              {
+                payment_providers: ["pp_system_default"],
+                name: "North America",
+                currency_code: "usd",
+              },
               adminHeaders
             )
           ).data.region
@@ -3858,7 +4143,11 @@ medusaIntegrationTestRunner({
           const region2 = (
             await api.post(
               "/admin/regions",
-              { name: "Europe", currency_code: "eur" },
+              {
+                payment_providers: ["pp_system_default"],
+                name: "Europe",
+                currency_code: "eur",
+              },
               adminHeaders
             )
           ).data.region
@@ -4113,6 +4402,55 @@ medusaIntegrationTestRunner({
             ])
           )
         })
+      })
+    })
+
+    describe("Promotions Workflows", () => {
+      it("updateCampaignsWorkflow - should not call listCampaigns when campaignsData is empty", async () => {
+        const promotionService = appContainer.resolve(Modules.PROMOTION)
+        const listCampaignsSpy = jest.spyOn(promotionService, "listCampaigns")
+
+        const { result } = await updateCampaignsWorkflow(appContainer).run({
+          input: { campaignsData: [] },
+        })
+
+        expect(result).toEqual([])
+        expect(listCampaignsSpy).not.toHaveBeenCalled()
+
+        listCampaignsSpy.mockRestore()
+      })
+
+      it("updatePromotionRulesWorkflow - should not call listPromotionRules when data is empty", async () => {
+        const promotionService = appContainer.resolve(Modules.PROMOTION)
+        const listPromotionRulesSpy = jest.spyOn(
+          promotionService,
+          "listPromotionRules"
+        )
+
+        const { result } = await updatePromotionRulesWorkflow(appContainer).run(
+          {
+            input: { data: [] },
+          }
+        )
+
+        expect(result).toEqual([])
+        expect(listPromotionRulesSpy).not.toHaveBeenCalled()
+
+        listPromotionRulesSpy.mockRestore()
+      })
+
+      it("updatePromotionsWorkflow - should not call listPromotions when promotionsData is empty", async () => {
+        const promotionService = appContainer.resolve(Modules.PROMOTION)
+        const listPromotionsSpy = jest.spyOn(promotionService, "listPromotions")
+
+        const { result } = await updatePromotionsWorkflow(appContainer).run({
+          input: { promotionsData: [] },
+        })
+
+        expect(result).toEqual([])
+        expect(listPromotionsSpy).not.toHaveBeenCalled()
+
+        listPromotionsSpy.mockRestore()
       })
     })
   },

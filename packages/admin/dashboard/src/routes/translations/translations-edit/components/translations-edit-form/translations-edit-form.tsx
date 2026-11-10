@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { AdminStoreLocale, HttpTypes } from "@medusajs/types"
-import { Button, Prompt, Select, toast, Text } from "@medusajs/ui"
+import { Button, Copy, Prompt, Select, toast, Text } from "@medusajs/ui"
 import { ColumnDef } from "@tanstack/react-table"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -17,16 +17,20 @@ import {
 } from "../../../../../components/modals"
 import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
 import { useBatchTranslations } from "../../../../../hooks/api/translations"
+import { useTranslationPermissions } from "../../../../../hooks/use-resource-permissions"
 
 const EntityTranslationsSchema = z.object({
   id: z.string().nullish(),
-  fields: z.record(z.string().optional()),
+  fields: z.record(z.string(), z.string().optional()),
 })
-export type EntityTranslationsSchema = z.infer<typeof EntityTranslationsSchema>
+export type EntityTranslationsSchemaType = z.infer<
+  typeof EntityTranslationsSchema
+>
 
 export const TranslationsFormSchema = z.object({
-  entities: z.record(EntityTranslationsSchema),
+  entities: z.record(z.string(), EntityTranslationsSchema),
 })
+// eslint-disable-next-line no-redeclare
 export type TranslationsFormSchema = z.infer<typeof TranslationsFormSchema>
 
 export type TranslationRow = EntityRow | FieldRow
@@ -53,12 +57,17 @@ export function isFieldRow(row: TranslationRow): row is FieldRow {
 
 type LocaleSnapshot = {
   localeCode: string
-  entities: Record<string, EntityTranslationsSchema>
+  entities: Record<string, EntityTranslationsSchemaType>
+}
+
+type TranslationReference = {
+  id: string
+  [key: string]: unknown
 }
 
 function buildLocaleSnapshot(
   translations: HttpTypes.AdminTranslation[],
-  references: { id: string; [key: string]: string }[],
+  references: TranslationReference[],
   localeCode: string,
   translatableFields: string[]
 ): LocaleSnapshot {
@@ -69,7 +78,7 @@ function buildLocaleSnapshot(
     }
   }
 
-  const entities: Record<string, EntityTranslationsSchema> = {}
+  const entities: Record<string, EntityTranslationsSchemaType> = {}
   for (const ref of references) {
     const existing = referenceTranslations.get(ref.id)
     const fields: Record<string, string> = {}
@@ -90,7 +99,7 @@ function buildLocaleSnapshot(
 function extendSnapshot(
   snapshot: LocaleSnapshot,
   translations: HttpTypes.AdminTranslation[],
-  newReferences: { id: string; [key: string]: string }[],
+  newReferences: TranslationReference[],
   translatableFields: string[]
 ): LocaleSnapshot {
   const referenceTranslations = new Map<string, HttpTypes.AdminTranslation>()
@@ -145,7 +154,8 @@ function computeChanges(
     delete: [],
   }
 
-  for (const [entityId, entityData] of Object.entries(currentState.entities)) {
+  for (const [entityId, _entityData] of Object.entries(currentState.entities)) {
+    const entityData = _entityData as EntityTranslationsSchemaType
     const baseline = snapshot.entities[entityId]
     if (!baseline) {
       continue
@@ -165,12 +175,12 @@ function computeChanges(
         reference_id: entityId,
         reference: entityType,
         locale_code: localeCode,
-        translations: entityData.fields,
+        translations: entityData.fields as Record<string, string>,
       })
     } else if (entityData.id && hasContent && hasChanged) {
       payload.update.push({
         id: entityData.id,
-        translations: entityData.fields,
+        translations: entityData.fields as Record<string, string>,
       })
     } else if (entityData.id && !hasContent && hadContent) {
       payload.delete.push(entityData.id)
@@ -193,7 +203,7 @@ const columnHelper = createDataGridHelper<
 const FIELD_COLUMN_WIDTH = 350
 
 function buildTranslationRows(
-  references: { id: string; [key: string]: string }[],
+  references: TranslationReference[],
   translatableFields: string[]
 ): TranslationRow[] {
   return references.map((reference) => ({
@@ -212,11 +222,13 @@ function useTranslationsGridColumns({
   availableLocales,
   selectedLocale,
   dynamicColumnWidth,
+  canEdit,
 }: {
-  entities: { id: string; [key: string]: string }[]
+  entities: TranslationReference[]
   availableLocales: AdminStoreLocale[]
   selectedLocale: string
   dynamicColumnWidth: number
+  canEdit: boolean
 }) {
   const { t } = useTranslation()
 
@@ -278,11 +290,24 @@ function useTranslationsGridColumns({
             return null
           }
 
+          const rawOriginalValue = entity[row.field_name]
+          const originalValue =
+            typeof rawOriginalValue === "string" ? rawOriginalValue : ""
+
           return (
             <DataGrid.ReadonlyCell color="normal" context={context} isMultiLine>
-              <Text className="text-ui-fg-subtle" weight="plus" size="small">
-                {entity[row.field_name]}
-              </Text>
+              <div className="flex w-full items-start justify-between gap-x-2">
+                <Text className="text-ui-fg-subtle" weight="plus" size="small">
+                  {originalValue}
+                </Text>
+                {originalValue.trim() && (
+                  <Copy
+                    content={originalValue}
+                    variant="mini"
+                    className="cursor-pointer"
+                  />
+                )}
+              </div>
             </DataGrid.ReadonlyCell>
           )
         },
@@ -303,7 +328,7 @@ function useTranslationsGridColumns({
           cell: (context) => {
             const row = context.row.original
 
-            if (isEntityRow(row)) {
+            if (isEntityRow(row) || !canEdit) {
               return <DataGrid.ReadonlyCell context={context} isMultiLine />
             }
 
@@ -324,12 +349,19 @@ function useTranslationsGridColumns({
     }
 
     return columns
-  }, [t, availableLocales, selectedLocale, entities, dynamicColumnWidth])
+  }, [
+    t,
+    availableLocales,
+    selectedLocale,
+    entities,
+    dynamicColumnWidth,
+    canEdit,
+  ])
 }
 
 type TranslationsEditFormProps = {
   translations: HttpTypes.AdminTranslation[]
-  references: { id: string; [key: string]: string }[]
+  references: TranslationReference[]
   entityType: string
   availableLocales: AdminStoreLocale[]
   translatableFields: string[]
@@ -352,6 +384,8 @@ export const TranslationsEditForm = ({
 }: TranslationsEditFormProps) => {
   const { t } = useTranslation()
   const { handleSuccess, setCloseOnEscape } = useRouteModal()
+  const { canCreate, canUpdate, canDelete } = useTranslationPermissions()
+  const canEdit = canCreate && canUpdate && canDelete
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [dynamicColumnWidth, setDynamicColumnWidth] = useState(400)
@@ -463,6 +497,7 @@ export const TranslationsEditForm = ({
     availableLocales,
     selectedLocale,
     dynamicColumnWidth,
+    canEdit,
   })
 
   const { mutateAsync, isPending, invalidateQueries } =
@@ -646,6 +681,7 @@ export const TranslationsEditForm = ({
           <div ref={containerRef} className="size-full">
             <DataGrid
               showColumnsDropdown={false}
+              disableInteractions={!canEdit}
               columns={columns}
               data={rows}
               getSubRows={(row) => {
@@ -696,18 +732,22 @@ export const TranslationsEditForm = ({
                 {t("actions.cancel")}
               </Button>
             </RouteFocusModal.Close>
-            <Button
-              size="small"
-              type="button"
-              variant="secondary"
-              onClick={() => handleSave(false)}
-              isLoading={isLoading}
-            >
-              {t("actions.saveChanges")}
-            </Button>
-            <Button size="small" type="submit" isLoading={isLoading}>
-              {t("actions.saveAndClose")}
-            </Button>
+            {canEdit && (
+              <>
+                <Button
+                  size="small"
+                  type="button"
+                  variant="secondary"
+                  onClick={() => handleSave(false)}
+                  isLoading={isLoading}
+                >
+                  {t("actions.saveChanges")}
+                </Button>
+                <Button size="small" type="submit" isLoading={isLoading}>
+                  {t("actions.saveAndClose")}
+                </Button>
+              </>
+            )}
           </div>
         </RouteFocusModal.Footer>
       </KeyboundForm>

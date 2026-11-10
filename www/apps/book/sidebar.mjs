@@ -27,18 +27,102 @@ export const sidebars = [
           },
           {
             type: "link",
-            title: "AI Assistants and LLMs",
+            title: "Architecture",
+            path: "/learn/introduction/architecture",
+          },
+        ],
+      },
+      {
+        type: "category",
+        title: "Agentic Development",
+        children: [
+          {
+            type: "link",
+            title: "Overview",
             path: "/learn/introduction/build-with-llms-ai",
           },
           {
             type: "link",
-            title: "Architecture",
-            path: "/learn/introduction/architecture",
+            title: "Cloud CLI",
+            path: "/learn/introduction/build-with-llms-ai/cloud-cli",
           },
           {
             type: "link",
-            title: "From v1 to v2",
-            path: "/learn/introduction/from-v1-to-v2",
+            title: "Manage Store with Agents",
+            path: "/learn/introduction/build-with-llms-ai/manage-store-with-agents",
+          },
+          {
+            type: "link",
+            title: "Docs MCP Server",
+            path: "/learn/introduction/build-with-llms-ai/docs-mcp-server",
+            children: [
+              {
+                type: "link",
+                title: "Ask Medusa Questions",
+                path: "/learn/introduction/build-with-llms-ai/docs-mcp-server/ask-medusa-question",
+                description:
+                  "Answer Medusa questions from the official documentation.",
+              },
+              {
+                type: "link",
+                title: "Migrate from Shopify",
+                path: "/learn/introduction/build-with-llms-ai/docs-mcp-server/migrate-from-shopify",
+                description:
+                  "Migrate your store's data from Shopify to Medusa.",
+              },
+              {
+                type: "link",
+                title: "Migrate from WooCommerce",
+                path: "/learn/introduction/build-with-llms-ai/docs-mcp-server/migrate-from-woocommerce",
+                description:
+                  "Migrate your store's data from WooCommerce to Medusa.",
+              },
+              {
+                type: "link",
+                title: "Migrate from Magento",
+                path: "/learn/introduction/build-with-llms-ai/docs-mcp-server/migrate-from-magento",
+                description:
+                  "Migrate your store's data from Magento to Medusa.",
+              },
+              {
+                type: "link",
+                title: "Integrate Providers",
+                path: "/learn/introduction/build-with-llms-ai/docs-mcp-server/integrate-providers",
+                description:
+                  "Build payment and fulfillment module providers for third-party services.",
+              },
+              {
+                type: "link",
+                title: "Extend Products",
+                path: "/learn/introduction/build-with-llms-ai/docs-mcp-server/extend-products",
+                description:
+                  "Attach custom data and features to products, variants, and options.",
+              },
+              {
+                type: "link",
+                title: "Upgrade Medusa",
+                path: "/learn/introduction/build-with-llms-ai/docs-mcp-server/upgrade-instructions",
+                description:
+                  "Upgrade a Medusa project to a newer version, breaking changes included.",
+              },
+              {
+                type: "link",
+                title: "Submit Feedback",
+                path: "/learn/introduction/build-with-llms-ai/docs-mcp-server/submit-feedback",
+                description:
+                  "Send documentation, bug, and feedback to the Medusa team.",
+              },
+            ],
+          },
+          {
+            type: "link",
+            title: "Agentic Skills",
+            path: "/learn/introduction/build-with-llms-ai/agentic-skills",
+          },
+          {
+            type: "link",
+            title: "AI-Friendly Docs",
+            path: "/learn/introduction/build-with-llms-ai/ai-friendly-docs",
           },
         ],
       },
@@ -234,16 +318,6 @@ export const sidebars = [
               },
               {
                 type: "link",
-                path: "/learn/fundamentals/module-links/query",
-                title: "Query",
-              },
-              {
-                type: "link",
-                path: "/learn/fundamentals/module-links/index-module",
-                title: "Index Module",
-              },
-              {
-                type: "link",
                 path: "/learn/fundamentals/module-links/custom-columns",
                 title: "Add Custom Columns",
               },
@@ -252,9 +326,26 @@ export const sidebars = [
                 path: "/learn/fundamentals/module-links/read-only",
                 title: "Read-Only Links",
               },
+            ],
+          },
+          {
+            type: "link",
+            path: "/learn/fundamentals/query",
+            title: "Query",
+            children: [
               {
                 type: "link",
-                path: "/learn/fundamentals/module-links/query-context",
+                path: "/learn/fundamentals/query/index-module",
+                title: "Index Module",
+              },
+              {
+                type: "link",
+                path: "/learn/fundamentals/query/search",
+                title: "Search Queries",
+              },
+              {
+                type: "link",
+                path: "/learn/fundamentals/query/query-context",
                 title: "Query Context",
               },
             ],
@@ -281,6 +372,11 @@ export const sidebars = [
               },
               {
                 type: "link",
+                path: "/learn/fundamentals/data-models/big-numbers",
+                title: "Big Numbers",
+              },
+              {
+                type: "link",
                 path: "/learn/fundamentals/data-models/relationships",
                 title: "Relationships",
               },
@@ -291,7 +387,7 @@ export const sidebars = [
               },
               {
                 type: "link",
-                path: "/learn/fundamentals/data-models/index",
+                path: "/learn/fundamentals/data-models/indexes",
                 title: "Define Index",
               },
               {
@@ -368,6 +464,16 @@ export const sidebars = [
               },
               {
                 type: "link",
+                path: "/learn/fundamentals/api-routes/allowed-fields",
+                title: "Allowed Fields",
+              },
+              {
+                type: "link",
+                path: "/learn/fundamentals/api-routes/disallowed-fields",
+                title: "Disallowed Fields",
+              },
+              {
+                type: "link",
                 path: "/learn/fundamentals/api-routes/localization",
                 title: "Localization",
               },
@@ -440,6 +546,11 @@ export const sidebars = [
               },
               {
                 type: "link",
+                path: "/learn/fundamentals/workflows/cancel-workflow",
+                title: "Cancel Workflow Execution",
+              },
+              {
+                type: "link",
                 path: "/learn/fundamentals/workflows/long-running-workflow",
                 title: "Long-Running Workflow",
               },
@@ -479,6 +590,11 @@ export const sidebars = [
                 type: "link",
                 path: "/learn/fundamentals/events-and-subscribers/emit-event",
                 title: "Emit Event",
+              },
+              {
+                type: "link",
+                path: "/learn/fundamentals/events-and-subscribers/event-priority",
+                title: "Event Priority",
               },
             ],
           },
@@ -546,6 +662,11 @@ export const sidebars = [
           },
           {
             type: "link",
+            path: "/learn/fundamentals/admin/custom-injection-zones",
+            title: "Custom Injection Zones",
+          },
+          {
+            type: "link",
             path: "/learn/fundamentals/admin/ui-routes",
             title: "Admin UI Routes",
           },
@@ -588,12 +709,17 @@ export const sidebars = [
         children: [
           {
             type: "link",
+            title: "pnpm",
+            path: "/learn/configurations/pnpm",
+          },
+          {
+            type: "link",
             title: "Environment Variables",
             path: "/learn/fundamentals/environment-variables",
           },
           {
             type: "link",
-            title: "Medusa Configuations",
+            title: "Medusa Configurations",
             path: "/learn/configurations/medusa-config",
             children: [
               {
@@ -752,7 +878,17 @@ export const sidebars = [
                 title: "Replace Imports (v2.11.0+)",
                 path: "/learn/codemods/replace-imports",
               },
+              {
+                type: "link",
+                title: "Replace Zod Imports (v2.13.0+)",
+                path: "/learn/codemods/replace-zod-imports",
+              },
             ],
+          },
+          {
+            type: "link",
+            title: "From v1 to v2",
+            path: "/learn/introduction/from-v1-to-v2",
           },
         ],
       },
@@ -764,6 +900,11 @@ export const sidebars = [
             type: "sub-category",
             title: "Contribution Guidelines",
             children: [
+              {
+                type: "link",
+                path: "/learn/resources/contribution-guidelines/code",
+                title: "Code",
+              },
               {
                 type: "link",
                 path: "/learn/resources/contribution-guidelines/docs",

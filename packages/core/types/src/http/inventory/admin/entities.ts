@@ -28,6 +28,10 @@ export interface AdminInventoryItem {
    */
   material?: string | null
   /**
+   * The unit of measure of the inventory item's quantities, such as `lb` or `kg`.
+   */
+  unit_of_measure?: string | null
+  /**
    * The inventory item's weight.
    */
   weight?: number | null
@@ -63,6 +67,14 @@ export interface AdminInventoryItem {
    * The item's associated inventory levels.
    */
   location_levels?: AdminInventoryLevel[]
+  /**
+   * The total quantity of the inventory item that is stocked across all locations.
+   */
+  stocked_quantity: number
+  /**
+   * The total quantity of the inventory item that is reserved across all locations.
+   */
+  reserved_quantity: number
 }
 
 export interface AdminInventoryLevel {

@@ -1,21 +1,41 @@
-import { PencilSquare, Trash } from "@medusajs/icons"
+import { Link, PencilSquare, Trash } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { Container, Heading, Text, toast, usePrompt } from "@medusajs/ui"
+import copy from "copy-to-clipboard"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { useDeleteUser } from "../../../../../hooks/api/users"
+import {
+  ActionGroup,
+  ActionMenu,
+} from "../../../../../components/common/action-menu"
+import {
+  useDeleteUser,
+  useGenerateUserResetPasswordToken,
+  useUserAuthProviders,
+} from "../../../../../hooks/api/users"
+import { useUserPermissions } from "../../../../../hooks/use-resource-permissions"
 
 type UserGeneralSectionProps = {
   user: HttpTypes.AdminUser
 }
 
+const RESET_PASSWORD_URL = `${window.location.origin}${
+  __BASE__ === "/" ? "" : __BASE__
+}/reset-password?token=`
+
 export const UserGeneralSection = ({ user }: UserGeneralSectionProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const prompt = usePrompt()
+  const { canUpdate, canDelete } = useUserPermissions()
 
   const { mutateAsync } = useDeleteUser(user.id)
+  const { mutate: generateResetPasswordToken } =
+    useGenerateUserResetPasswordToken(user.id)
+  const { providers } = useUserAuthProviders(user.id)
+
+  // emailpass is the only provider the reset password flow the dashboard handles.
+  const canResetPassword = !!providers?.includes("emailpass")
 
   const name = [user.first_name, user.last_name].filter(Boolean).join(" ")
 
@@ -46,13 +66,30 @@ export const UserGeneralSection = ({ user }: UserGeneralSectionProps) => {
     })
   }
 
+  const handleCopyResetPasswordLink = () => {
+    generateResetPasswordToken(undefined, {
+      onSuccess: ({ token }) => {
+        copy(`${RESET_PASSWORD_URL}${token}`)
+
+        toast.success(t("users.copyResetPasswordLinkSuccess"), {
+          description: t("users.copyResetPasswordLinkHint"),
+        })
+      },
+      onError: (error) => {
+        toast.error(error.message)
+      },
+    })
+  }
+
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
         <Heading>{user.email}</Heading>
-        <ActionMenu
-          groups={[
-            {
+        {(() => {
+          const groups: ActionGroup[] = []
+
+          if (canUpdate) {
+            groups.push({
               actions: [
                 {
                   label: t("actions.edit"),
@@ -60,8 +97,23 @@ export const UserGeneralSection = ({ user }: UserGeneralSectionProps) => {
                   icon: <PencilSquare />,
                 },
               ],
-            },
-            {
+            })
+          }
+
+          if (canUpdate && canResetPassword) {
+            groups.push({
+              actions: [
+                {
+                  label: t("users.copyResetPasswordLink"),
+                  onClick: handleCopyResetPasswordLink,
+                  icon: <Link />,
+                },
+              ],
+            })
+          }
+
+          if (canDelete) {
+            groups.push({
               actions: [
                 {
                   label: t("actions.delete"),
@@ -69,11 +121,13 @@ export const UserGeneralSection = ({ user }: UserGeneralSectionProps) => {
                   icon: <Trash />,
                 },
               ],
-            },
-          ]}
-        />
+            })
+          }
+
+          return groups.length > 0 ? <ActionMenu groups={groups} /> : null
+        })()}
       </div>
-      <div className="text-ui-fg-subtle grid grid-cols-2 items-center px-6 py-4">
+      <div className="grid grid-cols-2 items-center px-6 py-4 text-ui-fg-subtle">
         <Text size="small" leading="compact" weight="plus">
           {t("fields.name")}
         </Text>

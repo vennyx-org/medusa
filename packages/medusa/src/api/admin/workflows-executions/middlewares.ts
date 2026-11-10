@@ -1,4 +1,5 @@
 import * as QueryConfig from "./query-config"
+import { Entities } from "./query-config"
 
 import {
   AdminCreateWorkflowsAsyncResponse,
@@ -7,15 +8,35 @@ import {
   AdminGetWorkflowExecutionsParams,
 } from "./validators"
 
-import { MiddlewareRoute } from "@medusajs/framework/http"
-import { validateAndTransformQuery } from "@medusajs/framework"
-import { validateAndTransformBody } from "@medusajs/framework"
+import {
+  validateAndTransformBody,
+  validateAndTransformQuery,
+} from "@medusajs/framework"
+import { authorize, MiddlewareRoute } from "@medusajs/framework/http"
+import { PolicyOperation } from "@medusajs/framework/utils"
 
 export const adminWorkflowsExecutionsMiddlewares: MiddlewareRoute[] = [
+  {
+    matcher: "/admin/workflows-executions/*",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.workflow_execution,
+          operation: PolicyOperation.read,
+        },
+      ]),
+    ],
+  },
   {
     method: ["GET"],
     matcher: "/admin/workflows-executions",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.workflow_execution,
+          operation: PolicyOperation.read,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetWorkflowExecutionsParams,
         QueryConfig.listTransformQueryConfig
@@ -45,17 +66,41 @@ export const adminWorkflowsExecutionsMiddlewares: MiddlewareRoute[] = [
   {
     method: ["POST"],
     matcher: "/admin/workflows-executions/:workflow_id/run",
-    middlewares: [validateAndTransformBody(AdminCreateWorkflowsRun)],
+    middlewares: [
+      authorize([
+        {
+          resource: "*",
+          operation: "*",
+        },
+      ]),
+      validateAndTransformBody(AdminCreateWorkflowsRun),
+    ],
   },
   {
     method: ["POST"],
 
     matcher: "/admin/workflows-executions/:workflow_id/steps/success",
-    middlewares: [validateAndTransformBody(AdminCreateWorkflowsAsyncResponse)],
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.workflow_execution,
+          operation: PolicyOperation.update,
+        },
+      ]),
+      validateAndTransformBody(AdminCreateWorkflowsAsyncResponse),
+    ],
   },
   {
     method: ["POST"],
     matcher: "/admin/workflows-executions/:workflow_id/steps/failure",
-    middlewares: [validateAndTransformBody(AdminCreateWorkflowsAsyncResponse)],
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.workflow_execution,
+          operation: PolicyOperation.update,
+        },
+      ]),
+      validateAndTransformBody(AdminCreateWorkflowsAsyncResponse),
+    ],
   },
 ]

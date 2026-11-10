@@ -1,5 +1,11 @@
 import type { UpdatePriceListWorkflowInputDTO } from "@medusajs/framework/types"
-import { WorkflowData, createWorkflow } from "@medusajs/framework/workflows-sdk"
+import { PriceListWorkflowEvents } from "@medusajs/framework/utils"
+import {
+  WorkflowData,
+  createWorkflow,
+  transform,
+} from "@medusajs/framework/workflows-sdk"
+import { emitEventStep } from "../../common"
 import { updatePriceListsStep, validatePriceListsStep } from "../steps"
 
 /**
@@ -15,7 +21,7 @@ export type UpdatePriceListsWorkflowInput = {
 export const updatePriceListsWorkflowId = "update-price-lists"
 /**
  * This workflow updates one or more price lists. It's used by the
- * [Update Price List Admin API Route](https://docs.medusajs.com/api/admin#price-lists_postpricelistsid).
+ * [Update Price List Admin API Route](https://docs.medusajs.com/api/admin/price-lists/update-a-price-list).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to
  * update price lists in your custom flows.
@@ -45,5 +51,14 @@ export const updatePriceListsWorkflow = createWorkflow(
     validatePriceListsStep(input.price_lists_data)
 
     updatePriceListsStep(input.price_lists_data)
+
+    const eventData = transform({ input }, ({ input }) =>
+      input.price_lists_data.map((priceList) => ({ id: priceList.id }))
+    )
+
+    emitEventStep({
+      eventName: PriceListWorkflowEvents.UPDATED,
+      data: eventData,
+    })
   }
 )

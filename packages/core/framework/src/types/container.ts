@@ -24,6 +24,7 @@ import {
   IRbacModuleService,
   IRegionModuleService,
   ISalesChannelModuleService,
+  ISearchModuleService,
   ISettingsModuleService,
   IStockLocationService,
   IStoreModuleService,
@@ -82,13 +83,14 @@ declare module "@medusajs/types" {
     [Modules.SETTINGS]: ISettingsModuleService
     [Modules.CACHING]: ICachingModuleService
     [Modules.INDEX]: IIndexService
+    [Modules.SEARCH]: ISearchModuleService
     [Modules.TRANSLATION]: ITranslationModuleService
     [Modules.RBAC]: IRbacModuleService
   }
 }
 
 export type MedusaContainer<Cradle extends object = ModuleImplementations> =
-  Omit<AwilixContainer, "resolve"> & {
+  Omit<AwilixContainer<any>, "resolve" | "createScope"> & {
     resolve<K extends keyof Cradle>(
       key: K,
       resolveOptions?: ResolveOptions

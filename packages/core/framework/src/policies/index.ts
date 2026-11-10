@@ -1,1 +1,1 @@
-export * from "./policy-loader"
+export * from "./has-permission"

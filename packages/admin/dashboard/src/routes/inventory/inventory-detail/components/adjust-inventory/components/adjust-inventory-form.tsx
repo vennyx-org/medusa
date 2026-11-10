@@ -1,6 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { HttpTypes, InventoryLevelDTO, StockLocationDTO } from "@medusajs/types"
-import { Button, Input, Text, toast } from "@medusajs/ui"
+import {
+  AdminInventoryLevel,
+  AdminStockLocation,
+  HttpTypes,
+} from "@medusajs/types"
+import { Button, Text, toast } from "@medusajs/ui"
 import { useForm, useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod"
@@ -9,12 +13,14 @@ import { Form } from "../../../../../../components/common/form"
 import { RouteDrawer, useRouteModal } from "../../../../../../components/modals"
 import { KeyboundForm } from "../../../../../../components/utilities/keybound-form"
 import { useUpdateInventoryLevel } from "../../../../../../hooks/api/inventory"
+import { QuantityInput } from "../../../../../../components/inputs/quantity-input"
 import { castNumber } from "../../../../../../lib/cast-number"
+import { formatQuantity } from "../../../../../../lib/format-quantity"
 
 type AdjustInventoryFormProps = {
   item: HttpTypes.AdminInventoryItem
-  level: InventoryLevelDTO
-  location: StockLocationDTO
+  level: AdminInventoryLevel
+  location: AdminStockLocation
 }
 
 const AttributeGridRow = ({
@@ -120,7 +126,7 @@ export const AdjustInventoryForm = ({
         className="flex flex-1 flex-col overflow-hidden"
       >
         <RouteDrawer.Body className="flex flex-1 flex-col gap-y-8 overflow-auto">
-          <div className="text-ui-fg-subtle shadow-elevation-card-rest grid grid-rows-4 divide-y rounded-lg border">
+          <div className="grid grid-rows-4 divide-y rounded-lg border text-ui-fg-subtle shadow-elevation-card-rest">
             <AttributeGridRow
               title={t("fields.title")}
               value={item.title ?? "-"}
@@ -132,11 +138,14 @@ export const AdjustInventoryForm = ({
             />
             <AttributeGridRow
               title={t("inventory.reserved")}
-              value={level.reserved_quantity}
+              value={formatQuantity(
+                level.reserved_quantity,
+                item.unit_of_measure
+              )}
             />
             <AttributeGridRow
               title={t("inventory.available")}
-              value={availableQuantity}
+              value={formatQuantity(availableQuantity, item.unit_of_measure)}
             />
           </div>
           <Form.Field
@@ -147,10 +156,11 @@ export const AdjustInventoryForm = ({
                 <Form.Item>
                   <Form.Label>{t("fields.inStock")}</Form.Label>
                   <Form.Control>
-                    <Input
-                      type="number"
+                    <QuantityInput
+                      step="any"
                       value={value}
                       onChange={onChange}
+                      unitOfMeasure={item.unit_of_measure}
                       {...field}
                     />
                   </Form.Control>

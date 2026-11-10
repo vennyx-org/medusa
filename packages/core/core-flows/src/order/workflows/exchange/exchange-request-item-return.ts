@@ -35,6 +35,7 @@ import {
 import { createOrderChangeActionsWorkflow } from "../create-order-change-actions"
 import { computeAdjustmentsForPreviewWorkflow } from "../compute-adjustments-for-preview"
 import { refreshExchangeShippingWorkflow } from "./refresh-shipping"
+import { fieldsToComputeAdjustmentsForPreview } from "../order-edit/utils/fields"
 
 /**
  * The data to validate that items can be returned as part of an exchange.
@@ -122,11 +123,20 @@ export const exchangeRequestItemReturnValidationStep = createStep(
   }
 )
 
+const orderFields = [
+  ...fieldsToComputeAdjustmentsForPreview,
+  "canceled_at",
+  "status",
+  "items.variant.manage_inventory",
+  "items.variant.inventory_items.inventory_item_id",
+  "items.variant.inventory_items.inventory.location_levels.location_id",
+]
+
 export const orderExchangeRequestItemReturnWorkflowId =
   "exchange-request-item-return"
 /**
  * This workflow adds inbound items to be retuned as part of the exchange. It's used
- * by the [Add Inbound Items Admin API Route](https://docs.medusajs.com/api/admin#exchanges_postexchangesidinbounditems).
+ * by the [Add Inbound Items Admin API Route](https://docs.medusajs.com/api/admin/exchanges/add-inbound-items-to-an-exchange).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to add inbound items
  * to be returned as part of an exchange in your custom flow.
@@ -177,16 +187,7 @@ export const orderExchangeRequestItemReturnWorkflow = createWorkflow(
 
     const order: OrderDTO = useRemoteQueryStep({
       entry_point: "orders",
-      fields: [
-        "id",
-        "status",
-        "currency_code",
-        "items.*",
-        "items.variant.manage_inventory",
-        "items.variant.inventory_items.inventory_item_id",
-        "items.variant.inventory_items.inventory.location_levels.location_id",
-        "promotions.*",
-      ],
+      fields: orderFields,
       variables: { id: orderExchange.order_id },
       list: false,
       throw_if_key_not_found: true,
@@ -262,12 +263,16 @@ export const orderExchangeRequestItemReturnWorkflow = createWorkflow(
     when({ createdReturn }, ({ createdReturn }) => {
       return !!createdReturn?.length
     }).then(() => {
-      updateOrderChangesStep([
-        {
-          id: orderChange.id,
-          return_id: createdReturn?.[0]?.id,
-        },
-      ])
+      const orderChangeUpdateInput = transform(
+        { orderChange, createdReturn },
+        ({ orderChange, createdReturn }) => {
+          return [{
+            id: orderChange.id,
+            return_id: createdReturn?.[0]?.id,
+          }]
+        }
+      )
+      updateOrderChangesStep(orderChangeUpdateInput)
     })
 
     exchangeRequestItemReturnValidationStep({
@@ -281,12 +286,18 @@ export const orderExchangeRequestItemReturnWorkflow = createWorkflow(
     when({ orderExchange }, ({ orderExchange }) => {
       return !orderExchange.return_id
     }).then(() => {
-      updateOrderExchangesStep([
-        {
-          id: orderExchange.id,
-          return: createdReturn?.[0]!.id,
-        },
-      ])
+      const updateOrderExchangesInput = transform(
+        { orderExchange, createdReturn },
+        ({ orderExchange, createdReturn }) => {
+          return [
+            {
+              id: orderExchange.id,
+              return: createdReturn?.[0]?.id,
+            },
+          ]
+        }
+      )
+      updateOrderExchangesStep(updateOrderExchangesInput)
     })
 
     const orderChangeActionInput = transform(

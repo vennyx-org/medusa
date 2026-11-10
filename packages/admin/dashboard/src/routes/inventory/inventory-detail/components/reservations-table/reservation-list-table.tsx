@@ -10,6 +10,7 @@ import {
   useReservationTableColumn,
 } from "./use-reservation-list-table-columns"
 import { useReservationsTableQuery } from "./use-reservation-list-table-query"
+import { useStockLocationPermissions } from "../../../../../hooks/use-resource-permissions"
 
 const PAGE_SIZE = 20
 
@@ -21,6 +22,7 @@ export const ReservationItemTable = ({
   const { searchParams, raw } = useReservationsTableQuery({
     pageSize: PAGE_SIZE,
   })
+  const { canRead: canReadStockLocations } = useStockLocationPermissions()
 
   const { reservations, count, isPending, isError, error } =
     useReservationItems({
@@ -28,9 +30,12 @@ export const ReservationItemTable = ({
       inventory_item_id: [inventoryItem.id],
     })
 
-  const { stock_locations } = useStockLocations({
-    id: (reservations || []).map((r) => r.location_id),
-  })
+  const { stock_locations } = useStockLocations(
+    {
+      id: (reservations || []).map((r) => r.location_id),
+    },
+    { enabled: canReadStockLocations }
+  )
 
   const data = useMemo<ExtendedReservationItem[]>(() => {
     const locationMap = new Map((stock_locations || []).map((l) => [l.id, l]))
@@ -41,7 +46,10 @@ export const ReservationItemTable = ({
     }))
   }, [reservations, stock_locations])
 
-  const columns = useReservationTableColumn({ sku: inventoryItem.sku! })
+  const columns = useReservationTableColumn({
+    sku: inventoryItem.sku!,
+    unitOfMeasure: inventoryItem.unit_of_measure,
+  })
 
   const { table } = useDataTable({
     data: data ?? [],

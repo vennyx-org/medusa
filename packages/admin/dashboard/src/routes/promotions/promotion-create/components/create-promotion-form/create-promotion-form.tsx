@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   ApplicationMethodAllocationValues,
+  ApplicationMethodTargetSelectionStrategyValues,
   ApplicationMethodTargetTypeValues,
   ApplicationMethodTypeValues,
   PromotionRuleOperatorValues,
@@ -34,7 +35,6 @@ import {
   useRouteModal,
 } from "../../../../../components/modals"
 import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useCampaigns } from "../../../../../hooks/api/campaigns"
 import { useCreatePromotion } from "../../../../../hooks/api/promotions"
 import {
   currencies,
@@ -64,6 +64,8 @@ const defaultValues = {
     type: "fixed" as ApplicationMethodTypeValues,
     target_type: "items" as ApplicationMethodTargetTypeValues,
     max_quantity: 1,
+    target_selection_strategy:
+      "most_expensive_first" as ApplicationMethodTargetSelectionStrategyValues,
     target_rules: [],
     buy_rules: [],
   },
@@ -105,6 +107,7 @@ export const CreatePromotionForm = () => {
       const {
         target_rules: targetRulesData = [],
         buy_rules: buyRulesData = [],
+        target_selection_strategy,
         ...applicationMethodData
       } = application_method
 
@@ -157,6 +160,9 @@ export const CreatePromotionForm = () => {
             value: parseFloat(applicationMethodData.value as string) as number,
             target_rules: buildRulesData(targetRulesData),
             buy_rules: buildRulesData(buyRulesData),
+            ...(promotionData.type === "buyget" && {
+              target_selection_strategy,
+            }),
           },
           is_tax_inclusive,
           is_automatic: is_automatic === "true",
@@ -268,10 +274,10 @@ export const CreatePromotionForm = () => {
     for (const [key, value] of Object.entries(currentTemplate.defaults)) {
       if (typeof value === "object") {
         for (const [subKey, subValue] of Object.entries(value)) {
-          setValue(`application_method.${subKey}`, subValue)
+          setValue(`application_method.${subKey}` as any, subValue)
         }
       } else {
-        setValue(key, value)
+        setValue(key as any, value)
       }
     }
 
@@ -315,17 +321,6 @@ export const CreatePromotionForm = () => {
   })
 
   const isTargetTypeOrder = targetType === "order"
-
-  const formData = form.getValues()
-  let campaignQuery: object = {}
-
-  if (formData.application_method.currency_code) {
-    campaignQuery = {
-      budget: { currency_code: formData.application_method.currency_code },
-    }
-  }
-
-  const { campaigns } = useCampaigns(campaignQuery)
 
   const watchCampaignChoice = useWatch({
     control: form.control,
@@ -444,8 +439,8 @@ export const CreatePromotionForm = () => {
                                   <RadioGroup.ChoiceBox
                                     key={template.id}
                                     value={template.id}
-                                    label={template.title}
-                                    description={template.description}
+                                    label={t(template.title as any)}
+                                    description={t(template.description as any)}
                                   />
                                 )
                               })}
@@ -476,7 +471,7 @@ export const CreatePromotionForm = () => {
                         size="2xsmall"
                         rounded="full"
                       >
-                        {currentTemplate?.title}
+                        {t(currentTemplate.title as any)}
                       </Badge>
                     )}
                   </Heading>
@@ -860,7 +855,7 @@ export const CreatePromotionForm = () => {
                       <Form.Field
                         control={form.control}
                         name="application_method.max_quantity"
-                        render={({ field }) => {
+                        render={() => {
                           return (
                             <Form.Item className="basis-1/2">
                               <Form.Label>
@@ -895,6 +890,56 @@ export const CreatePromotionForm = () => {
                         }}
                       />
                     </>
+                  )}
+
+                  {isTypeBuyGet && (
+                    <Form.Field
+                      control={form.control}
+                      name="application_method.target_selection_strategy"
+                      render={({ field }) => {
+                        return (
+                          <Form.Item>
+                            <Form.Label
+                              tooltip={t(
+                                "promotions.fields.targetSelectionStrategyTooltip"
+                              )}
+                            >
+                              {t("promotions.fields.targetSelectionStrategy")}
+                            </Form.Label>
+                            <Form.Control>
+                              <RadioGroup
+                                dir={direction}
+                                className="flex gap-y-3"
+                                {...field}
+                                onValueChange={field.onChange}
+                              >
+                                <RadioGroup.ChoiceBox
+                                  value={"most_expensive_first"}
+                                  label={t(
+                                    "promotions.form.target_selection_strategy.most_expensive_first.title"
+                                  )}
+                                  description={t(
+                                    "promotions.form.target_selection_strategy.most_expensive_first.description"
+                                  )}
+                                  className={clx("basis-1/2")}
+                                />
+                                <RadioGroup.ChoiceBox
+                                  value={"cheapest_first"}
+                                  label={t(
+                                    "promotions.form.target_selection_strategy.cheapest_first.title"
+                                  )}
+                                  description={t(
+                                    "promotions.form.target_selection_strategy.cheapest_first.description"
+                                  )}
+                                  className={clx("basis-1/2")}
+                                />
+                              </RadioGroup>
+                            </Form.Control>
+                            <Form.ErrorMessage />
+                          </Form.Item>
+                        )
+                      }}
+                    />
                   )}
 
                   {isTypeStandard &&
@@ -1042,10 +1087,7 @@ export const CreatePromotionForm = () => {
             >
               <div className="flex flex-col items-center">
                 <div className="flex w-full max-w-[720px] flex-col gap-y-8 py-16">
-                  <AddCampaignPromotionFields
-                    form={form}
-                    campaigns={campaigns || []}
-                  />
+                  <AddCampaignPromotionFields form={form} />
                 </div>
               </div>
             </ProgressTabs.Content>

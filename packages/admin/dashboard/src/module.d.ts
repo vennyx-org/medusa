@@ -39,3 +39,17 @@ declare module "virtual:medusa/i18n" {
   const i18nModule: I18nModule
   export default i18nModule
 }
+
+declare module "virtual:medusa/layouts" {
+  import type { LayoutModule } from "./extensions"
+  const layoutModule: LayoutModule
+  export default layoutModule
+}
+
+declare module "virtual:medusa/cell-renderers" {
+  // Side-effect only module: registers custom cell renderers.
+}
+
+declare module "virtual:medusa/search-entities" {
+  // Side-effect only module: registers custom search entities.
+}

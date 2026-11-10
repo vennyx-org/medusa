@@ -84,7 +84,7 @@ This guide will teach you how to:
 
 <Prerequisites items={[
   {
-    text: "Node.js v20+",
+    text: "Node.js v20.19.0+ or v22.12.0+",
     link: "https://nodejs.org/en/download"
   },
   {
@@ -99,25 +99,25 @@ This guide will teach you how to:
 
 Start by installing the Medusa application on your machine with the following command:
 
-```bash
+```bash npx2yarnExec
 npx create-medusa-app@latest
 ```
 
 You'll first be asked for the project's name. You can also optionally choose to install the [Next.js Starter Storefront](../../../nextjs-starter/page.mdx).
 
-Afterwards, the installation process will start, which will install the Medusa application in a directory with your project's name. If you chose to install the Next.js starter, it'll be installed in a separate directory with the `{project-name}-storefront` name.
-
-<Note title="Why is the storefront installed separately">
-
-The Medusa application is composed of a headless Node.js server and an admin dashboard. The storefront is installed or custom-built separately and connects to the Medusa application through its REST endpoints, called [API routes](!docs!/learn/fundamentals/api-routes). Learn more about Medusa's architecture in [this documentation](!docs!/learn/introduction/architecture).
-
-</Note>
+Afterwards, the installation process will start, which will install the Medusa application as a monorepository in a directory with your project's name. The backend is installed in the `apps/backend` directory. If you chose to install the Next.js Starter Storefront, it'll be in the `apps/storefront` directory.
 
 Once the installation finishes successfully, the Medusa Admin dashboard will open with a form to create a new user. Enter the user's credentials and submit the form. Afterwards, you can log in with the new user and explore the dashboard.
 
 <Note title="Ran into Errors">
 
 Check out the [troubleshooting guides](../../../troubleshooting/create-medusa-app-errors/page.mdx) for help.
+
+</Note>
+
+<Note>
+
+In this guide, all file paths of backend customizations are relative to the `apps/backend` directory of your Medusa project.
 
 </Note>
 
@@ -295,7 +295,7 @@ So, create the file `src/modules/metal-prices/index.ts` with the following conte
 import { Module } from "@medusajs/framework/utils"
 import MetalPricesModuleService from "./service"
 
-export const METAL_PRICES_MODULE = "metal-prices"
+export const METAL_PRICES_MODULE = "metal_prices"
 
 export default Module(METAL_PRICES_MODULE, {
   service: MetalPricesModuleService,
@@ -546,7 +546,7 @@ type AddCustomToCartWorkflowInput = {
   item: {
     variant_id: string
     quantity: number
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown> | null
   }
 }
 
@@ -593,7 +593,7 @@ You create a workflow with `createWorkflow` from the Workflows SDK. It accepts t
 1. The workflow's unique name, which is `add-custom-to-cart`.
 2. A function that receives an input object with the cart's ID and the item to add to the cart. The item has the variant's ID, quantity, and optional metadata.
 
-In the function, you first retrieve the cart's details using the `useQueryGraphStep` helper step. This step uses [Query](!docs!/learn/fundamentals/module-links/query) which is a Modules SDK tool that retrieves data across modules. You use it to retrieve the cart's ID and currency code.
+In the function, you first retrieve the cart's details using the `useQueryGraphStep` helper step. This step uses [Query](!docs!/learn/fundamentals/query) which is a Modules SDK tool that retrieves data across modules. You use it to retrieve the cart's ID and currency code.
 
 You also retrieve the variant's details using the `useQueryGraphStep` helper step. You pass the variant's ID to the step's filters and specify the fields to retrieve. To retrieve the variant's price based on the cart's context, you pass the cart's currency code to the `calculated_price` context.
 
@@ -753,7 +753,7 @@ Since you export a `POST` function in this file, you're exposing a `POST` API ro
 1. A request object with details and context on the request, such as path and body parameters.
 2. A response object to manipulate and send the response.
 
-In the function, you retrieve the cart's ID from the path parameter, and the item's details from the request body. This API route will accept the same request body parameters as Medusa's [Add Item to Cart API Route](!api!/store#carts_postcartsidlineitems).
+In the function, you retrieve the cart's ID from the path parameter, and the item's details from the request body. This API route will accept the same request body parameters as Medusa's [Add Item to Cart API Route](!api!/store/carts/add-line-item).
 
 Then, you execute the `addCustomToCartWorkflow` by invoking it, passing it the Medusa container, which is available in the request's `scope` property, then executing its `run` method. You pass the workflow's input object with the cart's ID and the item to add to the cart.
 
@@ -805,7 +805,7 @@ You pass in the `routes` array an object having the following properties:
 
 - `matcher`: The route to apply the middleware on.
 - `method`: The HTTP method to apply the middleware on for the specified API route.
-- `middlewares`: An array of the middlewares to apply. You apply the `validateAndTransformBody` middleware, which validates the request body based on the `StoreAddCartLineItem` schema. This validation schema is the same schema used for Medusa's [Add Item to Cart API Route](!api!/store#carts_postcartsidlineitems).
+- `middlewares`: An array of the middlewares to apply. You apply the `validateAndTransformBody` middleware, which validates the request body based on the `StoreAddCartLineItem` schema. This validation schema is the same schema used for Medusa's [Add Item to Cart API Route](!api!/store/carts/add-line-item).
 
 Any request sent to the `/store/carts/:id/line-items-metals` API route will now fail if it doesn't have the required parameters.
 
@@ -876,7 +876,13 @@ You'll use this variant to add it to the cart later. You can find its ID by clic
 
 #### Retrieve Publishable API Key
 
-All requests sent to API routes starting with `/store` must have a publishable API key in the header. This ensures the request's operations are scoped to the publishable API key's associated sales channels. For example, products that aren't available in a cart's sales channel can't be added to it.
+All requests sent to API routes starting with `/store` must have a publishable API key in the header. This ensures the request's operations are scoped to the publishable API key's associated sales channels. For example, the products you retrieve are only those available in the key's sales channels.
+
+<Note>
+
+Medusa doesn't reject a variant added to a cart when its product isn't available in the cart's sales channel. Refer to the [Enforce Sales Channel Availability in Carts](../../../commerce-modules/cart/sales-channel-availability/page.mdx) guide to learn how to add that validation.
+
+</Note>
 
 To retrieve the publishable API key, on the Medusa Admin:
 

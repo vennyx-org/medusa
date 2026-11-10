@@ -15,7 +15,7 @@ export const TaxRegionDetailBreadcrumb = (
   const { province_id } = props.params || {}
 
   const { tax_region } = useTaxRegion(province_id!, undefined, {
-    initialData: props.data,
+    initialData: props.loaderData,
     enabled: Boolean(province_id),
   })
 
@@ -29,4 +29,18 @@ export const TaxRegionDetailBreadcrumb = (
   const isValid = isProvinceInCountry(countryCode, provinceCode)
 
   return <span>{isValid ? getProvinceByIso2(provinceCode) : provinceCode}</span>
+}
+
+export const seo = (match: UIMatch<HttpTypes.AdminTaxRegionResponse>) => {
+  const taxRegion = match.loaderData?.tax_region
+
+  if (!taxRegion) {
+    return { title: undefined }
+  }
+
+  const countryCode = taxRegion.country_code?.toUpperCase()
+  const provinceCode = taxRegion.province_code?.toUpperCase()
+  const isValid = isProvinceInCountry(countryCode, provinceCode)
+
+  return { title: isValid ? getProvinceByIso2(provinceCode) : provinceCode }
 }

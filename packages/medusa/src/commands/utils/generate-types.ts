@@ -4,6 +4,7 @@ import {
   ContainerRegistrationKeys,
   FileSystem,
   generateContainerTypes,
+  generateAugmentationRefs,
   getResolvedPlugins,
   gqlSchemaToTypes,
   mergePluginModules,
@@ -28,7 +29,7 @@ export async function generateTypes({
   )
 
   const plugins = await getResolvedPlugins(directory, configModule, true)
-  mergePluginModules(configModule, plugins)
+  mergePluginModules(configModule, plugins, directory)
 
   Object.keys(configModule.modules ?? {}).forEach((key) => {
     validateModuleName(key)
@@ -67,6 +68,9 @@ export async function generateTypes({
     })
     logger.debug("Generated modules types")
   }
+
+  await generateAugmentationRefs({ directory, plugins, modules })
+  logger.debug("Generated plugin augmentation types")
 
   logger.info("Types generated successfully")
 }

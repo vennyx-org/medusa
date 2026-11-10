@@ -1,6 +1,6 @@
 {
   "name": "@medusajs/js-sdk",
-  "version": "2.12.5",
+  "version": "2.22.6",
   "description": "SDK for the Medusa API",
   "main": "dist/index.js",
   "module": "dist/esm/index.js",
@@ -11,29 +11,36 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/medusajs/medusa",
+    "url": "git+https://github.com/medusajs/medusa.git",
     "directory": "packages/core/js-sdk"
   },
+  "bugs": {
+    "url": "https://github.com/medusajs/medusa/issues"
+  },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.22.0"
   },
   "publishConfig": {
     "access": "public"
   },
   "files": [
     "dist",
+    "AGENTS.md",
     "!dist/**/__tests__",
     "!dist/**/__mocks__",
     "!dist/**/__fixtures__"
   ],
+  "llms": "https://docs.medusajs.com/llms.txt",
+  "llmsFull": "https://docs.medusajs.com/llms-full.txt",
+  "mcpServer": "https://docs.medusajs.com/mcp",
   "author": "Medusa",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
-    "@medusajs/types": "2.12.5"
+    "@medusajs/types": "2.22.6"
   },
   "dependencies": {
     "fetch-event-stream": "^0.1.5",
-    "qs": "^6.12.1"
+    "qs": "^6.16.1"
   },
   "scripts": {
     "build": "yarn run -T rimraf dist && yarn run -T tsc -p tsconfig.json && yarn run -T tsc -p tsconfig.esm.json",

@@ -15,6 +15,7 @@ import {
   getCoreFlowNamespaces,
   getNamespaceNames,
 } from "../utils/get-namespaces.js"
+import { getEnterpriseNotice } from "../utils/enterprise.js"
 
 const commonAllowedDocuments = {
   [ReflectionKind.Variable]: true,
@@ -34,7 +35,9 @@ const allowedProjectDocuments: AllowedProjectDocumentsOption = {
   },
 }
 
-modules.forEach((module) => {
+const modifiedModules = [...modules, "loyalty", "store-credit"]
+
+modifiedModules.forEach((module) => {
   allowedProjectDocuments[module] = {
     ...commonAllowedDocuments,
   }
@@ -61,7 +64,7 @@ const mergerOptions: Partial<TypeDocOptions> = {
   out: path.join(rootPathPrefix, "www", "apps", "resources", "references"),
   name: "references",
   indexTitle: "Medusa References",
-  plugin: [...(baseOptions.plugin || []), "typedoc-plugin-markdown-medusa"],
+  plugin: [...(baseOptions.plugin || []), "typedoc-plugin-medusa-theme"],
   excludeReferences: true,
   excludeNotDocumented: true,
   hideInPageTOC: true,
@@ -88,7 +91,7 @@ const mergerOptions: Partial<TypeDocOptions> = {
     },
 
     // modules config
-    ...modules.reduce((obj, moduleName) => {
+    ...modifiedModules.reduce((obj, moduleName) => {
       const snakeCaseModuleName = kebabToSnake(moduleName)
       const camelCaseModuleName = kebabToCamel(moduleName)
       const titleModuleName = Object.hasOwn(customModuleTitles, moduleName)
@@ -100,6 +103,7 @@ const mergerOptions: Partial<TypeDocOptions> = {
       )
         ? customModuleServiceNames[moduleName]
         : `I${kebabToPascal(moduleName)}ModuleService`
+      const enterpriseNotice = getEnterpriseNotice(moduleName)
 
       const customModuleConfig: FormattingOptionsType = {}
 
@@ -126,7 +130,7 @@ const mergerOptions: Partial<TypeDocOptions> = {
           },
         },
         [`^${snakeCaseModuleName}/${moduleServiceName}/methods`]: {
-          reflectionDescription: `This documentation provides a reference to the \`{{alias}}\` {{kind}}. This belongs to the ${titleModuleName} Module.
+          reflectionDescription: `${enterpriseNotice}This documentation provides a reference to the \`{{alias}}\` {{kind}}. This belongs to the ${titleModuleName} Module.
 
 <Note>
 
@@ -145,7 +149,7 @@ You should only use this methods when implementing complex customizations. For c
           },
         },
         [`^${snakeCaseModuleName}/.*${moduleServiceName}/page\\.mdx`]: {
-          reflectionDescription: `This section of the documentation provides a reference to the \`${moduleServiceName}\` interface’s methods. This is the interface developers use to use the functionalities provided by the ${titleModuleName} Module.
+          reflectionDescription: `${enterpriseNotice}This section of the documentation provides a reference to the \`${moduleServiceName}\` interface’s methods. This is the interface developers use to use the functionalities provided by the ${titleModuleName} Module.
 
 <Note>
 
@@ -165,12 +169,13 @@ You should only use the methods in this reference when implementing complex cust
 
         // module's model config
         [`^${snakeCaseModuleName}_models`]: {
+          showSourceCodeLink: true,
           frontmatterData: {
             displayed_sidebar: `${camelCaseModuleName}ModelReference`,
             slug: `/references/${moduleName}/models/{{alias}}`,
             sidebar_label: "{{alias}}",
           },
-          reflectionDescription: `This documentation provides a reference to the {{alias}} data model. It belongs to the ${titleModuleName} Module.`,
+          reflectionDescription: `${enterpriseNotice}This documentation provides a reference to the {{alias}} data model. It belongs to the ${titleModuleName} Module.`,
           reflectionTitle: {
             kind: false,
             typeParameters: false,
@@ -182,7 +187,7 @@ You should only use the methods in this reference when implementing complex cust
           internalType: "model-ref",
         },
         [`^modules/${snakeCaseModuleName}_models`]: {
-          reflectionDescription: `This documentation provides a reference to the data models in the ${titleModuleName} Module`,
+          reflectionDescription: `${enterpriseNotice}This documentation provides a reference to the data models in the ${titleModuleName} Module`,
           frontmatterData: {
             displayed_sidebar: `${camelCaseModuleName}ModelReference`,
             slug: `/references/${moduleName}/models`,

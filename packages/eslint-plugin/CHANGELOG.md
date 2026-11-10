@@ -1,0 +1,111 @@
+# @medusajs/eslint-plugin
+
+## 2.22.6
+
+## 2.22.5
+
+No changes in this release.
+
+## 2.22.4
+
+### Patch Changes
+
+- [#17647](https://github.com/medusajs/medusa/pull/17647) [`199c263`](https://github.com/medusajs/medusa/commit/199c2635d3662e9a73c1949ef3d7974a6428d7f9) Thanks [@shahednasser](https://github.com/shahednasser)! - chore: upgrade TypeScript to 6.0.3
+
+## 2.22.3
+
+### Patch Changes
+
+- [#17590](https://github.com/medusajs/medusa/pull/17590) [`73874df`](https://github.com/medusajs/medusa/commit/73874df1e40b02e96f5235e8d2a9874b90e4fb38) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(eslint-plugin,workflow-engine-inmemory): update cron-parser to v5
+
+- [#17618](https://github.com/medusajs/medusa/pull/17618) [`385c4ff`](https://github.com/medusajs/medusa/commit/385c4ff75f4fada544b6384779a0ede21b66c741) Thanks [@shahednasser](https://github.com/shahednasser)! - chore: update jest to v30.5.2 and use the `--testPathPatterns` flag in test scripts
+
+## 2.22.2
+
+### Patch Changes
+
+- [#17525](https://github.com/medusajs/medusa/pull/17525) [`f03b71a`](https://github.com/medusajs/medusa/commit/f03b71a2be56746080e34e0eadbbeb658ca2f562) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(eslint-plugin): require @typescript-eslint/parser and @typescript-eslint/utils ^8.72.0
+
+- [#17567](https://github.com/medusajs/medusa/pull/17567) [`52caddd`](https://github.com/medusajs/medusa/commit/52cadddcf34fdbbc70be34aecd036d6885e8fa5d) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(deps): update development and test tooling (cross-env 10.1.0, esbuild 0.28.2, tsup 9.0.0, expect-type 1.4.0, @faker-js/faker 10.6.0, jsdom 30.1.3, @types/jsonwebtoken 9.0.10, msw 3.0.3, rimraf 6.1.3, Testing Library, turbo 2.11.10, @types/node 22, boxen 9.0.0, chalk 6.0.1, ci-info 4.4.0, commander 15.0.0, configstore 8.0.0, dotenv 18.0.9, execa 10.2.1, get-port 7.2.0, inquirer 14.2.4, @inquirer/checkbox 5.2.7, @inquirer/confirm 6.3.4, @inquirer/input 5.1.8, is-docker 4.0.0, meant 2.0.1, open 11.0.4, openapi3-ts 4.6.2, ora 9.4.1, @readme/openapi-parser 10.0.0, @redocly/cli 2.71.0, stack-trace 1.0.0, swagger-inline 8.1.0, yargs 18.2.0) and remove unused development dependencies; drop hosted-git-info from @medusajs/cli; fix the medusa-oas-cli circular patch recommendation crashing on references nested in inline schemas; `medusa-oas docs --preview` now serves a static Redoc 3 build since Redocly removed `preview-docs`; replace chalk with Node's built-in `util.styleText` in CommonJS packages; replace uuid with Node's built-in `crypto.randomUUID`; replace get-port with a built-in free-port helper in @medusajs/test-utils
+
+## 2.22.1
+
+## 2.22.0
+
+### Minor Changes
+
+- [#17089](https://github.com/medusajs/medusa/pull/17089) [`d249d29ddef76d0bde0b68899b9fe5f9faa1ef6a`](https://github.com/medusajs/medusa/commit/d249d29ddef76d0bde0b68899b9fe5f9faa1ef6a) Thanks [@shahednasser](https://github.com/shahednasser)! - chore: drop Node.js 20 support and require Node.js v22.22.0 or later
+
+### Patch Changes
+
+- [#17382](https://github.com/medusajs/medusa/pull/17382) [`1db74006ede40300afe64970024688a1a9c2a936`](https://github.com/medusajs/medusa/commit/1db74006ede40300afe64970024688a1a9c2a936) Thanks [@shahednasser](https://github.com/shahednasser)! - chore: ship AGENTS.md in published packages and add agent discovery fields to package.json
+
+## 2.21.2
+
+## 2.21.1
+
+### Patch Changes
+
+- [#16851](https://github.com/medusajs/medusa/pull/16851) [`98f0ecbeb8912ad38492600577e304f2d240f8d8`](https://github.com/medusajs/medusa/commit/98f0ecbeb8912ad38492600577e304f2d240f8d8) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(eslint-plugin): only trigger link-create-keys-modules-enum for actual link methods and steps
+
+## 2.21.0
+
+### Patch Changes
+
+- [#16778](https://github.com/medusajs/medusa/pull/16778) [`f6a417d40360d6946c54f1e522360869a5f8d520`](https://github.com/medusajs/medusa/commit/f6a417d40360d6946c54f1e522360869a5f8d520) Thanks [@shahednasser](https://github.com/shahednasser)! - feat(eslint-plugin): add rules for req.allowed, allowFields, and req.disallowed
+
+## 2.20.1
+
+## 2.20.0
+
+### Patch Changes
+
+- [#16517](https://github.com/medusajs/medusa/pull/16517) [`4f657cfc0bed22f5a76344bf5f1acd45eb6fe564`](https://github.com/medusajs/medusa/commit/4f657cfc0bed22f5a76344bf5f1acd45eb6fe564) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - feat(eslint-plugin): add throw in workflow definition eslint rule
+
+- [#16585](https://github.com/medusajs/medusa/pull/16585) [`c17f4d98b72075bef5c1ff83c3ce5ff1950681a9`](https://github.com/medusajs/medusa/commit/c17f4d98b72075bef5c1ff83c3ce5ff1950681a9) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - feat(eslint-plugin): add missing when name eslint rule
+
+- [#16520](https://github.com/medusajs/medusa/pull/16520) [`5bd3ca3092d593bf218da2e47a485a2b6f1844f6`](https://github.com/medusajs/medusa/commit/5bd3ca3092d593bf218da2e47a485a2b6f1844f6) Thanks [@NicolasGorga](https://github.com/NicolasGorga)! - feat(eslint-plugin): no nested when then block eslint rule
+
+## 2.19.0
+
+### Patch Changes
+
+- [`8933ac87c69b6904f890afe6d4c41e542732272e`](undefined) - feat(eslint-plugin): prefer workflow events
+
+## 2.18.0
+
+### Patch Changes
+
+- [`598020c157cec9b9905f7817c3cded4aa44ece94`](undefined) - fix(eslint-plugin): normalize Windows paths in cross-module relationship rule
+
+- [`fdf80069f11c23b6ec458119934251db5e6fce85`](undefined) - feat(eslint-plugin): add a rule for wildcard + specific field selections in query
+
+- [`8df11805fc51f4818647da433021c4fa7f6004f1`](undefined) - Remove the `use-query-context-utility` rule. It required wrapping the entire `query.graph` / `query.index` `context` object with `QueryContext(...)`, but the correct placement is query-specific: pricing queries wrap the `calculated_price` leaf (`context: { variants: { calculated_price: QueryContext(...) } }`), while others (such as shipping options) wrap the whole context. As written, the rule flagged correct pricing code and autofixed it into a runtime error (`Trying to query by not existing property Product.context`), contradicting the official docs and the framework's own usage. Correct placement cannot be determined generically, so the rule is removed. Fixes #15821.
+
+## 2.17.2
+
+### Patch Changes
+
+- [#15683](https://github.com/medusajs/medusa/pull/15683) [`de58ec503bcd82aae3fe576f9a404c36e2525f4c`](https://github.com/medusajs/medusa/commit/de58ec503bcd82aae3fe576f9a404c36e2525f4c) Thanks [@Floofy6](https://github.com/Floofy6)! - chore: add package bugs metadata
+
+## 2.17.1
+
+## 2.17.0
+
+### Patch Changes
+
+- [#15774](https://github.com/medusajs/medusa/pull/15774) [`c352997589d4d41d585df4600e0a6b51e6f320aa`](https://github.com/medusajs/medusa/commit/c352997589d4d41d585df4600e0a6b51e6f320aa) Thanks [@shahednasser](https://github.com/shahednasser)! - fix(eslint-plugin): handle link edge cases
+
+## 2.16.0
+
+### Patch Changes
+
+- [`2db19b271486a05a1bc4d12189ca6035799ed187`](undefined) - fix(eslint-plugin): fixes to avoid false positives
+
+- [`f8578a6f7d34ce9026a3b3d6b0d99c1de3ee231d`](undefined) - feat(eslint-plugin): add Medusa ESLint plugin
+
+- [`f87619c50aad055104acc3babae9592bdc166aa9`](undefined) - fix(eslint-plugin): fix and improve main config
+
+- [`e67e11584a4f6f79ba1a8ddd2c56b48312fcb766`](undefined) - feat(eslint-plugin): add `modules` config preset and support ESLint 8.57+
+
+- [#15719](https://github.com/medusajs/medusa/pull/15719) [`a1fd4d648b923cbd68240dba49f1c46ad0e98f39`](https://github.com/medusajs/medusa/commit/a1fd4d648b923cbd68240dba49f1c46ad0e98f39) Thanks [@shahednasser](https://github.com/shahednasser)! - feat(cli, eslint-plugin, medusa): add linting to medusa CLI

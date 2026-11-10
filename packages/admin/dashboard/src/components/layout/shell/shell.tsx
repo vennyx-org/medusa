@@ -12,11 +12,23 @@ import {
   useNavigation,
 } from "react-router-dom"
 
+import { DocumentTitle } from "../../../hooks/use-document-title"
 import { KeybindProvider } from "../../../providers/keybind-provider"
 import { useGlobalShortcuts } from "../../../providers/keybind-provider/hooks"
 import { useSidebar } from "../../../providers/sidebar-provider"
 import { ProgressBar } from "../../common/progress-bar"
+import {
+  LayoutCustomizerHostProvider,
+  LayoutCustomizerSlot,
+} from "../../../providers/customizer-host-provider/customizer-host-provider"
 import { Notifications } from "../notifications"
+import { CustomizerMenu, LayoutComposer } from "../../layout-composer"
+import {
+  CUSTOMIZE_IDS,
+  LAYOUT_CONTROLS_LOCATION,
+} from "../../layout-composer/constants"
+import { CORE_LAYOUT_IDS } from "@medusajs/admin-shared"
+import { useRememberedSearch } from "./use-remembered-search"
 
 export const Shell = ({ children }: PropsWithChildren) => {
   const globalShortcuts = useGlobalShortcuts()
@@ -26,28 +38,31 @@ export const Shell = ({ children }: PropsWithChildren) => {
 
   return (
     <KeybindProvider shortcuts={globalShortcuts}>
-      <div className="relative flex h-screen flex-col items-start overflow-hidden lg:flex-row">
-        <NavigationBar loading={loading} />
-        <div>
-          <MobileSidebarContainer>{children}</MobileSidebarContainer>
-          <DesktopSidebarContainer>{children}</DesktopSidebarContainer>
+      <DocumentTitle />
+      <LayoutCustomizerHostProvider>
+        <div className="relative flex h-screen flex-col items-start overflow-hidden lg:flex-row">
+          <NavigationBar loading={loading} />
+          <div>
+            <MobileSidebarContainer>{children}</MobileSidebarContainer>
+            <DesktopSidebarContainer>{children}</DesktopSidebarContainer>
+          </div>
+          <div className="flex h-screen w-full flex-col overflow-auto">
+            <Topbar />
+            <main
+              className={clx(
+                "flex h-full w-full flex-col items-center overflow-y-auto transition-opacity delay-200 duration-200",
+                {
+                  "opacity-25": loading,
+                }
+              )}
+            >
+              <Gutter>
+                <Outlet />
+              </Gutter>
+            </main>
+          </div>
         </div>
-        <div className="flex h-screen w-full flex-col overflow-auto">
-          <Topbar />
-          <main
-            className={clx(
-              "flex h-full w-full flex-col items-center overflow-y-auto transition-opacity delay-200 duration-200",
-              {
-                "opacity-25": loading,
-              }
-            )}
-          >
-            <Gutter>
-              <Outlet />
-            </Gutter>
-          </main>
-        </div>
-      </div>
+      </LayoutCustomizerHostProvider>
     </KeybindProvider>
   )
 }
@@ -90,7 +105,8 @@ const Gutter = ({ children }: PropsWithChildren) => {
   )
 }
 
-const Breadcrumbs = () => {
+export const Breadcrumbs = () => {
+  const withRememberedSearch = useRememberedSearch()
   const matches = useMatches() as unknown as UIMatch<
     unknown,
     {
@@ -125,7 +141,7 @@ const Breadcrumbs = () => {
   return (
     <ol
       className={clx(
-        "text-ui-fg-muted txt-compact-small-plus flex select-none items-center"
+        "txt-compact-small-plus flex select-none items-center text-ui-fg-muted"
       )}
     >
       {crumbs.map((crumb, index) => {
@@ -137,7 +153,7 @@ const Breadcrumbs = () => {
             {!isLast ? (
               <Link
                 className="transition-fg hover:text-ui-fg-subtle"
-                to={crumb.path}
+                to={withRememberedSearch(crumb.path)}
               >
                 {crumb.label}
               </Link>
@@ -199,7 +215,24 @@ const Topbar = () => {
         <Breadcrumbs />
       </div>
       <div className="flex items-center justify-end gap-x-3">
-        <Notifications />
+        {/* Single trigger for every host; while editing, the active composer's
+            controls portal into the adjacent slot in its place. */}
+        <CustomizerMenu />
+        <LayoutCustomizerSlot location={LAYOUT_CONTROLS_LOCATION} />
+        <LayoutComposer
+          widgetsZonePrefix="topbar"
+          preferredLayoutId={CORE_LAYOUT_IDS.SINGLE_ROW}
+          sections={{
+            main: (
+              <LayoutComposer.Entry id="Notifications">
+                <Notifications />
+              </LayoutComposer.Entry>
+            ),
+          }}
+          hasOutlet={false}
+          customizeId={CUSTOMIZE_IDS.TOPBAR}
+          controlSize="xsmall"
+        />
       </div>
     </div>
   )
@@ -228,14 +261,14 @@ const MobileSidebarContainer = ({ children }: PropsWithChildren) => {
       <RadixDialog.Portal>
         <RadixDialog.Overlay
           className={clx(
-            "bg-ui-bg-overlay fixed inset-0",
+            "fixed inset-0 bg-ui-bg-overlay",
             "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
           )}
         />
         <RadixDialog.Content
           className={clx(
-            "bg-ui-bg-subtle shadow-elevation-modal fixed inset-y-2 start-2 flex w-full max-w-[304px] flex-col overflow-hidden rounded-lg border-r",
-            "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-start-1/2 data-[state=open]:slide-in-from-start-1/2 duration-200"
+            "fixed inset-y-2 start-2 flex w-full max-w-[304px] flex-col overflow-hidden rounded-lg border-r bg-ui-bg-subtle shadow-elevation-modal",
+            "data-[state=closed]:slide-out-to-start-1/2 data-[state=open]:slide-in-from-start-1/2 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
           )}
         >
           <div className="p-3">

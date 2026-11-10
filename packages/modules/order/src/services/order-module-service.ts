@@ -37,6 +37,7 @@ import {
   MedusaContext,
   MedusaError,
   ModulesSdkUtils,
+  normalizeCurrencyCode,
   OrderChangeStatus,
   OrderStatus,
   promiseAll,
@@ -361,6 +362,7 @@ export default class OrderModuleService
 
   private shouldIncludeTotals(config: FindConfig<any>): boolean {
     const totalFields = [
+      "*",
       "total",
       "subtotal",
       "tax_total",
@@ -390,7 +392,7 @@ export default class OrderModuleService
       "refundable_amount",
     ]
 
-    const includeTotals = (config?.select ?? []).some((field) =>
+    const includeTotals = (config?.select ?? ["*"]).some((field) =>
       totalFields.includes(field as string)
     )
 
@@ -403,7 +405,6 @@ export default class OrderModuleService
 
   private addRelationsToCalculateTotals(config: FindConfig<any>, totalFields) {
     config.relations ??= []
-    config.select ??= []
 
     const requiredRelationsForTotals = [
       "credit_lines",
@@ -420,10 +421,10 @@ export default class OrderModuleService
       ...requiredRelationsForTotals,
     ])
 
-    config.select = config.select.filter((field) => {
+    config.select = config.select?.filter((field) => {
       return (
         !requiredRelationsForTotals.some((val) =>
-          val.startsWith(field as string)
+          (field as string).startsWith(val)
         ) && !totalFields.includes(field)
       )
     })
@@ -793,6 +794,10 @@ export default class OrderModuleService
         totals: calculated.summary,
       }
 
+      if (ord.currency_code) {
+        ord.currency_code = normalizeCurrencyCode(ord.currency_code)
+      }
+      
       ord.custom_display_id = await this.generateCustomDisplayId_.bind(this)(
         data_,
         sharedContext
@@ -932,14 +937,18 @@ export default class OrderModuleService
       (orderShipping) => orderShipping.shipping_method_id
     )
 
-    const deletions: Promise<string[]>[] = []
+    const deletions: Promise<unknown>[] = []
 
     if (orderAddressIds.length) {
-      deletions.push(this.orderAddressService_.delete(orderAddressIds, sharedContext))
+      deletions.push(
+        this.orderAddressService_.delete(orderAddressIds, sharedContext)
+      )
     }
 
     if (orderChangeIds.length) {
-      deletions.push(this.orderChangeService_.delete(orderChangeIds, sharedContext))
+      deletions.push(
+        this.orderChangeService_.delete(orderChangeIds, sharedContext)
+      )
     }
 
     if (deletions.length) {
@@ -1148,6 +1157,7 @@ export default class OrderModuleService
           version: toCreate.version ?? 1,
           item_id: item.id,
           quantity: toCreate.quantity,
+          metadata: toCreate.metadata,
         })
       }
     }
@@ -2536,7 +2546,7 @@ export default class OrderModuleService
     const order = await this.retrieveOrder(
       orderId,
       {
-        select: ["id", "version", "items.detail", "summary", "total"],
+        select: ["id", "version", "items.detail", "summary", "total", "email"],
         relations: [
           "transactions",
           "credit_lines",
@@ -2569,6 +2579,7 @@ export default class OrderModuleService
       shippingMethodsToUpsert,
       calculatedOrders,
       lineItemAdjustmentsToCreate,
+      shippingMethodAdjustmentsToCreate,
     } = await applyChangesToOrder(
       [order],
       { [order.id]: sortedActions },
@@ -2582,6 +2593,7 @@ export default class OrderModuleService
       itemsToUpsert,
       shippingMethodsToUpsert,
       lineItemAdjustmentsToCreate, // this will add "virtual" adjustments for the preview version but no actual adjustments will be created in the DB
+      shippingMethodAdjustmentsToCreate,
       sharedContext
     )
 
@@ -2602,6 +2614,7 @@ export default class OrderModuleService
     itemsToUpsert,
     shippingMethodsToUpsert,
     lineItemAdjustmentsToCreate,
+    shippingMethodAdjustmentsToCreate,
     sharedContext: Context = {}
   ) {
     const addedItems = {}
@@ -2699,12 +2712,17 @@ export default class OrderModuleService
 
         const newItem = shippingMethodsToUpsert.find((d) => d.id === sm.id)!
 
+        const adjustments = shippingMethodAdjustmentsToCreate.filter(
+          (d) => d.shipping_method_id === sm.id
+        )
+
         sm.shipping_method_id = sm.id
         delete sm.id
 
         order.shipping_methods[idx] = {
           ...shippingMethod,
           actions,
+          adjustments: adjustments,
           detail: {
             ...sm,
             ...newItem,
@@ -3268,7 +3286,7 @@ export default class OrderModuleService
         order_id: order.id,
         version: currentVersion,
       },
-      { select: ["id", "version"] },
+      { select: ["id", "version", "item_id"] },
       sharedContext
     )
     const orderItemIds = orderItems.map((summary) => summary.id)
@@ -3283,7 +3301,7 @@ export default class OrderModuleService
         order_id: order.id,
         version: currentVersion,
       },
-      { select: ["id", "version"] },
+      { select: ["id", "version", "shipping_method_id"] },
       sharedContext
     )
     const orderShippingIds = orderShippings.map((sh) => sh.id)
@@ -3291,6 +3309,58 @@ export default class OrderModuleService
     updatePromises.push(
       this.orderShippingService_.softDelete(orderShippingIds, sharedContext)
     )
+
+    const itemIds = orderItems.map((orderItem) => orderItem.item_id)
+
+    if (itemIds.length) {
+      const lineItemAdjustments =
+        await this.orderLineItemAdjustmentService_.list(
+          {
+            item_id: itemIds,
+            version: currentVersion,
+          },
+          { select: ["id"] },
+          sharedContext
+        )
+      const lineItemAdjustmentIds = lineItemAdjustments.map((adj) => adj.id)
+
+      if (lineItemAdjustmentIds.length) {
+        updatePromises.push(
+          this.orderLineItemAdjustmentService_.softDelete(
+            lineItemAdjustmentIds,
+            sharedContext
+          )
+        )
+      }
+    }
+
+    const shippingMethodIds = orderShippings.map(
+      (orderShipping) => orderShipping.shipping_method_id
+    )
+
+    if (shippingMethodIds.length) {
+      const shippingMethodAdjustments =
+        await this.orderShippingMethodAdjustmentService_.list(
+          {
+            shipping_method_id: shippingMethodIds,
+            version: currentVersion,
+          },
+          { select: ["id"] },
+          sharedContext
+        )
+      const shippingMethodAdjustmentIds = shippingMethodAdjustments.map(
+        (adj) => adj.id
+      )
+
+      if (shippingMethodAdjustmentIds.length) {
+        updatePromises.push(
+          this.orderShippingMethodAdjustmentService_.softDelete(
+            shippingMethodAdjustmentIds,
+            sharedContext
+          )
+        )
+      }
+    }
 
     // Order Credit Lines
     const orderCreditLines = await this.orderCreditLineService_.list(
@@ -3356,6 +3426,7 @@ export default class OrderModuleService
         "description",
         "internal_note",
         "carry_over_promotions",
+        "no_notification",
       ],
       relations: [] as string[],
       order: {},
@@ -3564,7 +3635,7 @@ export default class OrderModuleService
     let orders = await this.listOrders_(
       { id: deduplicate(ordersIds) },
       {
-        select: ["id", "version", "items.detail", "summary", "total"],
+        select: ["id", "version", "items.detail", "summary", "total", "email"],
         relations: ["transactions", "credit_lines"],
       },
       sharedContext
@@ -3577,6 +3648,7 @@ export default class OrderModuleService
       orderToUpdate,
       creditLinesToUpsert,
       lineItemAdjustmentsToCreate,
+      shippingMethodAdjustmentsToCreate,
     } = await applyChangesToOrder(orders, actionsMap, {
       addActionReferenceToObject: true,
       includeTaxLinesAndAdjustmentsToPreview: async (...args) => {
@@ -3625,6 +3697,12 @@ export default class OrderModuleService
             // this is called when a new order version is confirmed so we only create a new set of adjustments for that version
             // there is no removal or upsert
             lineItemAdjustmentsToCreate,
+            sharedContext
+          )
+        : null,
+      shippingMethodAdjustmentsToCreate.length
+        ? this.orderShippingMethodAdjustmentService_.create(
+            shippingMethodAdjustmentsToCreate,
             sharedContext
           )
         : null,
@@ -3701,8 +3779,13 @@ export default class OrderModuleService
       }
     }
 
+    const normalizedData = data.map((d) => ({
+      ...d,
+      currency_code: normalizeCurrencyCode(d.currency_code ?? ""),
+    }))
+
     const created = (await this.orderTransactionService_.create(
-      data,
+      normalizedData,
       sharedContext
     )) as (InferEntityType<typeof OrderTransaction> & { order_id: string })[]
 

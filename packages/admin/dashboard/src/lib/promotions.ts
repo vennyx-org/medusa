@@ -17,11 +17,15 @@ export const promotionStatusMap: StatusMap = {
   [PromotionStatus.DRAFT]: ["grey", i18n.t("statuses.draft")],
   [PromotionStatus.SCHEDULED]: [
     "orange",
-    `${i18n.t("promotions.fields.campaign")} ${i18n.t("statuses.scheduled").toLowerCase()}`,
+    `${i18n.t("promotions.fields.campaign")} ${i18n
+      .t("statuses.scheduled")
+      .toLowerCase()}`,
   ],
   [PromotionStatus.EXPIRED]: [
     "red",
-    `${i18n.t("promotions.fields.campaign")} ${i18n.t("statuses.expired").toLowerCase()}`,
+    `${i18n.t("promotions.fields.campaign")} ${i18n
+      .t("statuses.expired")
+      .toLowerCase()}`,
   ],
 }
 
@@ -38,8 +42,15 @@ export const getPromotionStatus = (promotion: HttpTypes.AdminPromotion) => {
   }
 
   const campaignBudget = campaign.budget
+  // For per-attribute budgets, `used` aggregates usage across all attribute
+  // values while `limit` applies to each attribute value individually, so
+  // comparing them cannot tell whether the budget is exhausted.
+  const isPerAttributeBudget =
+    campaignBudget?.type === "use_by_attribute" ||
+    campaignBudget?.type === "spend_by_attribute"
   const overBudget =
     campaignBudget &&
+    !isPerAttributeBudget &&
     campaignBudget.limit &&
     campaignBudget.used! > campaignBudget.limit!
 

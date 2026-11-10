@@ -2,7 +2,8 @@ import { BaseFilterable } from "../../../dal"
 import { FindParams } from "../../common"
 
 export interface StoreGetShippingOptionList
-  extends Omit<FindParams, "with_deleted">,
+  extends
+    Omit<FindParams, "with_deleted">,
     BaseFilterable<StoreGetShippingOptionList> {
   /**
    * The ID of the cart to retrieve the shipping options that
@@ -13,4 +14,9 @@ export interface StoreGetShippingOptionList
    * Whether to retrieve shipping options used for returns.
    */
   is_return?: boolean
+}
+
+export interface StoreGetShippingOptionsFields {
+  cart_id: string
+  is_return?: boolean | undefined
 }

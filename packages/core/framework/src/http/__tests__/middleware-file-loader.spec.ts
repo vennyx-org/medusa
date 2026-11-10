@@ -48,6 +48,7 @@ describe("Middleware file loader", () => {
         },
       ]
     `)
+
     expect(loader.getMiddlewares()).toMatchInlineSnapshot(`
       [
         {
@@ -65,6 +66,11 @@ describe("Middleware file loader", () => {
         {
           "handler": [Function],
           "matcher": "/store/*",
+          "methods": undefined,
+        },
+        {
+          "handler": [Function],
+          "matcher": /\\^\\\\/admin\\(\\\\/\\.\\*\\)\\?\\$/,
           "methods": undefined,
         },
         {

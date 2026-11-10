@@ -24,6 +24,12 @@ export interface FindOrCreateCustomerStepInput {
    * find a customer with this email or create a new customer having this email.
    */
   email?: string | null
+  /**
+   * Filter the customer found by the `email` by whether they have an account. Set it to
+   * `false` so the `email` is never resolved to a registered customer. A registered customer
+   * is then only returned when found by the `customerId`.
+   */
+  hasAccount?: boolean
 }
 
 /**
@@ -52,7 +58,8 @@ async function fetchCustomerById(
   const service = container.resolve<ICustomerModuleService>(Modules.CUSTOMER)
 
   return await useCache<CustomerDTO>(
-    async () => service.retrieveCustomer(customerId),
+    async () =>
+      service.retrieveCustomer(customerId, { relations: ["groups"] }),
     {
       container,
       key: ["find-or-create-customer-by-id", customerId],
@@ -71,7 +78,7 @@ async function fetchCustomersByEmail(
     hasAccount !== undefined ? { email, has_account: hasAccount } : { email }
 
   return await useCache<CustomerDTO[]>(
-    async () => service.listCustomers(filters),
+    async () => service.listCustomers(filters, { relations: ["groups"] }),
     {
       container,
       key: ["find-or-create-customer-by-email", filters],
@@ -125,7 +132,11 @@ export const findOrCreateCustomerStep = createStep(
 
       let [customer] = originalCustomer
         ? [originalCustomer]
-        : await fetchCustomersByEmail(validatedEmail, container)
+        : await fetchCustomersByEmail(
+            validatedEmail,
+            container,
+            data.hasAccount
+          )
 
       // if NOT a guest customer, return it
       if (customer?.has_account) {

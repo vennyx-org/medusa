@@ -71,7 +71,7 @@ By following this tutorial, you'll learn how to:
 
 <Prerequisites items={[
   {
-    text: "Node.js v20+",
+    text: "Node.js v22.22.0+",
     link: "https://nodejs.org/en/download"
   },
   {
@@ -86,25 +86,25 @@ By following this tutorial, you'll learn how to:
 
 Start by installing the Medusa application on your machine with the following command:
 
-```bash
+```bash npx2yarnExec
 npx create-medusa-app@latest
 ```
 
 You'll first be asked for the project's name. Then, when asked whether you want to install the [Next.js Starter Storefront](../../../nextjs-starter/page.mdx), choose Yes.
 
-Afterwards, the installation process will start, which will install the Medusa application in a directory with your project's name, and the Next.js Starter Storefront in a separate directory with the `{project-name}-storefront` name.
-
-<Note title="Why is the storefront installed separately">
-
-The Medusa application is composed of a headless Node.js server and an admin dashboard. The storefront is installed or custom-built separately and connects to the Medusa application through its REST endpoints, called [API routes](!docs!/learn/fundamentals/api-routes). Learn more in [Medusa's Architecture documentation](!docs!/learn/introduction/architecture).
-
-</Note>
+Afterwards, the installation process will start, which will install the Medusa application as a monorepository in a directory with your project's name. The backend is installed in the `apps/backend` directory, and the Next.js Starter Storefront is installed in the `apps/storefront` directory.
 
 Once the installation finishes successfully, the Medusa Admin dashboard will open with a form to create a new user. Enter the user's credentials and submit the form. Afterwards, you can log in with the new user and explore the dashboard.
 
 <Note title="Ran into Errors">
 
 Check out the [troubleshooting guides](../../../troubleshooting/create-medusa-app-errors/page.mdx) for help.
+
+</Note>
+
+<Note>
+
+In this guide, all file paths of backend customizations are relative to the `apps/backend` directory of your Medusa project.
 
 </Note>
 
@@ -214,18 +214,16 @@ The Stripe Module Provider supports different payment methods in Stripe, such as
 
 ![Stripe in the dropdown](https://res.cloudinary.com/dza7lstvk/image/upload/v1745245433/Medusa%20Resources/Screenshot_2025-04-21_at_5.23.07_PM_yd7xji.png)
 
-### Add Evnironement Variable to Storefront
+### Add Environment Variable to Storefront
 
 The [Next.js Starter Storefront](../../../nextjs-starter/page.mdx) supports payment with Stripe during checkout if it's enabled in the region.
 
 <Note title="Reminder" forceMultiline>
 
-The Next.js Starter Storefront was installed in a separate directory from Medusa. The directory's name is `{your-project}-storefront`.
-
-So, if your Medusa application's directory is `medusa-payment`, you can find the storefront by going back to the parent directory and changing to the `medusa-payment-storefront` directory:
+The Next.js Starter Storefront is available in the `apps/storefront` directory of your project:
 
 ```bash
-cd ../medusa-payment-storefront # change based on your project name
+cd apps/storefront
 ```
 
 </Note>
@@ -263,14 +261,18 @@ An API route is created in a `route.ts` file under a sub-directory of the `src/a
 So, to create an API route at the path `/store/payment-methods/:account-holder-id`, create the file `src/api/store/payment-methods/[account_holder_id]/route.ts` with the following content:
 
 export const apiRouteHighlights = [
-  ["9", "query", "Resolve Query from the Medusa container"],
-  ["10", "paymentModuleService", "Resolve the Payment Module's service from the Medusa container."],
-  ["12", "accountHolder", "Retrieve the account holder by its ID."],
-  ["30", "paymentMethods", "Retrieve the saved payment methods in the account holder's provider."]
+  ["13", "query", "Resolve Query from the Medusa container"],
+  ["16", "paymentModuleService", "Resolve the Payment Module's service from the Medusa container."],
+  ["20", "accountHolder", "Retrieve the account holder by its ID."],
+  ["38", "paymentMethods", "Retrieve the saved payment methods in the account holder's provider."]
 ]
 
 ```ts title="src/api/store/payment-methods/[account_holder_id]/route.ts" highlights={apiRouteHighlights}
-import { MedusaError } from "@medusajs/framework/utils"
+import {
+  MedusaError,
+  Modules,
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 
 export async function GET(
@@ -278,8 +280,12 @@ export async function GET(
   res: MedusaResponse
 ) {
   const { account_holder_id } = req.params
-  const query = req.scope.resolve("query")
-  const paymentModuleService = req.scope.resolve("payment")
+  const query = req.scope.resolve(
+    ContainerRegistrationKeys.QUERY
+  )
+  const paymentModuleService = req.scope.resolve(
+    Modules.PAYMENT
+  )
 
   const { data: [accountHolder] } = await query.graph({
     entity: "account_holder",
@@ -327,7 +333,7 @@ The request object has a `scope` property, which is an instance of the [Medusa c
 
 You use the Medusa container to resolve:
 
-- [Query](!docs!/learn/fundamentals/module-links/query), which is a tool that retrieves data across modules in the Medusa application.
+- [Query](!docs!/learn/fundamentals/query), which is a tool that retrieves data across modules in the Medusa application.
 - The [Payment Module](../../../commerce-modules/payment/page.mdx)'s service, which provides an interface to manage and process payments with third-party providers.
 
 You use Query to retrieve the account holder with the ID passed as a path parameter. If the account holder is not found, you throw an error.
@@ -393,19 +399,17 @@ In this step, you'll customize the checkout flow in the [Next.js Starter Storefr
 
 <Note title="Reminder" forceMultiline>
 
-The Next.js Starter Storefront was installed in a separate directory from Medusa. The directory's name is `{your-project}-storefront`.
-
-So, if your Medusa application's directory is `medusa-payment`, you can find the storefront by going back to the parent directory and changing to the `medusa-payment-storefront` directory:
+The Next.js Starter Storefront is available in the `apps/storefront` directory of your project:
 
 ```bash
-cd ../medusa-payment-storefront # change based on your project name
+cd apps/storefront
 ```
 
 </Note>
 
-During checkout, when the customer chooses a payment method, such as Stripe, the Next.js Starter Storefront creates a [payment session](../../../commerce-modules/payment/payment-session/page.mdx) in Medusa using the [Initialize Payment Session](!api!/store#payment-collections_postpaymentcollectionsidpaymentsessions) API route.
+During checkout, when the customer chooses a payment method, such as Stripe, the Next.js Starter Storefront creates a [payment session](../../../commerce-modules/payment/payment-session/page.mdx) in Medusa using the [Initialize Payment Session](!api!/store/payment-collections/initialize-payment-session) API route.
 
-Under the hood, Medusa uses the associated payment provider (Stripe) to initiate the payment process with the associated third-party payment provider. The [Initialize Payment Session](!api!/store#payment-collections_postpaymentcollectionsidpaymentsessions) API route accepts a `data` object parameter in the request body that allows you to pass data relevant to the third-party payment provider.
+Under the hood, Medusa uses the associated payment provider (Stripe) to initiate the payment process with the associated third-party payment provider. The [Initialize Payment Session](!api!/store/payment-collections/initialize-payment-session) API route accepts a `data` object parameter in the request body that allows you to pass data relevant to the third-party payment provider.
 
 So, to save the payment method that the customer uses during checkout with Stripe, you must pass the `setup_future_usage` property in the `data` object. The `setup_future_usage` property is a Stripe-specific property that allows you to save the payment method for future use.
 
@@ -431,7 +435,7 @@ By making this change, you always save the payment method that the customer uses
 
 ### Test it Out
 
-To test it out, start the Medusa application by running the following command in the Medusa application's directory:
+To test it out, start the Medusa application by running the following command in the `apps/backend` directory:
 
 ```bash npm2yarn
 npm run dev
@@ -527,6 +531,8 @@ Next, you'll add the component that shows the saved payment methods and allows t
 The component that shows the Stripe card element is defined in `src/modules/checkout/components/payment-container/index.tsx`. So, you'll define the component for the saved payment methods in the same file.
 
 Start by adding the following import statements at the top of the file:
+
+{/* eslint-disable @medusajs/import-from-framework-not-internal */}
 
 ```ts title="src/modules/checkout/components/payment-container/index.tsx" badgeLabel="Storefront" badgeColor="blue"
 import { Button } from "@medusajs/ui"
@@ -943,7 +949,7 @@ In particular, you're changing the `payment_method` property to either be the ID
 
 You can now test out placing orders with a saved payment method.
 
-To do that, start the Medusa application by running the following command in the Medusa application's directory:
+To do that, start the Medusa application by running the following command in the `apps/backend` directory:
 
 ```bash npm2yarn
 npm run dev

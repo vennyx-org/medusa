@@ -35,7 +35,7 @@ import { useTranslation } from "react-i18next"
 import { useCommandHistory } from "../../../hooks/use-command-history"
 import { useDocumentDirection } from "../../../hooks/use-document-direction"
 import { ConditionalTooltip } from "../../common/conditional-tooltip"
-import { DataGridContext } from "../context"
+import { DataGridContext, DataGridContextType } from "../context"
 import {
   useDataGridCellHandlers,
   useDataGridCellMetadata,
@@ -55,7 +55,7 @@ import { isCellMatch, isSpecialFocusKey } from "../utils"
 import { DataGridKeyboardShortcutModal } from "./data-grid-keyboard-shortcut-modal"
 export interface DataGridRootProps<
   TData,
-  TFieldValues extends FieldValues = FieldValues
+  TFieldValues extends FieldValues = FieldValues,
 > {
   data?: TData[]
   columns: ColumnDef<TData>[]
@@ -120,7 +120,7 @@ const getCommonPinningStyles = <TData,>(
 
 export const DataGridRoot = <
   TData,
-  TFieldValues extends FieldValues = FieldValues
+  TFieldValues extends FieldValues = FieldValues,
 >({
   data = [],
   columns,
@@ -179,6 +179,7 @@ export const DataGridRoot = <
     onColumnVisibilityChange: setColumnVisibility,
     getSubRows,
     getCoreRowModel: getCoreRowModel(),
+    columnResizeMode: "onChange",
     defaultColumn: {
       size: 200,
       maxSize: 400,
@@ -331,6 +332,12 @@ export const DataGridRoot = <
   })
   const virtualColumns = columnVirtualizer.getVirtualItems()
 
+  // The column virtualizer caches sizes from getSize(); re-measure when a resize changes them.
+  const columnSizing = grid.getState().columnSizing
+  useEffect(() => {
+    columnVirtualizer.measure()
+  }, [columnSizing, columnVirtualizer])
+
   let virtualPaddingLeft: number | undefined
   let virtualPaddingRight: number | undefined
 
@@ -476,6 +483,7 @@ export const DataGridRoot = <
     TData,
     TFieldValues
   >({
+    containerRef,
     matrix,
     isEditing,
     anchor,
@@ -658,8 +666,8 @@ export const DataGridRoot = <
   }, [anchor, trapActive, setSingleRange, scrollToCoordinates, queryTool])
 
   return (
-    <DataGridContext.Provider value={values}>
-      <div className="bg-ui-bg-subtle flex size-full flex-col">
+    <DataGridContext.Provider value={values as DataGridContextType<any>}>
+      <div className="flex size-full flex-col bg-ui-bg-subtle">
         <DataGridHeader
           showColumnsDropdown={showColumnsDropdown}
           columnOptions={columnOptions}
@@ -671,6 +679,7 @@ export const DataGridRoot = <
           isHighlighted={isHighlighted}
           onHeaderInteractionChange={handleHeaderInteractionChange}
           headerContent={headerContent}
+          showShortcuts={!disableInteractions}
         />
         <div className="size-full overflow-hidden">
           <div
@@ -683,10 +692,10 @@ export const DataGridRoot = <
             data-container={true}
             role="application"
           >
-            <div role="grid" className="text-ui-fg-subtle grid">
+            <div role="grid" className="grid text-ui-fg-subtle">
               <div
                 role="rowgroup"
-                className="txt-compact-small-plus bg-ui-bg-subtle sticky top-0 z-[1] grid"
+                className="txt-compact-small-plus sticky top-0 z-[1] grid bg-ui-bg-subtle"
               >
                 {grid.getHeaderGroups().map((headerGroup) => (
                   <div
@@ -727,7 +736,7 @@ export const DataGridRoot = <
                             width: header.getSize(),
                             ...getCommonPinningStyles(header.column),
                           }}
-                          className="bg-ui-bg-base txt-compact-small-plus flex items-center border-b border-r px-4 py-2.5"
+                          className="txt-compact-small-plus flex items-center border-b border-r bg-ui-bg-base px-4 py-2.5"
                         >
                           {header.isPlaceholder
                             ? null
@@ -735,6 +744,20 @@ export const DataGridRoot = <
                                 header.column.columnDef.header,
                                 header.getContext()
                               )}
+                          {header.column.getCanResize() && (
+                            <div
+                              onMouseDown={header.getResizeHandler()}
+                              onTouchStart={header.getResizeHandler()}
+                              onClick={(e) => e.stopPropagation()}
+                              className={clx(
+                                "absolute right-0 top-0 z-[2] h-full w-1 cursor-col-resize touch-none select-none hover:bg-ui-fg-interactive",
+                                {
+                                  "bg-ui-fg-interactive":
+                                    header.column.getIsResizing(),
+                                }
+                              )}
+                            />
+                          )}
                         </div>
                       )
 
@@ -814,6 +837,7 @@ type DataGridHeaderProps = {
   onToggleErrorHighlighting: () => void
   onHeaderInteractionChange: (isActive: boolean) => void
   headerContent?: ReactNode
+  showShortcuts?: boolean
 }
 
 const DataGridHeader = ({
@@ -827,6 +851,7 @@ const DataGridHeader = ({
   onHeaderInteractionChange,
   showColumnsDropdown,
   headerContent,
+  showShortcuts = true,
 }: DataGridHeaderProps) => {
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [columnsOpen, setColumnsOpen] = useState(false)
@@ -846,7 +871,7 @@ const DataGridHeader = ({
     setColumnsOpen(value)
   }
   return (
-    <div className="bg-ui-bg-base flex items-center justify-between border-b p-4">
+    <div className="flex items-center justify-between border-b bg-ui-bg-base p-4">
       {showColumnsDropdown && (
         <div className="flex items-center gap-x-2">
           <DropdownMenu
@@ -920,10 +945,12 @@ const DataGridHeader = ({
             </span>
           </Button>
         )}
-        <DataGridKeyboardShortcutModal
-          open={shortcutsOpen}
-          onOpenChange={handleShortcutsOpenChange}
-        />
+        {showShortcuts && (
+          <DataGridKeyboardShortcutModal
+            open={shortcutsOpen}
+            onOpenChange={handleShortcutsOpenChange}
+          />
+        )}
       </div>
     </div>
   )
@@ -979,7 +1006,7 @@ const DataGridCell = <TData,>({
           <div
             onMouseDown={onDragToFillStart}
             className={clx(
-              "bg-ui-fg-interactive absolute bottom-0 right-0 z-[3] size-1.5 cursor-ns-resize",
+              "absolute bottom-0 right-0 z-[3] size-1.5 cursor-ns-resize bg-ui-fg-interactive",
               {
                 "cursor-nwse-resize": multiColumnSelection,
               }
@@ -1029,7 +1056,7 @@ const DataGridRow = <TData,>({
       style={{
         transform: `translateY(${virtualRow.start}px)`,
       }}
-      className="bg-ui-bg-subtle txt-compact-small absolute flex min-h-10 w-full"
+      className="txt-compact-small absolute flex min-h-10 w-full bg-ui-bg-subtle"
     >
       {virtualPaddingLeft ? (
         <div
@@ -1105,7 +1132,7 @@ const DataGridRowSkeleton = ({
       style={{
         transform: `translateY(${virtualRow.start}px)`,
       }}
-      className="bg-ui-bg-subtle txt-compact-small absolute flex h-10 w-full"
+      className="txt-compact-small absolute flex h-10 w-full bg-ui-bg-subtle"
     >
       {virtualPaddingLeft ? (
         <div
@@ -1138,7 +1165,7 @@ const DataGridRowSkeleton = ({
             className="relative flex items-center border-b border-r p-0 outline-none"
           >
             <div className="flex h-full w-full items-center px-4">
-              <div className="bg-ui-bg-component h-4 w-3/4 animate-pulse rounded" />
+              <div className="h-4 w-3/4 animate-pulse rounded bg-ui-bg-component" />
             </div>
           </div>
         )

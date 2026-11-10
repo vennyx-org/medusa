@@ -41,7 +41,7 @@ You can follow this tutorial whether you're new to Medusa or an advanced Medusa 
 
 <Prerequisites items={[
   {
-    text: "Node.js v20+",
+    text: "Node.js v20.19.0+ or v22.12.0+",
     link: "https://nodejs.org/en/download"
   },
   {
@@ -62,19 +62,19 @@ npx create-medusa-app@latest
 
 First, you'll be asked for the project's name. Then, when prompted about installing the [Next.js Starter Storefront](../../../nextjs-starter/page.mdx), choose "Yes."
 
-Afterwards, the installation process will start, which will install the Medusa application in a directory with your project's name and the Next.js Starter Storefront in a separate directory named `{project-name}-storefront`.
-
-<Note title="Why is the storefront installed separately?">
-
-The Medusa application is composed of a headless Node.js server and an admin dashboard. The storefront is installed or custom-built separately and connects to the Medusa application through its REST endpoints, called [API routes](!docs!/learn/fundamentals/api-routes). Learn more in [Medusa's Architecture documentation](!docs!/learn/introduction/architecture).
-
-</Note>
+Afterwards, the installation process will start, which will install the Medusa application as a monorepository in a directory with your project's name. The backend is installed in the `apps/backend` directory, and the Next.js Starter Storefront is installed in the `apps/storefront` directory.
 
 Once the installation finishes successfully, the Medusa Admin dashboard will open with a form to create a new user. Enter the user's credentials and submit the form. Afterwards, you can log in with the new user and explore the dashboard.
 
 <Note title="Ran into Errors?">
 
 Check out the [troubleshooting guides](../../../troubleshooting/create-medusa-app-errors/page.mdx) for help.
+
+</Note>
+
+<Note>
+
+In this guide, all file paths of backend customizations are relative to the `apps/backend` directory of your Medusa project.
 
 </Note>
 
@@ -151,7 +151,7 @@ Next, you set the global propagator to Sentry's propagator, which allows Sentry 
 Finally, you export a `register` function that registers OpenTelemetry. It uses the `registerOtel` function from Medusa, which accepts [OpenTelemetry configurations](https://open-telemetry.github.io/opentelemetry-js/interfaces/_opentelemetry_sdk-node.NodeSDKConfiguration.html) with the following custom Medusa options:
 
 - `serviceName`: The name of your service, which you set to "medusa". You can change it to a more descriptive name if needed.
-- `instrument`: An object that specifies what to trace in your Medusa application. You enable tracing for HTTP requests, workflows, Query usages, and database operations by setting their respective properties to `true`.
+- `instrument`: An object that specifies what to trace in your Medusa application. You enable tracing for HTTP requests, workflows, Query usages, and database operations by setting their respective properties to `true`. Since Medusa v2.22.0, you can also pass an object to `http` to choose which query parameter values Medusa reports to Sentry. Learn more in the [Instrumentation](!docs!/learn/debugging-and-testing/instrumentation#configure-http-tracing) chapter.
 
 You can add any additional configurations to either Sentry or OpenTelemetry as needed for your use case.
 
@@ -185,7 +185,7 @@ Replace `your_sentry_dsn_here` with the DSN you copied from Sentry.
 
 You can now test the integration to ensure operations are traced in Sentry.
 
-First, start your Medusa application by running the following command in your Medusa application's directory:
+First, start your Medusa application by running the following command in your `apps/backend` directory:
 
 ```bash npm2yarn
 npm run dev

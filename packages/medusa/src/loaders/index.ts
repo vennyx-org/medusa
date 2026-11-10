@@ -1,4 +1,4 @@
-import { container, MedusaAppLoader, policiesLoader } from "@medusajs/framework"
+import { container, MedusaAppLoader } from "@medusajs/framework"
 import { asValue } from "@medusajs/framework/awilix"
 import { configLoader } from "@medusajs/framework/config"
 import { pgConnectionLoader } from "@medusajs/framework/database"
@@ -24,11 +24,12 @@ import {
 } from "@medusajs/framework/utils"
 import { WorkflowLoader } from "@medusajs/framework/workflows"
 import { Express, NextFunction, Request, Response } from "express"
+import { randomUUID } from "crypto"
 import { join } from "path"
 import requestIp from "request-ip"
-import { v4 } from "uuid"
 import adminLoader from "./admin"
 import apiLoader from "./api"
+import { loadSearchIndexes } from "./search"
 
 type Options = {
   directory: string
@@ -101,7 +102,7 @@ async function loadEntrypoints(
    */
   expressApp.use((req: Request, res: Response, next: NextFunction) => {
     req.scope = container.createScope() as MedusaContainer
-    req.requestId = (req.headers["x-request-id"] as string) ?? v4()
+    req.requestId = (req.headers["x-request-id"] as string) ?? randomUUID()
     next()
   })
 
@@ -134,10 +135,13 @@ export async function initializeContainer(
   rootDirectory: string,
   options?: {
     skipDbConnection?: boolean
+    throwOnValidationError?: boolean
   }
 ): Promise<MedusaContainer> {
   await featureFlagsLoader(rootDirectory)
-  const configDir = await configLoader(rootDirectory, "medusa-config")
+  const configDir = await configLoader(rootDirectory, "medusa-config", {
+    throwOnValidationError: options?.throwOnValidationError,
+  })
   await featureFlagsLoader(join(__dirname, ".."))
 
   const customLogger = configDir.logger ?? defaultLogger
@@ -171,7 +175,7 @@ export default async ({
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
 
   const plugins = await getResolvedPlugins(rootDirectory, configModule, true)
-  mergePluginModules(configModule, plugins)
+  mergePluginModules(configModule, plugins, rootDirectory)
 
   Object.keys(configModule.modules ?? {}).forEach((key) => {
     validateModuleName(key)
@@ -182,12 +186,11 @@ export default async ({
   )
   await new LinkLoader(linksSourcePaths, logger).load()
 
-  // Load policies from project root and all plugins
-  await policiesLoader(rootDirectory)
-  for (const plugin of plugins) {
-    await policiesLoader(plugin.resolve)
-  }
-
+  // Before the app boots: the Search Module resolves the definitions when it is
+  // constructed, and the seed on application start only fills indexes it knows
+  // about. A no-op unless the module is registered.
+  await loadSearchIndexes({ plugins, configModule, logger })
+  
   const {
     onApplicationStart,
     onApplicationShutdown,

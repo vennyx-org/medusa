@@ -18,7 +18,7 @@ type TaxOverrideTableProps = {
   queryObject: Record<string, any>
   count?: number
   table: Table<HttpTypes.AdminTaxRate>
-  action: { label: string; to: string }
+  action?: { label: string; to: string }
   prefix?: string
   children?: ReactNode
 }
@@ -39,7 +39,7 @@ export const TaxOverrideTable = ({
           return (
             <div
               key={index}
-              className="bg-ui-bg-field-component h-[52px] w-full animate-pulse"
+              className="h-[52px] w-full animate-pulse bg-ui-bg-field-component"
             />
           )
         })}
@@ -66,16 +66,20 @@ export const TaxOverrideTable = ({
                 <DataTableSearch prefix={prefix} />
               </div>
               <DataTableOrderBy
-                keys={["name", "rate", "code", "updated_at", "created_at"]}
+                keys={
+                  ["name", "rate", "code", "updated_at", "created_at"] as any
+                }
                 prefix={prefix}
               />
             </div>
           )}
-          <Link to={action.to}>
-            <Button size="small" variant="secondary">
-              {action.label}
-            </Button>
-          </Link>
+          {action && (
+            <Link to={action.to}>
+              <Button size="small" variant="secondary">
+                {action.label}
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
       {noResults && <NoResults />}
@@ -96,7 +100,7 @@ export const TaxOverrideTable = ({
               return (
                 <div
                   key={index}
-                  className="bg-ui-bg-field-component h-[60px] w-full animate-pulse"
+                  className="h-[60px] w-full animate-pulse bg-ui-bg-field-component"
                 />
               )
             })

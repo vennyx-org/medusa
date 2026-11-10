@@ -23,3 +23,48 @@ export interface AdminUpdateUser {
    */
   metadata?: Record<string, unknown> | null
 }
+
+/**
+ * The RBAC roles to assign to a user.
+ */
+export interface AdminAssignUserRoles {
+  assignments: {
+    /**
+     * The ID of the role to assign to the user.
+     */
+    role_id: string
+    /**
+     * The scope of the role assignment.
+     */
+    scope?: string
+    /**
+     * The ID of the scope of the role assignment.
+     */
+    scope_id?: string
+  }[]
+}
+
+/**
+ * The RBAC roles to unassign from a user.
+ */
+export interface AdminUnassignUserRoles {
+  assignments: {
+    /**
+     * The ID of the role to unassign from the user.
+     */
+    role_id: string
+    /**
+     * The scope of the role unassignment.
+     */
+    scope?: string
+    /**
+     * The ID of the scope of the role unassignment.
+     */
+    scope_id?: string
+  }[]
+}
+
+export interface AdminUnassignUserRole {
+  scope?: string
+  scope_id?: string
+}

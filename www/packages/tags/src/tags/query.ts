@@ -8,12 +8,24 @@ export const query = [
     "path": "https://docs.medusajs.com/resources/commerce-modules/product/guides/price-with-taxes"
   },
   {
+    "title": "compensatePaymentIfNeededStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/compensatePaymentIfNeededStep"
+  },
+  {
     "title": "prepareAdjustmentsFromPromotionActionsStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/prepareAdjustmentsFromPromotionActionsStep"
   },
   {
+    "title": "addGiftCardToCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addGiftCardToCartWorkflow"
+  },
+  {
     "title": "addShippingMethodToCartWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addShippingMethodToCartWorkflow"
+  },
+  {
+    "title": "addStoreCreditsToCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addStoreCreditsToCartWorkflow"
   },
   {
     "title": "addToCartWorkflow",
@@ -30,6 +42,14 @@ export const query = [
   {
     "title": "refreshCartItemsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/refreshCartItemsWorkflow"
+  },
+  {
+    "title": "refundPaymentAndRecreatePaymentSessionWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/refundPaymentAndRecreatePaymentSessionWorkflow"
+  },
+  {
+    "title": "removeGiftCardFromCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/removeGiftCardFromCartWorkflow"
   },
   {
     "title": "transferCartCustomerWorkflow",
@@ -50,6 +70,22 @@ export const query = [
   {
     "title": "useQueryGraphStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/useQueryGraphStep"
+  },
+  {
+    "title": "collectCustomerIdsToExportStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/collectCustomerIdsToExportStep"
+  },
+  {
+    "title": "exportCustomersStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/exportCustomersStep"
+  },
+  {
+    "title": "exportCustomersWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/exportCustomersWorkflow"
+  },
+  {
+    "title": "createDefaultsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createDefaultsWorkflow"
   },
   {
     "title": "addDraftOrderItemsWorkflow",
@@ -108,8 +144,20 @@ export const query = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateDraftOrderShippingMethodWorkflow"
   },
   {
+    "title": "updateDraftOrderWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateDraftOrderWorkflow"
+  },
+  {
+    "title": "exportInventoryItemsStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/exportInventoryItemsStep"
+  },
+  {
     "title": "deleteInventoryItemWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteInventoryItemWorkflow"
+  },
+  {
+    "title": "exportInventoryItemsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/exportInventoryItemsWorkflow"
   },
   {
     "title": "deleteLineItemsWorkflow",
@@ -118,6 +166,10 @@ export const query = [
   {
     "title": "exportOrdersStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/exportOrdersStep"
+  },
+  {
+    "title": "updateOrderShippingMethodsTranslationsStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/updateOrderShippingMethodsTranslationsStep"
   },
   {
     "title": "beginOrderEditOrderWorkflow",
@@ -156,8 +208,24 @@ export const query = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/exportOrdersWorkflow"
   },
   {
+    "title": "markPaymentCollectionAsPaid",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/markPaymentCollectionAsPaid"
+  },
+  {
     "title": "onCarryPromotionsFlagSet",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/onCarryPromotionsFlagSet"
+  },
+  {
+    "title": "orderClaimAddNewItemWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/orderClaimAddNewItemWorkflow"
+  },
+  {
+    "title": "orderClaimItemWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/orderClaimItemWorkflow"
+  },
+  {
+    "title": "orderClaimRequestItemReturnWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/orderClaimRequestItemReturnWorkflow"
   },
   {
     "title": "orderEditAddNewItemWorkflow",
@@ -180,6 +248,10 @@ export const query = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/removeItemOrderEditActionWorkflow"
   },
   {
+    "title": "updateClaimAddItemWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateClaimAddItemWorkflow"
+  },
+  {
     "title": "updateExchangeAddItemWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateExchangeAddItemWorkflow"
   },
@@ -196,6 +268,30 @@ export const query = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateOrderEditItemQuantityWorkflow"
   },
   {
+    "title": "updateOrderWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateOrderWorkflow"
+  },
+  {
+    "title": "validatePaymentProviderInRegionStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/validatePaymentProviderInRegionStep"
+  },
+  {
+    "title": "createPaymentSessionsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createPaymentSessionsWorkflow"
+  },
+  {
+    "title": "createProductVariantsDefaultInventoryStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/createProductVariantsDefaultInventoryStep"
+  },
+  {
+    "title": "dismissProductVariantsInventoryStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/dismissProductVariantsInventoryStep"
+  },
+  {
+    "title": "exportProductsStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/exportProductsStep"
+  },
+  {
     "title": "batchProductVariantsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/batchProductVariantsWorkflow"
   },
@@ -208,23 +304,27 @@ export const query = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteProductsWorkflow"
   },
   {
+    "title": "exportProductsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/exportProductsWorkflow"
+  },
+  {
+    "title": "updateProductVariantsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateProductVariantsWorkflow"
+  },
+  {
+    "title": "updateProductsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateProductsWorkflow"
+  },
+  {
     "title": "deleteShippingProfileWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteShippingProfileWorkflow"
   },
   {
-    "title": "validateTranslationsStep",
-    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/validateTranslationsStep"
+    "title": "creditStoreCreditAccountWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/creditStoreCreditAccountWorkflow"
   },
   {
-    "title": "batchTranslationsWorkflow",
-    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/batchTranslationsWorkflow"
-  },
-  {
-    "title": "createTranslationsWorkflow",
-    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createTranslationsWorkflow"
-  },
-  {
-    "title": "updateTranslationsWorkflow",
-    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateTranslationsWorkflow"
+    "title": "debitStoreCreditAccountWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/debitStoreCreditAccountWorkflow"
   }
 ]

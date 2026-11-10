@@ -4,7 +4,11 @@ import type {
   ICachingStrategy,
   Logger,
 } from "@medusajs/framework/types"
-import { GraphQLUtils, MedusaError } from "@medusajs/framework/utils"
+import {
+  deduplicate,
+  GraphQLUtils,
+  MedusaError,
+} from "@medusajs/framework/utils"
 import { CachingDefaultProvider, InjectedDependencies } from "@types"
 import CacheProviderService from "./cache-provider"
 
@@ -45,8 +49,7 @@ export default class CachingModuleService implements ICachingModuleService {
   constructor(
     container: InjectedDependencies,
     protected readonly moduleDeclaration:
-      | { options: { ttl?: number } }
-      | { ttl?: number }
+      { options: { ttl?: number } } | { ttl?: number }
   ) {
     this.container = container
     this.providerService = container.cacheProviderService
@@ -68,17 +71,17 @@ export default class CachingModuleService implements ICachingModuleService {
 
   __hooks = {
     onApplicationStart: async () => {
-      this.onApplicationStart()
+      await this.onApplicationStart()
     },
     onApplicationShutdown: async () => {
-      this.onApplicationShutdown()
+      await this.onApplicationShutdown()
     },
     onApplicationPrepareShutdown: async () => {
-      this.onApplicationPrepareShutdown()
+      await this.onApplicationPrepareShutdown()
     },
   }
 
-  protected onApplicationStart() {
+  protected async onApplicationStart() {
     const loadedSchema = MedusaModule.getAllJoinerConfigs()
       .map((joinerConfig) => joinerConfig?.schema ?? "")
       .join("\n")
@@ -97,18 +100,19 @@ export default class CachingModuleService implements ICachingModuleService {
       typeDefs: mergedSchema,
     })
 
-    this.strategy.onApplicationStart?.(
+    await this.strategy.onApplicationStart?.(
       schema,
       MedusaModule.getAllJoinerConfigs()
     )
   }
 
-  protected onApplicationShutdown() {
-    this.strategy.onApplicationShutdown?.()
+  protected async onApplicationShutdown() {
+    await this.strategy.onApplicationShutdown?.()
+    await this.providerService.shutdown()
   }
 
-  protected onApplicationPrepareShutdown() {
-    this.strategy.onApplicationPrepareShutdown?.()
+  protected async onApplicationPrepareShutdown() {
+    await this.strategy.onApplicationPrepareShutdown?.()
   }
 
   protected static normalizeProviders(
@@ -220,6 +224,7 @@ export default class CachingModuleService implements ICachingModuleService {
     data: object
     ttl?: number
     tags?: string[]
+    computeAutomaticTags?: boolean
     providers?: string[]
     options?: { autoInvalidate?: boolean }
   }) {
@@ -240,12 +245,14 @@ export default class CachingModuleService implements ICachingModuleService {
     data,
     ttl,
     tags,
+    computeAutomaticTags,
     providers,
     options,
   }: {
     key: string
     data: object
     tags?: string[]
+    computeAutomaticTags?: boolean
     ttl?: number
     providers?: string[] | { id: string; ttl?: number }[]
     options?: {
@@ -260,7 +267,13 @@ export default class CachingModuleService implements ICachingModuleService {
     }
 
     const key_ = key
-    const tags_ = tags ?? (await this.strategy.computeTags(data))
+    // Given tags are used on their own, unless the caller asked for the computed ones
+    // to be applied along with them. The union is what anything the computation can't
+    // see from the data needs: link tables, relations selected without their id, or
+    // entities that affect the data without appearing in it.
+    const computed =
+      !tags || computeAutomaticTags ? await this.strategy.computeTags(data) : []
+    const tags_ = tags ? deduplicate([...tags, ...computed]) : computed
 
     let providers_: string[] | { id: string; ttl?: number }[] = [
       this.defaultProviderId,
@@ -305,17 +318,17 @@ export default class CachingModuleService implements ICachingModuleService {
       autoInvalidate?: boolean
     }
   ): Promise<void> {
-    for (const providerOptions of providers || []) {
-      const ttl_ = providerOptions.ttl ?? ttl ?? this.ttl
-      const provider = this.providerService.retrieveProvider(providerOptions.id)
-      void provider.set({
-        key,
-        tags,
-        data,
-        ttl: ttl_,
-        options,
-      })
-    }
+    await Promise.all(
+      (providers || []).map((providerOptions) =>
+        this.providerService.retrieveProvider(providerOptions.id).set({
+          key,
+          tags,
+          data,
+          ttl: providerOptions.ttl ?? ttl ?? this.ttl,
+          options,
+        })
+      )
+    )
   }
 
   async clear(options: {
@@ -387,10 +400,11 @@ export default class CachingModuleService implements ICachingModuleService {
       providerIds_ = Array.isArray(providers) ? providers : [providers]
     }
 
-    for (const providerId of providerIds_) {
-      const provider = this.providerService.retrieveProvider(providerId)
-      void provider.clear({ key, tags, options })
-    }
+    await Promise.all(
+      providerIds_
+        .map((id) => this.providerService.retrieveProvider(id))
+        .map((provider) => provider.clear({ key, tags, options }))
+    )
   }
 
   async computeKey(input: object): Promise<string> {

@@ -1,5 +1,13 @@
 export const file = [
   {
+    "title": "exportCustomersStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/exportCustomersStep"
+  },
+  {
+    "title": "exportCustomersWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/exportCustomersWorkflow"
+  },
+  {
     "title": "deleteFilesStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/deleteFilesStep"
   },
@@ -16,6 +24,14 @@ export const file = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/uploadFilesWorkflow"
   },
   {
+    "title": "exportInventoryItemsStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/exportInventoryItemsStep"
+  },
+  {
+    "title": "exportInventoryItemsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/exportInventoryItemsWorkflow"
+  },
+  {
     "title": "exportOrdersStep",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/exportOrdersStep"
   },
@@ -24,8 +40,8 @@ export const file = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/exportOrdersWorkflow"
   },
   {
-    "title": "generateProductCsvStep",
-    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/generateProductCsvStep"
+    "title": "exportProductsStep",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/steps/exportProductsStep"
   },
   {
     "title": "processImportChunksStep",

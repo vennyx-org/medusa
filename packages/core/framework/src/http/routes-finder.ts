@@ -1,11 +1,30 @@
-import { pathToRegexp } from "path-to-regexp"
 import type { MiddlewareVerb, RouteVerb } from "./types"
 import { isString } from "@medusajs/utils"
 
+type PathToRegexp = typeof import("path-to-regexp", {
+  with: { "resolution-mode": "import" },
+})
+
+let pathToRegexpModule: PathToRegexp | undefined
+
+/**
+ * Loads the ESM-only path-to-regexp with `import()`. Jest run with
+ * `--experimental-vm-modules` rejects `require()` of ESM, so call this
+ * before creating a {@link RoutesFinder}.
+ */
+export async function preloadPathToRegexp(): Promise<void> {
+  pathToRegexpModule ??= await import("path-to-regexp")
+}
+
+function loadPathToRegexp(): PathToRegexp {
+  pathToRegexpModule ??= require("path-to-regexp") as PathToRegexp
+  return pathToRegexpModule
+}
+
 export class RoutesFinder<
   T extends
-    | { matcher: string; methods: MiddlewareVerb | MiddlewareVerb[] }
-    | { matcher: string; method: RouteVerb }
+    | { matcher: string | RegExp; methods: MiddlewareVerb | MiddlewareVerb[] }
+    | { matcher: string | RegExp; method: RouteVerb },
 > {
   /**
    * Cache of existing matches to avoid regex tests on every
@@ -36,6 +55,18 @@ export class RoutesFinder<
    * Register route for lookup
    */
   add(route: T) {
+    /**
+     * A regular expression matcher is used directly for matching, since
+     * path-to-regexp only compiles string paths.
+     */
+    if (route.matcher instanceof RegExp) {
+      this.#routes.push({
+        ...route,
+        matchRegex: route.matcher,
+      })
+      return
+    }
+
     // Doing a replacement for backwards compatibility with the old path-to-regexp with express 4
     let normalizedPath = route.matcher
     if (isString(route.matcher)) {
@@ -46,7 +77,7 @@ export class RoutesFinder<
     }
     this.#routes.push({
       ...route,
-      matchRegex: pathToRegexp(normalizedPath).regexp,
+      matchRegex: loadPathToRegexp().pathToRegexp(normalizedPath).regexp,
     })
   }
 

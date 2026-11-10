@@ -1,11 +1,14 @@
 import {
   Event,
+  // TODO: Comment temporarely and we will re enable it in the near future #14478
+  // EventBusEventsOptions,
   InternalModuleDeclaration,
   Logger,
   Message,
 } from "@medusajs/framework/types"
 import {
   AbstractEventBusModuleService,
+  EventPriority,
   isPresent,
   promiseAll,
 } from "@medusajs/framework/utils"
@@ -39,6 +42,8 @@ type IORedisEventType<T = unknown> = {
   opts: BulkJobOptions
 }
 
+const GROUPED_EVENTS_CHUNK_SIZE = 1000
+
 /**
  * Can keep track of multiple subscribers to different events and run the
  * subscribers when events happen. Events will run asynchronously.
@@ -52,6 +57,8 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
   protected readonly queueOptions_: Omit<QueueOptions, "connection">
   protected readonly workerOptions_: Omit<WorkerOptions, "connection">
   protected readonly jobOptions_: EmitOptions
+  // TODO: Comment temporarely and we will re enable it in the near future #14478
+  // private readonly eventOptions_: EventBusEventsOptions
 
   protected queue_: Queue
   protected bullWorker_: Worker
@@ -78,6 +85,11 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
     this.queueOptions_ = eventBusRedisQueueOptions ?? {}
     this.workerOptions_ = eventBusRedisWorkerOptions ?? {}
     this.jobOptions_ = eventBusRedisJobOptions ?? {}
+    // TODO: Comment temporarely and we will re enable it in the near future #14478
+    // this.eventOptions_ =
+    //   _moduleOptions.eventOptions ??
+    //   _moduleDeclaration.options?.eventOptions ??
+    //   {}
 
     this.queue_ = new Queue(this.queueName_, {
       prefix: `${this.constructor.name}`,
@@ -98,7 +110,18 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
 
   __hooks = {
     onApplicationStart: async () => {
-      await this.bullWorker_?.run()
+      if (!this.bullWorker_) {
+        return
+      }
+
+      // `run()` only resolves when the worker is closed and must not be awaited
+      // during application startup. See https://github.com/taskforcesh/bullmq/issues/2128
+      void this.bullWorker_.run().catch((error) => {
+        this.logger_.error(
+          `Error running event bus worker: ${error.message}`,
+          error
+        )
+      })
     },
     onApplicationShutdown: async () => {
       await this.queue_.close()
@@ -110,6 +133,20 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
     },
   }
 
+  /**
+   * Build events for queue processing with priority handling.
+   *
+   * Priority levels (lower number = higher priority):
+   * - 10: Critical business events (e.g., order placed)
+   * - 100: Default priority for normal events (default)
+   * - 2,097,152: Lowest priority for internal events
+   *
+   * Priority override hierarchy (highest to lowest precedence):
+   * 1. Message-level options (eventData.options.priority)
+   * 2. Emit-level options (options.priority)
+   * 3. Module-level job options (this.jobOptions_.priority)
+   * 4. Internal flag default (options.internal ? EventPriority.LOWEST : EventPriority.DEFAULT)
+   */
   private buildEvents<T>(
     eventsData: Message<T>[],
     options: Options = {}
@@ -118,6 +155,7 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
       // default options
       removeOnComplete: true,
       attempts: 1,
+      priority: options.internal ? EventPriority.LOWEST : EventPriority.DEFAULT,
       // global options
       ...this.jobOptions_,
       ...options,
@@ -132,16 +170,35 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
         metadata: eventData.metadata,
       }
 
+      const finalOptions: IORedisEventType<T>["opts"] = {
+        ...opts,
+        ...eventData.options,
+      }
+
+      // TODO: Comment temporarely and we will re enable it in the near future #14478
+      // finalOptions.priority =
+      //   eventData.options?.priority ??
+      //   this.eventOptions_[eventData.name]?.priority
+
+      if (
+        finalOptions.priority != undefined &&
+        (finalOptions.priority < 1 ||
+          finalOptions.priority > EventPriority.LOWEST)
+      ) {
+        this.logger_.warn(
+          `Invalid priority value: ${finalOptions.priority} for event ${eventData.name}. Must be between 1 and ${EventPriority.LOWEST}`
+        )
+        finalOptions.priority = EventPriority.DEFAULT
+        this.logger_.warn(
+          `Setting priority to default value: ${EventPriority.DEFAULT} for event ${eventData.name}`
+        )
+      }
+
       return {
         data: event,
         name: eventData.name,
-        opts: {
-          // options for event group
-          ...opts,
-          // options for a particular event
-          ...eventData.options,
-        },
-      } as any
+        opts: finalOptions,
+      } as IORedisEventType<T>
     })
   }
 
@@ -154,7 +211,12 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
     eventsData: Message<T> | Message<T>[],
     options: Options = {}
   ): Promise<void> {
-    let eventsDataArray = Array.isArray(eventsData) ? eventsData : [eventsData]
+    let eventsDataArray = (
+      Array.isArray(eventsData) ? eventsData : [eventsData]
+    ).map((eventData) => ({
+      ...eventData,
+      metadata: this.withCreatedAtMetadata(eventData.metadata),
+    }))
 
     const { groupedEventsTTL = 600 } = options
     delete options.groupedEventsTTL
@@ -180,16 +242,21 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
     const promises: Promise<unknown>[] = []
 
     if (eventsToEmit.length) {
-      eventsToEmit.map((eventData) =>
+      eventsToEmit.forEach((eventData) =>
         this.callInterceptors(eventData, { isGrouped: false })
       )
 
-      const eventsWithSubscribers = eventsToEmit.filter((eventData) => {
-        const eventSubscribers =
-          this.eventToSubscribersMap.get(eventData.name) || []
-        const wildcardSubscribers = this.eventToSubscribersMap.get("*") || []
-        return eventSubscribers.length || wildcardSubscribers.length
-      })
+      const eventsWithSubscribers = eventsToEmit
+        .filter((eventData) => {
+          const eventSubscribers =
+            this.eventToSubscribersMap.get(eventData.name) || []
+          const wildcardSubscribers = this.eventToSubscribersMap.get("*") || []
+          return eventSubscribers.length || wildcardSubscribers.length
+        })
+        .map((eventData) => ({
+          ...eventData,
+          metadata: this.withPublishedAtMetadata(eventData.metadata),
+        }))
 
       if (eventsWithSubscribers.length) {
         const emitData = this.buildEvents(eventsWithSubscribers, options)
@@ -202,36 +269,33 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
         continue
       }
 
-      // Set a TTL for the key of the list that is scoped to a group
-      // This will be helpful in preventing stale data from staying in redis for too long
-      // in the event the module fails to cleanup events. For long running workflows, setting a much higher
-      // TTL or even skipping the TTL would be required
-      void this.setExpire(groupId, groupedEventsTTL)
-
       const eventsData = this.buildEvents(events, options)
 
-      promises.push(this.groupEvents(groupId, eventsData))
+      promises.push(this.groupEvents(groupId, eventsData, groupedEventsTTL))
     }
 
     await promiseAll(promises)
   }
 
-  private async setExpire(eventGroupId: string, ttl: number) {
-    if (!eventGroupId) {
-      return
-    }
-
-    await this.eventBusRedisConnection_.expire(`staging:${eventGroupId}`, ttl)
-  }
-
   private async groupEvents<T = unknown>(
     eventGroupId: string,
-    events: IORedisEventType<T>[]
+    events: IORedisEventType<T>[],
+    ttl: number
   ) {
-    await this.eventBusRedisConnection_.rpush(
-      `staging:${eventGroupId}`,
-      ...events.map((event) => JSON.stringify(event))
-    )
+    const key = `staging:${eventGroupId}`
+    const pipeline = this.eventBusRedisConnection_.pipeline()
+
+    pipeline.rpush(key, ...events.map((event) => JSON.stringify(event)))
+
+    // Set a TTL for the key of the list that is scoped to a group.
+    // This will be helpful in preventing stale data from staying in redis for too long
+    // in the event the module fails to cleanup events. For long running workflows, setting a much higher
+    // TTL or even skipping the TTL would be required.
+    // NOTE: expire must run in the same pipeline AFTER rpush, since EXPIRE on a
+    // non-existent key is a no-op and rpush is what creates the key.
+    pipeline.expire(key, ttl)
+
+    await pipeline.exec()
   }
 
   private async getGroupedEvents(
@@ -248,25 +312,34 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
     const groupedEvents = await this.getGroupedEvents(eventGroupId)
 
     // Call interceptors before emitting grouped events
-    // Extract the original messages from the job data structure
     groupedEvents.map((jobData) => {
-      const message = {
-        name: jobData.name,
-        data: jobData.data,
-        metadata: jobData.data.metadata,
-      }
-      this.callInterceptors(message as any, {
-        isGrouped: true,
-        eventGroupId,
-      })
+      this.callInterceptors(
+        {
+          name: jobData.name,
+          data: jobData.data.data,
+          metadata: jobData.data.metadata,
+        },
+        {
+          isGrouped: true,
+          eventGroupId,
+        }
+      )
     })
 
-    const eventsWithSubscribers = groupedEvents.filter((jobData) => {
-      const eventSubscribers =
-        this.eventToSubscribersMap.get(jobData.name) || []
-      const wildcardSubscribers = this.eventToSubscribersMap.get("*") || []
-      return eventSubscribers.length || wildcardSubscribers.length
-    })
+    const eventsWithSubscribers = groupedEvents
+      .filter((jobData) => {
+        const eventSubscribers =
+          this.eventToSubscribersMap.get(jobData.name) || []
+        const wildcardSubscribers = this.eventToSubscribersMap.get("*") || []
+        return eventSubscribers.length || wildcardSubscribers.length
+      })
+      .map((jobData) => ({
+        ...jobData,
+        data: {
+          ...jobData.data,
+          metadata: this.withPublishedAtMetadata(jobData.data.metadata),
+        },
+      }))
 
     if (eventsWithSubscribers.length) {
       await this.queue_.addBulk(eventsWithSubscribers)
@@ -293,27 +366,47 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
        * names. which allow to partially clear an event group.
        */
 
-      const eventsToKeep = await this.eventBusRedisConnection_
-        .lrange(`staging:${eventGroupId}`, 0, -1)
-        .then((result) => {
-          return result
-            .map((jsonString) => JSON.parse(jsonString))
-            .filter((event) => !eventNames.includes(event.name))
-        })
+      const [eventsToKeep, ttl] = await promiseAll([
+        this.eventBusRedisConnection_
+          .lrange(`staging:${eventGroupId}`, 0, -1)
+          .then((result) => {
+            return result
+              .map((jsonString) => JSON.parse(jsonString))
+              .filter((event) => !eventNames.includes(event.name))
+          }),
+        this.eventBusRedisConnection_.pttl(`staging:${eventGroupId}`),
+      ])
 
-      // Create a pipeline
-      const pipeline = this.eventBusRedisConnection_.pipeline()
+      // Run the rewrite in a transaction so it can't interleave with other writers
+      const pipeline = this.eventBusRedisConnection_.multi()
 
       // Empty the current list
       pipeline.del(`staging:${eventGroupId}`)
 
-      // Add the remaining events to the list
-      pipeline.rpush(
-        `staging:${eventGroupId}`,
-        ...eventsToKeep.map((event) => JSON.stringify(event))
-      )
+      // Add the remaining events to the list, if any.
+      // RPUSH with no members is a Redis argument error, so only issue it
+      // when there is at least one event left to keep. Push in chunks since
+      // spreading a large list into the call arguments overflows the stack.
+      for (let i = 0; i < eventsToKeep.length; i += GROUPED_EVENTS_CHUNK_SIZE) {
+        pipeline.rpush(
+          `staging:${eventGroupId}`,
+          ...eventsToKeep
+            .slice(i, i + GROUPED_EVENTS_CHUNK_SIZE)
+            .map((event) => JSON.stringify(event))
+        )
+      }
 
-      await pipeline.exec()
+      // Restore the TTL set by groupEvents, which DEL drops
+      if (eventsToKeep.length > 0 && ttl > 0) {
+        pipeline.pexpire(`staging:${eventGroupId}`, ttl)
+      }
+
+      // exec resolves with [err, result] tuples instead of rejecting on a failed command
+      const results = await pipeline.exec()
+      const failed = results?.find(([err]) => err)
+      if (failed) {
+        throw failed[0]
+      }
 
       return
     }
@@ -358,13 +451,17 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
           `Retrying ${name} which has ${eventSubscribers.length} subscribers (${subscribersInCurrentAttempt.length} of them failed)`
         )
       } else {
+        const prioirityInfo =
+          opts.priority != undefined ? ` (priority: ${opts.priority})` : ""
         this.logger_.info(
-          `Processing ${name} which has ${eventSubscribers.length} subscribers`
+          `Processing ${name}${prioirityInfo} which has ${eventSubscribers.length} subscribers`
         )
       }
     }
 
     const completedSubscribersInCurrentAttempt: string[] = []
+
+    const metadata = this.parseEventMetadataDates(data.metadata)
 
     const subscribersResult = await Promise.all(
       subscribersInCurrentAttempt.map(async ({ id, subscriber }) => {
@@ -372,7 +469,7 @@ export default class RedisEventBusService extends AbstractEventBusModuleService 
         const event = {
           name,
           data: data.data,
-          metadata: data.metadata,
+          metadata,
         }
 
         try {

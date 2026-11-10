@@ -12,6 +12,10 @@ import { useOrderTableColumns } from "../../../../../hooks/table/columns/use-ord
 import { useOrderTableFilters } from "../../../../../hooks/table/filters/use-order-table-filters"
 import { useOrderTableQuery } from "../../../../../hooks/table/query/use-order-table-query"
 import { useDataTable } from "../../../../../hooks/use-data-table"
+import {
+  useCustomerPermissions,
+  useOrderPermissions,
+} from "../../../../../hooks/use-resource-permissions"
 
 type CustomerGeneralSectionProps = {
   customer: HttpTypes.AdminCustomer
@@ -19,7 +23,8 @@ type CustomerGeneralSectionProps = {
 
 const PREFIX = "cusord"
 const PAGE_SIZE = 10
-const DEFAULT_RELATIONS = "*customer,*items,*sales_channel,payment_collections.refunded_amount,+shipping_address.country_code"
+const DEFAULT_RELATIONS =
+  "*customer,*items,*sales_channel,*payment_collections,+shipping_address.country_code"
 const DEFAULT_FIELDS =
   "id,status,display_id,created_at,email,fulfillment_status,payment_status,total,currency_code"
 
@@ -63,12 +68,12 @@ export const CustomerOrderSection = ({
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
         <Heading level="h2">{t("orders.domain")}</Heading>
-        {/*TODO: ENABLE WHEN DRAFT ORDERS ARE DONE*/}
-        {/*<div className="flex items-center gap-x-2">*/}
+        {/* TODO: ENABLE WHEN DRAFT ORDERS ARE DONE*/}
+        {/* <div className="flex items-center gap-x-2">*/}
         {/*  <Button size="small" variant="secondary">*/}
         {/*    {t("actions.create")}*/}
         {/*  </Button>*/}
-        {/*</div>*/}
+        {/* </div>*/}
       </div>
       <_DataTable
         columns={columns}
@@ -94,6 +99,14 @@ export const CustomerOrderSection = ({
 
 const CustomerOrderActions = ({ order }: { order: HttpTypes.AdminOrder }) => {
   const { t } = useTranslation()
+  const { canUpdate: canUpdateOrders } = useOrderPermissions()
+  const { canUpdate: canUpdateCustomers } = useCustomerPermissions()
+
+  const canTransferOwnership = canUpdateCustomers && canUpdateOrders
+
+  if (!canTransferOwnership) {
+    return null
+  }
 
   return (
     <ActionMenu

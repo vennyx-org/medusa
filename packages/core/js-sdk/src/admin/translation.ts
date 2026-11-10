@@ -1,6 +1,6 @@
 import { HttpTypes } from "@medusajs/types"
-import { Client } from "../client"
-import { ClientHeaders } from "../types"
+import { Client } from "../client.js"
+import { ClientHeaders } from "../types.js"
 
 export class Translation {
   /**
@@ -17,7 +17,7 @@ export class Translation {
 
   /**
    * This method retrieves a paginated list of translations. It sends a request to the
-   * [List Translations](https://docs.medusajs.com/api/admin#translations_gettranslations)
+   * [List Translations](https://docs.medusajs.com/api/admin/translations/list-translations)
    * API route.
    *
    * @param query - Filters and pagination configurations.
@@ -60,7 +60,7 @@ export class Translation {
    * })
    * ```
    *
-   * Learn more about the `fields` property in the [API reference](https://docs.medusajs.com/api/store#select-fields-and-relations).
+   * Learn more about the `fields` property in the [API reference](https://docs.medusajs.com/api/store/select-fields-and-relations).
    */
   async list(
     query?: HttpTypes.AdminTranslationsListParams,
@@ -77,7 +77,7 @@ export class Translation {
 
   /**
    * This method allows bulk operations on translations. It sends a request to the
-   * [Manage Translations](https://docs.medusajs.com/api/admin#translations_posttranslationsbatch)
+   * [Manage Translations](https://docs.medusajs.com/api/admin/translations/manage-translations)
    * API route.
    *
    * @param payload - The translations to create, update, or delete.
@@ -105,7 +105,6 @@ export class Translation {
    * .then(({ created, updated, deleted }) => {
    *   console.log(created, updated, deleted)
    * })
-   * ```
    */
   async batch(body: HttpTypes.AdminBatchTranslations, headers?: ClientHeaders) {
     return await this.client.fetch<HttpTypes.AdminTranslationsBatchResponse>(
@@ -121,9 +120,9 @@ export class Translation {
   /**
    * This method retrieves the settings for the translations for a given entity type or all entity types if no entity type is provided.
    * It sends a request to the
-   * [Get Translation Settings](https://docs.medusajs.com/api/admin#translations_gettranslationssettings) API route.
+   * [Get Translation Settings](https://docs.medusajs.com/api/admin/translations/list-settings) API route.
    *
-   * @param query - The query parameters which can optionally include the entity type to get the settings for.
+   * @param query - The query parameters which can optionally include the entity type to get the settings for and whether to get the settings for active/inactive entities only.
    * @param headers - Headers to pass in the request.
    * @returns The translation settings.
    *
@@ -134,8 +133,8 @@ export class Translation {
    * sdk.admin.translation.settings({
    *   entity_type: "product"
    * })
-   * .then(({ translatable_fields }) => {
-   *   console.log(translatable_fields)
+   * .then(({ translation_settings }) => {
+   *   console.log(translation_settings)
    * })
    * ```
    *
@@ -143,8 +142,30 @@ export class Translation {
    *
    * ```ts
    * sdk.admin.translation.settings()
-   * .then(({ translatable_fields }) => {
-   *   console.log(translatable_fields)
+   * .then(({ translation_settings }) => {
+   *   console.log(translation_settings)
+   * })
+   * ```
+   *
+   * To retrieve the settings for active entities only:
+   *
+   * ```ts
+   * sdk.admin.translation.settings({
+   *   is_active: true
+   * })
+   * .then(({ translation_settings }) => {
+   *   console.log(translation_settings)
+   * })
+   * ```
+   *
+   * To retrieve the settings for inactive entities only:
+   *
+   * ```ts
+   * sdk.admin.translation.settings({
+   *   is_active: false
+   * })
+   * .then(({ translation_settings }) => {
+   *   console.log(translation_settings)
    * })
    * ```
    */
@@ -162,10 +183,57 @@ export class Translation {
   }
 
   /**
+   * This method allows bulk operations on translation settings. It sends a request to the
+   * [Batch Translation Settings](https://docs.medusajs.com/api/admin/translations/manage-translation-settings)
+   * API route.
+   *
+   * @since 2.12.6
+   *
+   * @param body - The translation settings to create, update, or delete.
+   * @param headers - Headers to pass in the request.
+   * @returns The translation settings' details.
+   *
+   * @example
+   * sdk.admin.translation.batchSettings({
+   *   create: [
+   *     {
+   *       entity_type: "product",
+   *       fields: ["title", "description"],
+   *       is_active: true
+   *     }
+   *   ],
+   *   update: [
+   *     {
+   *       id: "trset_123",
+   *       fields: ["title", "description", "subtitle"],
+   *       is_active: true
+   *     }
+   *   ],
+   *   delete: ["trset_456"]
+   * })
+   * .then(({ created, updated, deleted }) => {
+   *   console.log(created, updated, deleted)
+   * })
+   */
+  async batchSettings(
+    body: HttpTypes.AdminBatchTranslationSettings,
+    headers?: ClientHeaders
+  ) {
+    return await this.client.fetch<HttpTypes.AdminBatchTranslationSettingsResponse>(
+      `/admin/translations/settings/batch`,
+      {
+        method: "POST",
+        headers,
+        body,
+      }
+    )
+  }
+
+  /**
    * This method retrieves a paginated list of entities for a given entity type with only their
    * translatable fields.
    * It sends a request to the
-   * [Get Translation Entities](https://docs.medusajs.com/api/admin#translations_gettranslationentities) API route.
+   * [Get Translation Entities](https://docs.medusajs.com/api/admin/translations/list-translatable-entities) API route.
    *
    * @since 2.12.4
    *
@@ -216,7 +284,7 @@ export class Translation {
   /**
    * This method retrieves the statistics for the translations for a given entity type or all entity types if no entity type is provided.
    * It sends a request to the
-   * [Get Translation Statistics](https://docs.medusajs.com/api/admin#translations_gettranslationsstatistics) API route.
+   * [Get Translation Statistics](https://docs.medusajs.com/api/admin/translations/get-statistics) API route.
    *
    * @param query - The query parameters which can optionally include the entity type to get the statistics for.
    * @param headers - Headers to pass in the request.

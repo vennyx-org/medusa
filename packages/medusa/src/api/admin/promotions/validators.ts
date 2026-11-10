@@ -1,12 +1,13 @@
 import {
   ApplicationMethodAllocation,
+  ApplicationMethodTargetSelectionStrategy,
   ApplicationMethodTargetType,
   ApplicationMethodType,
   PromotionRuleOperator,
   PromotionStatus,
   PromotionType,
 } from "@medusajs/framework/utils"
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 import { applyAndAndOrOperators } from "../../utils/common-validators"
 import {
   createFindParams,
@@ -126,6 +127,9 @@ export const AdminCreateApplicationMethod = z
     buy_rules: z.array(AdminCreatePromotionRule).optional(),
     apply_to_quantity: z.number().nullish(),
     buy_rules_min_quantity: z.number().nullish(),
+    target_selection_strategy: z
+      .nativeEnum(ApplicationMethodTargetSelectionStrategy)
+      .optional(),
   })
   .strict()
 
@@ -143,6 +147,9 @@ export const AdminUpdateApplicationMethod = z
     allocation: z.nativeEnum(ApplicationMethodAllocation).optional(),
     apply_to_quantity: z.number().nullish(),
     buy_rules_min_quantity: z.number().nullish(),
+    target_selection_strategy: z
+      .nativeEnum(ApplicationMethodTargetSelectionStrategy)
+      .optional(),
   })
   .strict()
 
@@ -176,6 +183,7 @@ export const CreatePromotion = z
     application_method: AdminCreateApplicationMethod,
     rules: z.array(AdminCreatePromotionRule).optional(),
     limit: z.number().int().min(1).nullable().optional(),
+    metadata: z.record(z.string(), z.unknown()).nullish(),
   })
   .strict()
 
@@ -218,33 +226,34 @@ export const UpdatePromotion = z
     campaign_id: z.string().nullish(),
     application_method: AdminUpdateApplicationMethod.optional(),
     limit: z.number().int().min(1).nullable().optional(),
+    metadata: z.record(z.string(), z.unknown()).nullish(),
   })
   .strict()
 
 export const AdminUpdatePromotion = WithAdditionalData(
   UpdatePromotion,
   (schema) => {
-    return schema
-      .refine(promoRefinement, {
-        message:
-          "Buyget promotions require at least one buy rule and quantities to be defined",
-      })
-      .refine(
-        (data) => {
-          // Automatic promotions cannot have a limit
-          if (
-            data.is_automatic &&
-            data.limit !== null &&
-            data.limit !== undefined
-          ) {
-            return false
-          }
-          return true
-        },
-        {
-          message: "Automatic promotions cannot have a usage limit",
-          path: ["limit"],
+    // Unlike create, the update payload is partial: buy rules live on the
+    // persisted promotion and are managed through dedicated endpoints (e.g.
+    // `/admin/promotions/:id/buy-rules/batch`), so the create-time buyget
+    // refinement is intentionally not applied here. Buyget consistency is
+    // still validated by the promotion module against the persisted values.
+    return schema.refine(
+      (data) => {
+        // Automatic promotions cannot have a limit
+        if (
+          data.is_automatic &&
+          data.limit !== null &&
+          data.limit !== undefined
+        ) {
+          return false
         }
-      )
+        return true
+      },
+      {
+        message: "Automatic promotions cannot have a usage limit",
+        path: ["limit"],
+      }
+    )
   }
 )

@@ -1,5 +1,9 @@
 import { CsvError, parse, Parser } from "csv-parse"
-import type { HttpTypes, IFileModuleService } from "@medusajs/framework/types"
+import type {
+  HttpTypes,
+  IFileModuleService,
+  RegionDTO,
+} from "@medusajs/framework/types"
 import {
   CSVNormalizer,
   MedusaError,
@@ -7,7 +11,7 @@ import {
   productValidators,
 } from "@medusajs/framework/utils"
 import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
-import { MedusaErrorTypes } from "@medusajs/utils"
+import { MedusaErrorTypes } from "@medusajs/framework/utils"
 
 /**
  * The CSV file content to parse.
@@ -26,9 +30,10 @@ async function processChunk(
   file: IFileModuleService,
   fileKey: string,
   csvRows: ReturnType<(typeof CSVNormalizer)["preProcess"]>[],
-  currentRowNumber: number
+  currentRowNumber: number,
+  regions: RegionDTO[]
 ): Promise<Chunk> {
-  const normalizer = new CSVNormalizer(csvRows)
+  const normalizer = new CSVNormalizer(csvRows, { regions })
   const products = normalizer.proccess(currentRowNumber)
 
   let create = Object.keys(products.toCreate).reduce<
@@ -79,7 +84,8 @@ async function processChunk(
 async function createChunks(
   file: IFileModuleService,
   fileKey: string,
-  stream: Parser
+  stream: Parser,
+  regions: RegionDTO[]
 ): Promise<Chunk[]> {
   /**
    * The row under process
@@ -138,7 +144,8 @@ async function createChunks(
               file,
               `${fileKey}-${chunks.length + 1}`,
               rows,
-              currentCSVRow
+              currentCSVRow,
+              regions
             )
           )
 
@@ -167,7 +174,8 @@ async function createChunks(
           file,
           `${fileKey}-${chunks.length + 1}`,
           rows,
-          currentCSVRow
+          currentCSVRow,
+          regions
         )
       )
     }
@@ -177,9 +185,10 @@ async function createChunks(
     }
 
     /**
-     * Cleanup in case of an error
+     * Cleanup in case of an error. Only delete chunk files that this step
+     * created; never the user-supplied `fileKey`, which is unvalidated input.
      */
-    await file.deleteFiles(chunks.map((chunk) => chunk.id).concat(fileKey))
+    await file.deleteFiles(chunks.map((chunk) => chunk.id))
     throw error
   }
 
@@ -196,6 +205,7 @@ async function createChunks(
 export const normalizeCsvToChunksStep = createStep(
   normalizeCsvToChunksStepId,
   async (fileKey: NormalizeProductCsvV1StepInput, { container }) => {
+    // eslint-disable-next-line @medusajs/step-must-return-step-response
     return new Promise<
       StepResponse<{
         chunks: Chunk[]
@@ -204,6 +214,9 @@ export const normalizeCsvToChunksStep = createStep(
     >(async (resolve, reject) => {
       try {
         const file = container.resolve(Modules.FILE)
+        const regions = await container
+          .resolve(Modules.REGION)
+          .listRegions({}, { select: ["id", "name", "currency_code"] })
         const contents = await file.getDownloadStream(fileKey)
 
         const transformer = parse({
@@ -216,7 +229,8 @@ export const normalizeCsvToChunksStep = createStep(
         const chunks = await createChunks(
           file,
           fileKey,
-          contents.pipe(transformer)
+          contents.pipe(transformer),
+          regions
         )
 
         const summary = chunks.reduce<{ toCreate: number; toUpdate: number }>(
@@ -228,10 +242,6 @@ export const normalizeCsvToChunksStep = createStep(
           { toCreate: 0, toUpdate: 0 }
         )
 
-        /**
-         * Delete CSV file once we have the chunks
-         */
-        await file.deleteFiles(fileKey)
 
         resolve(
           new StepResponse({

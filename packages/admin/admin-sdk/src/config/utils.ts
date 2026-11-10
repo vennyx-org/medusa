@@ -3,6 +3,7 @@ import { z, ZodFirstPartySchemaTypes } from "zod"
 import {
   CustomFieldConfig,
   CustomFormField,
+  LayoutConfig,
   RouteConfig,
   WidgetConfig,
 } from "./types"
@@ -42,6 +43,16 @@ export function defineRouteConfig(config: RouteConfig) {
 }
 
 /**
+ * Define a custom layout configuration.
+ *
+ * @param config The layout configuration.
+ * @returns The layout configuration.
+ */
+export function defineLayoutConfig(config: LayoutConfig) {
+  return createConfigHelper(config)
+}
+
+/**
  * Define a custom fields configuration.
  *
  * @param config The custom fields configuration.
@@ -50,7 +61,7 @@ export function defineRouteConfig(config: RouteConfig) {
  * @experimental This API is experimental and may change in the future.
  */
 export function unstable_defineCustomFieldsConfig<
-  TModel extends keyof CustomFieldModelFormMap
+  TModel extends keyof CustomFieldModelFormMap,
 >(config: CustomFieldConfig<TModel>) {
   return createConfigHelper(config)
 }

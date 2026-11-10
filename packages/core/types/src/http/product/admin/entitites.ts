@@ -1,12 +1,12 @@
 import { AdminCollection } from "../../collection"
 import { AdminInventoryItem } from "../../inventory"
-import { AdminPrice } from "../../pricing"
+import { AdminPrice } from "../../price-preference"
 import { AdminProductCategory } from "../../product-category"
 import { AdminProductTag } from "../../product-tag"
 import { AdminProductType } from "../../product-type"
 import { AdminSalesChannel } from "../../sales-channel"
 import { AdminShippingProfile } from "../../shipping-profile"
-import { AdminTranslation } from "../../translations"
+import { AdminTranslation } from "../../translation"
 import {
   BaseProduct,
   BaseProductImage,
@@ -67,9 +67,9 @@ export interface AdminProductVariant extends BaseProductVariant {
 }
 export interface AdminProductOption extends BaseProductOption {
   /**
-   * The associated product's details.
+   * The associated products' details.
    */
-  product?: AdminProduct | null
+  products?: AdminProduct[] | null
   /**
    * The option's values.
    */
@@ -91,8 +91,10 @@ export interface AdminProductOptionValue extends BaseProductOptionValue {
    */
   option?: AdminProductOption | null
 }
-export interface AdminProduct
-  extends Omit<BaseProduct, "categories" | "variants"> {
+export interface AdminProduct extends Omit<
+  BaseProduct,
+  "categories" | "variants"
+> {
   /**
    * The product's collection.
    */

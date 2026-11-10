@@ -20,11 +20,13 @@ export class MathBN {
       num_ = num
     } else if (isDefined((num as BigNumberRawValue)?.value)) {
       num_ = new BigNumberJS((num as BigNumberRawValue).value)
+    } else if (typeof num === "object") {
+      num_ = new BigNumberJS(num.toString())
     } else {
       num_ = new BigNumberJS(num as BigNumberJS | number)
     }
 
-    if (decimalPlaces) {
+    if (decimalPlaces != null) {
       num_ = (num_ as BigNumberJS).decimalPlaces(decimalPlaces)
     }
 

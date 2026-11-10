@@ -1,8 +1,30 @@
 import type { ProductTypes } from "@medusajs/framework/types"
 import type { HttpTypes, RegionTypes } from "@medusajs/framework/types"
-import { MedusaError, lowerCaseFirst } from "@medusajs/framework/utils"
+import { MedusaError, lowerCaseFirst, normalizeCurrencyCode } from "@medusajs/framework/utils"
 
-// We want to convert the csv data format to a standard DTO format.
+/**
+ * Normalizes raw CSV product data into standardized AdminCreateProduct DTOs.
+ * 
+ * This function converts product data from CSV import format to the standard DTO format
+ * expected by the product creation API. It handles product grouping by handle,
+ * variant aggregation, option extraction, and validation against existing regions and tags.
+ * 
+ * @param rawProducts - Array of raw product objects from CSV import
+ * @param additional - Additional context data needed for normalization
+ * @param additional.regions - Available regions for price validation
+ * @param additional.tags - Available product tags for validation
+ * @returns Array of normalized AdminCreateProduct DTOs ready for import
+ * 
+ * @throws {MedusaError} When referenced tags or regions are not found
+ * 
+ * @example
+ * ```typescript
+ * const products = normalizeForImport(csvData, {
+ *   regions: existingRegions,
+ *   tags: existingTags
+ * })
+ * ```
+ */
 export const normalizeForImport = (
   rawProducts: object[],
   additional: {
@@ -15,6 +37,7 @@ export const normalizeForImport = (
     {
       product: HttpTypes.AdminCreateProduct
       variants: HttpTypes.AdminCreateProductVariant[]
+      optionMeta: Map<string, ImportOptionMeta>
     }
   >()
 
@@ -26,12 +49,25 @@ export const normalizeForImport = (
 
   rawProducts.forEach((rawProduct) => {
     const productInMap = productMap.get(rawProduct["Product Handle"])
+    const rowOptionMeta = extractOptionMetaForImport(rawProduct)
+
     if (!productInMap) {
       productMap.set(rawProduct["Product Handle"], {
         product: normalizeProductForImport(rawProduct, tagsMap),
         variants: [normalizeVariantForImport(rawProduct, regionsMap)],
+        optionMeta: rowOptionMeta,
       })
       return
+    }
+
+    // First non-empty meta seen for an option wins; subsequent rows may omit
+    // the id/is_exclusive columns and we shouldn't clobber what we have.
+    for (const [name, meta] of rowOptionMeta) {
+      const existing = productInMap.optionMeta.get(name) ?? {}
+      productInMap.optionMeta.set(name, {
+        id: existing.id ?? meta.id,
+        is_exclusive: existing.is_exclusive ?? meta.is_exclusive,
+      })
     }
 
     productMap.set(rawProduct["Product Handle"], {
@@ -40,6 +76,7 @@ export const normalizeForImport = (
         ...productInMap.variants,
         normalizeVariantForImport(rawProduct, regionsMap),
       ],
+      optionMeta: productInMap.optionMeta,
     })
   })
 
@@ -61,13 +98,108 @@ export const normalizeForImport = (
 
     return {
       ...p.product,
-      options: Object.entries(options).map(([key, value]) => ({
-        title: key,
-        values: Array.from(value),
-      })),
+      options: Object.entries(options).map(([key, value]) => {
+        const meta = p.optionMeta.get(key)
+        return {
+          title: key,
+          values: Array.from(value),
+          ...(meta?.id ? { id: meta.id } : {}),
+          ...(meta?.is_exclusive !== undefined
+            ? { is_exclusive: meta.is_exclusive }
+            : {}),
+        }
+      }),
       variants: p.variants,
     }
   })
+}
+
+type ImportOptionMeta = { id?: string; is_exclusive?: boolean }
+
+const parseBooleanFromCsv = (val: unknown): boolean | undefined => {
+  if (typeof val === "boolean") {
+    return val
+  }
+  if (typeof val === "number") {
+    if (val === 1) return true
+    if (val === 0) return false
+    return undefined
+  }
+  if (typeof val === "string") {
+    const v = val.trim().toLowerCase()
+    if (v === "true" || v === "1" || v === "yes") return true
+    if (v === "false" || v === "0" || v === "no") return false
+  }
+  return undefined
+}
+
+// CSV rows can optionally carry `Variant Option N Id` and
+// `Variant Option N Is Exclusive` columns. An id links the product to an
+// existing option (typically a global one); is_exclusive is honored only when
+// no id is provided and lets the CSV opt out of the exclusive-by-default
+// behavior when creating fresh options.
+const extractOptionMetaForImport = (
+  rawProduct: object
+): Map<string, ImportOptionMeta> => {
+  const byIndex = new Map<
+    number,
+    { name?: string; id?: string; is_exclusive?: boolean }
+  >()
+
+  Object.entries(rawProduct).forEach(([key, value]) => {
+    const normalizedKey = snakecaseKey(key)
+    if (!normalizedKey.startsWith("variant_option_")) {
+      return
+    }
+
+    const normalizedValue = getNormalizedValue(normalizedKey, value)
+    if (normalizedValue === "" || normalizedValue == null) {
+      return
+    }
+
+    const keyBase = normalizedKey.slice("variant_option_".length)
+    const firstUnderscore = keyBase.indexOf("_")
+    if (firstUnderscore === -1) {
+      return
+    }
+
+    const optionIndex = parseInt(keyBase.slice(0, firstUnderscore))
+    if (Number.isNaN(optionIndex)) {
+      return
+    }
+    const optionType = keyBase.slice(firstUnderscore + 1)
+
+    const current = byIndex.get(optionIndex) ?? {}
+    if (optionType === "name") {
+      current.name = String(normalizedValue)
+    } else if (optionType === "id") {
+      current.id = String(normalizedValue)
+    } else if (optionType === "is_exclusive") {
+      const parsed = parseBooleanFromCsv(normalizedValue)
+      if (parsed !== undefined) {
+        current.is_exclusive = parsed
+      }
+    }
+    byIndex.set(optionIndex, current)
+  })
+
+  const byName = new Map<string, ImportOptionMeta>()
+  for (const entry of byIndex.values()) {
+    if (!entry.name) {
+      continue
+    }
+    const meta: ImportOptionMeta = {}
+    if (entry.id !== undefined) {
+      meta.id = entry.id
+    }
+    if (entry.is_exclusive !== undefined) {
+      meta.is_exclusive = entry.is_exclusive
+    }
+    if (meta.id !== undefined || meta.is_exclusive !== undefined) {
+      byName.set(entry.name, meta)
+    }
+  }
+  return byName
 }
 
 const productFieldsToOmit = new Map()
@@ -183,7 +315,7 @@ const normalizeVariantForImport = (
       if (!priceKey.endsWith("]")) {
         response["prices"] = [
           ...(response["prices"] || []),
-          { currency_code: priceKey.toLowerCase(), amount: normalizedValue },
+          { currency_code: normalizeCurrencyCode(priceKey), amount: normalizedValue },
         ]
       } else {
         const regionName = priceKey.split("_").slice(0, -1).join(" ")
@@ -209,8 +341,12 @@ const normalizeVariantForImport = (
 
     if (normalizedKey.startsWith("variant_option_")) {
       const keyBase = normalizedKey.replace("variant_option_", "")
-      const optionIndex = parseInt(keyBase.split("_")[0])
-      const optionType = keyBase.split("_")[1]
+      const firstUnderscore = keyBase.indexOf("_")
+      if (firstUnderscore === -1) {
+        return
+      }
+      const optionIndex = parseInt(keyBase.slice(0, firstUnderscore))
+      const optionType = keyBase.slice(firstUnderscore + 1)
 
       options.set(optionIndex, {
         ...options.get(optionIndex),

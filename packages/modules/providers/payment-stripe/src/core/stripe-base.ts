@@ -11,6 +11,8 @@ import {
   CreateAccountHolderOutput,
   DeleteAccountHolderInput,
   DeleteAccountHolderOutput,
+  DeletePaymentMethodInput,
+  DeletePaymentMethodOutput,
   DeletePaymentInput,
   DeletePaymentOutput,
   GetPaymentStatusInput,
@@ -56,17 +58,40 @@ type StripeIndeterminateState = {
 
 type StripeErrorData = Stripe.PaymentIntent | StripeIndeterminateState
 type HandledErrorType =
-  | { retry: true }
-  | { retry: false; data: StripeErrorData }
+  { retry: true } | { retry: false; data: StripeErrorData }
+
+// Stripe API versions before 2026-07-29 don't have `allowed_payment_method_types`,
+// and versions from 2026-09-30.endive reject `payment_method_types`.
+type PaymentMethodTypesParams = {
+  payment_method_types?: string[]
+  allowed_payment_method_types?: Stripe.PaymentIntentCreateParams.AllowedPaymentMethodType[]
+}
+
+const DEFAULT_STRIPE_API_VERSION = "2024-04-10"
+const ALLOWED_PAYMENT_METHOD_TYPES_API_VERSION = "2026-07-29"
 
 abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
   protected readonly options_: StripeOptions
   protected stripe_: Stripe
   protected container_: Record<string, unknown>
 
+  // All Stripe provider variants share the same options, so warn only once
+  // even though the loader validates each registered service.
+  protected static hasWarnedMissingWebhookSecret = false
+
   static validateOptions(options: StripeOptions): void {
     if (!isDefined(options.apiKey)) {
       throw new Error("Required option `apiKey` is missing in Stripe plugin")
+    }
+
+    if (
+      !isDefined(options.webhookSecret) &&
+      !StripeBase.hasWarnedMissingWebhookSecret
+    ) {
+      StripeBase.hasWarnedMissingWebhookSecret = true
+      console.warn(
+        "Option `webhookSecret` is missing in Stripe plugin. Webhook signature verification will fail, so webhook-dependent payment flows (e.g. 3D Secure, Klarna/Affirm redirects, async capture) will not be able to update orders, leaving them pending after successful charges. Set `webhookSecret` if you rely on Stripe webhooks."
+      )
     }
   }
 
@@ -80,7 +105,10 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
     this.container_ = cradle
     this.options_ = options
 
-    this.stripe_ = new Stripe(options.apiKey)
+    this.stripe_ = new Stripe(options.apiKey, {
+      apiVersion: (options.apiVersion ??
+        DEFAULT_STRIPE_API_VERSION) as Stripe.LatestApiVersion,
+    })
   }
 
   abstract get paymentIntentOptions(): PaymentIntentOptions
@@ -89,10 +117,33 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
     return this.options_
   }
 
+  protected getPaymentMethodTypesParams(
+    paymentMethodTypes?: string[]
+  ): PaymentMethodTypesParams {
+    if (!paymentMethodTypes) {
+      return {}
+    }
+
+    const apiVersion = this.options_.apiVersion ?? DEFAULT_STRIPE_API_VERSION
+
+    return apiVersion >= ALLOWED_PAYMENT_METHOD_TYPES_API_VERSION
+      ? {
+          allowed_payment_method_types:
+            paymentMethodTypes as Stripe.PaymentIntentCreateParams.AllowedPaymentMethodType[],
+        }
+      : { payment_method_types: paymentMethodTypes }
+  }
+
   normalizePaymentIntentParameters(
     extra?: Record<string, unknown>
-  ): Partial<Stripe.PaymentIntentCreateParams> {
-    const res = {} as Partial<Stripe.PaymentIntentCreateParams>
+  ): Partial<Stripe.PaymentIntentCreateParams> & PaymentMethodTypesParams {
+    const res = {} as Partial<Stripe.PaymentIntentCreateParams> &
+      PaymentMethodTypesParams
+
+    const paymentMethodTypes =
+      (extra?.allowed_payment_method_types as string[] | undefined) ??
+      (extra?.payment_method_types as string[] | undefined) ??
+      (this.paymentIntentOptions.payment_method_types as string[] | undefined)
 
     res.description = (extra?.payment_description ??
       this.options_?.paymentDescription) as string
@@ -106,9 +157,7 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
       (extra?.setup_future_usage as "off_session" | "on_session" | undefined) ??
       this.paymentIntentOptions.setup_future_usage
 
-    res.payment_method_types =
-      (extra?.payment_method_types as string[]) ??
-      (this.paymentIntentOptions.payment_method_types as string[])
+    Object.assign(res, this.getPaymentMethodTypesParams(paymentMethodTypes))
 
     res.payment_method_data =
       extra?.payment_method_data as Stripe.PaymentIntentCreateParams.PaymentMethodData
@@ -131,6 +180,12 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
 
     // @ts-expect-error - Need to update Stripe SDK
     res.shared_payment_token = extra?.shared_payment_token as string | undefined
+
+    if (!paymentMethodTypes?.length) {
+      res.payment_method_configuration =
+        (extra?.payment_method_configuration as string | undefined) ??
+        this.options_?.paymentMethodConfiguration
+    }
 
     return res
   }
@@ -231,7 +286,9 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
       )
     }
 
-    const paymentIntent = await this.stripe_.paymentIntents.retrieve(id)
+    const paymentIntent = await this.stripe_.paymentIntents.retrieve(id, {
+      expand: ["payment_method"],
+    })
     const statusResponse = this.getStatus(paymentIntent)
 
     return statusResponse as unknown as GetPaymentStatusOutput
@@ -253,11 +310,11 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
         session_id: data?.session_id as string,
       },
       ...additionalParameters,
+      expand: ["payment_method"],
     }
 
     intentRequest.customer = context?.account_holder?.data?.id as
-      | string
-      | undefined
+      string | undefined
 
     const sessionData = await this.executeWithRetry<Stripe.PaymentIntent>(() =>
       this.stripe_.paymentIntents.create(intentRequest, {
@@ -279,10 +336,14 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
     return this.getPaymentStatus(input)
   }
 
-  async cancelPayment({
-    data,
-    context,
-  }: CancelPaymentInput): Promise<CancelPaymentOutput> {
+  async cancelPayment(input: CancelPaymentInput): Promise<CancelPaymentOutput> {
+    return await this.cancelPaymentIntent(input, [ErrorIntentStatus.CANCELED])
+  }
+
+  protected async cancelPaymentIntent(
+    { data, context }: CancelPaymentInput,
+    ignoredStatuses: string[]
+  ): Promise<CancelPaymentOutput> {
     try {
       const id = data?.id as string
 
@@ -290,12 +351,12 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
         return { data: data }
       }
 
-      const res = await this.stripe_.paymentIntents.cancel(id, {
+      const res = await this.stripe_.paymentIntents.cancel(id, undefined, {
         idempotencyKey: context?.idempotency_key,
       })
       return { data: res as unknown as Record<string, unknown> }
     } catch (error) {
-      if (error.payment_intent?.status === ErrorIntentStatus.CANCELED) {
+      if (ignoredStatuses.includes(error.payment_intent?.status)) {
         return { data: error.payment_intent }
       }
 
@@ -310,7 +371,7 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
     const id = data?.id as string
 
     try {
-      const intent = await this.stripe_.paymentIntents.capture(id, {
+      const intent = await this.stripe_.paymentIntents.capture(id, undefined, {
         idempotencyKey: context?.idempotency_key,
       })
       return { data: intent as unknown as Record<string, unknown> }
@@ -326,7 +387,11 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
   }
 
   async deletePayment(input: DeletePaymentInput): Promise<DeletePaymentOutput> {
-    return await this.cancelPayment(input)
+    // A succeeded PaymentIntent can't be canceled, but its session can still be deleted.
+    return await this.cancelPaymentIntent(input, [
+      ErrorIntentStatus.CANCELED,
+      ErrorIntentStatus.SUCCEEDED,
+    ])
   }
 
   async refundPayment({
@@ -354,7 +419,9 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
         }
       )
     } catch (e) {
-      throw this.buildError("An error occurred in refundPayment", e)
+      if (e.code !== ErrorCodes.CHARGE_ALREADY_REFUNDED) {
+        throw this.buildError("An error occurred in refundPayment", e)
+      }
     }
 
     return { data }
@@ -394,6 +461,7 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
         id,
         {
           amount: amountNumeric,
+          expand: ["payment_method"],
         },
         {
           idempotencyKey: context?.idempotency_key,
@@ -549,8 +617,7 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
     context,
   }: ListPaymentMethodsInput): Promise<ListPaymentMethodsOutput> {
     const accountHolderId = context?.account_holder?.data?.id as
-      | string
-      | undefined
+      string | undefined
     if (!accountHolderId) {
       return []
     }
@@ -573,8 +640,7 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
     data,
   }: SavePaymentMethodInput): Promise<SavePaymentMethodOutput> {
     const accountHolderId = context?.account_holder?.data?.id as
-      | string
-      | undefined
+      string | undefined
 
     if (!accountHolderId) {
       throw this.buildError(
@@ -583,17 +649,42 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
       )
     }
 
+    const { payment_method_types, ...setupIntentData } = data ?? {}
+
     const resp = await this.stripe_.setupIntents.create(
       {
         customer: accountHolderId,
-        ...data,
-      },
+        ...setupIntentData,
+        ...this.getPaymentMethodTypesParams(
+          payment_method_types as string[] | undefined
+        ),
+      } as Stripe.SetupIntentCreateParams,
       {
         idempotencyKey: context?.idempotency_key,
       }
     )
 
     return { id: resp.id, data: resp as unknown as Record<string, unknown> }
+  }
+
+  async deletePaymentMethod({
+    context,
+    data,
+  }: DeletePaymentMethodInput): Promise<DeletePaymentMethodOutput> {
+    const paymentMethodId = data?.id as string | undefined
+
+    if (!paymentMethodId) {
+      throw this.buildError(
+        "Payment method ID not set while deleting a payment method",
+        new Error("Missing payment method ID")
+      )
+    }
+
+    await this.stripe_.paymentMethods.detach(paymentMethodId, undefined, {
+      idempotencyKey: context?.idempotency_key,
+    })
+
+    return {}
   }
 
   private getStatus(paymentIntent: Stripe.PaymentIntent): {
@@ -607,7 +698,18 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
         }
         return { status: PaymentSessionStatus.PENDING, data: paymentIntent }
       case "requires_confirmation":
+        return { status: PaymentSessionStatus.PENDING, data: paymentIntent }
       case "processing":
+        if (
+          this.isAsyncPaymentMethod(
+            paymentIntent.payment_method as Stripe.PaymentMethod
+          )
+        ) {
+          return {
+            status: PaymentSessionStatus.PENDING_AUTHORIZATION,
+            data: paymentIntent,
+          }
+        }
         return { status: PaymentSessionStatus.PENDING, data: paymentIntent }
       case "requires_action":
         return {
@@ -633,11 +735,31 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
 
     const { currency } = intent
 
+    // Payment intents created by Medusa always carry the originating payment
+    // session id in their metadata (see `initiatePayment`). An intent without
+    // one did not originate from this Medusa instance - e.g. an event from
+    // another integration sharing the same Stripe account - and must not be
+    // acted upon, so we treat it as an unsupported event.
+    if (!intent.metadata?.session_id) {
+      return { action: PaymentActions.NOT_SUPPORTED }
+    }
+
     switch (event.type) {
       case "payment_intent.created":
       case "payment_intent.processing":
+        const webhookPaymentMethod = intent.payment_method
+        const paymentMethod =
+          typeof webhookPaymentMethod === "object"
+            ? (intent.payment_method as Stripe.PaymentMethod)
+            : typeof webhookPaymentMethod === "string"
+              ? await this.stripe_.paymentMethods.retrieve(webhookPaymentMethod)
+              : null
+
         return {
-          action: PaymentActions.PENDING,
+          action:
+            paymentMethod && this.isAsyncPaymentMethod(paymentMethod)
+              ? PaymentActions.PENDING_AUTHORIZATION
+              : PaymentActions.PENDING,
           data: {
             session_id: intent.metadata.session_id,
             amount: getAmountFromSmallestUnit(intent.amount, currency),
@@ -704,6 +826,13 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
     }
   }
 
+  private isAsyncPaymentMethod(paymentMethod: Stripe.PaymentMethod): boolean {
+    return (
+      this.options_.asyncPaymentMethodTypes?.includes(paymentMethod.type) ??
+      false
+    )
+  }
+
   /**
    * Constructs Stripe Webhook event
    * @param {object} data - the data of the webhook request: req.body
@@ -713,11 +842,15 @@ abstract class StripeBase extends AbstractPaymentProvider<StripeOptions> {
   constructWebhookEvent(data: ProviderWebhookPayload["payload"]): Stripe.Event {
     const signature = data.headers["stripe-signature"] as string
 
-    return this.stripe_.webhooks.constructEvent(
-      data.rawData as string | Buffer,
-      signature,
-      this.options_.webhookSecret
-    )
+    try {
+      return this.stripe_.webhooks.constructEvent(
+        data.rawData as string | Buffer,
+        signature,
+        this.options_.webhookSecret
+      )
+    } catch (error) {
+      throw this.buildError("An error occurred in constructWebhookEvent", error)
+    }
   }
   protected buildError(message: string, error: Error): Error {
     const errorDetails =

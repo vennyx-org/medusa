@@ -15,10 +15,13 @@ import {
   recmaInjectMdxDataPlugin,
   validateHighlightsPlugin,
   uiRehypePlugin,
+  mdContentOverrideRehypePlugin,
 } from "remark-rehype-plugins"
 import bundleAnalyzer from "@next/bundle-analyzer"
+import { withMdxWebpackLayers } from "build-scripts"
 import withExtractedTableOfContents from "@stefanprobst/rehype-extract-toc"
 import { ExampleRegistry } from "./specs/examples.mjs"
+import { ComponentSpecsIndex } from "./generated/components-index.mjs"
 
 const withMDX = mdx({
   extension: /\.mdx?$/,
@@ -72,7 +75,8 @@ const withMDX = mdx({
           },
           useBaseUrl:
             process.env.NODE_ENV === "production" ||
-            process.env.VERCEL_ENV === "production",
+            process.env.VERCEL_ENV === "production" ||
+            !!process.env.CLOUDFLARE_ENV,
         },
       ],
       [localLinksRehypePlugin],
@@ -109,8 +113,11 @@ const withMDX = mdx({
         uiRehypePlugin,
         {
           exampleRegistry: ExampleRegistry,
+          specsIndex: ComponentSpecsIndex,
+          specsBaseUrl: process.env.UI_SPECS_R2_BASE_URL,
         },
       ],
+      [mdContentOverrideRehypePlugin],
     ],
     remarkPlugins: [
       [remarkFrontmatter],
@@ -130,6 +137,20 @@ const nextConfig = {
 
   transpilePackages: ["docs-ui"],
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || "/ui",
+  async headers() {
+    const headers = [
+      {
+        key: "Cache-Control",
+        value: "public, max-age=3600, must-revalidate",
+      },
+    ]
+
+    return [
+      { source: "/", headers },
+      { source: "/:path((?!_next/).*)", headers },
+    ]
+  },
+  outputFileTracingRoot: new URL("../../", import.meta.url).pathname,
   outputFileTracingIncludes: {
     "/md\\-content/\\[\\[\\.\\.\\.slug\\]\\]": [
       "./app/**/*.mdx",
@@ -138,7 +159,11 @@ const nextConfig = {
     ],
   },
   outputFileTracingExcludes: {
-    "*": ["node_modules/@medusajs/icons"],
+    "*": [
+      "node_modules/@medusajs/icons",
+      "../**/.open-next/**",
+      "../!(ui)/.next/**",
+    ],
   },
   experimental: {
     optimizePackageImports: ["@medusajs/icons", "@medusajs/ui"],
@@ -147,11 +172,27 @@ const nextConfig = {
     return {
       beforeFiles: [
         {
+          source: "/index.html.md",
+          destination: "/md-content",
+        },
+        {
+          source: "/index.md",
+          destination: "/md-content",
+        },
+        {
           source: "/:path*/index.html.md",
           destination: "/md-content/:path*",
         },
         {
-          source: "/:path*",
+          source: "/:path*/index.md",
+          destination: "/md-content/:path*",
+        },
+        {
+          source: "/:path*.md",
+          destination: "/md-content/:path*",
+        },
+        {
+          source: "/:first((?!md-content)[^/]+)/:rest*/",
           has: [
             {
               type: "header",
@@ -159,7 +200,29 @@ const nextConfig = {
               value: ".*(text/markdown|text/plain).*",
             },
           ],
-          destination: "/md-content/:path*",
+          destination: "/md-content/:first/:rest*",
+        },
+        {
+          source: "/",
+          has: [
+            {
+              type: "header",
+              key: "Accept",
+              value: ".*(text/markdown|text/plain).*",
+            },
+          ],
+          destination: "/md-content",
+        },
+        {
+          source: "/:first((?!md-content)[^/]+)/:rest*",
+          has: [
+            {
+              type: "header",
+              key: "Accept",
+              value: ".*(text/markdown|text/plain).*",
+            },
+          ],
+          destination: "/md-content/:first/:rest*",
         },
       ],
     }
@@ -170,4 +233,4 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 })
 
-export default withMDX(withBundleAnalyzer(nextConfig))
+export default withMdxWebpackLayers(withMDX(withBundleAnalyzer(nextConfig)))

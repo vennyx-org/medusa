@@ -10,6 +10,8 @@ const _OrderLineItemTaxLine = model
     rate: model.bigNumber(),
     provider_id: model.text().nullable(),
     is_compound: model.boolean().default(false),
+    metadata: model.json().nullable(),
+    data: model.json().nullable(),
     item: model.belongsTo<() => typeof OrderLineItem>(() => OrderLineItem, {
       mappedBy: "tax_lines",
     }),

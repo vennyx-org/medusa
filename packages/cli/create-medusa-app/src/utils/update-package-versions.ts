@@ -4,7 +4,7 @@ export function updatePackageVersions(
   packageJsonOrPath: string | Record<string, any>,
   version: string,
   { applyChanges = false }: { applyChanges?: boolean } = {}
-) {
+): Record<string, any> {
   const packageJson =
     typeof packageJsonOrPath === "string"
       ? JSON.parse(readFileSync(packageJsonOrPath, "utf-8"))
@@ -24,10 +24,19 @@ export function updatePackageVersions(
       }
     }
   }
+  if (packageJson.peerDependencies) {
+    for (const dependency of Object.keys(packageJson.peerDependencies)) {
+      if (shouldUpdateVersion(dependency)) {
+        packageJson.peerDependencies[dependency] = version
+      }
+    }
+  }
 
   if (applyChanges && typeof packageJsonOrPath === "string") {
     writeFileSync(packageJsonOrPath, JSON.stringify(packageJson, null, 2))
   }
+
+  return packageJson
 }
 
 function shouldUpdateVersion(dependency: string): boolean {

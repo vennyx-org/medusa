@@ -16,6 +16,16 @@ import { useComboboxData } from "../../../../../hooks/use-combobox-data"
 import { sdk } from "../../../../../lib/client"
 import { useExtension } from "../../../../../providers/extension-provider"
 import { CategoryCombobox } from "../../../common/components/category-combobox"
+import {
+  useProductCategoryPermissions,
+  useProductCollectionPermissions,
+  useProductTagPermissions,
+  useProductTypePermissions,
+} from "../../../../../hooks/use-resource-permissions"
+import { PermissionGuard } from "../../../../../components/common/permission-guard"
+import { collectionsQueryKeys } from "../../../../../hooks/api/collections"
+import { productTypesQueryKeys } from "../../../../../hooks/api/product-types"
+import { productTagsQueryKeys } from "../../../../../hooks/api/tags"
 
 type ProductOrganizationFormProps = {
   product: HttpTypes.AdminProduct
@@ -35,37 +45,45 @@ export const ProductOrganizationForm = ({
   const { handleSuccess } = useRouteModal()
   const { getFormConfigs, getFormFields } = useExtension()
 
+  const { canUpdate: canUpdateTypes } = useProductTypePermissions()
+  const { canUpdate: canUpdateCollections } = useProductCollectionPermissions()
+  const { canUpdate: canUpdateTags } = useProductTagPermissions()
+  const { canUpdate: canUpdateCategories } = useProductCategoryPermissions()
+
   const configs = getFormConfigs("product", "organize")
   const fields = getFormFields("product", "organize")
 
   const collections = useComboboxData({
-    queryKey: ["product_collections"],
+    queryKey: collectionsQueryKeys.lists(),
     queryFn: (params) => sdk.admin.productCollection.list(params),
     getOptions: (data) =>
       data.collections.map((collection) => ({
         label: collection.title!,
         value: collection.id!,
       })),
+    enabled: canUpdateCollections,
   })
 
   const types = useComboboxData({
-    queryKey: ["product_types"],
+    queryKey: productTypesQueryKeys.lists(),
     queryFn: (params) => sdk.admin.productType.list(params),
     getOptions: (data) =>
       data.product_types.map((type) => ({
         label: type.value,
         value: type.id,
       })),
+    enabled: canUpdateTypes,
   })
 
   const tags = useComboboxData({
-    queryKey: ["product_tags"],
+    queryKey: productTagsQueryKeys.lists(),
     queryFn: (params) => sdk.admin.productTag.list(params),
     getOptions: (data) =>
       data.product_tags.map((tag) => ({
         label: tag.value,
         value: tag.id,
       })),
+    enabled: canUpdateTags,
   })
 
   const form = useExtendableForm({
@@ -85,10 +103,14 @@ export const ProductOrganizationForm = ({
   const handleSubmit = form.handleSubmit(async (data) => {
     await mutateAsync(
       {
-        type_id: data.type_id || null,
-        collection_id: data.collection_id || null,
-        categories: data.category_ids.map((c) => ({ id: c })),
-        tags: data.tag_ids?.map((t) => ({ id: t })),
+        type_id: canUpdateTypes ? data.type_id || null : undefined,
+        collection_id: canUpdateCollections
+          ? data.collection_id || null
+          : undefined,
+        categories: canUpdateCategories
+          ? data.category_ids.map((c) => ({ id: c }))
+          : undefined,
+        tags: canUpdateTags ? data.tag_ids?.map((t) => ({ id: t })) : undefined,
       },
       {
         onSuccess: ({ product }) => {
@@ -111,92 +133,108 @@ export const ProductOrganizationForm = ({
       <KeyboundForm onSubmit={handleSubmit} className="flex h-full flex-col">
         <RouteDrawer.Body>
           <div className="flex h-full flex-col gap-y-4">
-            <Form.Field
-              control={form.control}
-              name="type_id"
-              render={({ field }) => {
-                return (
-                  <Form.Item>
-                    <Form.Label optional>
-                      {t("products.fields.type.label")}
-                    </Form.Label>
-                    <Form.Control>
-                      <Combobox
-                        {...field}
-                        options={types.options}
-                        searchValue={types.searchValue}
-                        onSearchValueChange={types.onSearchValueChange}
-                        fetchNextPage={types.fetchNextPage}
-                      />
-                    </Form.Control>
-                    <Form.ErrorMessage />
-                  </Form.Item>
-                )
-              }}
-            />
-            <Form.Field
-              control={form.control}
-              name="collection_id"
-              render={({ field }) => {
-                return (
-                  <Form.Item>
-                    <Form.Label optional>
-                      {t("products.fields.collection.label")}
-                    </Form.Label>
-                    <Form.Control>
-                      <Combobox
-                        {...field}
-                        multiple={false}
-                        options={collections.options}
-                        onSearchValueChange={collections.onSearchValueChange}
-                        searchValue={collections.searchValue}
-                      />
-                    </Form.Control>
-                    <Form.ErrorMessage />
-                  </Form.Item>
-                )
-              }}
-            />
-            <Form.Field
-              control={form.control}
-              name="category_ids"
-              render={({ field }) => {
-                return (
-                  <Form.Item>
-                    <Form.Label optional>
-                      {t("products.fields.categories.label")}
-                    </Form.Label>
-                    <Form.Control>
-                      <CategoryCombobox {...field} />
-                    </Form.Control>
-                    <Form.ErrorMessage />
-                  </Form.Item>
-                )
-              }}
-            />
-            <Form.Field
-              control={form.control}
-              name="tag_ids"
-              render={({ field }) => {
-                return (
-                  <Form.Item>
-                    <Form.Label optional>
-                      {t("products.fields.tags.label")}
-                    </Form.Label>
-                    <Form.Control>
-                      <Combobox
-                        {...field}
-                        multiple
-                        options={tags.options}
-                        onSearchValueChange={tags.onSearchValueChange}
-                        searchValue={tags.searchValue}
-                      />
-                    </Form.Control>
-                    <Form.ErrorMessage />
-                  </Form.Item>
-                )
-              }}
-            />
+            <PermissionGuard permission="product_type:update">
+              <Form.Field
+                control={form.control}
+                name="type_id"
+                render={({ field }) => {
+                  return (
+                    <Form.Item>
+                      <Form.Label optional>
+                        {t("products.fields.type.label")}
+                      </Form.Label>
+                      <Form.Control>
+                        <Combobox
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(value) => field.onChange(value || "")}
+                          options={types.options}
+                          searchValue={types.searchValue}
+                          onSearchValueChange={types.onSearchValueChange}
+                          fetchNextPage={types.fetchNextPage}
+                          allowClear
+                        />
+                      </Form.Control>
+                      <Form.ErrorMessage />
+                    </Form.Item>
+                  )
+                }}
+              />
+            </PermissionGuard>
+            <PermissionGuard permission="product_collection:update">
+              <Form.Field
+                control={form.control}
+                name="collection_id"
+                render={({ field }) => {
+                  return (
+                    <Form.Item>
+                      <Form.Label optional>
+                        {t("products.fields.collection.label")}
+                      </Form.Label>
+                      <Form.Control>
+                        <Combobox
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(value) => field.onChange(value || "")}
+                          multiple={false}
+                          options={collections.options}
+                          onSearchValueChange={collections.onSearchValueChange}
+                          searchValue={collections.searchValue}
+                          fetchNextPage={collections.fetchNextPage}
+                          allowClear
+                        />
+                      </Form.Control>
+                      <Form.ErrorMessage />
+                    </Form.Item>
+                  )
+                }}
+              />
+            </PermissionGuard>
+            <PermissionGuard permission="product_category:update">
+              <Form.Field
+                control={form.control}
+                name="category_ids"
+                render={({ field }) => {
+                  return (
+                    <Form.Item>
+                      <Form.Label optional>
+                        {t("products.fields.categories.label")}
+                      </Form.Label>
+                      <Form.Control>
+                        <CategoryCombobox {...field} />
+                      </Form.Control>
+                      <Form.ErrorMessage />
+                    </Form.Item>
+                  )
+                }}
+              />
+            </PermissionGuard>
+            <PermissionGuard permission="product_tag:update">
+              <Form.Field
+                control={form.control}
+                name="tag_ids"
+                render={({ field }) => {
+                  return (
+                    <Form.Item>
+                      <Form.Label optional>
+                        {t("products.fields.tags.label")}
+                      </Form.Label>
+                      <Form.Control>
+                        <Combobox
+                          {...field}
+                          multiple
+                          options={tags.options}
+                          onSearchValueChange={tags.onSearchValueChange}
+                          searchValue={tags.searchValue}
+                          fetchNextPage={tags.fetchNextPage}
+                        />
+                      </Form.Control>
+                      <Form.ErrorMessage />
+                    </Form.Item>
+                  )
+                }}
+              />
+            </PermissionGuard>
             <FormExtensionZone fields={fields} form={form} />
           </div>
         </RouteDrawer.Body>

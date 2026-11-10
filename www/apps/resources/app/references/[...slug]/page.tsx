@@ -1,9 +1,9 @@
 import { cache } from "react"
-import path from "path"
-import fs from "fs/promises"
-import { ReferenceMDX } from "../../../components/ReferenceMDX"
+import { notFound } from "next/navigation"
+import { ReferenceJSON } from "../../../components/ReferenceJSON"
 import { Metadata } from "next"
-import { getFrontMatterFromString } from "docs-utils"
+import { workerCompatibleFetch } from "docs-utils"
+import path from "path"
 
 type PageProps = {
   params: Promise<{
@@ -15,7 +15,11 @@ export default async function ReferencesPage(props: PageProps) {
   const params = await props.params
   const { slug } = params
 
-  return <ReferenceMDX slug={slug} />
+  if (!(await findReferenceFile(slug))) {
+    notFound()
+  }
+
+  return <ReferenceJSON slug={slug} />
 }
 
 export async function generateMetadata({
@@ -24,52 +28,60 @@ export async function generateMetadata({
   const slug = (await params).slug
   const metadata: Metadata = {}
 
-  const fileData = await loadReferencesFile(slug)
+  const content = await loadReferencesFile(slug)
 
-  if (!fileData) {
+  if (!content) {
     return metadata
   }
 
-  const pageTitleMatch = /#(?<title>[\w -]+)/.exec(fileData.content)
-
-  if (!pageTitleMatch?.groups?.title) {
-    return metadata
+  // The DocPage carries its title / keywords directly.
+  try {
+    const docPage = JSON.parse(content)
+    metadata.title = docPage.title
+    metadata.keywords = (docPage.frontmatter?.keywords || []) as string[]
+  } catch {
+    // ignore malformed JSON
   }
-
-  metadata.title = pageTitleMatch.groups.title
-  const frontmatter = await getFrontMatterFromString(fileData.content)
-  metadata.keywords = (frontmatter.keywords || []) as string[]
 
   return metadata
 }
 
-export type LoadedReferenceFile = {
-  content: string
-  path: string
-}
+const findReferenceFile = cache(async (slug: string[]) => {
+  const pathname = `/references/${slug.join("/")}`
+  const filesMap = (await import("@/generated/files-map.mjs")).filesMap
+  return filesMap.find((f) => f.pathname === pathname)
+})
 
 const loadReferencesFile = cache(
-  async (slug: string[]): Promise<LoadedReferenceFile | undefined> => {
-    path.join(process.cwd(), "references")
+  async (slug: string[]): Promise<string | undefined> => {
     const monoRepoPath = path.resolve("..", "..", "..")
 
-    const pathname = `/references/${slug.join("/")}`
-    const slugChanges = (await import("@/generated/slug-changes.mjs"))
-      .slugChanges
-    const filesMap = (await import("@/generated/files-map.mjs")).filesMap
-    const fileDetails =
-      slugChanges.find((f) => f.newSlug === pathname) ||
-      filesMap.find((f) => f.pathname === pathname)
+    const fileDetails = await findReferenceFile(slug)
     if (!fileDetails) {
       return undefined
     }
-    const fullPath = path.join(monoRepoPath, fileDetails.filePath)
 
-    const fileContent = await fs.readFile(fullPath, "utf-8")
+    const r2Base = process.env.NEXT_PUBLIC_REFERENCES_R2_BASE_URL
+    const content = await workerCompatibleFetch<string | null>({
+      url: `${r2Base}/references/${fileDetails.filePath.replace(
+        /^.*\/references\//,
+        ""
+      )}`,
+      responseTransformer: async (res) => {
+        return res.ok ? res.text() : null
+      },
+      fallbackAction: async () => {
+        try {
+          const { promises: fs } = await import("fs")
+          const fullPath = path.join(monoRepoPath, fileDetails.filePath)
+          return await fs.readFile(fullPath, "utf-8")
+        } catch {
+          return null
+        }
+      },
+      useRemote: !!r2Base,
+    })
 
-    return {
-      content: fileContent,
-      path: fullPath,
-    }
+    return content ?? undefined
   }
 )

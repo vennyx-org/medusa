@@ -4,6 +4,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { useSalesChannels } from "../../../../../hooks/api/sales-channels"
 import { HttpTypes } from "@medusajs/types"
+import { useProductPermissions } from "../../../../../hooks/use-resource-permissions"
 
 type ProductSalesChannelSectionProps = {
   product: HttpTypes.AdminProduct
@@ -16,11 +17,17 @@ export const ProductSalesChannelSection = ({
   const { count } = useSalesChannels()
   const { t } = useTranslation()
 
+  const { canUpdate } = useProductPermissions()
+
+  // Filter out null/undefined entries that can occur when a sales channel
+  // is deleted but the product association is not cleaned up
   const availableInSalesChannels =
-    product.sales_channels?.map((sc) => ({
-      id: sc.id,
-      name: sc.name,
-    })) ?? []
+    product.sales_channels
+      ?.filter((sc) => sc != null)
+      .map((sc) => ({
+        id: sc.id,
+        name: sc.name,
+      })) ?? []
 
   const firstChannels = availableInSalesChannels.slice(0, 3)
   const restChannels = availableInSalesChannels.slice(3)
@@ -29,23 +36,25 @@ export const ProductSalesChannelSection = ({
     <Container className="flex flex-col gap-y-4 px-6 py-4">
       <div className="flex items-center justify-between">
         <Heading level="h2">{t("fields.sales_channels")}</Heading>
-        <ActionMenu
-          groups={[
-            {
-              actions: [
-                {
-                  label: t("actions.edit"),
-                  to: "sales-channels",
-                  icon: <PencilSquare />,
-                },
-              ],
-            },
-          ]}
-        />
+        {canUpdate && (
+          <ActionMenu
+            groups={[
+              {
+                actions: [
+                  {
+                    label: t("actions.edit"),
+                    to: "sales-channels",
+                    icon: <PencilSquare />,
+                  },
+                ],
+              },
+            ]}
+          />
+        )}
       </div>
       <div className="grid grid-cols-[28px_1fr] items-center gap-x-3">
-        <div className="bg-ui-bg-base shadow-borders-base flex size-7 items-center justify-center rounded-md">
-          <div className="bg-ui-bg-component flex size-6 items-center justify-center rounded-[4px]">
+        <div className="flex size-7 items-center justify-center rounded-md bg-ui-bg-base shadow-borders-base">
+          <div className="flex size-6 items-center justify-center rounded-[4px] bg-ui-bg-component">
             <Channels className="text-ui-fg-subtle" />
           </div>
         </div>
@@ -91,11 +100,11 @@ export const ProductSalesChannelSection = ({
             components={[
               <span
                 key="x"
-                className="text-ui-fg-base txt-compact-medium-plus"
+                className="txt-compact-medium-plus text-ui-fg-base"
               />,
               <span
                 key="y"
-                className="text-ui-fg-base txt-compact-medium-plus"
+                className="txt-compact-medium-plus text-ui-fg-base"
               />,
             ]}
           />

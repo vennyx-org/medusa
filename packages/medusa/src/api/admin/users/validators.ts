@@ -1,9 +1,15 @@
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 import {
   createFindParams,
   createOperatorMap,
   createSelectParams,
 } from "../../utils/validators"
+import { applyAndAndOrOperators } from "../../utils/common-validators"
+import {
+  assignmentScopeFields,
+  requireScopePair,
+  scopePairError,
+} from "../../rbac/roles/validators"
 
 export const AdminGetUserParams = createSelectParams()
 
@@ -37,5 +43,44 @@ export const AdminUpdateUser = z.object({
   first_name: z.string().nullish(),
   last_name: z.string().nullish(),
   avatar_url: z.string().nullish(),
-  metadata: z.record(z.unknown()).nullish().optional(),
+  metadata: z.record(z.string(), z.unknown()).nullish().optional(),
 })
+
+const UserRoleAssignment = z
+  .object({
+    role_id: z.string().min(1),
+    ...assignmentScopeFields,
+  })
+  .refine(requireScopePair, scopePairError)
+
+export type AdminAssignUserRoleType = z.infer<typeof AdminAssignUserRole>
+export const AdminAssignUserRole = z.object({
+  assignments: z.array(UserRoleAssignment).min(1),
+})
+
+export type AdminUnassignUserRolesType = z.infer<typeof AdminUnassignUserRoles>
+export const AdminUnassignUserRoles = z.object({
+  assignments: z.array(UserRoleAssignment).min(1),
+})
+
+export const AdminGetUserRolesParamsFields = z.object({
+  role_id: z.union([z.string(), z.array(z.string())]).optional(),
+  scope: z.union([z.string(), z.array(z.string())]).optional(),
+  scope_id: z.union([z.string(), z.array(z.string())]).optional(),
+})
+
+export type AdminGetUserRolesParamsType = z.infer<
+  typeof AdminGetUserRolesParams
+>
+export const AdminGetUserRolesParams = createFindParams({
+  limit: 50,
+  offset: 0,
+})
+  .extend(AdminGetUserRolesParamsFields.shape)
+  .extend(applyAndAndOrOperators(AdminGetUserRolesParamsFields).shape)
+
+export type AdminUnassignUserRoleType = z.infer<typeof AdminUnassignUserRole>
+export const AdminUnassignUserRole = z
+  .object(assignmentScopeFields)
+  .refine(requireScopePair, scopePairError)
+  .optional()

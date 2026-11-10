@@ -18,7 +18,7 @@ export const LocationDetailBreadcrumb = (
       fields: LOCATION_DETAILS_FIELD,
     },
     {
-      initialData: props.data,
+      initialData: props.loaderData,
       enabled: Boolean(location_id),
     }
   )
@@ -29,3 +29,7 @@ export const LocationDetailBreadcrumb = (
 
   return <span>{stock_location.name}</span>
 }
+
+export const seo = (match: UIMatch<HttpTypes.AdminStockLocationResponse>) => ({
+  title: match.loaderData?.stock_location?.name,
+})

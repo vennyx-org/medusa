@@ -96,8 +96,7 @@ export interface TaxProviderDTO {
 /**
  * The filters to apply on the retrieved tax rates.
  */
-export interface FilterableTaxRateProps
-  extends BaseFilterable<FilterableTaxRateProps> {
+export interface FilterableTaxRateProps extends BaseFilterable<FilterableTaxRateProps> {
   /**
    * Find tax rates based on name and code properties through this search term.
    */
@@ -203,8 +202,7 @@ export interface TaxRegionDTO {
 /**
  * The filters to apply on the retrieved tax regions.
  */
-export interface FilterableTaxRegionProps
-  extends BaseFilterable<FilterableTaxRegionProps> {
+export interface FilterableTaxRegionProps extends BaseFilterable<FilterableTaxRegionProps> {
   /**
    * Find tax regions based on currency and province codes through this search term.
    * The province code is the lower-case [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) province or state code.
@@ -315,8 +313,7 @@ export interface TaxRateRuleDTO {
 /**
  * The filters to apply on the retrieved tax rate rules.
  */
-export interface FilterableTaxRateRuleProps
-  extends BaseFilterable<FilterableTaxRateRuleProps> {
+export interface FilterableTaxRateRuleProps extends BaseFilterable<FilterableTaxRateRuleProps> {
   /**
    * Filter the tax rate rule by what it references.
    */
@@ -427,6 +424,10 @@ export interface TaxableShippingDTO {
  */
 export interface TaxCalculationContext {
   /**
+   * The locale of the tax calculation.
+   */
+  locale?: string
+  /**
    * The customer's address
    */
   address: {
@@ -520,6 +521,15 @@ export interface TaxCalculationContext {
      */
     amount: number
   }[]
+
+  /**
+   * Additional context to pass to the underlying tax provider.
+   *
+   * Use this to forward custom data that isn't part of the framework-provided
+   * fields but that your tax provider needs to calculate tax lines accurately.
+   * In cart and order tax workflows, this is populated by the `setTaxLineContext` hook.
+   */
+  additional_context?: Record<string, unknown>
 }
 
 /**
@@ -572,6 +582,13 @@ interface TaxLineDTO {
    * The update date of the tax line.
    */
   updated_at?: Date
+
+  /**
+   * Additional data returned by the tax provider.
+   * Use this to store jurisdiction-level breakdown data
+   * (e.g. state, county, city rates) that is not captured in the aggregated rate.
+   */
+  data?: Record<string, unknown> | null
 }
 
 /**

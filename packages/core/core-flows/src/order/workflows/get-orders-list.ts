@@ -73,8 +73,8 @@ export type GetOrdersListWorkflowInput = {
 export const getOrdersListWorkflowId = "get-orders-list"
 /**
  * This workflow retrieves a list of orders. It's used by the
- * [List Orders Admin API Route](https://docs.medusajs.com/api/admin#orders_getorders), and the
- * [List Orders Store API Route](https://docs.medusajs.com/api/store#orders_getorders).
+ * [List Orders Admin API Route](https://docs.medusajs.com/api/admin/orders/list-orders), and the
+ * [List Orders Store API Route](https://docs.medusajs.com/api/store/orders/list-orders).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to retrieve a list of
  * orders in your custom flows. For example, you can retrieve the list of orders to export them
@@ -151,6 +151,10 @@ export const getOrdersListWorkflow = createWorkflow(
         const requiredFulfillmentFields = fields.some((f) =>
           f.includes("fulfillments")
         )
+        const requiredItemFields = fields.some((f) => {
+          const field = f.replace(/^\*/, "")
+          return field === "items" || field.startsWith("items.")
+        })
 
         const orders_ = orders as any
         const data = orders_.rows ? orders_.rows : orders_
@@ -172,6 +176,10 @@ export const getOrdersListWorkflow = createWorkflow(
           if (!requiredFulfillmentFields) {
             // @ts-ignore
             delete order_.fulfillments
+          }
+          if (!requiredItemFields) {
+            // @ts-ignore
+            delete order_.items
           }
         }
 

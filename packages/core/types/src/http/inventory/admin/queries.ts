@@ -1,9 +1,8 @@
-import { FindParams } from "../../common"
+import { FindParams, SelectParams } from "../../common"
 import { BaseFilterable, OperatorMap } from "../../../dal"
 
 export interface AdminInventoryItemsParams
-  extends FindParams,
-    BaseFilterable<AdminInventoryItemsParams> {
+  extends FindParams, BaseFilterable<AdminInventoryItemsParams> {
   /**
    * Filter by inventory item ID(s).
    */
@@ -56,5 +55,19 @@ export interface AdminInventoryItemsParams
    * Filter by stock location IDs to retrieve inventory items
    * that have inventory levels associated with the locations.
    */
-  location_levels?: Record<"location_id", string | string[]>
+  location_levels?: { location_id?: string | string[] }
+}
+
+export interface AdminInventoryItemExportParams extends AdminInventoryItemsParams {}
+
+export interface AdminGetInventoryItemParams extends SelectParams {}
+
+export interface AdminGetInventoryLocationLevelParams extends SelectParams {}
+
+export interface AdminInventoryLevelFilters extends FindParams {
+  /**
+   * Filter by stock location IDs to retrieve their
+   * associated inventory levels.
+   */
+  location_id?: string | string[]
 }

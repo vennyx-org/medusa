@@ -13,7 +13,11 @@ import {
 import { type CachingModuleService } from "@services"
 import type { InjectedDependencies } from "@types"
 import stringify from "fast-json-stable-stringify"
-import { CacheInvalidationParser, EntityReference } from "./parser"
+import {
+  CacheInvalidationParser,
+  EntityReference,
+  InvalidationOperation,
+} from "./parser"
 
 export class DefaultCacheStrategy implements ICachingStrategy {
   #cacheInvalidationParser: CacheInvalidationParser
@@ -52,15 +56,11 @@ export class DefaultCacheStrategy implements ICachingStrategy {
         return
       } finally {
         const eventName = data.name
-        const operation = eventName.split(".").pop() as
-          | "created"
-          | "updated"
-          | "deleted"
+        const operation = eventName.split(".").pop() as InvalidationOperation
         const entityType = eventName.split(".").slice(-2).shift()!
 
         const eventData = data.data as
-          | { id: string | string[] }
-          | { id: string | string[] }[]
+          { id: string | string[] } | { id: string | string[] }[]
 
         const normalizedEventData = Array.isArray(eventData)
           ? eventData
@@ -84,7 +84,7 @@ export class DefaultCacheStrategy implements ICachingStrategy {
           }
         }
 
-        void this.#cacheModule.clear({
+        await this.#cacheModule.clear({
           tags,
           options: { autoInvalidate: true },
         })
@@ -103,7 +103,7 @@ export class DefaultCacheStrategy implements ICachingStrategy {
     input: object,
     options?: {
       entities?: EntityReference[]
-      operation?: "created" | "updated" | "deleted"
+      operation?: InvalidationOperation
     }
   ): Promise<string[]> {
     // Parse the input object to identify entities

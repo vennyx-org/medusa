@@ -50,15 +50,23 @@ This flow is implemented within the [completeCartWorkflow](/references/medusa-wo
 
 ## Order Fulfillment
 
-When an item in an order is fulfilled and the associated variant has its `manage_inventory` property set to `true`, the Medusa application:
+When an item in an order is fulfilled and the associated variant has its `manage_inventory` property set to `true`, the Medusa application performs the following for each of the item's reservations:
 
-- Subtracts the `reserved_quantity` from the `stocked_quantity` in the inventory level associated with the variant's inventory item.
-- Resets the `reserved_quantity` to `0`.
-- Deletes the associated reservation item.
+- Subtracts the fulfilled quantity, multiplied by the inventory item's required quantity, from the `stocked_quantity` in the inventory level associated with the variant's inventory item.
+- Decreases the `reserved_quantity` of the inventory level by the same quantity.
+- Deletes the reservation item if its full quantity is fulfilled, or decreases the reservation item's quantity if only part of it is fulfilled.
+
+Learn more in the [Reservations Lifecycle](../reservations-lifecycle/page.mdx) guide.
 
 <Note title="Tip">
 
 This flow is implemented within the [createOrderFulfillmentWorkflow](/references/medusa-workflows/createOrderFulfillmentWorkflow)
+
+</Note>
+
+<Note>
+
+Each fulfilled item whose variant has `manage_inventory` enabled must have an associated inventory reservation, otherwise the [createOrderFulfillmentWorkflow](/references/medusa-workflows/createOrderFulfillmentWorkflow) throws an error. Reservations are created automatically when an order is placed through the [completeCartWorkflow](/references/medusa-workflows/completeCartWorkflow). If you create an order with a workflow that doesn't create reservations, such as [createOrderWorkflow](/references/medusa-workflows/createOrderWorkflow), use the [createReservationsWorkflow](/references/medusa-workflows/createReservationsWorkflow) to create reservations before fulfilling the order, and set each reservation's `line_item_id` to the order item's ID.
 
 </Note>
 

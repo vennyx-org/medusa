@@ -10,7 +10,16 @@ import {
 } from "@medusajs/framework/utils"
 import { MedusaCloudAuthProviderOptions } from "@types"
 import crypto from "crypto"
-import jwt, { type JwtPayload } from "jsonwebtoken"
+import jwt, { type JwtHeader, type JwtPayload } from "jsonwebtoken"
+import type { JwksClient } from "jwks-rsa"
+import { promisify } from "util"
+
+const verifyJwt = promisify<
+  string,
+  jwt.Secret | jwt.GetPublicKeyOrSecret,
+  jwt.VerifyOptions,
+  JwtPayload | string | undefined
+>(jwt.verify)
 
 type InjectedDependencies = {
   logger: Logger
@@ -22,6 +31,7 @@ export class MedusaCloudAuthService extends AbstractAuthModuleProvider {
 
   protected config_: MedusaCloudAuthProviderOptions
   protected logger_: Logger
+  protected jwks_?: JwksClient
 
   constructor(
     { logger }: InjectedDependencies,
@@ -31,6 +41,59 @@ export class MedusaCloudAuthService extends AbstractAuthModuleProvider {
     super(...arguments)
     this.config_ = options
     this.logger_ = logger
+
+    if (!options.oauth_jwks_uri) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "Medusa Cloud auth provider requires 'oauth_jwks_uri' option to be set"
+      )
+    }
+
+    if (!options.oauth_audience) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "Medusa Cloud auth provider requires 'oauth_audience' option to be set"
+      )
+    }
+  }
+
+  // jwks-rsa loads the ESM-only jose, which breaks Jest suites that only load this module
+  protected getJwksClient_(): JwksClient {
+    if (!this.jwks_) {
+      const jwksClient = require("jwks-rsa") as typeof import("jwks-rsa")
+      this.jwks_ = jwksClient({
+        jwksUri: this.config_.oauth_jwks_uri,
+        cache: true,
+        rateLimit: true,
+      })
+    }
+
+    return this.jwks_
+  }
+
+  protected getSigningKey_ = (
+    header: JwtHeader,
+    callback: (err: Error | null, key?: string) => void
+  ) => {
+    if (!this.config_.oauth_jwks_uri) {
+      callback(
+        new Error(
+          "Medusa Cloud auth provider is missing required 'oauth_jwks_uri' option; cannot verify id_token signature"
+        )
+      )
+      return
+    }
+    if (!header.kid) {
+      callback(new Error("ID token is missing 'kid' header"))
+      return
+    }
+    this.getJwksClient_().getSigningKey(header.kid, (err, key) => {
+      if (err || !key) {
+        callback(err ?? new Error("Unable to resolve signing key"))
+        return
+      }
+      callback(null, key.getPublicKey())
+    })
   }
 
   async register(_): Promise<AuthenticationResponse> {
@@ -97,7 +160,8 @@ export class MedusaCloudAuthService extends AbstractAuthModuleProvider {
         },
         body: new URLSearchParams({
           client_id: clientId,
-          client_secret: this.config_.api_key,
+          client_secret:
+            this.config_.oauth_client_secret || this.config_.api_key,
           code,
           redirect_uri: state.callback_url as string,
           grant_type: "authorization_code",
@@ -141,18 +205,34 @@ export class MedusaCloudAuthService extends AbstractAuthModuleProvider {
       return { success: false, error: "No id_token" }
     }
 
-    const jwtData = jwt.decode(idToken, {
-      complete: true,
-    }) as JwtPayload
-    if (!jwtData) {
-      return { success: false, error: "The id_token is not a valid JWT" }
+    let payload: JwtPayload
+    try {
+      const decoded = await verifyJwt(idToken, this.getSigningKey_, {
+        algorithms: ["RS256"],
+        audience: this.config_.oauth_audience,
+      })
+      if (!decoded || typeof decoded === "string") {
+        throw new Error("Invalid id_token")
+      }
+      payload = decoded
+    } catch (err) {
+      return {
+        success: false,
+        error: `Could not verify id_token: ${err.message}`,
+      }
     }
-    const payload = jwtData.payload
 
     if (!payload.email_verified) {
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
         "Email not verified, cannot proceed with authentication"
+      )
+    }
+
+    if (!payload.sub) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "id_token is missing 'sub' claim"
       )
     }
 
@@ -201,6 +281,6 @@ export class MedusaCloudAuthService extends AbstractAuthModuleProvider {
   }
 
   private getClientId() {
-    return this.config_.environment_handle || this.config_.sandbox_handle
+    return this.config_.environment_handle
   }
 }

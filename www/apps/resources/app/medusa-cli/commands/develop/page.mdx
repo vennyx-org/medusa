@@ -15,7 +15,7 @@ Start the Medusa application in development.
 
 This command watches files for any changes, then rebuilds the files and restarts the Medusa application.
 
-```bash
+```bash npx2yarn
 npx medusa develop
 ```
 
@@ -24,9 +24,15 @@ npx medusa develop
 <Table>
   <Table.Header>
     <Table.Row>
-      <Table.HeaderCell>Option</Table.HeaderCell>
-      <Table.HeaderCell>Description</Table.HeaderCell>
-      <Table.HeaderCell>Default</Table.HeaderCell>
+      <Table.HeaderCell>
+        Option
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Description
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Default
+      </Table.HeaderCell>
     </Table.Row>
   </Table.Header>
   <Table.Body>
@@ -61,6 +67,40 @@ npx medusa develop
       <Table.Cell>
 
       `9000`
+
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell>
+
+      `--lint` / `--no-lint` (v2.16.0+)
+
+      </Table.Cell>
+      <Table.Cell>
+
+      Run the Medusa linter before starting the dev server. Pass `--no-lint` to skip linting. Enabled by default only when `@medusajs/eslint-plugin` is installed in the project. When lint errors are found, the dev server does not start. Linting is also skipped automatically when no `eslint.config.js` is found in the project root.
+
+      </Table.Cell>
+      <Table.Cell>
+
+      `true` when `@medusajs/eslint-plugin` is installed, `false` otherwise
+
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell>
+
+      `--fix` (v2.16.0+)
+
+      </Table.Cell>
+      <Table.Cell>
+
+      Auto-fix lint issues where possible before starting the dev server.
+
+      </Table.Cell>
+      <Table.Cell>
+
+      `false`
 
       </Table.Cell>
     </Table.Row>

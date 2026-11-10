@@ -1,58 +1,30 @@
 import { MetadataRoute } from "next"
-import OpenAPIParser from "@readme/openapi-parser"
-import path from "path"
-import type { OpenAPI } from "types"
 import getUrl from "../../utils/get-url"
-import getPathsOfTag from "../../utils/get-paths-of-tag"
-import { config } from "../../config"
-import { getSectionId } from "docs-utils"
+import { apiRefIntroSections, apiRefPaths } from "@/utils/api-ref-paths"
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = config.baseUrl
+export default function sitemap(): MetadataRoute.Sitemap {
+  const results: MetadataRoute.Sitemap = []
 
-  const results = [
-    {
-      url: `${baseUrl}/api/admin`,
-      lastModified: new Date(),
-    },
-    {
-      url: `${baseUrl}/api/store`,
-      lastModified: new Date(),
-    },
-  ]
+  for (const area of ["store", "admin"] as const) {
+    results.push({ url: getUrl(`/${area}`), lastModified: new Date() })
 
-  for (const area of ["store", "admin"]) {
-    const baseSpecs = (await OpenAPIParser.parse(
-      path.join(process.cwd(), `specs/${area}/openapi.yaml`)
-    )) as OpenAPI.ExpandedDocument
+    for (const section of apiRefIntroSections[area] ?? []) {
+      results.push({
+        url: getUrl(`/${area}/${section.slug}`),
+        lastModified: new Date(),
+      })
+    }
 
-    await Promise.all(
-      baseSpecs.tags?.map(async (tag) => {
-        const tagName = getSectionId([tag.name])
-        const url = getUrl(area, tagName)
-        results.push({
-          url,
-          lastModified: new Date(),
-        })
-
-        const paths = await getPathsOfTag(tagName, area)
-
-        Object.values(paths.paths).forEach((path) => {
-          Object.values(path).forEach((op) => {
-            const operation = op as OpenAPI.Operation
-            const operationName = getSectionId([
-              tag.name,
-              operation.operationId,
-            ])
-            const url = getUrl(area, operationName)
-            results.push({
-              url,
-              lastModified: new Date(),
-            })
-          })
-        })
-      }) || []
-    )
+    const tags = apiRefPaths[area]?.tags ?? {}
+    for (const tag of Object.values(tags)) {
+      results.push({ url: getUrl(tag.path), lastModified: new Date() })
+      if (tag.schemaPath) {
+        results.push({ url: getUrl(tag.schemaPath), lastModified: new Date() })
+      }
+      for (const operation of Object.values(tag.operations)) {
+        results.push({ url: getUrl(operation.path), lastModified: new Date() })
+      }
+    }
   }
 
   return results

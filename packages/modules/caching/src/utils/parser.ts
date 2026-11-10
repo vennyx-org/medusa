@@ -18,9 +18,25 @@ export interface EntityReference {
 export interface InvalidationEvent {
   entityType: string
   entityId: string | number
-  relatedEntities: EntityReference[]
   cacheKeys: string[]
 }
+
+/**
+ * The mutations a cached entity can go through. `attached`/`detached` are the
+ * link modules' equivalent of created/deleted, and `restored` reverses a soft
+ * delete.
+ */
+export type InvalidationOperation =
+  "created" | "updated" | "deleted" | "restored" | "attached" | "detached"
+
+const LIST_AFFECTING_OPERATIONS: InvalidationOperation[] = [
+  "created",
+  "updated",
+  "deleted",
+  "restored",
+  "attached",
+  "detached",
+]
 
 export class CacheInvalidationParser {
   private typeMap: Map<string, GraphQLObjectType>
@@ -38,16 +54,19 @@ export class CacheInvalidationParser {
       }
     })
 
-    this.idPrefixToEntityName = joinerConfigs.reduce((acc, joinerConfig) => {
-      if (joinerConfig.idPrefixToEntityName) {
-        Object.entries(joinerConfig.idPrefixToEntityName).forEach(
-          ([idPrefix, entityName]) => {
-            acc[idPrefix] = entityName
-          }
-        )
-      }
-      return acc
-    }, {} as Record<string, string>)
+    this.idPrefixToEntityName = joinerConfigs.reduce(
+      (acc, joinerConfig) => {
+        if (joinerConfig.idPrefixToEntityName) {
+          Object.entries(joinerConfig.idPrefixToEntityName).forEach(
+            ([idPrefix, entityName]) => {
+              acc[idPrefix] = entityName
+            }
+          )
+        }
+        return acc
+      },
+      {} as Record<string, string>
+    )
   }
 
   /**
@@ -106,7 +125,7 @@ export class CacheInvalidationParser {
    * Detect entity type based on object structure and GraphQL type map
    */
   private detectEntityType(obj: any, suggestedType?: string): string | null {
-    if (obj.id) {
+    if (typeof obj.id === "string") {
       const idParts = obj.id.split("_")
       if (idParts.length > 1 && this.idPrefixToEntityName[idParts[0]]) {
         return this.idPrefixToEntityName[idParts[0]]
@@ -190,7 +209,7 @@ export class CacheInvalidationParser {
    */
   buildInvalidationEvents(
     entities: EntityReference[],
-    operation: "created" | "updated" | "deleted" = "updated"
+    operation: InvalidationOperation = "updated"
   ): InvalidationEvent[] {
     const events: InvalidationEvent[] = []
     const processedEntities = new Set<string>()
@@ -203,16 +222,11 @@ export class CacheInvalidationParser {
       }
       processedEntities.add(entityKey)
 
-      const relatedEntities = entities.filter(
-        (e) => e.type !== entity.type || e.id !== entity.id
-      )
-
       const affectedKeys = this.buildAffectedCacheKeys(entity, operation)
 
       events.push({
         entityType: entity.type,
         entityId: entity.id,
-        relatedEntities,
         cacheKeys: affectedKeys,
       })
     })
@@ -225,15 +239,21 @@ export class CacheInvalidationParser {
    */
   private buildAffectedCacheKeys(
     entity: EntityReference,
-    operation: "created" | "updated" | "deleted" = "updated"
+    operation: InvalidationOperation = "updated"
   ): string[] {
     const keys = new Set<string>()
 
     keys.add(`${entity.type}:${entity.id}`)
 
-    // Add list key only if entity was found in an array context or if an event of type created or
-    // deleted is triggered
-    if (entity.isInArray || ["created", "deleted"].includes(operation)) {
+    // Add the list key when the entity was found in an array context or for any
+    // mutating operation. Updates are included because a mutation can change
+    // whether an entity matches a cached list's filters (e.g. a product going
+    // from draft to published), and the cache layer has no way of knowing which
+    // fields are filter-relevant. Attach/detach are included because a link row
+    // never carries a usable id at attach time, so the list key is the only tag
+    // a cached link query can be invalidated by. Restore is included because the
+    // entity re-enters every list it was soft deleted out of.
+    if (entity.isInArray || LIST_AFFECTING_OPERATIONS.includes(operation)) {
       keys.add(`${entity.type}:list:*`)
     }
 

@@ -1,6 +1,10 @@
 import type { WebhookActionResult } from "@medusajs/framework/types"
-import { PaymentActions } from "@medusajs/utils"
-import { createWorkflow, transform, when } from "@medusajs/workflows-sdk"
+import { PaymentActions } from "@medusajs/framework/utils"
+import {
+  createWorkflow,
+  transform,
+  when,
+} from "@medusajs/framework/workflows-sdk"
 import { useQueryGraphStep } from "../../common"
 import { authorizePaymentSessionStep } from "../steps"
 import { completeCartAfterPaymentStep } from "../steps/complete-cart-after-payment"
@@ -43,10 +47,15 @@ export const processPaymentWorkflowId = "process-payment-workflow"
 export const processPaymentWorkflow = createWorkflow(
   processPaymentWorkflowId,
   (input: ProcessPaymentWorkflowInput) => {
+    const webhookData = transform({ input }, ({ input }) => ({
+      session_id: input.data?.session_id,
+      amount: input.data?.amount,
+    }))
+
     const paymentData = useQueryGraphStep({
       entity: "payment",
       fields: ["id"],
-      filters: { payment_session_id: input.data?.session_id },
+      filters: { payment_session_id: webhookData.session_id },
     }).config({
       name: "payment-query",
     })
@@ -54,7 +63,7 @@ export const processPaymentWorkflow = createWorkflow(
     const paymentSessionResult = useQueryGraphStep({
       entity: "payment_session",
       fields: ["payment_collection_id"],
-      filters: { id: input.data?.session_id },
+      filters: { id: webhookData.session_id },
     }).config({
       name: "payment-session-query",
     })
@@ -71,24 +80,33 @@ export const processPaymentWorkflow = createWorkflow(
     })
 
     const cartId = transform(
-      { cartPaymentCollection },
-      ({ cartPaymentCollection }) => {
+      { cartPaymentCollection, input },
+      ({ cartPaymentCollection, input }) => {
+        // A webhook action without a session id cannot be tied to a specific
+        // payment session, and therefore not to a specific cart. The queries
+        // above would otherwise resolve to an arbitrary cart (an undefined
+        // filter value matches every row), so we bail out here to avoid
+        // acting on an unrelated cart.
+        if (!input.data?.session_id) {
+          return undefined
+        }
+
         return cartPaymentCollection.data[0]?.cart_id
       }
     )
 
     const { data: order } = useQueryGraphStep({
-        entity: "order_cart",
-        fields: ["id"],
-        filters: {
-          cart_id: cartId
-        },
-        options: {
-            isList: false
-        }
-      }).config({
-        name: "cart-order-query",
-      })
+      entity: "order_cart",
+      fields: ["id"],
+      filters: {
+        cart_id: cartId,
+      },
+      options: {
+        isList: false,
+      },
+    }).config({
+      name: "cart-order-query",
+    })
 
     when("lock-cart-when-available", { cartId }, ({ cartId }) => {
       return !!cartId
@@ -102,14 +120,16 @@ export const processPaymentWorkflow = createWorkflow(
 
     when({ input, paymentData }, ({ input, paymentData }) => {
       return (
-        input.action === PaymentActions.SUCCESSFUL && !!paymentData.data.length
+        !!input.data?.session_id &&
+        input.action === PaymentActions.SUCCESSFUL &&
+        !!paymentData.data.length
       )
     }).then(() => {
       capturePaymentWorkflow
         .runAsStep({
           input: {
             payment_id: paymentData.data[0].id,
-            amount: input.data?.amount,
+            amount: webhookData.amount,
           },
         })
         .config({
@@ -117,24 +137,42 @@ export const processPaymentWorkflow = createWorkflow(
         })
     })
 
-    when({ input, paymentData }, ({ input, paymentData }) => {
-      // payment is captured with the provider but we dont't have any payment data which means we didn't call authorize yet - autocapture flow
-      return (
-        input.action === PaymentActions.SUCCESSFUL && !paymentData.data.length
-      )
-    }).then(() => {
-      const payment = authorizePaymentSessionStep({
-        id: input.data!.session_id,
+    const autocapturePayment = when(
+      "authorize-payment-session-autocapture-condition",
+      { input, paymentData },
+      ({ input, paymentData }) => {
+        // payment is captured with the provider but we dont't have any payment data which means we didn't call authorize yet - autocapture flow
+        return (
+          !!input.data?.session_id &&
+          input.action === PaymentActions.SUCCESSFUL &&
+          !paymentData.data.length
+        )
+      }
+    ).then(() => {
+      return authorizePaymentSessionStep({
+        id: webhookData.session_id!,
         context: {},
       }).config({
         name: "authorize-payment-session-autocapture",
       })
+    })
 
+    // If the authorization is deferred (e.g. bank transfer, payment link not
+    // yet confirmed), authorizePaymentSessionStep returns null and there is
+    // no payment to capture yet. The `authorized` webhook action will create
+    // the payment later and trigger capture through a different branch.
+    when(
+      "capture-payment-autocapture-condition",
+      { autocapturePayment },
+      ({ autocapturePayment }) => {
+        return !!autocapturePayment
+      }
+    ).then(() => {
       capturePaymentWorkflow
         .runAsStep({
           input: {
-            payment_id: payment.id,
-            amount: input.data?.amount,
+            payment_id: autocapturePayment!.id,
+            amount: webhookData.amount,
           },
         })
         .config({
@@ -155,10 +193,34 @@ export const processPaymentWorkflow = createWorkflow(
       }
     ).then(() => {
       authorizePaymentSessionStep({
-        id: input.data!.session_id,
+        id: webhookData.session_id!,
         context: {},
       }).config({
         name: "authorize-payment-session",
+      })
+    })
+
+    // When an order already exists (created with pending_authorization) and the
+    // payment has now been authorized via webhook, authorize the session to create
+    // the Payment record.
+    when(
+      "authorize-existing-order",
+      { input, paymentData, cartPaymentCollection, order },
+      ({ input, paymentData, cartPaymentCollection, order }) => {
+        return (
+          !!order &&
+          !paymentData.data.length &&
+          !!cartPaymentCollection.data.length &&
+          input.action === PaymentActions.AUTHORIZED &&
+          !!input.data?.session_id
+        )
+      }
+    ).then(() => {
+      authorizePaymentSessionStep({
+        id: webhookData.session_id!,
+        context: {},
+      }).config({
+        name: "authorize-payment-session-deferred",
       })
     })
 
@@ -171,9 +233,16 @@ export const processPaymentWorkflow = createWorkflow(
       })
     })
 
-    when({ cartPaymentCollection, order }, ({ cartPaymentCollection, order }) => {
-      return !!cartPaymentCollection.data.length && !order
-    }).then(() => {
+    when(
+      { input, cartPaymentCollection, order },
+      ({ input, cartPaymentCollection, order }) => {
+        return (
+          !!input.data?.session_id &&
+          !!cartPaymentCollection.data.length &&
+          !order
+        )
+      }
+    ).then(() => {
       completeCartAfterPaymentStep({
         cart_id: cartPaymentCollection.data[0].cart_id,
       }).config({

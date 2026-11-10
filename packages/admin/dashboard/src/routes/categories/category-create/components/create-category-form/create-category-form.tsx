@@ -61,10 +61,10 @@ export const CreateCategoryForm = ({
       })
 
       if (!result.success) {
-        result.error.errors.forEach((error) => {
-          form.setError(error.path.join(".") as keyof CreateCategorySchema, {
+        result.error.issues.forEach(({ path, message }) => {
+          form.setError(path.join(".") as keyof CreateCategorySchema, {
             type: "manual",
-            message: error.message,
+            message,
           })
         })
 
@@ -130,8 +130,9 @@ export const CreateCategoryForm = ({
         onSubmit={handleSubmit}
         className="flex size-full flex-col overflow-hidden"
       >
-         <ProgressTabs
-        dir={direction}value={activeTab}
+        <ProgressTabs
+          dir={direction}
+          value={activeTab}
           onValueChange={(tab) => handleTabChange(tab as Tab)}
           className="flex size-full flex-col"
         >
@@ -167,7 +168,7 @@ export const CreateCategoryForm = ({
             </ProgressTabs.Content>
             <ProgressTabs.Content
               value={Tab.ORGANIZE}
-              className="bg-ui-bg-subtle flex-1"
+              className="flex-1 bg-ui-bg-subtle"
             >
               <CreateCategoryNesting form={form} shouldFreeze={shouldFreeze} />
             </ProgressTabs.Content>

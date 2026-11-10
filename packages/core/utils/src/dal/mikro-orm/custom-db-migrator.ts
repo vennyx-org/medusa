@@ -7,6 +7,7 @@ import {
 } from "@medusajs/deps/mikro-orm/migrations"
 import { isFileDisabled, isFileSkipped } from "../../common/define-file-config"
 import { dynamicImport } from "../../common/dynamic-import"
+import { promiseAll } from "../../common/promise-all"
 
 export class CustomDBMigrator extends BaseMigrator {
   static register(orm: MikroORM): void {
@@ -42,11 +43,11 @@ export class CustomDBMigrator extends BaseMigrator {
         const up = instance.up
         const down = instance.down
         instance.up = async function (...args) {
-          this.driver.execute(`SET LOCAL search_path TO ${customSchema}`)
+          await this.driver.execute(`SET LOCAL search_path TO ${customSchema}`)
           return up.bind(this)(...args)
         }
         instance.down = async function (...args) {
-          this.driver.execute(`SET LOCAL search_path TO ${customSchema}`)
+          await this.driver.execute(`SET LOCAL search_path TO ${customSchema}`)
           return down.bind(this)(...args)
         }
       }
@@ -64,14 +65,13 @@ export class CustomDBMigrator extends BaseMigrator {
   async getPendingMigrations(): Promise<UmzugMigration[]> {
     const pending = await super.getPendingMigrations()
 
-    // Filter out migrations that are disabled by file config
-    return pending.filter(async (pendingFile: UmzugMigration) => {
-      const migration = await dynamicImport(pendingFile.path!)
-      if (isFileSkipped(migration)) {
-        return false
-      }
+    const keep = await promiseAll(
+      pending.map(async (pendingFile: UmzugMigration) => {
+        const migration = await dynamicImport(pendingFile.path!)
+        return !isFileSkipped(migration)
+      })
+    )
 
-      return true
-    })
+    return pending.filter((_, index) => keep[index])
   }
 }

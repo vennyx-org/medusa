@@ -3,10 +3,14 @@ import {
   createShippingOptionsWorkflow,
 } from "@medusajs/core-flows"
 import { RemoteLink } from "@medusajs/modules-sdk"
-import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
+import {
+  medusaIntegrationTestRunner,
+  normalizeBigNumbers,
+} from "@medusajs/test-utils"
 import {
   FulfillmentSetDTO,
   FulfillmentWorkflow,
+  IEventBusModuleService,
   IOrderModuleService,
   IRegionModuleService,
   IStockLocationService,
@@ -19,6 +23,7 @@ import {
 import {
   ContainerRegistrationKeys,
   Modules,
+  OrderWorkflowEvents,
   RuleOperator,
   remoteQueryObjectFromString,
 } from "@medusajs/utils"
@@ -235,7 +240,11 @@ async function prepareDataFixtures({ container }) {
   }
 }
 
-async function createOrderFixture({ container, product }) {
+async function createOrderFixture({
+  container,
+  product,
+  withShippingMethodAdjustment = true,
+}) {
   const orderService: IOrderModuleService = container.resolve(Modules.ORDER)
   let order = await orderService.createOrders({
     region_id: "test_region_id",
@@ -295,14 +304,18 @@ async function createOrderFixture({ container, product }) {
             rate: 10,
           },
         ],
-        adjustments: [
-          {
-            code: "VIP_10",
-            amount: 1,
-            description: "VIP discount",
-            promotion_id: "prom_123",
-          },
-        ],
+        ...(withShippingMethodAdjustment
+          ? {
+              adjustments: [
+                {
+                  code: "VIP_10",
+                  amount: 1,
+                  description: "VIP discount",
+                  promotion_id: "prom_123",
+                },
+              ],
+            }
+          : {}),
       },
     ],
     currency_code: "usd",
@@ -426,7 +439,11 @@ medusaIntegrationTestRunner({
 
         const [returnOrder] = await remoteQuery(remoteQueryObject)
 
-        expect(returnOrder).toEqual(
+        // The query requests totals ("total", "item_total"), so numeric fields
+        // come back as BigNumber instances; normalize them to plain numbers.
+        const serializedReturnOrder = normalizeBigNumbers(returnOrder)
+
+        expect(serializedReturnOrder).toEqual(
           expect.objectContaining({
             id: expect.any(String),
             display_id: 1,
@@ -489,6 +506,163 @@ medusaIntegrationTestRunner({
             ]),
           })
         )
+      })
+
+      it("should not emit RETURN_RECEIVED when receive_now is false", async () => {
+        const order = await createOrderFixture({ container, product })
+        const reasons = await orderService.listReturnReasons({})
+        const testReason = reasons.find(
+          (r) => r.value.toLowerCase() === "test child reason"
+        )!
+
+        const eventBusService = container.resolve<IEventBusModuleService>(
+          Modules.EVENT_BUS
+        )
+        const emitSpy = jest.spyOn(eventBusService, "emit")
+
+        await createAndCompleteReturnOrderWorkflow(container).run({
+          input: {
+            order_id: order.id,
+            return_shipping: { option_id: shippingOption.id },
+            items: [
+              { id: order.items![0].id, quantity: 1, reason_id: testReason.id },
+            ],
+          },
+          throwOnError: true,
+        })
+
+        const emittedEventNames = emitSpy.mock.calls.flatMap(([events]) =>
+          (Array.isArray(events) ? events : [events]).map((e) => e.name)
+        )
+
+        expect(emittedEventNames).toContain(
+          OrderWorkflowEvents.RETURN_REQUESTED
+        )
+        expect(emittedEventNames).not.toContain(
+          OrderWorkflowEvents.RETURN_RECEIVED
+        )
+
+        emitSpy.mockRestore()
+      })
+
+      it("should emit RETURN_RECEIVED when receive_now is true", async () => {
+        // Uses an order without a shipping-method adjustment: receiving an
+        // order that has one currently triggers a pre-existing versioning bug
+        // (duplicate order_shipping_method_adjustment version), tracked in
+        // medusajs/medusa#15959.
+        const order = await createOrderFixture({
+          container,
+          product,
+          withShippingMethodAdjustment: false,
+        })
+        const reasons = await orderService.listReturnReasons({})
+        const testReason = reasons.find(
+          (r) => r.value.toLowerCase() === "test child reason"
+        )!
+
+        const eventBusService = container.resolve<IEventBusModuleService>(
+          Modules.EVENT_BUS
+        )
+        const emitSpy = jest.spyOn(eventBusService, "emit")
+
+        await createAndCompleteReturnOrderWorkflow(container).run({
+          input: {
+            order_id: order.id,
+            return_shipping: { option_id: shippingOption.id },
+            items: [
+              { id: order.items![0].id, quantity: 1, reason_id: testReason.id },
+            ],
+            receive_now: true,
+          },
+          throwOnError: true,
+        })
+
+        const emittedEventNames = emitSpy.mock.calls.flatMap(([events]) =>
+          (Array.isArray(events) ? events : [events]).map((e) => e.name)
+        )
+
+        expect(emittedEventNames).toContain(
+          OrderWorkflowEvents.RETURN_REQUESTED
+        )
+        expect(emittedEventNames).toContain(OrderWorkflowEvents.RETURN_RECEIVED)
+
+        emitSpy.mockRestore()
+      })
+
+      it("should populate delivery_address on the return fulfillment with the stock location's address", async () => {
+        const order = await createOrderFixture({ container, product })
+        const createReturnOrderData: OrderWorkflow.CreateOrderReturnWorkflowInput =
+          {
+            order_id: order.id,
+            return_shipping: {
+              option_id: shippingOption.id,
+            },
+            items: [
+              {
+                id: order.items![0].id,
+                quantity: 1,
+              },
+            ],
+          }
+
+        const query = container.resolve(ContainerRegistrationKeys.QUERY)
+          
+        const { result : returned } = await createAndCompleteReturnOrderWorkflow(container).run({
+          input: createReturnOrderData,
+          throwOnError: true,
+        })  
+        
+        const { data: returns } = await query.graph({
+          entity: "return",
+          filters: {
+            id: returned.id,
+          },
+          fields: [ 
+            "fulfillments.delivery_address.address_1", 
+            "fulfillments.delivery_address.city",
+            "fulfillments.delivery_address.country_code",
+            "fulfillments.delivery_address.postal_code",
+            "fulfillments.delivery_address.phone",
+          ],
+        })
+        const fulfillment = returns[0].fulfillments[0]
+
+        expect(fulfillment.delivery_address).toEqual(
+          expect.objectContaining({
+            address_1: "Test",
+            city: "Test",
+            country_code: "US",
+            postal_code: "12345",
+            phone: "12345",
+          })
+        )
+        
+      })
+
+      it("should persist the refund_amount on the created return", async () => {
+        const order = await createOrderFixture({ container, product })
+
+        const { result: returned } =
+          await createAndCompleteReturnOrderWorkflow(container).run({
+            input: {
+              order_id: order.id,
+              return_shipping: { option_id: shippingOption.id },
+              items: [{ id: order.items![0].id, quantity: 1 }],
+              refund_amount: 20,
+            },
+            throwOnError: true,
+          })
+
+        const query = container.resolve(ContainerRegistrationKeys.QUERY)
+        const {
+          data: [orderReturn],
+        } = await query.graph({
+          entity: "return",
+          filters: { id: returned.id },
+          fields: ["id", "refund_amount"],
+        })
+
+        expect(Number(orderReturn.refund_amount)).toEqual(20)
       })
 
       it("should fail when location is not linked", async () => {

@@ -23,7 +23,7 @@ Instead of you writing the migration manually, the Medusa CLI tool provides a [d
 
 For example, assuming you have a `blog` Module, you can generate a migration for it by running the following command:
 
-```bash
+```bash npx2yarn
 npx medusa db:generate blog
 ```
 
@@ -63,6 +63,12 @@ The migration class in the file extends the `Migration` class imported from `@me
 
 In the example above, the `up` method creates the table `author`, and the `down` method drops the table if the migration is reverted.
 
+<Note title="Important">
+
+When you write a migration manually for a data model defined with [model.define](../page.mdx), make sure the created table includes the `created_at`, `updated_at`, and `deleted_at` columns. Medusa adds these [default properties](../properties/page.mdx#data-models-default-properties) to every data model, and the module's service relies on them in its queries. For example, the service filters out soft-deleted records using the `deleted_at` column, so queries fail at runtime if the column doesn't exist.
+
+</Note>
+
 <Note title="Tip">
 
 Refer to [MikroORM's documentation](https://mikro-orm.io/docs/migrations#migration-class) for more details on writing migrations.
@@ -87,7 +93,7 @@ This command also syncs module links. If you don't want that, use the `--skip-li
 
 </Note>
 
-```bash
+```bash npx2yarn
 npx medusa db:migrate
 ```
 
@@ -99,7 +105,7 @@ This reflects the changes in the database as implemented in the migration's `up`
 
 To rollback or revert the last migration you ran for a module, run the following command:
 
-```bash
+```bash npx2yarn
 npx medusa db:rollback blog
 ```
 
@@ -125,7 +131,7 @@ To learn more about the Medusa CLI's database commands, refer to [this CLI refer
 
 In some use cases, you may need to perform data migration after updates to the database. For example, after you added a `Site` data model to the Blog Module, you want to assign all existing posts and authors to a default site. Another example is updating data stored in a third-party system.
 
-In those scenarios, you can instead create a data migration script. They are asynchronous function that the Medusa application executes once when you run the `npx medusa db:migrate command`.
+In those scenarios, you can instead create a data migration script. They are asynchronous function that the Medusa application executes once when you run migrations.
 
 ### How to Create a Data Migration Script
 
@@ -173,7 +179,7 @@ In the function, you first ensure that the Blog Module is installed to avoid err
 
 To test out the data migration script, run the migration command:
 
-```bash
+```bash npx2yarn
 npx medusa db:migrate
 ```
 

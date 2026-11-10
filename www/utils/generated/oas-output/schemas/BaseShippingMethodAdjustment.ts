@@ -17,7 +17,7 @@
  *   shipping_method_id:
  *     type: string
  *     title: shipping_method_id
- *     description: The ID of the shipping method the adjustment is applied on.
+ *     description: The ID of the shipping method this adjustment applies on.
  *   id:
  *     type: string
  *     title: id
@@ -41,7 +41,7 @@
  *   promotion_id:
  *     type: string
  *     title: promotion_id
- *     description: The ID of the promotion applied by this adjustment.
+ *     description: The ID of the applied promotion.
  *   provider_id:
  *     type: string
  *     title: provider_id

@@ -287,6 +287,55 @@ describe("Client", () => {
       // Cleaning up after this specific test
       global.window = undefined as any
     })
+
+    it("should fall back to no storage when browser storage access is blocked", async () => {
+      global.window = {} as any
+
+      Object.defineProperties(global.window, {
+        localStorage: {
+          get: () => {
+            throw new Error("localStorage is blocked")
+          },
+        },
+        sessionStorage: {
+          get: () => {
+            throw new Error("sessionStorage is blocked")
+          },
+        },
+      })
+
+      const blockedStorageClient = new Client({
+        baseUrl,
+      })
+
+      await blockedStorageClient.setToken(token)
+
+      const resp = await blockedStorageClient.fetch<any>("nostore")
+      expect(resp).toEqual({ test: "test" })
+
+      // Cleaning up after this specific test
+      global.window = undefined as any
+    })
+  })
+
+  describe("Locale", () => {
+    it("should warn instead of throwing when setLocale is called outside the browser", () => {
+      // Mimic a server environment, where `window` is not declared at all
+      delete (global as any).window
+
+      const logger = {
+        error: jest.fn(),
+        warn: jest.fn(),
+        info: jest.fn(),
+        debug: jest.fn(),
+      }
+      const serverClient = new Client({ baseUrl, logger })
+
+      expect(() => serverClient.setLocale("fr-FR")).not.toThrow()
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining("setLocale is not available")
+      )
+    })
   })
 
   describe("Custom Storage", () => {

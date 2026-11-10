@@ -123,7 +123,7 @@ export default class TaxModuleService
       },
       [[], []] as [
         (Omit<TaxTypes.CreateTaxRateRuleDTO, "tax_rate_id">[] | undefined)[],
-        Partial<TaxTypes.CreateTaxRegionDTO>[]
+        Partial<TaxTypes.CreateTaxRegionDTO>[],
       ]
     )
 
@@ -182,9 +182,8 @@ export default class TaxModuleService
   ): Promise<TaxTypes.TaxRateDTO | TaxTypes.TaxRateDTO[]> {
     const rates = await this.updateTaxRates_(selector, data, sharedContext)
 
-    const serialized = await this.baseRepository_.serialize<
-      TaxTypes.TaxRateDTO[]
-    >(rates)
+    const serialized =
+      await this.baseRepository_.serialize<TaxTypes.TaxRateDTO[]>(rates)
 
     return isString(selector) ? serialized[0] : serialized
   }
@@ -296,9 +295,8 @@ export default class TaxModuleService
   ): Promise<TaxTypes.TaxRateDTO | TaxTypes.TaxRateDTO[]> {
     const result = await this.taxRateService_.upsert(data, sharedContext)
 
-    const serialized = await this.baseRepository_.serialize<
-      TaxTypes.TaxRateDTO[]
-    >(result)
+    const serialized =
+      await this.baseRepository_.serialize<TaxTypes.TaxRateDTO[]>(result)
 
     return Array.isArray(data) ? serialized : serialized[0]
   }
@@ -535,7 +533,7 @@ export default class TaxModuleService
       },
       [[], []] as [
         TaxTypes.ItemTaxCalculationLine[],
-        TaxTypes.ShippingTaxCalculationLine[]
+        TaxTypes.ShippingTaxCalculationLine[],
       ]
     )
 

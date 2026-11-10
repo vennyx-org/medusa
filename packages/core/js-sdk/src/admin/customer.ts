@@ -1,6 +1,6 @@
 import { HttpTypes, SelectParams } from "@medusajs/types"
-import { Client } from "../client"
-import { ClientHeaders } from "../types"
+import { Client } from "../client.js"
+import { ClientHeaders } from "../types.js"
 
 export class Customer {
   /**
@@ -16,7 +16,7 @@ export class Customer {
 
   /**
    * This method creates a customer. It sends a request to the
-   * [Create Customer](https://docs.medusajs.com/api/admin#customers_postcustomers) API route.
+   * [Create Customer](https://docs.medusajs.com/api/admin/customers/create-customer) API route.
    *
    * @param body - The customer's details.
    * @param query - Configure the fields to retrieve in the customer.
@@ -49,7 +49,7 @@ export class Customer {
 
   /**
    * This method updates a customer's details. It sends a request to the
-   * [Update Customer](https://docs.medusajs.com/api/admin#customers_postcustomersid) API route.
+   * [Update Customer](https://docs.medusajs.com/api/admin/customers/update-a-customer) API route.
    *
    * @param id - The customer's ID.
    * @param body - The details to update of the customer.
@@ -84,7 +84,7 @@ export class Customer {
 
   /**
    * This method retrieves a paginated list of customers. It sends a request to the
-   * [List Customers](https://docs.medusajs.com/api/admin#customers_getcustomers)
+   * [List Customers](https://docs.medusajs.com/api/admin/customers/list-customers)
    * API route.
    *
    * @param queryParams - Filters and pagination configurations.
@@ -127,7 +127,7 @@ export class Customer {
    * })
    * ```
    *
-   * Learn more about the `fields` property in the [API reference](https://docs.medusajs.com/api/store#select-fields-and-relations).
+   * Learn more about the `fields` property in the [API reference](https://docs.medusajs.com/api/store/select-fields-and-relations).
    */
   async list(
     queryParams?: HttpTypes.AdminCustomerFilters,
@@ -143,8 +143,53 @@ export class Customer {
   }
 
   /**
+   * This method exports the customers matching the specified filters. It sends
+   * a request to the Export Customers API route.
+   *
+   * The export runs in the background. When it finishes, a notification with a
+   * link to the exported file is sent through the `feed` channel, which the
+   * admin dashboard displays.
+   *
+   * This is useful for satisfying data subject access requests (for example,
+   * GDPR Article 15).
+   *
+   * @param body - The export's configuration, such as the file format.
+   * @param query - Filters and fields to determine which customers to export.
+   * @param headers - Headers to pass in the request.
+   * @returns The export's transaction details.
+   *
+   * @since 2.18.0
+   *
+   * @example
+   * sdk.admin.customer.export({
+   *   format: "json"
+   * }, {
+   *   fields: "id,email,*addresses,*orders",
+   *   id: "cus_123"
+   * })
+   * .then(({ transaction_id }) => {
+   *   console.log(transaction_id)
+   * })
+   */
+  async export(
+    body: HttpTypes.AdminExportCustomerRequest,
+    query?: HttpTypes.AdminCustomerFilters,
+    headers?: ClientHeaders
+  ) {
+    return await this.client.fetch<HttpTypes.AdminExportCustomerResponse>(
+      `/admin/customers/export`,
+      {
+        method: "POST",
+        headers,
+        body,
+        query,
+      }
+    )
+  }
+
+  /**
    * This method retrieves a customer by its ID. It sends a request to the
-   * [Get Customer](https://docs.medusajs.com/api/admin#customers_getcustomersid)
+   * [Get Customer](https://docs.medusajs.com/api/admin/customers/get-a-customer)
    * API route.
    *
    * @param id - The customer's ID.
@@ -173,7 +218,7 @@ export class Customer {
    * })
    * ```
    *
-   * Learn more about the `fields` property in the [API reference](https://docs.medusajs.com/api/store#select-fields-and-relations).
+   * Learn more about the `fields` property in the [API reference](https://docs.medusajs.com/api/store/select-fields-and-relations).
    */
   async retrieve(id: string, query?: SelectParams, headers?: ClientHeaders) {
     return this.client.fetch<HttpTypes.AdminCustomerResponse>(
@@ -187,7 +232,7 @@ export class Customer {
 
   /**
    * This method deletes a customer by its ID. It sends a request to the
-   * [Delete Customer](https://docs.medusajs.com/api/admin#customers_deletecustomersid)
+   * [Delete Customer](https://docs.medusajs.com/api/admin/customers/delete-a-customer)
    * API route.
    *
    * @param id - The customer's ID.
@@ -212,7 +257,7 @@ export class Customer {
 
   /**
    * This method manages customer groups for a customer.
-   * It sends a request to the [Manage Customers](https://docs.medusajs.com/api/admin#customers_postcustomersidcustomergroups)
+   * It sends a request to the [Manage Customers](https://docs.medusajs.com/api/admin/customers/manage-customer-groups)
    * API route.
    *
    * @param id - The customer's ID.
@@ -246,7 +291,7 @@ export class Customer {
 
   /**
    * This method creates a customer address. It sends a request to the
-   * [Create Customer Address](https://docs.medusajs.com/api/admin#customers_postcustomersidaddresses)
+   * [Create Customer Address](https://docs.medusajs.com/api/admin/customers/add-address)
    * API route.
    *
    * @param id - The customer's ID.
@@ -282,7 +327,7 @@ export class Customer {
 
   /**
    * This method updates a customer address. It sends a request to the
-   * [Update Customer Address](https://docs.medusajs.com/api/admin#customers_postcustomersidaddressesaddressid)
+   * [Update Customer Address](https://docs.medusajs.com/api/admin/customers/update-address)
    * API route.
    *
    * @param id - The customer's ID.
@@ -320,7 +365,7 @@ export class Customer {
 
   /**
    * This method deletes a customer address. It sends a request to the
-   * [Delete Customer Address](https://docs.medusajs.com/api/admin#customers_deletecustomersidaddressesaddressid)
+   * [Delete Customer Address](https://docs.medusajs.com/api/admin/customers/remove-an-address-from-customer)
    * API route.
    *
    * @param id - The customer's ID.
@@ -346,7 +391,7 @@ export class Customer {
 
   /**
    * This method retrieves a customer address by its ID. It sends a request to the
-   * [Get Customer Address](https://docs.medusajs.com/api/admin#customers_getcustomersidaddressesaddressid)
+   * [Get Customer Address](https://docs.medusajs.com/api/admin/customers/list-addresses-2)
    * API route.
    *
    * @param id - The customer's ID.
@@ -356,8 +401,8 @@ export class Customer {
    *
    * @example
    * sdk.admin.customer.retrieveAddress("cus_123", "cus_addr_123")
-   * .then(({ customer }) => {
-   *   console.log(customer)
+   * .then(({ address }) => {
+   *   console.log(address)
    * })
    */
   async retrieveAddress(
@@ -365,7 +410,7 @@ export class Customer {
     addressId: string,
     headers?: ClientHeaders
   ) {
-    return await this.client.fetch<HttpTypes.AdminCustomerResponse>(
+    return await this.client.fetch<HttpTypes.AdminCustomerAddressResponse>(
       `/admin/customers/${id}/addresses/${addressId}`,
       {
         headers,
@@ -375,7 +420,7 @@ export class Customer {
 
   /**
    * This method retrieves a list of customer addresses. It sends a request to the
-   * [List Customer Addresses](https://docs.medusajs.com/api/admin#customers_getcustomersidaddresses)
+   * [List Customer Addresses](https://docs.medusajs.com/api/admin/customers/list-addresses)
    * API route.
    *
    * @param id - The customer's ID.
@@ -389,7 +434,7 @@ export class Customer {
    * })
    */
   async listAddresses(id: string, headers?: ClientHeaders) {
-    return await this.client.fetch<HttpTypes.AdminCustomerResponse>(
+    return await this.client.fetch<HttpTypes.AdminCustomerAddressListResponse>(
       `/admin/customers/${id}/addresses`,
       {
         headers,

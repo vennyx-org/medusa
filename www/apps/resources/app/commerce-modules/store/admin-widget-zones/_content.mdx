@@ -3,44 +3,27 @@ import { Table } from "docs-ui"
 <Table>
   <Table.Header>
     <Table.Row>
-      <Table.HeaderCell className="w-1/3">Injection Zone Name</Table.HeaderCell>
-      <Table.HeaderCell className="w-1/3">Description</Table.HeaderCell>
-      <Table.HeaderCell className="w-1/3">Additional Props</Table.HeaderCell>
+      <Table.HeaderCell className="w-1/3">
+        Injection Zone Name
+      </Table.HeaderCell>
+      <Table.HeaderCell className="w-1/3">
+        Description
+      </Table.HeaderCell>
+      <Table.HeaderCell className="w-1/3">
+        Additional Props
+      </Table.HeaderCell>
     </Table.Row>
   </Table.Header>
   <Table.Body>
     <Table.Row>
       <Table.Cell>
 
-        `store.details.before`
+        `store.details`
 
       </Table.Cell>
       <Table.Cell>
 
-        Added at the top of a store's details page.
-
-      </Table.Cell>
-      <Table.Cell>
-      
-        Type `DetailWidgetProps<AdminStore>` imported from `@medusajs/framework/types`
-
-        ```ts blockStyle="inline"
-        {
-          data, // AdminStore object
-        }
-        ```
-
-      </Table.Cell>
-    </Table.Row>
-    <Table.Row>
-      <Table.Cell>
-
-        `store.details.after`
-
-      </Table.Cell>
-      <Table.Cell>
-
-        Added at the bottom of a store's details page.
+        Added at the end of a store's details page.
 
       </Table.Cell>
       <Table.Cell>

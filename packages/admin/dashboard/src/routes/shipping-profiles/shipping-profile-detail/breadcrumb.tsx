@@ -14,7 +14,7 @@ export const ShippingProfileDetailBreadcrumb = (
     shipping_profile_id!,
     undefined,
     {
-      initialData: props.data,
+      initialData: props.loaderData,
       enabled: Boolean(shipping_profile_id),
     }
   )
@@ -25,3 +25,9 @@ export const ShippingProfileDetailBreadcrumb = (
 
   return <span>{shipping_profile.name}</span>
 }
+
+export const seo = (
+  match: UIMatch<HttpTypes.AdminShippingProfileResponse>
+) => ({
+  title: match.loaderData?.shipping_profile?.name,
+})

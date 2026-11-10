@@ -4,8 +4,8 @@ import { csv2json, json2csv } from "json-2-csv"
 import { CommonEvents, Modules } from "@medusajs/utils"
 import { IEventBusModuleService, IFileModuleService } from "@medusajs/types"
 import {
-  TestEventUtils,
   medusaIntegrationTestRunner,
+  TestEventUtils,
 } from "@medusajs/test-utils"
 import {
   adminHeaders,
@@ -57,7 +57,7 @@ function prepareCSVForImport(fileContents: string, delimiter: string = ",") {
 }
 
 medusaIntegrationTestRunner({
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
     let baseCollection
     let baseType
     let baseProduct
@@ -76,7 +76,7 @@ medusaIntegrationTestRunner({
       fileModule = getContainer().resolve(Modules.FILE)
     })
 
-    beforeEach(async () => {
+    beforeAll(async () => {
       await createAdminUser(dbConnection, adminHeaders, getContainer())
       baseCollection = (
         await api.post(
@@ -164,6 +164,8 @@ medusaIntegrationTestRunner({
           adminHeaders
         )
       ).data.product_category
+
+      await dbUtils.snapshot()
     })
 
     afterEach(() => {
@@ -215,10 +217,31 @@ medusaIntegrationTestRunner({
             shippingProfile.id
           )
 
-          const csvContents = prepareCSVForImport(
-            fileContent,
-            testcase.delimiter
-          )
+          let csvContents = prepareCSVForImport(fileContent, testcase.delimiter)
+
+          // Mirror a real export round-trip: the exporter now emits option ids,
+          // so the re-import LINKS base-product's existing (exclusive) options
+          // instead of recreating them. Without the ids the import would create
+          // fresh options, orphaning the originals (which are then garbage
+          // collected) and dropping the variants' option values. The created
+          // row (proposed-product) keeps empty ids so new options are created.
+          const sizeOptionId = baseProduct.options.find(
+            (option: any) => option.title === "size"
+          )!.id
+          const colorOptionId = baseProduct.options.find(
+            (option: any) => option.title === "color"
+          )!.id
+          const rowsWithOptionIds = csv2json(csvContents)
+          rowsWithOptionIds.forEach((row: any) => {
+            // Set the id columns on EVERY row (empty for non-base rows). If a
+            // row is left without the key, json2csv serializes it as the string
+            // "undefined", which the importer would treat as a real option id.
+            const isBaseProduct = row["Product Id"] === baseProduct.id
+            row["Variant Option 1 Id"] = isBaseProduct ? sizeOptionId : ""
+            row["Variant Option 2 Id"] = isBaseProduct ? colorOptionId : ""
+          })
+          csvContents = json2csv(rowsWithOptionIds)
+
           const { id } = await fileModule.createFiles({
             filename: "test.csv",
             content: csvContents,
@@ -528,6 +551,191 @@ medusaIntegrationTestRunner({
             id: baseProduct.id,
             categories: [expect.objectContaining({ id: baseCategory.id })],
           })
+        )
+      })
+
+      it("should import region prices in the format written by the product export", async () => {
+        const subscriberExecution = TestEventUtils.waitSubscribersExecution(
+          `${Modules.NOTIFICATION}.notification.${CommonEvents.CREATED}`,
+          eventBus
+        )
+
+        const csvContents = json2csv([
+          {
+            "Product Handle": "region-price-product",
+            "Product Title": "Region price product",
+            "Shipping Profile Id": shippingProfile.id,
+            "Variant Title": "S",
+            "Variant Option 1 Name": "Size",
+            "Variant Option 1 Value": "S",
+            "Variant Price EUR": 30,
+            "Variant Price Test region [USD]": 45,
+          },
+        ])
+        const { id } = await fileModule.createFiles({
+          filename: "test.csv",
+          content: csvContents,
+          mimeType: "text/csv",
+        })
+
+        const { body, meta } = getUploadReq({
+          name: "test.csv",
+          key: id,
+          size: csvContents.length,
+        })
+
+        const batchJobRes = await api.post(
+          "/admin/products/imports",
+          body,
+          meta
+        )
+
+        const transactionId = batchJobRes.data.transaction_id
+        expect(transactionId).toBeTruthy()
+
+        await api.post(
+          `/admin/products/imports/${transactionId}/confirm`,
+          {},
+          meta
+        )
+
+        await subscriberExecution
+        const [product] = (
+          await api.get(
+            "/admin/products?handle=region-price-product",
+            adminHeaders
+          )
+        ).data.products
+
+        expect(product.variants[0].prices).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              currency_code: "eur",
+              amount: 30,
+              rules: {},
+            }),
+            expect.objectContaining({
+              currency_code: "usd",
+              amount: 45,
+              rules: { region_id: baseRegion.id },
+            }),
+          ])
+        )
+        expect(product.variants[0].prices).toHaveLength(2)
+      })
+
+      it("should update region prices of an existing variant in the format written by the product export", async () => {
+        const variantId = baseProduct.variants[0].id
+        await api.post(
+          `/admin/products/${baseProduct.id}/variants/${variantId}`,
+          {
+            prices: [
+              { currency_code: "usd", amount: 100 },
+              {
+                currency_code: "usd",
+                amount: 40,
+                rules: { region_id: baseRegion.id },
+              },
+            ],
+          },
+          adminHeaders
+        )
+
+        const subscriberExecution = TestEventUtils.waitSubscribersExecution(
+          `${Modules.NOTIFICATION}.notification.${CommonEvents.CREATED}`,
+          eventBus
+        )
+
+        const csvContents = json2csv([
+          {
+            "Product Id": baseProduct.id,
+            "Product Handle": baseProduct.handle,
+            "Product Title": baseProduct.title,
+            "Variant Id": variantId,
+            "Variant Title": baseProduct.variants[0].title,
+            "Variant Price USD": 110,
+            "Variant Price Test Region [USD]": 55,
+          },
+        ])
+        const { id } = await fileModule.createFiles({
+          filename: "test.csv",
+          content: csvContents,
+          mimeType: "text/csv",
+        })
+
+        const { body, meta } = getUploadReq({
+          name: "test.csv",
+          key: id,
+          size: csvContents.length,
+        })
+
+        const batchJobRes = await api.post(
+          "/admin/products/imports",
+          body,
+          meta
+        )
+
+        const transactionId = batchJobRes.data.transaction_id
+        expect(transactionId).toBeTruthy()
+        expect(batchJobRes.data.summary).toEqual({ toCreate: 0, toUpdate: 1 })
+
+        await api.post(
+          `/admin/products/imports/${transactionId}/confirm`,
+          {},
+          meta
+        )
+
+        await subscriberExecution
+        const product = (
+          await api.get(`/admin/products/${baseProduct.id}`, adminHeaders)
+        ).data.product
+        const variant = product.variants.find((v) => v.id === variantId)
+
+        expect(variant.prices).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              currency_code: "usd",
+              amount: 110,
+              rules: {},
+            }),
+            expect.objectContaining({
+              currency_code: "usd",
+              amount: 55,
+              rules: { region_id: baseRegion.id },
+            }),
+          ])
+        )
+        expect(variant.prices).toHaveLength(2)
+      })
+
+      it("should complain about region prices for a non-existent region", async () => {
+        const csvContents = json2csv([
+          {
+            "Product Handle": "region-price-product",
+            "Product Title": "Region price product",
+            "Variant Title": "S",
+            "Variant Price Nonexistent [EUR]": 30,
+          },
+        ])
+        const { id } = await fileModule.createFiles({
+          filename: "test.csv",
+          content: csvContents,
+          mimeType: "text/csv",
+        })
+
+        const { body, meta } = getUploadReq({
+          name: "test.csv",
+          key: id,
+          size: csvContents.length,
+        })
+
+        const batchJobRes = await api
+          .post("/admin/products/imports", body, meta)
+          .catch((e) => e)
+
+        expect(batchJobRes.response.status).toEqual(400)
+        expect(batchJobRes.response.data.message).toContain(
+          'Region with name "nonexistent" not found, used by "variant price nonexistent [eur]"'
         )
       })
 

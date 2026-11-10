@@ -119,12 +119,7 @@ export const InfiniteList = <
       startObserver.current?.disconnect()
       endObserver.current?.disconnect()
     }
-  }, [
-    hasNextPage,
-    hasPreviousPage,
-    isFetching,
-    isPending,
-  ])
+  }, [hasNextPage, hasPreviousPage, isFetching, isPending])
 
   useEffect(() => {
     if (error) {

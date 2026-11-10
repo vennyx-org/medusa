@@ -53,7 +53,7 @@ const adminHeaders = {
 }
 
 medusaIntegrationTestRunner({
-  testSuite: ({ dbConnection, getContainer, api }) => {
+  testSuite: ({ dbConnection, getContainer, api, dbUtils }) => {
     describe("Workflow Engine API", () => {
       let medusaContainer
 
@@ -91,12 +91,14 @@ medusaIntegrationTestRunner({
         )
       })
 
-      beforeEach(async () => {
+      beforeAll(async () => {
         await createAdminUser(dbConnection, adminHeaders, medusaContainer)
+
+        await dbUtils.snapshot()
       })
 
       it("Should list all workflows in execution or completed and retrieve them by id", async () => {
-        for (let i = 3; i--; ) {
+        for (let i = 3; i--;) {
           await api.post(
             `/admin/workflows-executions/my-workflow-name/run`,
             {
@@ -120,6 +122,7 @@ medusaIntegrationTestRunner({
           transaction_id: expect.any(String),
           id: expect.any(String),
           state: "invoking",
+          execution: expect.anything(),
           created_at: expect.any(String),
           updated_at: expect.any(String),
           deleted_at: null,
@@ -145,7 +148,7 @@ medusaIntegrationTestRunner({
         const promises: any[] = []
         const transactions: string[] = []
 
-        for (let i = 3; i--; ) {
+        for (let i = 3; i--;) {
           const transactionId = "transaction_" + (i + 1)
           transactions.push(transactionId)
           promises.push(
@@ -178,6 +181,7 @@ medusaIntegrationTestRunner({
           ),
           id: expect.any(String),
           state: "invoking",
+          execution: expect.anything(),
           created_at: expect.any(String),
           updated_at: expect.any(String),
           deleted_at: null,
@@ -189,6 +193,7 @@ medusaIntegrationTestRunner({
           ),
           id: expect.any(String),
           state: "invoking",
+          execution: expect.anything(),
           created_at: expect.any(String),
           updated_at: expect.any(String),
           deleted_at: null,

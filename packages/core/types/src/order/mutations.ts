@@ -356,8 +356,7 @@ export interface UpdateOrderAdjustmentDTO {
 /**
  * The line item adjustment to be created.
  */
-export interface CreateOrderLineItemAdjustmentDTO
-  extends CreateOrderAdjustmentDTO {
+export interface CreateOrderLineItemAdjustmentDTO extends CreateOrderAdjustmentDTO {
   /**
    * The associated item's ID.
    */
@@ -367,8 +366,7 @@ export interface CreateOrderLineItemAdjustmentDTO
 /**
  * The attributes to update in the line item adjustment.
  */
-export interface UpdateOrderLineItemAdjustmentDTO
-  extends UpdateOrderAdjustmentDTO {
+export interface UpdateOrderLineItemAdjustmentDTO extends UpdateOrderAdjustmentDTO {
   /**
    * The associated item's ID.
    */
@@ -450,6 +448,16 @@ export interface CreateOrderTaxLineDTO {
    * Whether the tax line is compound.
    */
   is_compound?: boolean
+
+  /**
+   * Holds custom data in key-value pairs.
+   */
+  metadata?: Record<string, unknown> | null
+
+  /**
+   * Holds data returned by the tax provider in key-value pairs.
+   */
+  data?: Record<string, unknown> | null
 }
 
 /**
@@ -490,19 +498,27 @@ export interface UpdateOrderTaxLineDTO {
    * Whether the tax line is compound.
    */
   is_compound?: boolean
+
+  /**
+   * Holds custom data in key-value pairs.
+   */
+  metadata?: Record<string, unknown> | null
+
+  /**
+   * Holds data returned by the tax provider in key-value pairs.
+   */
+  data?: Record<string, unknown> | null
 }
 
 /**
  * The shipping method tax line to be created.
  */
-export interface CreateOrderShippingMethodTaxLineDTO
-  extends CreateOrderTaxLineDTO { }
+export interface CreateOrderShippingMethodTaxLineDTO extends CreateOrderTaxLineDTO {}
 
 /**
  * The attributes to update in the shipping method tax line.
  */
-export interface UpdateOrderShippingMethodTaxLineDTO
-  extends UpdateOrderTaxLineDTO { }
+export interface UpdateOrderShippingMethodTaxLineDTO extends UpdateOrderTaxLineDTO {}
 
 /**
  * The line item tax line to be created.
@@ -674,11 +690,10 @@ export interface UpdateOrderLineItemWithSelectorDTO {
 /**
  * The attributes to update in the line item.
  */
-export interface UpdateOrderLineItemDTO
-  extends Omit<
-    CreateOrderLineItemDTO,
-    "tax_lines" | "adjustments" | "title" | "quantity" | "unit_price"
-  > {
+export interface UpdateOrderLineItemDTO extends Omit<
+  CreateOrderLineItemDTO,
+  "tax_lines" | "adjustments" | "title" | "quantity" | "unit_price"
+> {
   /**
    * The ID of the line item.
    */
@@ -855,6 +870,13 @@ export interface CreateOrderShippingMethodAdjustmentDTO {
    * Whether the adjustment is compound.
    */
   is_compound?: boolean
+
+  /**
+   * The version of the adjustment.
+   *
+   * @since 2.13.7
+   */
+  version?: number
 }
 
 /**
@@ -942,6 +964,11 @@ export interface CreateOrderChangeDTO {
    * Whether to carry over promotions (apply promotions to outbound exchange items).
    */
   carry_over_promotions?: boolean | null
+
+  /**
+   * Whether the customer shouldn't be notified of the order change.
+   */
+  no_notification?: boolean | null
 
   /**
    * The user or customer that requested the order change.
@@ -1056,6 +1083,11 @@ export interface UpdateOrderChangeDTO {
    * Whether to carry over promotions to outbound exchange items.
    */
   carry_over_promotions?: boolean | null
+
+  /**
+   * Whether the customer shouldn't be notified of the order change.
+   */
+  no_notification?: boolean | null
 }
 
 /**
@@ -1565,8 +1597,7 @@ interface BaseOrderBundledActionsDTO {
  * The details to register a fulfillment of an order, return,
  * exchange, or claim.
  */
-export interface RegisterOrderFulfillmentDTO
-  extends BaseOrderBundledActionsDTO {
+export interface RegisterOrderFulfillmentDTO extends BaseOrderBundledActionsDTO {
   /**
    * The items of the fulfillment.
    */
@@ -1624,6 +1655,11 @@ export interface CreateOrderReturnDTO extends BaseOrderBundledActionsDTO {
    * The ID of the location to return the items to.
    */
   location_id?: string | null
+
+  /**
+   * The date the return was requested at.
+   */
+  requested_at?: Date
 
   /**
    * The items of the return.
@@ -1696,11 +1732,7 @@ export interface CreateOrderReturnDTO extends BaseOrderBundledActionsDTO {
  * A return's status.
  */
 export type ReturnStatus =
-  | "open"
-  | "requested"
-  | "received"
-  | "partially_received"
-  | "canceled"
+  "open" | "requested" | "received" | "partially_received" | "canceled"
 
 /**
  * The attributes to update in the return.
@@ -2064,10 +2096,7 @@ export type OrderClaimType = "refund" | "replace"
  * A claim's reason.
  */
 export type ClaimReason =
-  | "missing_item"
-  | "wrong_item"
-  | "production_failure"
-  | "other"
+  "missing_item" | "wrong_item" | "production_failure" | "other"
 
 /**
  * The claim to be created.
@@ -2215,8 +2244,10 @@ export interface CancelOrderExchangeDTO extends BaseOrderBundledActionsDTO {
 /**
  * The details of return receival.
  */
-export interface ReceiveOrderReturnDTO
-  extends Omit<BaseOrderBundledActionsDTO, "order_id"> {
+export interface ReceiveOrderReturnDTO extends Omit<
+  BaseOrderBundledActionsDTO,
+  "order_id"
+> {
   /**
    * The items received.
    */
@@ -2251,7 +2282,7 @@ export interface CreateOrderReturnReasonDTO {
   /**
    * The associated parent return reason's ID.
    */
-  parent_return_reason_id?: string
+  parent_return_reason_id?: string | null
 
   /**
    * Holds custom data in key-value pairs.

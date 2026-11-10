@@ -12,7 +12,7 @@ export const ShippingOptionTypeDetailBreadcrumb = (
   const { id } = props.params || {}
 
   const { shipping_option_type } = useShippingOptionType(id!, undefined, {
-    initialData: props.data,
+    initialData: props.loaderData,
     enabled: Boolean(id),
   })
 
@@ -22,3 +22,9 @@ export const ShippingOptionTypeDetailBreadcrumb = (
 
   return <span>{shipping_option_type.label}</span>
 }
+
+export const seo = (
+  match: UIMatch<HttpTypes.AdminShippingOptionTypeResponse>
+) => ({
+  title: match.loaderData?.shipping_option_type?.label,
+})

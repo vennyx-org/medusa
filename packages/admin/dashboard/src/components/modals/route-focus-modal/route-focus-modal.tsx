@@ -16,8 +16,7 @@ const Root = ({ prev = "..", children }: RouteFocusModalProps) => {
   const [open, setOpen] = useState(false)
   const [stackedModalOpen, onStackedModalOpen] = useState(false)
 
-  const to: string | Partial<Path> | number =
-    typeof prev === "number" ? prev : useStateAwareTo(prev)
+  const to: string | Partial<Path> | number = useStateAwareTo(prev)
 
   /**
    * Open the modal when the component mounts. This
@@ -76,7 +75,7 @@ const Content = ({ stackedModalOpen, children }: ContentProps) => {
           : undefined
       }
       className={clx({
-        "!bg-ui-bg-disabled !inset-x-5 !inset-y-3": stackedModalOpen,
+        "!inset-x-5 !inset-y-3 !bg-ui-bg-disabled": stackedModalOpen,
       })}
     >
       {children}
@@ -98,7 +97,17 @@ const Form = RouteModalForm
  * Typically used for forms creating a resource or forms that require
  * a lot of space.
  */
-export const RouteFocusModal = Object.assign(Root, {
+type RouteFocusModalComponent = typeof Root & {
+  Header: typeof FocusModal.Header
+  Title: typeof FocusModal.Title
+  Body: typeof FocusModal.Body
+  Description: typeof FocusModal.Description
+  Footer: typeof FocusModal.Footer
+  Close: typeof FocusModal.Close
+  Form: typeof RouteModalForm
+}
+
+export const RouteFocusModal: RouteFocusModalComponent = Object.assign(Root, {
   Header,
   Title,
   Body,

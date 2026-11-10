@@ -13,6 +13,7 @@ import {
   DataTableFilteringState,
   DataTablePaginationState,
   DataTableSortingState,
+  Tooltip,
 } from "@medusajs/ui"
 import React, { ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -30,6 +31,7 @@ type ColumnOrderState = string[]
 type DataTableActionProps = {
   label: string
   disabled?: boolean
+  tooltip?: ReactNode
 } & (
   | {
       to: string
@@ -60,7 +62,7 @@ type DataTableActionMenuProps = {
   groups: DataTableActionMenuGroupProps[]
 }
 
-interface DataTableProps<TData> {
+export interface DataTableProps<TData> {
   data?: TData[]
   columns: DataTableColumnDef<TData, any>[]
   filters?: DataTableFilter[]
@@ -73,7 +75,6 @@ interface DataTableProps<TData> {
   enablePagination?: boolean
   enableSearch?: boolean
   autoFocusSearch?: boolean
-  enableFilterMenu?: boolean
   rowHref?: (row: TData) => string
   emptyState?: DataTableEmptyStateProps
   heading?: string
@@ -115,7 +116,6 @@ export const DataTable = <TData,>({
   enablePagination = true,
   enableSearch = true,
   autoFocusSearch = false,
-  enableFilterMenu,
   rowHref,
   heading,
   headingLevel = "h1",
@@ -145,10 +145,15 @@ export const DataTable = <TData,>({
   const effectiveEnableViewSelector = isViewConfigEnabled && enableViewSelector
 
   const enableFiltering = filters && filters.length > 0
-  const showFilterMenu =
-    enableFilterMenu !== undefined ? enableFilterMenu : enableFiltering
   const enableCommands = commands && commands.length > 0
   const enableSorting = columns.some((column) => column.enableSorting)
+
+  // Reserve the filter bar row whenever it can gain content — active filter
+  // chips, or the view-config save controls that appear on sort/column changes
+  // — so toggling those doesn't shift the layout.
+  const alwaysShowFilterBar = Boolean(
+    enableFiltering || effectiveEnableColumnVisibility
+  )
 
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>(initialColumnVisibility)
@@ -303,14 +308,16 @@ export const DataTable = <TData,>({
       }
 
       const href = rowHref(row)
+      const basePath = __BASE__ || "/"
+      const hrefWithBasePath = `${basePath === "/" ? "" : basePath}${href}`
 
       if (event.metaKey || event.ctrlKey || event.button === 1) {
-        window.open(href, "_blank", "noreferrer")
+        window.open(hrefWithBasePath, "_blank", "noreferrer")
         return
       }
 
       if (event.shiftKey) {
-        window.open(href, undefined, "noreferrer")
+        window.open(hrefWithBasePath, undefined, "noreferrer")
         return
       }
 
@@ -381,6 +388,7 @@ export const DataTable = <TData,>({
         className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center"
         translations={toolbarTranslations}
         filterBarContent={filterBarContent}
+        alwaysShowFilterBar={alwaysShowFilterBar}
       >
         <div className="flex w-full items-center justify-between gap-2">
           <div className="flex items-center gap-x-4">
@@ -403,8 +411,17 @@ export const DataTable = <TData,>({
             )}
           </div>
           <div className="flex items-center gap-x-2">
-            {showFilterMenu && <UiDataTable.FilterMenu />}
-            {enableSorting && <UiDataTable.SortingMenu />}
+            {enableFiltering && (
+              <UiDataTable.FilterMenu tooltip={toolbarTranslations.filter} />
+            )}
+            {enableSorting && (
+              <UiDataTable.SortingMenu tooltip={toolbarTranslations.sort} />
+            )}
+            {effectiveEnableColumnVisibility && (
+              <UiDataTable.ColumnVisibilityMenu
+                tooltip={toolbarTranslations.columns}
+              />
+            )}
             {enableSearch && (
               <div className="w-full md:w-auto">
                 <UiDataTable.Search
@@ -471,11 +488,24 @@ function parseFilterState(
     const filterValue = value[id]
 
     if (filterValue !== undefined) {
-      filters[id] = JSON.parse(filterValue)
+      filters[id] = parseFilterValue(filterValue)
     }
   }
 
   return filters
+}
+
+// Radio/select filters use string option values, but a URL written by hand
+// (e.g. `?is_exclusive=false`) JSON-parses to a boolean and no longer matches
+// those values, leaving the filter chip unhighlighted. Fall back to the raw
+// string in that case so manual URLs still highlight correctly.
+function parseFilterValue(raw: string): unknown {
+  try {
+    const parsed = JSON.parse(raw)
+    return typeof parsed === "boolean" ? raw : parsed
+  } catch {
+    return raw
+  }
 }
 
 function getQueryParamKey(key: string, prefix?: string) {
@@ -496,7 +526,8 @@ const useDataTableTranslations = () => {
   const toolbarTranslations = {
     clearAll: t("actions.clearAll"),
     sort: t("filters.sortLabel"),
-    columns: "Columns",
+    filter: t("filters.filterLabel"),
+    columns: t("filters.columnsLabel"),
   }
 
   return {
@@ -508,6 +539,7 @@ const useDataTableTranslations = () => {
 const DataTableAction = ({
   label,
   disabled,
+  tooltip,
   ...props
 }: DataTableActionProps) => {
   const buttonProps = {
@@ -518,14 +550,28 @@ const DataTableAction = ({
   }
 
   if ("to" in props) {
-    return (
+    const linkButton = disabled ? (
+      <Button {...buttonProps}>{label}</Button>
+    ) : (
       <Button {...buttonProps} asChild>
         <Link to={props.to}>{label}</Link>
       </Button>
     )
+
+    return tooltip ? (
+      <Tooltip content={tooltip}>{linkButton}</Tooltip>
+    ) : (
+      linkButton
+    )
   }
 
-  return (
+  return tooltip ? (
+    <Tooltip content={tooltip}>
+      <Button {...buttonProps} onClick={props.onClick}>
+        {label}
+      </Button>
+    </Tooltip>
+  ) : (
     <Button {...buttonProps} onClick={props.onClick}>
       {label}
     </Button>

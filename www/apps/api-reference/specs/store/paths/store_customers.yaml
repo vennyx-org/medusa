@@ -6,8 +6,7 @@ post:
     first to retrieve the registration token and pass it in the header of the
     request.
   externalDocs:
-    url: >-
-      https://docs.medusajs.com/resources/storefront-development/customers/register
+    url: https://docs.medusajs.com/resources/storefront-development/customers/register
     description: 'Storefront guide: How to register a customer.'
   x-authenticated: true
   parameters:
@@ -27,8 +26,7 @@ post:
         type: string
         example: en-US
         externalDocs:
-          url: >-
-            https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+          url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
           description: Learn more in the Serve Translations in Storefront guide.
     - name: fields
       in: query
@@ -60,8 +58,7 @@ post:
         type: string
         example: en-US
         externalDocs:
-          url: >-
-            https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+          url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
           description: Learn more in the Serve Translations in Storefront guide.
   requestBody:
     content:
@@ -112,3 +109,35 @@ post:
         ```
       description: Emitted when a customer is created.
       deprecated: false
+  x-allowed:
+    - id
+    - email
+    - company_name
+    - first_name
+    - last_name
+    - phone
+    - metadata
+    - has_account
+    - deleted_at
+    - created_at
+    - updated_at
+    - addresses
+    - orders
+    - addresses.id
+    - addresses.address_name
+    - addresses.company
+    - addresses.customer_id
+    - addresses.first_name
+    - addresses.last_name
+    - addresses.address_1
+    - addresses.address_2
+    - addresses.city
+    - addresses.province
+    - addresses.postal_code
+    - addresses.country_code
+    - addresses.phone
+    - addresses.metadata
+    - addresses.is_default_shipping
+    - addresses.is_default_billing
+    - addresses.created_at
+    - addresses.updated_at

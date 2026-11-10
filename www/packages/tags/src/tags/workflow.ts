@@ -28,8 +28,24 @@ export const workflow = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/generateResetPasswordTokenWorkflow"
   },
   {
+    "title": "requestVerificationWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/requestVerificationWorkflow"
+  },
+  {
+    "title": "setAuthAppMetadataWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/setAuthAppMetadataWorkflow"
+  },
+  {
+    "title": "addGiftCardToCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addGiftCardToCartWorkflow"
+  },
+  {
     "title": "addShippingMethodToCartWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addShippingMethodToCartWorkflow"
+  },
+  {
+    "title": "addStoreCreditsToCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/addStoreCreditsToCartWorkflow"
   },
   {
     "title": "addToCartWorkflow",
@@ -38,6 +54,10 @@ export const workflow = [
   {
     "title": "completeCartWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/completeCartWorkflow"
+  },
+  {
+    "title": "confirmCartCreditLinesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/confirmCartCreditLinesWorkflow"
   },
   {
     "title": "confirmVariantInventoryWorkflow",
@@ -68,6 +88,10 @@ export const workflow = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/listShippingOptionsForCartWorkflow"
   },
   {
+    "title": "refreshCartGiftCardsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/refreshCartGiftCardsWorkflow"
+  },
+  {
     "title": "refreshCartItemsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/refreshCartItemsWorkflow"
   },
@@ -82,6 +106,10 @@ export const workflow = [
   {
     "title": "refundPaymentAndRecreatePaymentSessionWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/refundPaymentAndRecreatePaymentSessionWorkflow"
+  },
+  {
+    "title": "removeGiftCardFromCartWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/removeGiftCardFromCartWorkflow"
   },
   {
     "title": "transferCartCustomerWorkflow",
@@ -102,6 +130,10 @@ export const workflow = [
   {
     "title": "updateTaxLinesWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateTaxLinesWorkflow"
+  },
+  {
+    "title": "upsertTaxLinesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/upsertTaxLinesWorkflow"
   },
   {
     "title": "batchLinksWorkflow",
@@ -138,6 +170,10 @@ export const workflow = [
   {
     "title": "deleteCustomersWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteCustomersWorkflow"
+  },
+  {
+    "title": "exportCustomersWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/exportCustomersWorkflow"
   },
   {
     "title": "removeCustomerAccountWorkflow",
@@ -210,6 +246,18 @@ export const workflow = [
   {
     "title": "deleteDraftOrdersWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteDraftOrdersWorkflow"
+  },
+  {
+    "title": "fetchShippingOptionForDraftOrderWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/fetchShippingOptionForDraftOrderWorkflow"
+  },
+  {
+    "title": "refreshConfirmedDraftOrderShippingMethodsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/refreshConfirmedDraftOrderShippingMethodsWorkflow"
+  },
+  {
+    "title": "refreshPendingDraftOrderShippingMethodsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/refreshPendingDraftOrderShippingMethodsWorkflow"
   },
   {
     "title": "removeDraftOrderActionItemWorkflow",
@@ -328,6 +376,26 @@ export const workflow = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateShippingProfilesWorkflow"
   },
   {
+    "title": "claimGiftCardWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/claimGiftCardWorkflow"
+  },
+  {
+    "title": "createGiftCardsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createGiftCardsWorkflow"
+  },
+  {
+    "title": "deleteGiftCardWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteGiftCardWorkflow"
+  },
+  {
+    "title": "redeemGiftCardWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/redeemGiftCardWorkflow"
+  },
+  {
+    "title": "updateGiftCardsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateGiftCardsWorkflow"
+  },
+  {
     "title": "batchInventoryItemLevelsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/batchInventoryItemLevelsWorkflow"
   },
@@ -350,6 +418,10 @@ export const workflow = [
   {
     "title": "deleteInventoryLevelsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteInventoryLevelsWorkflow"
+  },
+  {
+    "title": "exportInventoryItemsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/exportInventoryItemsWorkflow"
   },
   {
     "title": "updateInventoryItemsWorkflow",
@@ -688,6 +760,10 @@ export const workflow = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/requestOrderTransferWorkflow"
   },
   {
+    "title": "transferOrderToGuestWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/transferOrderToGuestWorkflow"
+  },
+  {
     "title": "updateClaimAddItemWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateClaimAddItemWorkflow"
   },
@@ -756,6 +832,10 @@ export const workflow = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateReturnWorkflow"
   },
   {
+    "title": "authorizePaymentSessionForOrderWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/authorizePaymentSessionForOrderWorkflow"
+  },
+  {
     "title": "capturePaymentWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/capturePaymentWorkflow"
   },
@@ -786,6 +866,10 @@ export const workflow = [
   {
     "title": "deleteRefundReasonsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteRefundReasonsWorkflow"
+  },
+  {
+    "title": "updatePaymentSessionClientDataWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updatePaymentSessionClientDataWorkflow"
   },
   {
     "title": "updateRefundReasonsWorkflow",
@@ -856,6 +940,10 @@ export const workflow = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/batchVariantImagesWorkflow"
   },
   {
+    "title": "createAndLinkProductOptionsToProductWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createAndLinkProductOptionsToProductWorkflow"
+  },
+  {
     "title": "createCollectionsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createCollectionsWorkflow"
   },
@@ -882,6 +970,10 @@ export const workflow = [
   {
     "title": "deleteCollectionsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteCollectionsWorkflow"
+  },
+  {
+    "title": "deleteProductOptionValuesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteProductOptionValuesWorkflow"
   },
   {
     "title": "deleteProductOptionsWorkflow",
@@ -916,8 +1008,16 @@ export const workflow = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/importProductsWorkflow"
   },
   {
+    "title": "setProductProductOptionsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/setProductProductOptionsWorkflow"
+  },
+  {
     "title": "updateCollectionsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateCollectionsWorkflow"
+  },
+  {
+    "title": "updateProductOptionValuesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateProductOptionValuesWorkflow"
   },
   {
     "title": "updateProductOptionsWorkflow",
@@ -1004,6 +1104,54 @@ export const workflow = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updatePromotionsWorkflow"
   },
   {
+    "title": "assignRolesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/assignRolesWorkflow"
+  },
+  {
+    "title": "createRbacPoliciesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createRbacPoliciesWorkflow"
+  },
+  {
+    "title": "createRbacRolePoliciesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createRbacRolePoliciesWorkflow"
+  },
+  {
+    "title": "createRbacRolesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createRbacRolesWorkflow"
+  },
+  {
+    "title": "deleteRbacPoliciesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteRbacPoliciesWorkflow"
+  },
+  {
+    "title": "deleteRbacRolePoliciesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteRbacRolePoliciesWorkflow"
+  },
+  {
+    "title": "deleteRbacRolesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteRbacRolesWorkflow"
+  },
+  {
+    "title": "getAssignablePoliciesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/getAssignablePoliciesWorkflow"
+  },
+  {
+    "title": "getAssignableRolesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/getAssignableRolesWorkflow"
+  },
+  {
+    "title": "unassignRolesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/unassignRolesWorkflow"
+  },
+  {
+    "title": "updateRbacPoliciesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateRbacPoliciesWorkflow"
+  },
+  {
+    "title": "updateRbacRolesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateRbacRolesWorkflow"
+  },
+  {
     "title": "createRegionsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createRegionsWorkflow"
   },
@@ -1060,8 +1208,40 @@ export const workflow = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateSalesChannelsWorkflow"
   },
   {
+    "title": "deleteSearchIndexWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deleteSearchIndexWorkflow"
+  },
+  {
+    "title": "reindexSearchIndexesWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/reindexSearchIndexesWorkflow"
+  },
+  {
+    "title": "batchPropertyLabelsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/batchPropertyLabelsWorkflow"
+  },
+  {
+    "title": "clearLayoutConfigurationWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/clearLayoutConfigurationWorkflow"
+  },
+  {
+    "title": "createPropertyLabelsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createPropertyLabelsWorkflow"
+  },
+  {
     "title": "createViewConfigurationWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createViewConfigurationWorkflow"
+  },
+  {
+    "title": "deletePropertyLabelsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/deletePropertyLabelsWorkflow"
+  },
+  {
+    "title": "setLayoutConfigurationWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/setLayoutConfigurationWorkflow"
+  },
+  {
+    "title": "updatePropertyLabelsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updatePropertyLabelsWorkflow"
   },
   {
     "title": "updateViewConfigurationWorkflow",
@@ -1116,6 +1296,30 @@ export const workflow = [
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateStoresWorkflow"
   },
   {
+    "title": "claimStoreCreditAccountWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/claimStoreCreditAccountWorkflow"
+  },
+  {
+    "title": "createStoreCreditAccountsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createStoreCreditAccountsWorkflow"
+  },
+  {
+    "title": "creditAccountsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/creditAccountsWorkflow"
+  },
+  {
+    "title": "creditStoreCreditAccountWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/creditStoreCreditAccountWorkflow"
+  },
+  {
+    "title": "debitAccountsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/debitAccountsWorkflow"
+  },
+  {
+    "title": "debitStoreCreditAccountWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/debitStoreCreditAccountWorkflow"
+  },
+  {
     "title": "createTaxRateRulesWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/createTaxRateRulesWorkflow"
   },
@@ -1150,6 +1354,10 @@ export const workflow = [
   {
     "title": "updateTaxRegionsWorkflow",
     "path": "https://docs.medusajs.com/resources/references/medusa-workflows/updateTaxRegionsWorkflow"
+  },
+  {
+    "title": "batchTranslationSettingsWorkflow",
+    "path": "https://docs.medusajs.com/resources/references/medusa-workflows/batchTranslationSettingsWorkflow"
   },
   {
     "title": "batchTranslationsWorkflow",

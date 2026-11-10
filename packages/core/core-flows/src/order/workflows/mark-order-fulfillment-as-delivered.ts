@@ -169,8 +169,7 @@ function prepareRegisterDeliveryData({
         const iitem = iitems.find(
           (i) => i.inventory.id === fitem.inventory_item_id
         )
-        if(iitem)
-          quantity = MathBN.div(quantity, iitem.required_quantity)
+        if (iitem) quantity = MathBN.div(quantity, iitem.required_quantity)
       }
 
       return {
@@ -193,13 +192,19 @@ export type MarkOrderFulfillmentAsDeliveredWorkflowInput = {
    * The ID of the fulfillment to mark as delivered.
    */
   fulfillmentId: string
+  /**
+   * Whether to notify the customer about the delivery.
+   *
+   * @since 2.13.7
+   */
+  no_notification?: boolean
 }
 
 export const markOrderFulfillmentAsDeliveredWorkflowId =
   "mark-order-fulfillment-as-delivered-workflow"
 /**
  * This workflow marks a fulfillment in an order as delivered. It's used by the
- * [Mark Fulfillment as Delivered Admin API Route](https://docs.medusajs.com/api/admin#orders_postordersidfulfillmentsfulfillment_idmarkasdelivered).
+ * [Mark Fulfillment as Delivered Admin API Route](https://docs.medusajs.com/api/admin/orders/mark-delivered).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to wrap custom logic around
  * marking a fulfillment as delivered.
@@ -277,7 +282,10 @@ export const markOrderFulfillmentAsDeliveredWorkflow = createWorkflow(
 
     emitEventStep({
       eventName: FulfillmentWorkflowEvents.DELIVERY_CREATED,
-      data: { id: deliveredFulfillment.id },
+      data: {
+        id: deliveredFulfillment.id,
+        no_notification: input.no_notification,
+      },
     })
 
     return new WorkflowResponse(void 0)

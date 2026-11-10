@@ -22,8 +22,8 @@ import {
   createHook,
   createStep,
   createWorkflow,
-  parallelize,
   transform,
+  when,
 } from "@medusajs/framework/workflows-sdk"
 import { pricingContextResult } from "../../../cart/utils/schemas"
 import {
@@ -142,7 +142,7 @@ function prepareFulfillmentData({
   returnShippingOption: {
     id: string
     provider_id: string
-    service_zone: { fulfillment_set: { location?: { id: string } } }
+    service_zone: { fulfillment_set: { location?: { id: string , address?: Record<string, any> } } }
   }
 }) {
   const inputItems = input.items
@@ -173,6 +173,9 @@ function prepareFulfillmentData({
     )
   }
 
+  // delivery address is set to the stock location address
+  const { id: _id, ...address } = returnShippingOption.service_zone.fulfillment_set.location?.address ?? {}
+
   return {
     input: {
       location_id: locationId,
@@ -180,7 +183,7 @@ function prepareFulfillmentData({
       shipping_option_id: input.return_shipping?.option_id,
       items: fulfillmentItems,
       labels: input.return_shipping?.labels ?? [],
-      delivery_address: order.shipping_address ?? ({} as any), // TODO: should it be the stock location address?
+      delivery_address: address,
       order: order,
     },
   }
@@ -262,7 +265,7 @@ export type CreateCompleteReturnValidationStepInput = {
  * })
  */
 export const createCompleteReturnValidationStep = createStep(
-  "create-return-order-validation",
+  "create-complete-return-validation",
   async function (
     { order, input }: CreateCompleteReturnValidationStepInput,
     context
@@ -289,7 +292,7 @@ export const createAndCompleteReturnOrderWorkflowId =
 /**
  * This workflow creates and completes a return from the storefront. The admin would receive the return and
  * process it from the dashboard. This workflow is used by the
- * [Create Return Store API Route](https://docs.medusajs.com/api/store#return_postreturn).
+ * [Create Return Store API Route](https://docs.medusajs.com/api/store/returns/create-return).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to create a return
  * for an order in your custom flow.
@@ -399,6 +402,7 @@ export const createAndCompleteReturnOrderWorkflow = createWorkflow(
         "calculated_price.calculated_amount",
         "calculated_price.is_calculated_price_tax_inclusive",
         "service_zone.fulfillment_set.location.id",
+        "service_zone.fulfillment_set.location.address.*",
       ],
       variables: returnShippingOptionsVariables,
       list: false,
@@ -426,6 +430,7 @@ export const createAndCompleteReturnOrderWorkflow = createWorkflow(
       location_id: input.location_id,
       items: input.items,
       shipping_method: shippingMethodData,
+      refund_amount: input.refund_amount,
       created_by: input.created_by,
     })
 
@@ -445,23 +450,29 @@ export const createAndCompleteReturnOrderWorkflow = createWorkflow(
 
     const receiveItems = transform(
       {
-        receiveNow: input.receive_now ?? false,
+        input,
         returnId: returnCreated.id,
         items: order.items!,
         createdBy: input.created_by!,
       },
-      prepareReceiveItems
+      ({ input, ...data }) => {
+        return prepareReceiveItems({
+          ...data,
+          receiveNow: input.receive_now ?? false,
+        })
+      }
     )
     receiveReturnStep(receiveItems)
 
-    parallelize(
-      emitEventStep({
-        eventName: OrderWorkflowEvents.RETURN_REQUESTED,
-        data: {
-          order_id: order.id,
-          return_id: returnCreated.id,
-        },
-      }).config({ name: "emit-return-requested-event" }),
+    emitEventStep({
+      eventName: OrderWorkflowEvents.RETURN_REQUESTED,
+      data: {
+        order_id: order.id,
+        return_id: returnCreated.id,
+      },
+    }).config({ name: "emit-return-requested-event" })
+
+    when({ input }, ({ input }) => input.receive_now === true).then(() =>
       emitEventStep({
         eventName: OrderWorkflowEvents.RETURN_RECEIVED,
         data: {

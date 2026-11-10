@@ -23,11 +23,13 @@ import { adminPriceListsRoutesMiddlewares } from "./admin/price-lists/middleware
 import { adminPricePreferencesRoutesMiddlewares } from "./admin/price-preferences/middlewares"
 import { adminProductCategoryRoutesMiddlewares } from "./admin/product-categories/middlewares"
 import { adminProductTagRoutesMiddlewares } from "./admin/product-tags/middlewares"
+import { adminProductOptionRoutesMiddlewares } from "./admin/product-options/middlewares"
 import { adminProductTypeRoutesMiddlewares } from "./admin/product-types/middlewares"
 import { adminProductVariantRoutesMiddlewares } from "./admin/product-variants/middlewares"
 import { adminProductRoutesMiddlewares } from "./admin/products/middlewares"
 import { adminPromotionRoutesMiddlewares } from "./admin/promotions/middlewares"
-import { adminRbacRoutesMiddlewares } from "./admin/rbac/middlewares"
+import { adminPropertyLabelsMiddlewares } from "./admin/property-labels/middlewares"
+import { rbacRoutesMiddlewares } from "./rbac/middlewares"
 import { adminRefundReasonsRoutesMiddlewares } from "./admin/refund-reasons/middlewares"
 import { adminRegionRoutesMiddlewares } from "./admin/regions/middlewares"
 import { adminReservationRoutesMiddlewares } from "./admin/reservations/middlewares"
@@ -45,13 +47,11 @@ import { adminUploadRoutesMiddlewares } from "./admin/uploads/middlewares"
 import { adminUserRoutesMiddlewares } from "./admin/users/middlewares"
 import { columnRoutesMiddlewares } from "./admin/views/[entity]/columns/middlewares"
 import { viewConfigurationRoutesMiddlewares } from "./admin/views/[entity]/configurations/middlewares"
+import { layoutConfigurationRoutesMiddlewares } from "./admin/layouts/[zone]/configuration/middlewares"
+import { layoutConfigurationListRoutesMiddlewares } from "./admin/layouts/configurations/middlewares"
+import { entitiesRoutesMiddlewares } from "./admin/views/entities/middlewares"
 import { adminWorkflowsExecutionsMiddlewares } from "./admin/workflows-executions/middlewares"
 import { authRoutesMiddlewares } from "./auth/middlewares"
-
-import { adminIndexRoutesMiddlewares } from "./admin/index/middlewares"
-import { adminLocalesRoutesMiddlewares } from "./admin/locales/middlewares"
-import { adminShippingOptionTypeRoutesMiddlewares } from "./admin/shipping-option-types/middlewares"
-import { adminTranslationsRoutesMiddlewares } from "./admin/translations/middlewares"
 import { cloudRoutesMiddlewares } from "./cloud/middlewares"
 import { hooksRoutesMiddlewares } from "./hooks/middlewares"
 import { storeCartRoutesMiddlewares } from "./store/carts/middlewares"
@@ -63,6 +63,7 @@ import { storeOrderRoutesMiddlewares } from "./store/orders/middlewares"
 import { storePaymentCollectionsMiddlewares } from "./store/payment-collections/middlewares"
 import { storePaymentProvidersMiddlewares } from "./store/payment-providers/middlewares"
 import { storeProductCategoryRoutesMiddlewares } from "./store/product-categories/middlewares"
+import { storeProductOptionRoutesMiddlewares } from "./store/product-options/middlewares"
 import { storeProductTagRoutesMiddlewares } from "./store/product-tags/middlewares"
 import { storeProductTypeRoutesMiddlewares } from "./store/product-types/middlewares"
 import { storeProductVariantRoutesMiddlewares } from "./store/product-variants/middlewares"
@@ -70,18 +71,30 @@ import { storeProductRoutesMiddlewares } from "./store/products/middlewares"
 import { storeRegionRoutesMiddlewares } from "./store/regions/middlewares"
 import { storeReturnReasonRoutesMiddlewares } from "./store/return-reasons/middlewares"
 import { storeShippingOptionRoutesMiddlewares } from "./store/shipping-options/middlewares"
+import { adminShippingOptionTypeRoutesMiddlewares } from "./admin/shipping-option-types/middlewares"
+import { adminIndexRoutesMiddlewares } from "./admin/index/middlewares"
+import { adminSearchIndexRoutesMiddlewares } from "./admin/search-indexes/middlewares"
+import { adminSearchRoutesMiddlewares } from "./admin/search/middlewares"
+import { setSecretApiKeyContext } from "@medusajs/framework"
+import { adminLocalesRoutesMiddlewares } from "./admin/locales/middlewares"
+import { adminTranslationsRoutesMiddlewares } from "./admin/translations/middlewares"
 
 export default defineMiddlewares([
   ...storeRoutesMiddlewares,
+  {
+    matcher: "/admin*",
+    middlewares: [setSecretApiKeyContext],
+  },
   ...adminCustomerGroupRoutesMiddlewares,
   ...adminCustomerRoutesMiddlewares,
+  ...adminPropertyLabelsMiddlewares,
   ...adminPromotionRoutesMiddlewares,
   ...adminCampaignRoutesMiddlewares,
   ...storeCartRoutesMiddlewares,
   ...storeCustomerRoutesMiddlewares,
-  ...storeCartRoutesMiddlewares,
   ...storeCollectionRoutesMiddlewares,
   ...storeProductCategoryRoutesMiddlewares,
+  ...storeProductOptionRoutesMiddlewares,
   ...storeProductTagRoutesMiddlewares,
   ...storeProductTypeRoutesMiddlewares,
   ...storePaymentProvidersMiddlewares,
@@ -93,8 +106,7 @@ export default defineMiddlewares([
   ...adminReturnRoutesMiddlewares,
   ...storeRegionRoutesMiddlewares,
   ...adminRegionRoutesMiddlewares,
-  ...adminRbacRoutesMiddlewares,
-  ...adminReturnRoutesMiddlewares,
+  ...rbacRoutesMiddlewares,
   ...adminUserRoutesMiddlewares,
   ...adminInviteRoutesMiddlewares,
   ...adminTaxRateRoutesMiddlewares,
@@ -119,6 +131,7 @@ export default defineMiddlewares([
   ...adminShippingOptionTypeRoutesMiddlewares,
   ...adminProductTypeRoutesMiddlewares,
   ...adminProductTagRoutesMiddlewares,
+  ...adminProductOptionRoutesMiddlewares,
   ...adminUploadRoutesMiddlewares,
   ...adminFulfillmentSetsRoutesMiddlewares,
   ...adminNotificationRoutesMiddlewares,
@@ -141,7 +154,12 @@ export default defineMiddlewares([
   ...adminOrderEditRoutesMiddlewares,
   ...adminPaymentCollectionsMiddlewares,
   ...viewConfigurationRoutesMiddlewares,
+  ...layoutConfigurationRoutesMiddlewares,
+  ...layoutConfigurationListRoutesMiddlewares,
+  ...entitiesRoutesMiddlewares,
   ...columnRoutesMiddlewares,
   ...adminIndexRoutesMiddlewares,
+  ...adminSearchIndexRoutesMiddlewares,
+  ...adminSearchRoutesMiddlewares,
   ...cloudRoutesMiddlewares,
 ])

@@ -43,7 +43,81 @@ export default class TypesHelper {
 
     cleanedUpTypes = this.joinDateAndString(cleanedUpTypes)
 
+    cleanedUpTypes = this.removeWidenedStringType(cleanedUpTypes)
+
     return cleanedUpTypes
+  }
+
+  /**
+   * Removes the `string & {}` member of a union of string literals. The member is
+   * only added to the type to keep the literals suggested in editors while allowing
+   * any other string. Without removing it, unions like `"a" | "b" | (string & {})`
+   * are emitted as a `oneOf` of indistinguishable strings rather than an enum.
+   */
+  private removeWidenedStringType(types: ts.Type[]): ts.Type[] {
+    if (types.length <= 1 || !types.some((type) => type.isStringLiteral())) {
+      return types
+    }
+
+    const filtered = types.filter((type) => !this.isWidenedStringType(type))
+
+    return filtered.length > 0 ? filtered : types
+  }
+
+  private isWidenedStringType(type: ts.Type): boolean {
+    if (!type.isIntersection()) {
+      return false
+    }
+
+    const intersectionTypes = (type as ts.IntersectionType).types
+
+    return (
+      intersectionTypes.length === 2 &&
+      intersectionTypes.some((item) => !!(item.flags & ts.TypeFlags.String)) &&
+      intersectionTypes.some(
+        (item) =>
+          !!(item.flags & ts.TypeFlags.Object) &&
+          item.getProperties().length === 0
+      )
+    )
+  }
+
+  /**
+   * Same as {@link cleanUpTypes}, plus removes fully-permissive object types
+   * (e.g. `Record<string, unknown>` / `Record<string, any>`) that contribute
+   * no schema information when intersected with a structured object type.
+   * Without this, intersections like `Record<string, unknown> & { id: string }`
+   * emit an `allOf` with a redundant empty `{ type: object }` entry.
+   */
+  cleanUpIntersectionTypes(types: ts.Type[]): ts.Type[] {
+    const cleanedUpTypes = this.cleanUpTypes(types)
+    return this.removeUnconstrainedRecord(cleanedUpTypes)
+  }
+
+  private removeUnconstrainedRecord(types: ts.Type[]): ts.Type[] {
+    if (types.length <= 1) {
+      return types
+    }
+    const filtered = types.filter((t) => !this.isUnconstrainedRecord(t))
+    return filtered.length > 0 ? filtered : types
+  }
+
+  private isUnconstrainedRecord(type: ts.Type): boolean {
+    const aliasSymbol = type.aliasSymbol
+    if (!aliasSymbol || aliasSymbol.escapedName !== "Record") {
+      return false
+    }
+    const args = type.aliasTypeArguments
+    if (!args || args.length !== 2) {
+      return false
+    }
+    const [keyArg, valArg] = args
+    const keyIsString = !!(keyArg.flags & ts.TypeFlags.String)
+    const valIsUnknownOrAny = !!(
+      valArg.flags &
+      (ts.TypeFlags.Unknown | ts.TypeFlags.Any)
+    )
+    return keyIsString && valIsUnknownOrAny
   }
 
   private removeStringRegExpTypeOverlaps(types: ts.Type[]): ts.Type[] {

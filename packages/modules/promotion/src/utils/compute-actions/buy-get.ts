@@ -1,11 +1,15 @@
 import {
   BigNumberInput,
+  ApplicationMethodTargetSelectionStrategyValues,
+  CampaignBudgetUsageDTO,
   ComputeActionItemLine,
   InferEntityType,
   PromotionTypes,
 } from "@medusajs/framework/types"
 import {
+  ApplicationMethodTargetSelectionStrategy,
   ApplicationMethodTargetType,
+  ApplicationMethodType,
   ComputedActions,
   MathBN,
   MedusaError,
@@ -20,8 +24,40 @@ export type EligibleItem = {
   quantity: BigNumberInput
 }
 
-function sortByPrice(a: ComputeActionItemLine, b: ComputeActionItemLine) {
-  return MathBN.lt(a.subtotal, b.subtotal) ? 1 : -1
+function getUnitPrice(item: ComputeActionItemLine) {
+  return MathBN.gt(item.quantity, 0)
+    ? MathBN.div(item.subtotal, item.quantity)
+    : MathBN.convert(0)
+}
+
+type SortDirection = "asc" | "desc"
+
+type ItemComparator = (
+  a: ComputeActionItemLine,
+  b: ComputeActionItemLine
+) => number
+
+/*
+  Items are ranked by unit price, not line subtotal: three units at 199 have a
+  higher subtotal than one unit at 379, but they are still the cheaper units.
+*/
+function compareByUnitPrice(direction: SortDirection): ItemComparator {
+  return (a, b) => {
+    const aPrice = getUnitPrice(a)
+    const bPrice = getUnitPrice(b)
+
+    // Returning a non-zero value for equal prices makes this an inconsistent
+    // comparator, which leaves the order of equally priced items up to the sort
+    // implementation rather than keeping it stable. Since the resulting order
+    // decides which items are reserved for the buy side below, that would turn
+    // into the promotion being applied or not depending on line item order.
+    if (MathBN.eq(aPrice, bPrice)) {
+      return 0
+    }
+
+    const ascending = MathBN.lt(aPrice, bPrice) ? -1 : 1
+    return direction === "asc" ? ascending : -ascending
+  }
 }
 
 function isValidPromotionContext(
@@ -65,13 +101,13 @@ function normalizePromotionApplicationConfiguration(
   const maximumApplyQuantity = MathBN.convert(
     promotion.application_method?.max_quantity ?? 1
   )
-  const applicablePercentage = promotion.application_method?.value ?? 100
+  const promotionValue = promotion.application_method?.value ?? 0
 
   return {
     minimumBuyQuantity,
     targetApplyQuantity,
     maximumApplyQuantity,
-    applicablePercentage,
+    promotionValue,
   }
 }
 
@@ -111,7 +147,7 @@ type PromotionConfig = {
   minimumBuyQuantity: BigNumberInput
   targetApplyQuantity: BigNumberInput
   maximumApplyQuantity: BigNumberInput
-  applicablePercentage: number
+  promotionValue: number
 }
 
 type PromotionApplication = {
@@ -150,7 +186,29 @@ function preparePromotionApplicationState(
   const eligibleItemsByPromotion: EligibleItem[] = []
   let accumulatedQuantity = MathBN.convert(0)
 
-  for (const eligibleBuyItem of eligibleBuyItems) {
+  // Quantity reserved for the buy side is subtracted from what the target side
+  // can use, so reserving a target eligible item can leave the promotion with
+  // no target and drop it entirely - even when a valid assignment exists. For
+  // "buy 2 of {A,B,C}, get 1 A" with one unit each of A, B and C, reserving B
+  // and C leaves A free to be discounted, while reserving A does not.
+  //
+  // Prefer items that cannot serve as targets, keeping the price order within
+  // each group. When every buy eligible item is also target eligible (buy X
+  // get X on a single product) this leaves the order untouched.
+  const targetEligibleItemIds = new Set(
+    eligibleTargetItems.map((eligibleTargetItem) => eligibleTargetItem.id)
+  )
+
+  const buyItemsInReservationOrder = [
+    ...eligibleBuyItems.filter(
+      (eligibleBuyItem) => !targetEligibleItemIds.has(eligibleBuyItem.id)
+    ),
+    ...eligibleBuyItems.filter((eligibleBuyItem) =>
+      targetEligibleItemIds.has(eligibleBuyItem.id)
+    ),
+  ]
+
+  for (const eligibleBuyItem of buyItemsInReservationOrder) {
     if (MathBN.gte(accumulatedQuantity, applicationConfig.minimumBuyQuantity)) {
       break
     }
@@ -267,7 +325,7 @@ function preparePromotionApplicationState(
   Applies promotion to the target items selected by preparePromotionApplicationState.
   
   This function performs the application by:
-    1. Calculating promotion amounts based on item prices and promotion percentage
+    1. Calculating promotion amounts based on item prices and promotion value (percentage or fixed)
     2. Checking promotion budget limits to prevent overspending
     3. Updating promotional value tracking maps for cross-promotion coordination
     4. Accumulating total promotion amounts per item across all applications
@@ -279,7 +337,8 @@ function applyPromotionToTargetItems(
   methodIdPromoValueMap: Map<string, BigNumberInput>,
   promotion: PromotionTypes.PromotionDTO | InferEntityType<typeof Promotion>,
   itemsMap: Map<string, ComputeActionItemLine>,
-  applicationConfig: PromotionConfig
+  applicationConfig: PromotionConfig,
+  attributeUsage?: CampaignBudgetUsageDTO
 ): {
   computedActions: PromotionTypes.ComputeActions[]
   appliedPromotionQuantity: BigNumberInput
@@ -299,12 +358,25 @@ function applyPromotionToTargetItems(
     const appliedPromoValue =
       methodIdPromoValueMap.get(item.id) ?? MathBN.convert(0)
     const multiplier = MathBN.min(targetItem.quantity, remainingQtyToApply)
-    const pricePerUnit = MathBN.div(item.subtotal, item.quantity)
+    const pricePerUnit = MathBN.div(
+      promotion.is_tax_inclusive ? item.original_total : item.subtotal,
+      item.quantity
+    )
     const applicableAmount = MathBN.mult(pricePerUnit, multiplier)
-    const amount = MathBN.mult(
-      applicableAmount,
-      applicationConfig.applicablePercentage
-    ).div(100)
+
+    let amount
+    if (promotion.application_method?.type === ApplicationMethodType.FIXED) {
+      // Fixed: apply value per unit, capped at item price
+      amount = MathBN.min(
+        MathBN.mult(applicationConfig.promotionValue, multiplier),
+        applicableAmount
+      )
+    } else {
+      amount = MathBN.mult(
+        applicableAmount,
+        applicationConfig.promotionValue
+      ).div(100)
+    }
 
     if (MathBN.lte(amount, 0)) {
       continue
@@ -314,7 +386,8 @@ function applyPromotionToTargetItems(
 
     const budgetExceededAction = computeActionForBudgetExceeded(
       promotion,
-      amount
+      amount,
+      attributeUsage
     )
 
     if (budgetExceededAction) {
@@ -322,9 +395,13 @@ function applyPromotionToTargetItems(
       continue
     }
 
+    const appliedAmountExclTax = promotion.is_tax_inclusive
+      ? MathBN.mult(amount, MathBN.div(item.subtotal, item.original_total))
+      : amount
+
     methodIdPromoValueMap.set(
       item.id,
-      MathBN.add(appliedPromoValue, amount).toNumber()
+      MathBN.add(appliedPromoValue, appliedAmountExclTax).toNumber()
     )
 
     const currentPromotionAmount =
@@ -420,7 +497,8 @@ function updateEligibleItems(
 
 function createComputedActionsFromPromotionApplication(
   itemIdPromotionAmountMap: Map<string, BigNumberInput>,
-  promotionCode: string
+  promotionCode: string,
+  isTaxInclusive?: boolean
 ): PromotionTypes.ComputeActions[] {
   const computedActions: PromotionTypes.ComputeActions[] = []
 
@@ -431,6 +509,7 @@ function createComputedActionsFromPromotionApplication(
         item_id: itemId,
         amount: totalAmount,
         code: promotionCode,
+        ...(isTaxInclusive ? { is_tax_inclusive: true } : {}),
       })
     }
   }
@@ -439,8 +518,9 @@ function createComputedActionsFromPromotionApplication(
 }
 
 /*
-  Grabs all the items in the context where the rules apply
-  We then sort by price to prioritize most valuable item
+  Grabs all the items in the context where the rules apply, most expensive
+  first. This is the order buy units are reserved in, regardless of the target
+  selection strategy.
 */
 function filterItemsByPromotionRules(
   itemsContext: ComputeActionItemLine[],
@@ -454,7 +534,38 @@ function filterItemsByPromotionRules(
         ApplicationMethodTargetType.ITEMS
       )
     )
-    .sort(sortByPrice)
+    .sort(compareByUnitPrice("desc"))
+}
+
+/*
+  The order in which target units are discounted for each target selection
+  strategy. Only the target side depends on the strategy.
+
+  With `most_expensive_first` (default) each application round discounts the
+  most expensive target left over. With `cheapest_first` it discounts the
+  cheapest one left over, so for "buy 3, get 1 free" with eight units priced
+  100 to 800, the 100 and 200 units are discounted.
+*/
+const TARGET_ITEM_COMPARATORS: Record<
+  ApplicationMethodTargetSelectionStrategyValues,
+  ItemComparator
+> = {
+  [ApplicationMethodTargetSelectionStrategy.MOST_EXPENSIVE_FIRST]:
+    compareByUnitPrice("desc"),
+  [ApplicationMethodTargetSelectionStrategy.CHEAPEST_FIRST]:
+    compareByUnitPrice("asc"),
+}
+
+function sortTargetItemsByStrategy(
+  items: ComputeActionItemLine[],
+  strategy?: ApplicationMethodTargetSelectionStrategyValues | null
+): ComputeActionItemLine[] {
+  const comparator =
+    TARGET_ITEM_COMPARATORS[
+      strategy ?? ApplicationMethodTargetSelectionStrategy.MOST_EXPENSIVE_FIRST
+    ]
+
+  return [...items].sort(comparator)
 }
 
 export function getComputedActionsForBuyGet(
@@ -462,7 +573,8 @@ export function getComputedActionsForBuyGet(
   itemsContext: ComputeActionItemLine[],
   methodIdPromoValueMap: Map<string, BigNumberInput>,
   eligibleBuyItemMap: Map<string, EligibleItem[]>,
-  eligibleTargetItemMap: Map<string, EligibleItem[]>
+  eligibleTargetItemMap: Map<string, EligibleItem[]>,
+  attributeUsage?: CampaignBudgetUsageDTO
 ): PromotionTypes.ComputeActions[] {
   if (!isValidPromotionContext(promotion, itemsContext)) {
     return []
@@ -495,6 +607,11 @@ export function getComputedActionsForBuyGet(
     eligibleTargetItems,
     eligibleTargetItemMap,
     promotion.code!
+  )
+
+  const targetItemsInDiscountOrder = sortTargetItemsByStrategy(
+    eligibleTargetItems,
+    promotion.application_method?.target_selection_strategy
   )
 
   const totalEligibleBuyItemsMap = new Map<string, EligibleItem>()
@@ -534,7 +651,7 @@ export function getComputedActionsForBuyGet(
     // and the total eligible items
     const applicationState = preparePromotionApplicationState(
       eligibleBuyItems,
-      eligibleTargetItems,
+      targetItemsInDiscountOrder,
       remainingBuyQuantities,
       remainingTargetQuantities,
       applicationConfig,
@@ -556,7 +673,8 @@ export function getComputedActionsForBuyGet(
       methodIdPromoValueMap,
       promotion,
       itemsMap,
-      applicationConfig
+      applicationConfig,
+      attributeUsage
     )
 
     computedActions.push(...application.computedActions)
@@ -584,7 +702,8 @@ export function getComputedActionsForBuyGet(
 
   const finalActions = createComputedActionsFromPromotionApplication(
     itemIdPromotionAmountMap,
-    promotion.code!
+    promotion.code!,
+    promotion.is_tax_inclusive
   )
   computedActions.push(...finalActions)
 

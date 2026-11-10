@@ -1,21 +1,28 @@
 {
   "name": "@medusajs/analytics-local",
-  "version": "2.12.5",
+  "version": "2.22.6",
   "description": "Local analytics provider for Medusa",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/medusajs/medusa",
+    "url": "git+https://github.com/medusajs/medusa.git",
     "directory": "packages/modules/providers/analytics-local"
+  },
+  "bugs": {
+    "url": "https://github.com/medusajs/medusa/issues"
   },
   "files": [
     "dist",
+    "AGENTS.md",
     "!dist/**/__tests__",
     "!dist/**/__mocks__",
     "!dist/**/__fixtures__"
   ],
+  "llms": "https://docs.medusajs.com/llms.txt",
+  "llmsFull": "https://docs.medusajs.com/llms-full.txt",
+  "mcpServer": "https://docs.medusajs.com/mcp",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.22.0"
   },
   "author": "Medusa",
   "license": "MIT",
@@ -25,10 +32,10 @@
     "watch": "yarn run -T tsc --watch"
   },
   "devDependencies": {
-    "@medusajs/framework": "2.12.5"
+    "@medusajs/framework": "2.22.6"
   },
   "peerDependencies": {
-    "@medusajs/framework": "2.12.5"
+    "@medusajs/framework": "2.22.6"
   },
   "keywords": [
     "medusa-plugin",

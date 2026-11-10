@@ -18,7 +18,8 @@ describe("CSV processor", () => {
   it("should process a CSV row", async () => {
     const csvData: any[] = await loadFixtureFile("single-row-create.json")
     const processor = new CSVNormalizer(
-      csvData.map((row, index) => CSVNormalizer.preProcess(row, index + 1))
+      csvData.map((row, index) => CSVNormalizer.preProcess(row, index + 1)),
+      { regions: [{ id: "reg_eu", name: "Europe", currency_code: "eur" }] }
     )
 
     const products = processor.proccess()
@@ -65,6 +66,9 @@ describe("CSV processor", () => {
                   {
                     "amount": 10,
                     "currency_code": "eur",
+                    "rules": {
+                      "region_id": "reg_eu",
+                    },
                   },
                   {
                     "amount": 15,
@@ -1117,6 +1121,79 @@ describe("CSV processor", () => {
     })
   })
 
+  describe("Variant region price columns", () => {
+    const regions = [
+      { id: "reg_test", name: "Test Region", currency_code: "usd" },
+      { id: "reg_eu", name: "Europe", currency_code: "eur" },
+    ]
+
+    it("should import region prices written by the product export", () => {
+      const normalized = CSVNormalizer.preProcess(
+        {
+          "Product Handle": "t-shirt",
+          "Variant Title": "S",
+          "Variant Price USD": 40,
+          "Variant Price Test Region [USD]": 45,
+        },
+        1
+      )
+      const result = new CSVNormalizer([normalized], { regions }).proccess()
+
+      expect(result.toCreate["t-shirt"].variants[0].prices).toEqual([
+        { currency_code: "usd", amount: 40 },
+        { currency_code: "usd", amount: 45, rules: { region_id: "reg_test" } },
+      ])
+    })
+
+    it("should import region prices using the bracketed region name format", () => {
+      const normalized = CSVNormalizer.preProcess(
+        {
+          "Product Handle": "t-shirt",
+          "Variant Title": "S",
+          "Variant Price [Europe] EUR": 30,
+        },
+        1
+      )
+      const result = new CSVNormalizer([normalized], { regions }).proccess()
+
+      expect(result.toCreate["t-shirt"].variants[0].prices).toEqual([
+        { currency_code: "eur", amount: 30, rules: { region_id: "reg_eu" } },
+      ])
+    })
+
+    it("should throw when the region in a price column does not exist", () => {
+      const normalized = CSVNormalizer.preProcess(
+        {
+          "Product Handle": "t-shirt",
+          "Variant Title": "S",
+          "Variant Price Nonexistent [EUR]": 30,
+        },
+        1
+      )
+      const processor = new CSVNormalizer([normalized], { regions })
+
+      expect(() => processor.proccess()).toThrow(
+        'Row 1: Region with name "nonexistent" not found, used by "variant price nonexistent [eur]"'
+      )
+    })
+
+    it("should throw for region price columns when no regions are provided", () => {
+      const normalized = CSVNormalizer.preProcess(
+        {
+          "Product Handle": "t-shirt",
+          "Variant Title": "S",
+          "Variant Price [Europe] EUR": 30,
+        },
+        1
+      )
+      const processor = new CSVNormalizer([normalized])
+
+      expect(() => processor.proccess()).toThrow(
+        'Row 1: Region with name "europe" not found, used by "variant price [europe] eur"'
+      )
+    })
+  })
+
   describe("System-generated columns", () => {
     it("should ignore product timestamp columns during import", () => {
       const csvRow: Record<string, string | boolean | number> = {
@@ -1346,6 +1423,103 @@ describe("CSV processor", () => {
       expect(result.toUpdate["prod_123"]).toBeDefined()
       expect(result.toUpdate["prod_123"].is_giftcard).toBe(true)
       expect(result.toCreate["test-product"]).toBeUndefined()
+    })
+  })
+
+  describe("Variant Option Id / Is Exclusive columns", () => {
+    const baseRow = (overrides: Record<string, any> = {}) => ({
+      "Product Handle": "p1",
+      "Product Title": "P1",
+      "Product Status": "draft",
+      "Variant Title": "v1",
+      "Variant Option 1 Name": "Color",
+      "Variant Option 1 Value": "Red",
+      ...overrides,
+    })
+
+    const runRow = (row: Record<string, any>) => {
+      const normalized = CSVNormalizer.preProcess(row, 1)
+      return new CSVNormalizer([normalized]).proccess()
+    }
+
+    it("carries the option id when the row has a Variant Option N Id column", () => {
+      const result = runRow(
+        baseRow({ "Variant Option 1 Id": "opt_existing" })
+      )
+
+      expect(result.toCreate["p1"].options).toEqual([
+        { title: "Color", values: ["Red"], id: "opt_existing" },
+      ])
+    })
+
+    it("carries is_exclusive when the row has a Variant Option N Is Exclusive column", () => {
+      const result = runRow(
+        baseRow({ "Variant Option 1 Is Exclusive": "false" })
+      )
+
+      expect(result.toCreate["p1"].options).toEqual([
+        { title: "Color", values: ["Red"], is_exclusive: false },
+      ])
+    })
+
+    it("carries is_exclusive when the value is already a boolean (e.g. parsed by json-2-csv)", () => {
+      const resultFalse = runRow(
+        baseRow({ "Variant Option 1 Is Exclusive": false })
+      )
+      expect(resultFalse.toCreate["p1"].options).toEqual([
+        { title: "Color", values: ["Red"], is_exclusive: false },
+      ])
+
+      const resultTrue = runRow(
+        baseRow({ "Variant Option 1 Is Exclusive": true })
+      )
+      expect(resultTrue.toCreate["p1"].options).toEqual([
+        { title: "Color", values: ["Red"], is_exclusive: true },
+      ])
+    })
+
+    it("ignores Is Exclusive values it cannot parse as boolean", () => {
+      const result = runRow(
+        baseRow({ "Variant Option 1 Is Exclusive": "garbage" })
+      )
+
+      expect(result.toCreate["p1"].options).toEqual([
+        { title: "Color", values: ["Red"] },
+      ])
+    })
+
+    it("does not emit id or is_exclusive when the row has neither column", () => {
+      const result = runRow(baseRow())
+
+      expect(result.toCreate["p1"].options).toEqual([
+        { title: "Color", values: ["Red"] },
+      ])
+    })
+
+    it("merges across multiple rows of the same product (first non-empty wins)", () => {
+      const row1 = baseRow({
+        "Variant Title": "v1",
+        "Variant Option 1 Id": "opt_global_color",
+      })
+      const row2 = baseRow({
+        "Variant Title": "v2",
+        // Different value, no id supplied — should not clobber opt_global_color
+        "Variant Option 1 Value": "Blue",
+      })
+
+      const normalized = [row1, row2].map((r, i) =>
+        CSVNormalizer.preProcess(r, i + 1)
+      )
+      const result = new CSVNormalizer(normalized).proccess()
+
+      expect(result.toCreate["p1"].options).toHaveLength(1)
+      expect(result.toCreate["p1"].options[0]).toEqual(
+        expect.objectContaining({
+          title: "Color",
+          values: expect.arrayContaining(["Red", "Blue"]),
+          id: "opt_global_color",
+        })
+      )
     })
   })
 })

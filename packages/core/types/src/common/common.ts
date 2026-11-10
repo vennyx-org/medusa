@@ -1,3 +1,5 @@
+import type { InternalQueryOptions } from "../dal/cross-module-query"
+
 /**
  * Prettify complex types to a flat object structure
  */
@@ -107,6 +109,11 @@ export interface FindConfig<Entity> {
    * Enable ORM specific defined options
    */
   options?: Record<string, any>
+
+  /**
+   * @internal
+   */
+  __internal?: InternalQueryOptions
 }
 
 /**
@@ -372,45 +379,46 @@ export type Pluralize<Singular extends string> =
   Lowercase<Singular> extends keyof PluralizationSpecialRules
     ? PluralizationSpecialRules[Lowercase<Singular>]
     : Lowercase<Singular> extends UncountableRules
-    ? Singular
-    : Singular extends `${string}ss`
-    ? `${Singular}es`
-    : Singular extends `${infer R}sis`
-    ? `${R}ses`
-    : Singular extends `${infer R}is`
-    ? `${R}ises`
-    : Singular extends `${string}s`
-    ? `${Singular}`
-    : Singular extends `${infer R}ay`
-    ? `${R}ays`
-    : Singular extends `${infer R}ey`
-    ? `${R}eys`
-    : Singular extends `${infer R}iy`
-    ? `${R}iys`
-    : Singular extends `${infer R}oy`
-    ? `${R}oys`
-    : Singular extends `${infer R}uy`
-    ? `${R}uys`
-    : Singular extends `${infer R}y`
-    ? `${R}ies`
-    : Singular extends `${string}es`
-    ? `${Singular}`
-    : Singular extends
-        | `${string}sh`
-        | `${string}ch`
-        | `${string}x`
-        | `${string}z`
-        | `${string}o`
-    ? `${Singular}es`
-    : Singular extends `${infer R}fe`
-    ? `${R}ves`
-    : Singular extends `${infer R}ex` | `${infer R}ix`
-    ? `${R}ices`
-    : Singular extends `${infer R}eau`
-    ? `${R}eaux`
-    : Singular extends `${infer R}ieu`
-    ? `${R}ieux`
-    : `${Singular}s`
+      ? Singular
+      : Singular extends `${string}ss`
+        ? `${Singular}es`
+        : Singular extends `${infer R}sis`
+          ? `${R}ses`
+          : Singular extends `${infer R}is`
+            ? `${R}ises`
+            : Singular extends `${string}s`
+              ? `${Singular}`
+              : Singular extends `${infer R}ay`
+                ? `${R}ays`
+                : Singular extends `${infer R}ey`
+                  ? `${R}eys`
+                  : Singular extends `${infer R}iy`
+                    ? `${R}iys`
+                    : Singular extends `${infer R}oy`
+                      ? `${R}oys`
+                      : Singular extends `${infer R}uy`
+                        ? `${R}uys`
+                        : Singular extends `${infer R}y`
+                          ? `${R}ies`
+                          : Singular extends `${string}es`
+                            ? `${Singular}`
+                            : Singular extends
+                                  | `${string}sh`
+                                  | `${string}ch`
+                                  | `${string}x`
+                                  | `${string}z`
+                                  | `${string}o`
+                              ? `${Singular}es`
+                              : Singular extends `${infer R}fe`
+                                ? `${R}ves`
+                                : Singular extends
+                                      `${infer R}ex` | `${infer R}ix`
+                                  ? `${R}ices`
+                                  : Singular extends `${infer R}eau`
+                                    ? `${R}eaux`
+                                    : Singular extends `${infer R}ieu`
+                                      ? `${R}ieux`
+                                      : `${Singular}s`
 
 export type SnakeCase<S extends string> =
   S extends `${infer T}${infer U}${infer V}`
@@ -438,6 +446,10 @@ export type RawRounding = {
  */
 export type QueryConfig<TEntity> = {
   /**
+   * The main entity to retrieve. For example, `product`.
+   */
+  entity?: TEntity | string
+  /**
    * Default fields and relations to return.
    * use `*` or `.*` to select all fields from a relations (e.g '*products' or 'products.*' will select all products properties)
    */
@@ -448,7 +460,30 @@ export type QueryConfig<TEntity> = {
    * the authorization search.
    */
   allowed?: string[]
+  /**
+   * Fields and relations that must never be resolved, regardless of what the
+   * caller requests. Any requested field whose path contains one of these
+   * segments (e.g. `orders` matches `orders.customer.email`) is stripped before
+   * the query is executed. Unlike `allowed`, this is a hard security boundary
+   * that is always enforced, independent of any feature flag. Use it to keep
+   * sensitive relations (order, customer, payment, ...) off unauthenticated
+   * endpoints.
+   *
+   * An entry is either a string, matched against a whole segment, or a regular
+   * expression, tested against each segment (e.g. `/_link$/`) and against the full
+   * dotted path, which lets a relation's position be expressed (e.g.
+   * `/\.orders(?:\.|$)/` blocks `orders` everywhere but at the root).
+   */
+  disallowed?: (string | RegExp)[]
   defaultLimit?: number
+  /**
+   * The maximum number of relations that can be expanded on a Store API route using this
+   * configuration. It overrides the `http.storeRelationsLimit` configuration of the Medusa
+   * application. It has no effect on routes that aren't under the `/store` prefix.
+   *
+   * @since v2.20.0
+   */
+  storeRelationsLimit?: number
   /**
    * If the route that will use that configuration is supposed to return a list of entities. This
    * will change the configuration that will be created on req.listConfig and req.queryConfig (among
@@ -461,8 +496,8 @@ export type TransformObjectMethodToAsync<T extends object> = {
   [K in keyof T]: T[K] extends (...args: infer A) => infer R
     ? (...args: A) => Promise<Awaited<R>>
     : T[K] extends object
-    ? TransformObjectMethodToAsync<T[K]>
-    : T[K]
+      ? TransformObjectMethodToAsync<T[K]>
+      : T[K]
 }
 
 export type QueryContextType = Record<string, any> & {

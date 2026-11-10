@@ -14,7 +14,7 @@ export const OrderDetailBreadcrumb = (props: OrderDetailBreadcrumbProps) => {
       fields: DEFAULT_FIELDS,
     },
     {
-      initialData: props.data,
+      initialData: props.loaderData,
       enabled: Boolean(id),
     }
   )
@@ -25,3 +25,9 @@ export const OrderDetailBreadcrumb = (props: OrderDetailBreadcrumbProps) => {
 
   return <span>#{order.display_id}</span>
 }
+
+export const seo = (match: UIMatch<HttpTypes.AdminOrderResponse>) => ({
+  title: match.loaderData?.order
+    ? `#${match.loaderData.order.display_id}`
+    : undefined,
+})

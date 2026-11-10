@@ -1,7 +1,7 @@
-import OpenAPIParser from "@readme/openapi-parser"
+import { compileErrors, parse, validate } from "@readme/openapi-parser"
 import { Command, Option, OptionValues } from "commander"
 import { lstat, mkdir, writeFile } from "fs/promises"
-import { OpenAPIObject } from "openapi3-ts"
+import { OpenAPIObject } from "openapi3-ts/oas30"
 import * as path from "path"
 import swaggerInline from "swagger-inline"
 import { combineOAS } from "./utils/combine-oas"
@@ -126,6 +126,8 @@ export async function execute(cliParams: OptionValues) {
     }
   }
 
+  setMedusaVersion(oas)
+
   await validateOAS(oas, apiType, force)
   if (dryRun) {
     console.log(`⚫️ Dry run - no files generated`)
@@ -166,12 +168,12 @@ async function getOASFromCodebase(apiType: ApiType): Promise<OpenAPIObject> {
       format: ".json",
     }
   )
-  return (await OpenAPIParser.parse(JSON.parse(gen))) as OpenAPIObject
+  return (await parse(JSON.parse(gen))) as OpenAPIObject
 }
 
 async function getPublicOas(apiType: ApiType) {
   const url = `https://docs.medusajs.com/api/download/${apiType}`
-  return (await OpenAPIParser.parse(url)) as OpenAPIObject
+  return (await parse(url)) as OpenAPIObject
 }
 
 async function getOASFromPaths(
@@ -193,7 +195,33 @@ async function getOASFromPaths(
       },
     }
   )
-  return (await OpenAPIParser.parse(JSON.parse(gen))) as OpenAPIObject
+  return (await parse(JSON.parse(gen))) as OpenAPIObject
+}
+
+/**
+ * Sets `info.version` to the version of the installed `@medusajs/medusa`
+ * package, so that consumers of the OAS can tell which Medusa version the
+ * document describes. The version in the base OAS files is a static
+ * placeholder, which is why it's overridden here.
+ */
+function setMedusaVersion(oas: OpenAPIObject): void {
+  let medusaVersion: string | undefined
+
+  try {
+    medusaVersion = require("@medusajs/medusa/package.json").version
+  } catch {
+    // the version stays as-is if the package can't be resolved
+  }
+
+  if (!medusaVersion) {
+    return
+  }
+
+  oas.info = {
+    ...oas.info,
+    version: medusaVersion,
+  }
+  console.log(`🔵 Set OAS version to ${medusaVersion}`)
 }
 
 async function validateOAS(
@@ -202,7 +230,10 @@ async function validateOAS(
   force = false
 ): Promise<void> {
   try {
-    await OpenAPIParser.validate(JSON.parse(JSON.stringify(oas)))
+    const result = await validate(JSON.parse(JSON.stringify(oas)))
+    if (!result.valid) {
+      throw new Error(compileErrors(result))
+    }
     console.log(`🟢 Valid OAS - ${apiType}`)
   } catch (err) {
     console.error(`🔴 Invalid OAS - ${apiType}`, err)

@@ -12,7 +12,7 @@ export const ApiKeyManagementDetailBreadcrumb = (
   const { id } = props.params || {}
 
   const { api_key } = useApiKey(id!, {
-    initialData: props.data,
+    initialData: props.loaderData,
     enabled: Boolean(id),
   })
 
@@ -22,3 +22,7 @@ export const ApiKeyManagementDetailBreadcrumb = (
 
   return <span>{api_key.title}</span>
 }
+
+export const seo = (match: UIMatch<HttpTypes.AdminApiKeyResponse>) => ({
+  title: match.loaderData?.api_key?.title,
+})

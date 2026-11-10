@@ -1,11 +1,13 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Reporter handles "Error" signature correctly 1`] = `
-{
-  "level": "error",
-  "message": "Error",
-  "stack": Any<Array>,
-}
+[
+  {
+    "level": "error",
+    "message": "Error",
+    "stack": Any<Array>,
+  },
+]
 `;
 
 exports[`Reporter handles "String" signature correctly 1`] = `
@@ -13,6 +15,16 @@ exports[`Reporter handles "String" signature correctly 1`] = `
   {
     "level": "error",
     "message": "Test log",
+  },
+]
+`;
+
+exports[`Reporter handles "String, Error" signature correctly 1`] = `
+[
+  {
+    "level": "error",
+    "message": "Test log: String Error",
+    "stack": Any<Array>,
   },
 ]
 `;

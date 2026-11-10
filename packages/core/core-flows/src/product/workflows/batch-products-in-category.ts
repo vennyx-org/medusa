@@ -1,12 +1,18 @@
 import type { ProductCategoryWorkflow } from "@medusajs/framework/types"
-import { WorkflowData, createWorkflow } from "@medusajs/framework/workflows-sdk"
+import { ProductWorkflowEvents } from "@medusajs/framework/utils"
+import {
+  WorkflowData,
+  createWorkflow,
+  transform,
+} from "@medusajs/framework/workflows-sdk"
+import { emitEventStep } from "../../common"
 import { batchLinkProductsToCategoryStep } from "../steps/batch-link-products-in-category"
 
 export const batchLinkProductsToCategoryWorkflowId =
   "batch-link-products-to-category"
 /**
  * This workflow manages the links between a category and products. It's used by the
- * [Manage Products of Category Admin API Route](https://docs.medusajs.com/api/admin#product-categories_postproductcategoriesidproducts).
+ * [Manage Products of Category Admin API Route](https://docs.medusajs.com/api/admin/product-categories/manage-products).
  *
  * You can use this workflow within your own customizations or custom workflows to manage the products in a category.
  *
@@ -30,6 +36,17 @@ export const batchLinkProductsToCategoryWorkflow = createWorkflow(
     // eslint-disable-next-line max-len
     input: WorkflowData<ProductCategoryWorkflow.BatchUpdateProductsOnCategoryWorkflowInput>
   ): WorkflowData<void> => {
-    return batchLinkProductsToCategoryStep(input)
+    batchLinkProductsToCategoryStep(input)
+
+    const eventData = transform({ input }, ({ input }) =>
+      [...new Set([...(input.add ?? []), ...(input.remove ?? [])])].map(
+        (id) => ({ id })
+      )
+    )
+
+    emitEventStep({
+      eventName: ProductWorkflowEvents.UPDATED,
+      data: eventData,
+    })
   }
 )

@@ -487,7 +487,10 @@ export class TransactionOrchestrator extends EventEmitter {
           hasSkipped = true
         } else if (curState.state === TransactionStepState.REVERTED) {
           hasReverted = true
-        } else if (curState.state === TransactionStepState.FAILED) {
+        } else if (
+          curState.state === TransactionStepState.FAILED ||
+          curState.state === TransactionStepState.TIMEOUT
+        ) {
           if (
             stepDef.definition.continueOnPermanentFailure ||
             stepDef.definition.skipOnPermanentFailure
@@ -825,11 +828,15 @@ export class TransactionOrchestrator extends EventEmitter {
       }
 
       if (!step.isCompensating()) {
-        if (
+        const isTransactionTimeout =
+          TransactionTimeoutError.isTransactionTimeoutError(timeoutError!)
+
+        const canContinueOnFailure =
           (step.definition.continueOnPermanentFailure ||
             step.definition.skipOnPermanentFailure) &&
-          !TransactionTimeoutError.isTransactionTimeoutError(timeoutError!)
-        ) {
+          !isTransactionTimeout
+
+        if (canContinueOnFailure) {
           if (step.definition.skipOnPermanentFailure) {
             const until = isString(step.definition.skipOnPermanentFailure)
               ? step.definition.skipOnPermanentFailure
@@ -871,6 +878,8 @@ export class TransactionOrchestrator extends EventEmitter {
         result.stopExecution = true
       }
     }
+
+    step.retryRescheduledAt = null
 
     try {
       await transaction.saveCheckpoint({
@@ -1447,7 +1456,12 @@ export class TransactionOrchestrator extends EventEmitter {
   }
 
   /**
-   * Cancel and revert a transaction compensating all its executed steps. It can be an ongoing transaction or a completed one
+   * Cancel and revert a transaction compensating all its executed steps. It can be an ongoing transaction or a completed one.
+   *
+   * To cancel a completed transaction, you must pass its instance, or the transaction must still be stored. A transaction
+   * is only stored after it's done if its workflow sets the `store` and `retentionTime` options. Otherwise, retrieving it
+   * by its ID throws a `Transaction {id} could not be found` error.
+   *
    * @param transaction - The transaction to be reverted
    */
   public async cancelTransaction(

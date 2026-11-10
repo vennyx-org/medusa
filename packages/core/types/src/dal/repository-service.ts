@@ -14,9 +14,8 @@ type EntityValues = { id: string }[]
 /**
  * Either infer the properties from a DML object or from a Mikro orm class prototype.
  */
-export type InferRepositoryReturnType<T> = T extends IDmlEntity<any, any>
-  ? InferTypeOf<T>
-  : EntityClass<T>["prototype"]
+export type InferRepositoryReturnType<T> =
+  T extends IDmlEntity<any, any> ? InferTypeOf<T> : EntityClass<T>["prototype"]
 
 export type PerformedActions = {
   created: Record<EntityClassName, EntityValues>
@@ -73,7 +72,7 @@ export interface RepositoryService<T = any> extends BaseRepositoryService {
   delete(
     idsOrPKs: FindOptions<T>["where"],
     context?: Context
-  ): Promise<string[]>
+  ): Promise<string[] | Record<string, any>[]>
 
   /**
    * Soft delete entities and cascade to related entities if configured.
@@ -85,10 +84,7 @@ export interface RepositoryService<T = any> extends BaseRepositoryService {
    */
   softDelete(
     idsOrFilter:
-      | string
-      | string[]
-      | InternalFilterQuery
-      | InternalFilterQuery[],
+      string | string[] | InternalFilterQuery | InternalFilterQuery[],
     context?: Context
   ): Promise<[InferRepositoryReturnType<T>[], Record<string, unknown[]>]>
 
@@ -130,7 +126,10 @@ export interface TreeRepositoryService<T = any> extends BaseRepositoryService {
     context?: Context
   ): Promise<InferRepositoryReturnType<T>[]>
 
-  delete(ids: string[], context?: Context): Promise<string[]>
+  delete(
+    ids: string[],
+    context?: Context
+  ): Promise<string[] | Record<string, any>[]>
 }
 
 /**

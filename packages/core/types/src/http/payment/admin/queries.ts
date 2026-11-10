@@ -1,20 +1,18 @@
 import { BaseFilterable, OperatorMap } from "../../../dal"
-import { FindParams } from "../../common"
+import { FindParams, SelectParams } from "../../common"
+import { AdminRefundReason } from "../../refund-reason"
 import {
   BasePaymentCollectionFilters,
   BasePaymentFilters,
   BasePaymentSessionFilters,
 } from "../common"
-import { AdminRefundReason } from "../../refund-reason"
 
 export interface AdminPaymentProviderFilters
-  extends FindParams,
-    BaseFilterable<AdminPaymentProviderFilters> {
+  extends FindParams, BaseFilterable<AdminPaymentProviderFilters> {
   id: string | string[]
   is_enabled?: boolean
 }
-export interface AdminPaymentCollectionFilters
-  extends BasePaymentCollectionFilters {}
+export interface AdminPaymentCollectionFilters extends BasePaymentCollectionFilters {}
 export interface AdminPaymentSessionFilters extends BasePaymentSessionFilters {}
 
 export interface AdminPaymentFilters extends FindParams, BasePaymentFilters {
@@ -41,8 +39,7 @@ export interface AdminPaymentFilters extends FindParams, BasePaymentFilters {
 }
 
 export interface RefundReasonFilters
-  extends FindParams,
-    BaseFilterable<AdminRefundReason> {
+  extends FindParams, BaseFilterable<AdminRefundReason> {
   /**
    * Filter by refund reason ID(s).
    */
@@ -54,8 +51,7 @@ export interface RefundReasonFilters
 }
 
 export interface AdminGetPaymentProvidersParams
-  extends FindParams,
-    BaseFilterable<AdminGetPaymentProvidersParams> {
+  extends FindParams, BaseFilterable<AdminGetPaymentProvidersParams> {
   /**
    * Filter by payment provider ID(s).
    */
@@ -65,3 +61,7 @@ export interface AdminGetPaymentProvidersParams
    */
   is_enabled?: boolean
 }
+
+export interface AdminGetPaymentParams extends SelectParams {}
+
+export interface AdminGetPaymentCollectionParams extends SelectParams {}

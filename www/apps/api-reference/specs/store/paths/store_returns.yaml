@@ -3,7 +3,11 @@ post:
   summary: Create Return
   description: >-
     Create a return for an order's items. The admin receives the return and
-    process it from their side.
+    process it from their side. This API route doesn't require customer
+    authentication, so that guest customers can request a return for their
+    orders. To restrict access to this API route, refer to the [Restrict Return
+    Creation
+    guide](https://docs.medusajs.com/resources/commerce-modules/order/secure-return-creation).
   x-authenticated: false
   parameters:
     - name: x-publishable-api-key
@@ -22,8 +26,7 @@ post:
         type: string
         example: en-US
         externalDocs:
-          url: >-
-            https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+          url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
           description: Learn more in the Serve Translations in Storefront guide.
     - name: locale
       in: query
@@ -33,8 +36,7 @@ post:
         type: string
         example: en-US
         externalDocs:
-          url: >-
-            https://docs.medusajs.com/resources/commerce-modules/translation/storefront
+          url: https://docs.medusajs.com/resources/commerce-modules/translation/storefront
           description: Learn more in the Serve Translations in Storefront guide.
   requestBody:
     content:
@@ -90,3 +92,16 @@ post:
       description: Emitted when a return is marked as received.
       deprecated: false
   x-since: 2.8.0
+  x-allowed:
+    - id
+    - order_id
+    - created_at
+    - updated_at
+    - deleted_at
+    - metadata
+    - display_id
+    - items
+    - received_at
+    - created_by
+    - canceled_at
+    - requested_at

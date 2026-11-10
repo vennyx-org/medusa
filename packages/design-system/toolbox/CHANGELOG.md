@@ -1,5 +1,85 @@
 # @medusajs/toolbox
 
+## 2.22.6
+
+## 2.22.5
+
+No changes in this release.
+
+## 2.22.4
+
+## 2.22.3
+
+## 2.22.2
+
+## 2.22.1
+
+## 2.22.0
+
+## 2.21.2
+
+## 2.21.1
+
+## 2.21.0
+
+## 2.20.1
+
+## 2.20.0
+
+## 2.19.0
+
+## 2.18.0
+
+## 2.17.2
+
+## 2.17.1
+
+## 2.17.0
+
+## 2.16.0
+
+## 2.15.5
+
+## 2.15.4
+
+## 2.15.3
+
+## 2.15.2
+
+## 2.15.1
+
+## 2.15.0
+
+## 2.14.2
+
+## 2.14.1
+
+## 2.14.0
+
+## 2.13.6
+
+## 2.13.5
+
+## 2.13.4
+
+## 2.13.3
+
+## 2.13.2
+
+### Patch Changes
+
+- [#14700](https://github.com/medusajs/medusa/pull/14700) [`873571a7c9471a28732ac7fad70ff66c28571a0e`](https://github.com/medusajs/medusa/commit/873571a7c9471a28732ac7fad70ff66c28571a0e) Thanks [@fPolic](https://github.com/fPolic)! - fix(icons): default viewBox
+
+## 2.13.1
+
+## 2.13.0
+
+### Minor Changes
+
+- [`a31e72c31c5235240cead2d04e39e5927688eec7`](https://github.com/medusajs/medusa/commit/a31e72c31c5235240cead2d04e39e5927688eec7) Thanks [@olivermrbl](https://github.com/olivermrbl)! - chore: Minor bump
+
+## 2.12.6
+
 ## 2.12.5
 
 ## 2.12.4

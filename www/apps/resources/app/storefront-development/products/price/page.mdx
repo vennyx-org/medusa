@@ -26,15 +26,19 @@ For code examples on how to show product variants' prices in your storefront, re
 
 ## Pricing Query Parameters
 
-When you retrieve products either with the [List Products](!api!/store#products_getproducts) or [Retrieve Products](!api!/store#products_getproductsid) API routes, you must include in the beginning of the `fields` query parameter the value `*variants.calculated_price` to retrieve the product variants' prices.
+When you retrieve products either with the [List Products](!api!/store/products/list-products) or [Retrieve Products](!api!/store/products/get-a-product) API routes, you must include in the beginning of the `fields` query parameter the value `*variants.calculated_price` to retrieve the product variants' prices.
 
 You also must pass at least one of the following query parameters to retrieve an accurate product variant price:
 
 <Table>
   <Table.Header>
     <Table.Row>
-      <Table.HeaderCell>Parameter</Table.HeaderCell>
-      <Table.HeaderCell>Description</Table.HeaderCell>
+      <Table.HeaderCell>
+        Parameter
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Description
+      </Table.HeaderCell>
     </Table.Row>
   </Table.Header>
   <Table.Body>
@@ -59,7 +63,7 @@ You also must pass at least one of the following query parameters to retrieve an
         `province`
       </Table.Cell>
       <Table.Cell>
-        The lower-case [ISO 3166-2 province code](https://en.wikipedia.org/wiki/ISO_3166-2), which can be taken from a customer's address. This parameter helps further narrowing down the taxes applied on a the product variant's prices.
+        The lower-case [ISO 3166-2 province code](https://en.wikipedia.org/wiki/ISO_3166-2), which can be taken from a customer's address. This parameter helps further narrow down the taxes applied to the product variant's prices.
       </Table.Cell>
     </Table.Row>
     <Table.Row>
@@ -109,9 +113,15 @@ If you pass the parameters mentioned above, each variant has a `calculated_price
 <Table>
   <Table.Header>
     <Table.Row>
-      <Table.HeaderCell>Property</Table.HeaderCell>
-      <Table.HeaderCell>Description</Table.HeaderCell>
-      <Table.HeaderCell>Notes</Table.HeaderCell>
+      <Table.HeaderCell>
+        Property
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Description
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Notes
+      </Table.HeaderCell>
     </Table.Row>
   </Table.Header>
   <Table.Body>

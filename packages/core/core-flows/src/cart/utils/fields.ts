@@ -1,14 +1,22 @@
 // Always ensure that cartFieldsForPricingContext is present in cartFieldsForRefreshSteps
+
+import { fieldsForPricingContext } from "../../common/utils/fields"
+
 // Always ensure that cartFieldsForCalculateShippingOptionsPrices is present in cartFieldsForRefreshSteps
+/**
+ * Fields required when fetching cart data for refresh steps in cart workflows
+ */
 export const cartFieldsForRefreshSteps = [
   "id",
   "email",
   "currency_code",
   "quantity",
   "subtotal",
+  "original_item_total",
   "item_total",
   "locale",
   "total",
+  "original_item_subtotal",
   "item_subtotal",
   "shipping_subtotal",
   "region_id",
@@ -24,8 +32,10 @@ export const cartFieldsForRefreshSteps = [
   "items.product.categories.id",
   "items.product.tags.id",
   "items.product.type_id",
+  "items.product.weight",
   "items.variant.id",
   "items.variant.product.id",
+  "items.variant.product.shipping_profile.id",
   "items.variant.weight",
   "items.variant.length",
   "items.variant.height",
@@ -38,6 +48,7 @@ export const cartFieldsForRefreshSteps = [
   "shipping_methods.adjustments.*",
   "shipping_methods.tax_lines.*",
   "shipping_methods.shipping_option.shipping_option_type_id",
+  "shipping_methods.shipping_option.shipping_profile_id",
   "customer.*",
   "customer.groups.*",
   "promotions.id",
@@ -49,6 +60,9 @@ export const cartFieldsForRefreshSteps = [
   "payment_collection.payment_sessions.id",
 ]
 
+/**
+ * Complete set of cart fields including all related entities for full cart representation
+ */
 export const completeCartFields = [
   "metadata",
   "id",
@@ -132,23 +146,14 @@ export const completeCartFields = [
   "items.variant.inventory_items.inventory.location_levels.stock_locations.sales_channels.name",
 ]
 
-export const cartFieldsForPricingContext = [
-  "id",
-  "sales_channel_id",
-  "currency_code",
-  "region_id",
-  "shipping_address.city",
-  "shipping_address.country_code",
-  "shipping_address.province",
-  "shipping_address.postal_code",
-  "item_total",
-  "total",
-  "locale",
-  "customer.id",
-  "email",
-  "customer.groups.id",
-]
+/**
+ * Cart fields required for pricing context calculations
+ */
+export const cartFieldsForPricingContext = [...fieldsForPricingContext]
 
+/**
+ * Product variant fields including related product data and inventory information
+ */
 export const productVariantsFields = [
   "id",
   "title",
@@ -168,6 +173,7 @@ export const productVariantsFields = [
   "product.thumbnail",
   "product.type.value",
   "product.type.id",
+  "product.collection.id",
   "product.collection.title",
   "product.handle",
   "product.discountable",
@@ -176,7 +182,9 @@ export const productVariantsFields = [
   "product.shipping_profile.id",
   "inventory_items.inventory_item_id",
   "inventory_items.required_quantity",
+  "inventory_items.inventory.id",
   "inventory_items.inventory.requires_shipping",
+  "inventory_items.inventory.location_levels.id",
   "inventory_items.inventory.location_levels.stocked_quantity",
   "inventory_items.inventory.location_levels.reserved_quantity",
   "inventory_items.inventory.location_levels.location_id",
@@ -188,13 +196,41 @@ export const productVariantsFields = [
   "inventory_items.inventory.location_levels.stock_locations.sales_channels.name",
 ]
 
-// ensure that at least these fields are present when fetching cart for caluclating shipping options prices
+/**
+ * Cache tags for what the caching module cannot compute from a response shaped by
+ * `productVariantsFields` (optionally combined with
+ * `requiredVariantFieldsForInventoryConfirmation`).
+ *
+ * Must be passed with `computeAutomaticTags: true`, since this list deliberately omits every
+ * entity the response exposes an `id` for - `ProductVariant`, `Product`,
+ * `ProductType`, `ShippingProfile`, `StockLocation` and `SalesChannel` are all
+ * computed from the response itself.
+ *
+ * What remains is what computation cannot see: link rows (whose own ids are never
+ * selected, and whose attach/detach touches none of the entities they join),
+ * relations selected without their id, and `ReservationItem`, which changes
+ * `reserved_quantity` without ever appearing in the response.
+ */
+export const productVariantsCacheTags = [
+  // Reservations adjust inventory levels without emitting inventory level events.
+  "ReservationItem:list:*",
+  "LinkProductVariantInventoryItem:list:*",
+  "LinkProductShippingProfile:list:*",
+  "LinkSalesChannelStockLocation:list:*",
+]
+
+/**
+ * Required fields when fetching cart for calculating shipping option prices
+ */
 export const cartFieldsForCalculateShippingOptionsPrices = [
   "id",
   "locale",
+  "currency_code",
+  "region_id",
   "items.*",
   "items.variant.id",
   "items.variant.product.id",
+  "items.variant.product.shipping_profile.id",
   "items.variant.weight",
   "items.variant.length",
   "items.variant.height",
@@ -204,5 +240,6 @@ export const cartFieldsForCalculateShippingOptionsPrices = [
   "items.product.collection_id",
   "items.product.categories.id",
   "items.product.tags.id",
+  "items.product.weight",
   "shipping_address.*",
 ]

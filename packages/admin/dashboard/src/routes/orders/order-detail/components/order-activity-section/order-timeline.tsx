@@ -6,9 +6,10 @@ import { PropsWithChildren, ReactNode, useMemo, useState } from "react"
 import {
   AdminClaim,
   AdminExchange,
-  AdminFulfillment,
   AdminOrder,
+  AdminOrderAddress,
   AdminOrderChange,
+  AdminOrderItem,
   AdminReturn,
 } from "@medusajs/types"
 import { useTranslation } from "react-i18next"
@@ -28,21 +29,33 @@ import {
   useExchanges,
 } from "../../../../../hooks/api/exchanges"
 import { useCancelReturn, useReturns } from "../../../../../hooks/api/returns"
+import {
+  useFulfillmentPermissions,
+  useOrderChangePermissions,
+  useOrderClaimPermissions,
+  useOrderExchangePermissions,
+  useOrderPermissions,
+  usePaymentPermissions,
+  useRefundPermissions,
+  useReturnPermissions,
+} from "../../../../../hooks/use-resource-permissions"
 import { useDate } from "../../../../../hooks/use-date"
 import { getFormattedAddress } from "../../../../../lib/addresses"
 import { getStylizedAmount } from "../../../../../lib/money-amount-helpers"
 import { getPaymentsFromOrder } from "../../../../../lib/orders"
 import ActivityItems from "./activity-items"
 import ChangeDetailsTooltip from "./change-details-tooltip"
+import { Thumbnail } from "../../../../../components/common/thumbnail"
+import { ExtendedOrderFulfillment, ExtendedOrder } from "../../constants"
 
 type OrderTimelineProps = {
-  order: AdminOrder
+  order: ExtendedOrder
 }
 
 /**
  * Arbitrary high limit to ensure all notes are fetched
  */
-const NOTE_LIMIT = 9999
+// const NOTE_LIMIT = 9999
 
 /**
  * Order Changes that are not related to RMA flows
@@ -110,38 +123,52 @@ export const OrderTimeline = ({ order }: OrderTimelineProps) => {
 }
 
 type Activity = {
-  title: string
-  timestamp: string | Date
+  title: ReactNode
+  timestamp: string | Date | null
   children?: ReactNode
-  itemsToSend?: (
-    | AdminClaim["additional_items"]
-    | AdminExchange["additional_items"]
-  )[]
+  itemsToSend?:
+    AdminClaim["additional_items"] | AdminExchange["additional_items"]
   itemsToReturn?: AdminReturn["items"]
   itemsMap?: Map<string, AdminOrderLineItem>
 }
 
-const useActivityItems = (order: AdminOrder): Activity[] => {
+const useActivityItems = (order: ExtendedOrder): Activity[] => {
   const { t } = useTranslation()
 
-  const { order: initialOrder = order } = useOrder(order.id, {
-    version: 1,
-    fields: "created_at,total,currency_code",
-  }, { enabled: order.version !== 1})
+  const { canRead: canReadOrderChanges } = useOrderChangePermissions()
+  const { canRead: canReadReturns } = useReturnPermissions()
+  const { canRead: canReadClaims } = useOrderClaimPermissions()
+  const { canRead: canReadExchanges } = useOrderExchangePermissions()
+  const { canRead: canReadPayments } = usePaymentPermissions()
+  const { canRead: canReadFulfillments } = useFulfillmentPermissions()
+  const { canRead: canReadRefunds } = useRefundPermissions()
 
-  const { order_changes: orderChanges = [] } = useOrderChanges(order.id, {
-    change_type: [
-      "edit",
-      "claim",
-      "exchange",
-      "return",
-      "transfer",
-      "update_order",
-    ],
-  })
+  const { order: initialOrder = order } = useOrder(
+    order.id,
+    {
+      version: 1,
+      fields: "created_at,total,currency_code",
+    },
+    { enabled: order.version !== 1 }
+  )
+
+  const { order_changes: orderChanges = [] } = useOrderChanges(
+    order.id,
+    {
+      change_type: [
+        "edit",
+        "claim",
+        "exchange",
+        "return",
+        "transfer",
+        "update_order",
+      ],
+    },
+    { enabled: canReadOrderChanges }
+  )
 
   const rmaChanges = orderChanges.filter(
-    (oc) => !NON_RMA_CHANGE_TYPES.includes(oc.change_type)
+    (oc) => !NON_RMA_CHANGE_TYPES.includes(oc.change_type!)
   )
 
   const missingLineItemIds = getMissingLineItemIds(order, rmaChanges)
@@ -155,7 +182,7 @@ const useActivityItems = (order: AdminOrder): Activity[] => {
     {
       enabled: !!rmaChanges.length,
     }
-  )
+  ) as { order_items: (AdminOrderItem & { quantity: number })[] | undefined }
 
   const itemsMap = useMemo(() => {
     const _itemsMap = new Map(order?.items?.map((i) => [i.id, i]))
@@ -171,24 +198,34 @@ const useActivityItems = (order: AdminOrder): Activity[] => {
     return _itemsMap
   }, [order.items, removedLineItems, missingLineItemIds])
 
-  const { returns = [] } = useReturns({
-    order_id: order.id,
-    fields: "+received_at,*items",
-  })
+  const { returns = [] } = useReturns(
+    {
+      order_id: order.id,
+      fields: "+received_at,*items",
+    },
+    { enabled: canReadReturns }
+  )
 
-  const { claims = [] } = useClaims({
-    order_id: order.id,
-    fields: "*additional_items",
-  })
+  const { claims = [] } = useClaims(
+    {
+      order_id: order.id,
+      fields: "*additional_items",
+    },
+    { enabled: canReadClaims }
+  )
 
-  const { exchanges = [] } = useExchanges({
-    order_id: order.id,
-    fields: "*additional_items",
-  })
+  const { exchanges = [] } = useExchanges(
+    {
+      order_id: order.id,
+      fields: "*additional_items",
+    },
+    { enabled: canReadExchanges }
+  )
 
-  const payments = getPaymentsFromOrder(order)
+  const payments = canReadPayments ? getPaymentsFromOrder(order) : []
 
-  const notes = []
+  // This isn't set anywhere
+  const notes: any[] = []
   const isLoading = false
   // const { notes, isLoading, isError, error } = useNotes(
   //   {
@@ -249,27 +286,45 @@ const useActivityItems = (order: AdminOrder): Activity[] => {
         })
       }
 
-      for (const refund of payment.refunds || []) {
+      const refunds = canReadRefunds ? payment.refunds : []
+      for (const refund of refunds || []) {
         items.push({
           title: t("orders.activity.events.payment.refunded"),
           timestamp: refund.created_at,
           children: (
-            <Text size="small" className="text-ui-fg-subtle">
-              {getStylizedAmount(
-                refund.amount as number,
-                payment.currency_code
+            <div className="flex flex-col gap-y-2 text-ui-fg-subtle">
+              <Text size="small">
+                {getStylizedAmount(
+                  refund.amount as number,
+                  payment.currency_code
+                )}
+              </Text>
+              {refund.created_by && (
+                <div className="flex items-center gap-x-2 text-sm">
+                  {t("fields.by")} <By id={refund.created_by} />
+                </div>
               )}
-            </Text>
+            </div>
           ),
         })
       }
     }
 
-    for (const fulfillment of order.fulfillments || []) {
+    const fulfillments = canReadFulfillments ? order.fulfillments : []
+    for (const fulfillment of fulfillments || []) {
       items.push({
         title: t("orders.activity.events.fulfillment.created"),
         timestamp: fulfillment.created_at,
-        children: <FulfillmentCreatedBody fulfillment={fulfillment} />,
+        children: (
+          <div className="flex flex-col gap-y-2 text-ui-fg-subtle">
+            <FulfillmentCreatedBody fulfillment={fulfillment} />
+            {fulfillment.created_by && (
+              <div className="flex items-center gap-x-2 text-sm">
+                {t("fields.by")} <By id={fulfillment.created_by} />
+              </div>
+            )}
+          </div>
+        ),
       })
 
       if (fulfillment.delivered_at) {
@@ -285,7 +340,14 @@ const useActivityItems = (order: AdminOrder): Activity[] => {
           title: t("orders.activity.events.fulfillment.shipped"),
           timestamp: fulfillment.shipped_at,
           children: (
-            <FulfillmentCreatedBody fulfillment={fulfillment} isShipment />
+            <div className="flex flex-col gap-y-2 text-ui-fg-subtle">
+              <FulfillmentCreatedBody fulfillment={fulfillment} />
+              {fulfillment.marked_shipped_by && (
+                <div className="flex items-center gap-x-2 text-sm">
+                  {t("fields.by")} <By id={fulfillment.marked_shipped_by} />
+                </div>
+              )}
+            </div>
           ),
         })
       }
@@ -315,7 +377,20 @@ const useActivityItems = (order: AdminOrder): Activity[] => {
         timestamp: ret.created_at,
         itemsToReturn: ret?.items,
         itemsMap,
-        children: <ReturnBody orderReturn={ret} isCreated={!ret.canceled_at} />,
+        children: (
+          <div className="flex flex-col gap-y-2 text-ui-fg-subtle">
+            <ReturnBody
+              orderReturn={ret}
+              isCreated={!ret.canceled_at}
+              isReceived={false}
+            />
+            {ret.created_by && !ret.canceled_at && (
+              <div className="flex items-center gap-x-2 text-sm">
+                {t("fields.by")} <By id={ret.created_by} />
+              </div>
+            )}
+          </div>
+        ),
       })
 
       if (ret.canceled_at) {
@@ -335,7 +410,9 @@ const useActivityItems = (order: AdminOrder): Activity[] => {
           timestamp: ret.received_at,
           itemsToReturn: ret?.items,
           itemsMap,
-          children: <ReturnBody orderReturn={ret} isReceived />,
+          children: (
+            <ReturnBody orderReturn={ret} isCreated={false} isReceived />
+          ),
         })
       }
     }
@@ -356,7 +433,16 @@ const useActivityItems = (order: AdminOrder): Activity[] => {
         itemsToSend: claim.additional_items,
         itemsToReturn: claimReturn?.items,
         itemsMap,
-        children: <ClaimBody claim={claim} claimReturn={claimReturn} />,
+        children: (
+          <div className="flex flex-col gap-y-2 text-ui-fg-subtle">
+            <ClaimBody claim={claim} claimReturn={claimReturn} />
+            {claim.created_by && !claim.canceled_at && (
+              <div className="flex items-center gap-x-2 text-sm">
+                {t("fields.by")} <By id={claim.created_by} />
+              </div>
+            )}
+          </div>
+        ),
       })
     }
 
@@ -377,7 +463,14 @@ const useActivityItems = (order: AdminOrder): Activity[] => {
         itemsToReturn: exchangeReturn?.items,
         itemsMap,
         children: (
-          <ExchangeBody exchange={exchange} exchangeReturn={exchangeReturn} />
+          <div className="flex flex-col gap-y-2 text-ui-fg-subtle">
+            <ExchangeBody exchange={exchange} exchangeReturn={exchangeReturn} />
+            {exchange.created_by && !exchange.canceled_at && (
+              <div className="flex items-center gap-x-2 text-sm">
+                {t("fields.by")} <By id={exchange.created_by} />
+              </div>
+            )}
+          </div>
         ),
       })
     }
@@ -391,7 +484,7 @@ const useActivityItems = (order: AdminOrder): Activity[] => {
       }
 
       items.push({
-        title: t(`orders.activity.events.edit.${edit.status}`, {
+        title: t(`orders.activity.events.edit.${edit.status}` as any, {
           editId: edit.id.slice(-7),
         }),
         timestamp:
@@ -449,18 +542,28 @@ const useActivityItems = (order: AdminOrder): Activity[] => {
           title: (
             <ChangeDetailsTooltip
               title={t(`orders.activity.events.update_order.shipping_address`)}
-              previous={getFormattedAddress({
-                address: update.actions[0].details.old,
-              }).join(", ")}
-              next={getFormattedAddress({
-                address: update.actions[0].details.new,
-              }).join(", ")}
+              previous={
+                <p className="txt-compact-small text-ui-fg-subtle">
+                  {getFormattedAddress({
+                    address: update.actions[0].details
+                      ?.old as AdminOrderAddress,
+                  }).join(", ")}
+                </p>
+              }
+              next={
+                <p className="txt-compact-small text-ui-fg-subtle">
+                  {getFormattedAddress({
+                    address: update.actions[0].details
+                      ?.new as AdminOrderAddress,
+                  }).join(", ")}
+                </p>
+              }
             />
           ),
           timestamp: update.created_at,
           children: (
-            <div className="text-ui-fg-subtle mt-2 flex gap-x-2 text-sm">
-              {t("fields.by")} <By id={update.created_by} />
+            <div className="mt-2 flex gap-x-2 text-sm text-ui-fg-subtle">
+              {t("fields.by")} <By id={update.created_by || "-"} />
             </div>
           ),
         })
@@ -471,18 +574,28 @@ const useActivityItems = (order: AdminOrder): Activity[] => {
           title: (
             <ChangeDetailsTooltip
               title={t(`orders.activity.events.update_order.billing_address`)}
-              previous={getFormattedAddress({
-                address: update.actions[0].details.old,
-              }).join(", ")}
-              next={getFormattedAddress({
-                address: update.actions[0].details.new,
-              }).join(", ")}
+              previous={
+                <p className="txt-compact-small text-ui-fg-subtle">
+                  {getFormattedAddress({
+                    address: update.actions[0].details
+                      ?.old as AdminOrderAddress,
+                  }).join(", ")}
+                </p>
+              }
+              next={
+                <p className="txt-compact-small text-ui-fg-subtle">
+                  {getFormattedAddress({
+                    address: update.actions[0].details
+                      ?.new as AdminOrderAddress,
+                  }).join(", ")}
+                </p>
+              }
             />
           ),
           timestamp: update.created_at,
           children: (
-            <div className="text-ui-fg-subtle mt-2 flex gap-x-2 text-sm">
-              {t("fields.by")} <By id={update.created_by} />
+            <div className="mt-2 flex gap-x-2 text-sm text-ui-fg-subtle">
+              {t("fields.by")} <By id={update.created_by || "-"} />
             </div>
           ),
         })
@@ -493,14 +606,22 @@ const useActivityItems = (order: AdminOrder): Activity[] => {
           title: (
             <ChangeDetailsTooltip
               title={t(`orders.activity.events.update_order.email`)}
-              previous={update.actions[0].details.old}
-              next={update.actions[0].details.new}
+              previous={
+                <p className="txt-compact-small text-ui-fg-subtle">
+                  {update.actions[0].details?.old as string}
+                </p>
+              }
+              next={
+                <p className="txt-compact-small text-ui-fg-subtle">
+                  {update.actions[0].details?.new as string}
+                </p>
+              }
             />
           ),
           timestamp: update.created_at,
           children: (
-            <div className="text-ui-fg-subtle mt-2 flex gap-x-2 text-sm">
-              {t("fields.by")} <By id={update.created_by} />
+            <div className="mt-2 flex gap-x-2 text-sm text-ui-fg-subtle">
+              {t("fields.by")} <By id={update.created_by || "-"} />
             </div>
           ),
         })
@@ -523,20 +644,23 @@ const useActivityItems = (order: AdminOrder): Activity[] => {
     }
 
     const sortedActivities = items.sort((a, b) => {
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      return (
+        new Date(b.timestamp as string | Date).getTime() -
+        new Date(a.timestamp as string | Date).getTime()
+      )
     })
 
     if (initialOrder.created_at) {
-        const createdAt = {
-          title: t("orders.activity.events.placed.title"),
-          timestamp: initialOrder.created_at,
-          children: (
-            <Text size="small" className="text-ui-fg-subtle">
-              {getStylizedAmount(initialOrder.total, initialOrder.currency_code)}
-            </Text>
-          ),
-        }
-        sortedActivities.push(createdAt)
+      const createdAt = {
+        title: t("orders.activity.events.placed.title"),
+        timestamp: initialOrder.created_at,
+        children: (
+          <Text size="small" className="text-ui-fg-subtle">
+            {getStylizedAmount(initialOrder.total, initialOrder.currency_code)}
+          </Text>
+        ),
+      }
+      sortedActivities.push(createdAt)
     }
 
     return [...sortedActivities]
@@ -554,12 +678,11 @@ const useActivityItems = (order: AdminOrder): Activity[] => {
 }
 
 type OrderActivityItemProps = PropsWithChildren<{
-  title: string
-  timestamp: string | Date
+  title: ReactNode
+  timestamp: string | Date | null
   isFirst?: boolean
   itemsToSend?:
-    | AdminClaim["additional_items"]
-    | AdminExchange["additional_items"]
+    AdminClaim["additional_items"] | AdminExchange["additional_items"]
   itemsToReturn?: AdminReturn["items"]
   itemsMap?: Map<string, AdminOrderLineItem>
 }>
@@ -579,11 +702,11 @@ const OrderActivityItem = ({
     <div className="grid grid-cols-[20px_1fr] items-start gap-2">
       <div className="flex size-full flex-col items-center gap-y-0.5">
         <div className="flex size-5 items-center justify-center">
-          <div className="bg-ui-bg-base shadow-borders-base flex size-2.5 items-center justify-center rounded-full">
-            <div className="bg-ui-tag-neutral-icon size-1.5 rounded-full" />
+          <div className="flex size-2.5 items-center justify-center rounded-full bg-ui-bg-base shadow-borders-base">
+            <div className="size-1.5 rounded-full bg-ui-tag-neutral-icon" />
           </div>
         </div>
-        {!isFirst && <div className="bg-ui-border-base w-px flex-1" />}
+        {!isFirst && <div className="w-px flex-1 bg-ui-border-base" />}
       </div>
       <div
         className={clx({
@@ -593,8 +716,10 @@ const OrderActivityItem = ({
         <div className="flex items-center justify-between">
           {itemsToSend?.length || itemsToReturn?.length ? (
             <ActivityItems
-              key={title}
-              title={title}
+              key={typeof title === "string" ? title : title?.toString()}
+              title={
+                typeof title === "string" ? title : title?.toString() || ""
+              }
               itemsToSend={itemsToSend}
               itemsToReturn={itemsToReturn}
               itemsMap={itemsMap}
@@ -611,7 +736,7 @@ const OrderActivityItem = ({
               <Text
                 size="small"
                 leading="compact"
-                className="text-ui-fg-subtle text-right"
+                className="text-right text-ui-fg-subtle"
               >
                 {getRelativeDate(timestamp)}
               </Text>
@@ -642,7 +767,7 @@ const OrderActivityCollapsible = ({
       {!open && (
         <div className="grid grid-cols-[20px_1fr] items-start gap-2">
           <div className="flex size-full flex-col items-center">
-            <div className="border-ui-border-strong w-px flex-1 bg-[linear-gradient(var(--border-strong)_33%,rgba(255,255,255,0)_0%)] bg-[length:1px_3px] bg-right bg-repeat-y" />
+            <div className="w-px flex-1 border-ui-border-strong bg-[linear-gradient(var(--border-strong)_33%,rgba(255,255,255,0)_0%)] bg-[length:1px_3px] bg-right bg-repeat-y" />
           </div>
           <div className="pb-4">
             <RadixCollapsible.Trigger className="text-left">
@@ -747,7 +872,7 @@ const OrderActivityCollapsible = ({
 const FulfillmentCreatedBody = ({
   fulfillment,
 }: {
-  fulfillment: AdminFulfillment
+  fulfillment: ExtendedOrderFulfillment
 }) => {
   const { t } = useTranslation()
 
@@ -777,7 +902,9 @@ const ReturnBody = ({
 }) => {
   const prompt = usePrompt()
   const { t } = useTranslation()
-
+  const { canUpdate: canUpdateOrder } = useOrderPermissions()
+  const { canUpdate: canUpdateReturn } = useReturnPermissions()
+  const canManage = canUpdateReturn && canUpdateOrder
   const { mutateAsync: cancelReturnRequest } = useCancelReturn(
     orderReturn.id,
     orderReturn.order_id
@@ -811,12 +938,12 @@ const ReturnBody = ({
           count: numberOfItems,
         })}
       </Text>
-      {isCreated && (
+      {isCreated && canManage && (
         <>
           <div className="mt-[2px] flex items-center leading-none">⋅</div>
           <Button
             onClick={onCancel}
-            className="text-ui-fg-subtle h-auto px-0 leading-none hover:bg-transparent"
+            className="h-auto px-0 leading-none text-ui-fg-subtle hover:bg-transparent"
             variant="transparent"
             size="small"
           >
@@ -840,6 +967,9 @@ const ClaimBody = ({
 
   const isCanceled = !!claim.created_at
 
+  const { canUpdate: canUpdateOrder } = useOrderPermissions()
+  const { canUpdate: canUpdateClaim } = useOrderClaimPermissions()
+  const canManage = canUpdateClaim && canUpdateOrder
   const { mutateAsync: cancelClaim } = useCancelClaim(claim.id, claim.order_id)
 
   const onCancel = async () => {
@@ -887,10 +1017,10 @@ const ClaimBody = ({
         </Text>
       )}
 
-      {!isCanceled && (
+      {canManage && !isCanceled && (
         <Button
           onClick={onCancel}
-          className="text-ui-fg-subtle h-auto px-0 leading-none hover:bg-transparent"
+          className="h-auto px-0 leading-none text-ui-fg-subtle hover:bg-transparent"
           variant="transparent"
           size="small"
         >
@@ -913,6 +1043,9 @@ const ExchangeBody = ({
 
   const isCanceled = !!exchange.canceled_at
 
+  const { canUpdate: canUpdateOrder } = useOrderPermissions()
+  const { canUpdate: canUpdateExchange } = useOrderExchangePermissions()
+  const canManage = canUpdateExchange && canUpdateOrder
   const { mutateAsync: cancelExchange } = useCancelExchange(
     exchange.id,
     exchange.order_id
@@ -963,10 +1096,10 @@ const ExchangeBody = ({
         </Text>
       )}
 
-      {!isCanceled && (
+      {canManage && !isCanceled && (
         <Button
           onClick={onCancel}
-          className="text-ui-fg-subtle h-auto px-0 leading-none hover:bg-transparent"
+          className="h-auto px-0 leading-none text-ui-fg-subtle hover:bg-transparent"
           variant="transparent"
           size="small"
         >
@@ -980,23 +1113,152 @@ const ExchangeBody = ({
 const OrderEditBody = ({ edit }: { edit: AdminOrderChange }) => {
   const { t } = useTranslation()
 
+  const isConfirmed = edit.status === "confirmed"
+  const isDeclined = edit.status === "declined"
+  const isCanceled = edit.status === "canceled"
+
+  const userId = isConfirmed
+    ? edit.confirmed_by
+    : isDeclined
+      ? edit.declined_by
+      : isCanceled
+        ? edit.canceled_by
+        : edit.requested_by
+
   const [itemsAdded, itemsRemoved] = useMemo(
     () => countItemsChange(edit.actions),
     [edit]
   )
 
-  return (
-    <div>
-      {itemsAdded > 0 && (
+  const ItemChangeDetails = ({
+    itemChange,
+    version,
+  }: {
+    itemChange: ItemChange
+    version: number
+  }) => {
+    // We need to know items that were completely removed, not just decreasing in quantity, since to get the item information for them
+    // we need to query the line items for the previous version, since the current order change version doesn't contain them
+    const deletedItemIdsSet = new Set(
+      itemChange.detail
+        .filter((item) => item.isDeleted)
+        .map((item) => item.lineItemId)
+    )
+    const isAllDeleted = deletedItemIdsSet.size === itemChange.detail.length
+    const isSomeDeleted = deletedItemIdsSet.size > 0
+
+    const { isLoading: isLoadingDeleted, order_items: deletedLineItems = [] } =
+      useOrderLineItems(
+        edit.order_id,
+        {
+          item_id: Array.from(deletedItemIdsSet),
+          version: version - 1,
+        },
+        {
+          enabled: isSomeDeleted,
+        }
+      )
+
+    const { isLoading, order_items: nonDeletedLineItems = [] } =
+      useOrderLineItems(
+        edit.order_id,
+        {
+          item_id: itemChange.detail
+            .filter((item) => !deletedItemIdsSet.has(item.lineItemId))
+            .map((item) => item.lineItemId),
+          version,
+        },
+        {
+          enabled: !isAllDeleted,
+        }
+      )
+
+    const lineItems = [...deletedLineItems, ...nonDeletedLineItems]
+
+    const label =
+      itemChange.type === "added" ? t("labels.added") : t("labels.removed")
+
+    if (isLoading || isLoadingDeleted) {
+      return (
         <Text size="small" className="text-ui-fg-subtle">
-          {t("labels.added")}: {itemsAdded}
+          {t("labels.loading")}
         </Text>
+      )
+    }
+
+    return (
+      <div className="flex flex-col divide-y divide-dashed text-ui-fg-subtle">
+        {lineItems.map((orderItem) => {
+          const itemChangeItem = itemChange.detail.find(
+            (item) => item.lineItemId === orderItem.item_id
+          )
+
+          if (!itemChangeItem) {
+            return null
+          }
+
+          const lineItem = orderItem.item
+
+          return (
+            <div
+              key={orderItem.item_id}
+              className="group flex items-start gap-x-4 py-3 first:pt-0 last:pb-0"
+            >
+              <Thumbnail src={lineItem.thumbnail} />
+              <div>
+                <Text
+                  size="small"
+                  leading="compact"
+                  className="text-ui-fg-base"
+                >
+                  {lineItem.title}
+                </Text>
+
+                {lineItem.variant_sku && (
+                  <Text size="small">{lineItem.variant_sku}</Text>
+                )}
+                <Text size="small">{`${label}: ${itemChangeItem.count}`}</Text>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col items-start gap-y-2 text-ui-fg-subtle">
+      {itemsAdded.totalCount > 0 && (
+        <ChangeDetailsTooltip
+          title={`${t("labels.added")}: ${itemsAdded.totalCount}`}
+          previous={
+            <ItemChangeDetails itemChange={itemsAdded} version={edit.version} />
+          }
+        />
       )}
 
-      {itemsRemoved > 0 && (
-        <Text size="small" className="text-ui-fg-subtle">
-          {t("labels.removed")}: {itemsRemoved}
-        </Text>
+      {itemsRemoved.totalCount > 0 && (
+        <ChangeDetailsTooltip
+          title={`${t("labels.removed")}: ${itemsRemoved.totalCount}`}
+          previous={
+            <ItemChangeDetails
+              itemChange={itemsRemoved}
+              version={edit.version}
+            />
+          }
+        />
+      )}
+      {edit.internal_note && (
+        <div className="mt-2 w-fit rounded-r-2xl rounded-bl-md rounded-tl-xl bg-ui-bg-component px-3 py-1.5 shadow-borders-base">
+          <Text size="xsmall" className="text-ui-fg-subtle">
+            {edit.internal_note}
+          </Text>
+        </div>
+      )}
+      {userId && (
+        <div className="flex items-center gap-x-2 text-sm">
+          {t("fields.by")} <By id={userId} />
+        </div>
       )}
     </div>
   )
@@ -1011,10 +1273,11 @@ const TransferOrderRequestBody = ({
   const { t } = useTranslation()
 
   const action = transfer.actions[0]
-  const { customer } = useCustomer(action.reference_id)
+  const { customer } = useCustomer(action.reference_id ?? "")
 
   const isCompleted = !!transfer.confirmed_at
 
+  const { canUpdate } = useOrderPermissions()
   const { mutateAsync: cancelTransfer } = useCancelOrderTransfer(
     transfer.order_id
   )
@@ -1043,7 +1306,8 @@ const TransferOrderRequestBody = ({
   return (
     <div>
       <Text size="small" className="text-ui-fg-subtle">
-        {t("orders.activity.from")}: {action.details?.original_email}
+        {t("orders.activity.from")}:{" "}
+        {action.details?.original_email as string | undefined}
       </Text>
 
       <Text size="small" className="text-ui-fg-subtle">
@@ -1052,10 +1316,10 @@ const TransferOrderRequestBody = ({
           ? `${customer?.first_name} ${customer?.last_name}`
           : customer?.email}
       </Text>
-      {!isCompleted && (
+      {canUpdate && !isCompleted && (
         <Button
           onClick={handleDelete}
-          className="text-ui-fg-subtle h-auto px-0 leading-none hover:bg-transparent"
+          className="h-auto px-0 leading-none text-ui-fg-subtle hover:bg-transparent"
           variant="transparent"
           size="small"
         >
@@ -1066,29 +1330,61 @@ const TransferOrderRequestBody = ({
   )
 }
 
+type ItemChange = {
+  totalCount: number
+  type: "added" | "removed"
+  detail: {
+    lineItemId: string
+    count: number
+    isDeleted?: boolean
+  }[]
+}
 /**
  * Returns count of added and removed item quantity
  */
-function countItemsChange(actions: AdminOrderChange["actions"]) {
-  let added = 0
-  let removed = 0
+function countItemsChange(
+  actions: AdminOrderChange["actions"]
+): [ItemChange, ItemChange] {
+  const addedChange: ItemChange = {
+    totalCount: 0,
+    detail: [],
+    type: "added",
+  }
+  const removedChange: ItemChange = {
+    totalCount: 0,
+    detail: [],
+    type: "removed",
+  }
 
   actions.forEach((action) => {
     if (action.action === "ITEM_ADD") {
-      added += action.details!.quantity as number
+      addedChange.totalCount += action.details!.quantity as number
+      addedChange.detail.push({
+        lineItemId: action.details!.reference_id as string,
+        count: action.details!.quantity as number,
+      })
     }
     if (action.action === "ITEM_UPDATE") {
       const quantityDiff = action.details!.quantity_diff as number
 
       if (quantityDiff > 0) {
-        added += quantityDiff
+        addedChange.totalCount += quantityDiff
+        addedChange.detail.push({
+          lineItemId: action.details!.reference_id as string,
+          count: quantityDiff,
+        })
       } else {
-        removed += Math.abs(quantityDiff)
+        removedChange.totalCount += Math.abs(quantityDiff)
+        removedChange.detail.push({
+          lineItemId: action.details!.reference_id as string,
+          count: Math.abs(quantityDiff),
+          isDeleted: action.details!.quantity === 0,
+        })
       }
     }
   })
 
-  return [added, removed]
+  return [addedChange, removedChange]
 }
 
 /**

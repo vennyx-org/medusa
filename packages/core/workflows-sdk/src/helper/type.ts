@@ -51,7 +51,7 @@ export type FlowCancelOptions = {
  */
 export type WorkflowResult<TResult = unknown> = {
   /**
-   * Any errors that occured in the workflow.
+   * Any errors that occurred in the workflow.
    */
   errors: TransactionStepError[]
   /**
@@ -68,7 +68,7 @@ export type ExportedWorkflow<
   TData = unknown,
   TResult = unknown,
   TDataOverride = undefined,
-  TResultOverride = undefined
+  TResultOverride = undefined,
 > = {
   run: (
     args?: FlowRunOptions<

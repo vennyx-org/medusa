@@ -10,6 +10,7 @@ import {
 import { sdk } from "../../lib/client"
 import { queryClient } from "../../lib/query-client"
 import { queryKeysFactory } from "../../lib/query-key-factory"
+import { usePricePreferencePermissions } from "../use-resource-permissions"
 
 const PRICE_PREFERENCES_QUERY_KEY = "price-preferences" as const
 export const pricePreferencesQueryKeys = queryKeysFactory(
@@ -18,7 +19,7 @@ export const pricePreferencesQueryKeys = queryKeysFactory(
 
 export const usePricePreference = (
   id: string,
-  query?: HttpTypes.AdminPricePreferenceParams,
+  query?: HttpTypes.AdminGetPricePreferenceParams,
   options?: Omit<
     UseQueryOptions<
       HttpTypes.AdminPricePreferenceResponse,
@@ -31,7 +32,7 @@ export const usePricePreference = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () => sdk.admin.pricePreference.retrieve(id, query),
-    queryKey: pricePreferencesQueryKeys.detail(),
+    queryKey: pricePreferencesQueryKeys.detail(id),
     ...options,
   })
 
@@ -50,10 +51,13 @@ export const usePricePreferences = (
     "queryKey" | "queryFn"
   >
 ) => {
+  const { canRead } = usePricePreferencePermissions()
+
   const { data, ...rest } = useQuery({
     queryFn: () => sdk.admin.pricePreference.list(query),
     queryKey: pricePreferencesQueryKeys.list(query),
     ...options,
+    enabled: (options?.enabled ?? true) && canRead,
   })
 
   return { ...data, ...rest }
@@ -61,7 +65,7 @@ export const usePricePreferences = (
 
 export const useUpsertPricePreference = (
   id?: string | undefined,
-  query?: HttpTypes.AdminPricePreferenceParams,
+  query?: HttpTypes.AdminGetPricePreferenceParams,
   options?: UseMutationOptions<
     HttpTypes.AdminPricePreferenceResponse,
     FetchError,
@@ -71,9 +75,16 @@ export const useUpsertPricePreference = (
   return useMutation({
     mutationFn: (payload) => {
       if (id) {
-        return sdk.admin.pricePreference.update(id, payload, query)
+        return sdk.admin.pricePreference.update(
+          id,
+          payload as HttpTypes.AdminUpdatePricePreference,
+          query
+        )
       }
-      return sdk.admin.pricePreference.create(payload, query)
+      return sdk.admin.pricePreference.create(
+        payload as HttpTypes.AdminCreatePricePreference,
+        query
+      )
     },
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({

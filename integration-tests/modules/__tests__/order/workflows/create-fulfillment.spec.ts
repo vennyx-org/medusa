@@ -3,7 +3,10 @@ import {
   createOrderFulfillmentWorkflow,
   createShippingOptionsWorkflow,
 } from "@medusajs/core-flows"
-import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
+import {
+  medusaIntegrationTestRunner,
+  normalizeBigNumbers,
+} from "@medusajs/test-utils"
 import {
   FulfillmentWorkflow,
   IOrderModuleService,
@@ -15,12 +18,7 @@ import {
   ShippingOptionDTO,
   StockLocationDTO,
 } from "@medusajs/types"
-import {
-  BigNumber,
-  ContainerRegistrationKeys,
-  Modules,
-  remoteQueryObjectFromString,
-} from "@medusajs/utils"
+import { BigNumber, ContainerRegistrationKeys, Modules, remoteQueryObjectFromString, } from "@medusajs/utils"
 
 jest.setTimeout(500000)
 
@@ -160,7 +158,7 @@ async function prepareDataFixtures({ container }) {
     },
     {
       [Modules.PRODUCT]: {
-        variant_id: product.variants[0].id,
+        variant_id: product.variants.find((v) => v.sku === variantSkuWithInventory)!.id,
       },
       [Modules.INVENTORY]: {
         inventory_item_id: inventoryItem.id,
@@ -233,15 +231,19 @@ async function prepareDataFixtures({ container }) {
 
 async function createOrderFixture({ container, product, location }) {
   const orderService: IOrderModuleService = container.resolve(Modules.ORDER)
+
+  const variantWithInventory = product.variants.find((v) => v.sku === variantSkuWithInventory)!
+  const variantWithoutInventory = product.variants.find((v) => v.sku === "test-variant-no-inventory")!
+
   let order = await orderService.createOrders({
     region_id: "test_region_id",
     email: "foo@bar.com",
     items: [
       {
         title: "Custom Item 2",
-        variant_sku: product.variants[0].sku,
-        variant_title: product.variants[0].title,
-        variant_id: product.variants[0].id,
+        variant_sku: variantWithInventory.sku,
+        variant_title: variantWithInventory.title,
+        variant_id: variantWithInventory.id,
         quantity: 1,
         unit_price: 50,
         adjustments: [
@@ -256,9 +258,9 @@ async function createOrderFixture({ container, product, location }) {
       },
       {
         title: product.title,
-        variant_sku: product.variants[1].sku,
-        variant_title: product.variants[1].title,
-        variant_id: product.variants[1].id,
+        variant_sku: variantWithoutInventory.sku,
+        variant_title: variantWithoutInventory.title,
+        variant_id: variantWithoutInventory.id,
         quantity: 1,
         unit_price: 200,
       },
@@ -418,9 +420,9 @@ medusaIntegrationTestRunner({
         )!
 
         expect(orderFulfill.fulfillments).toHaveLength(1)
-        expect(orderFulfillItemWithInventory.detail.fulfilled_quantity).toEqual(
-          1
-        )
+        expect(
+          normalizeBigNumbers(orderFulfillItemWithInventory.detail.fulfilled_quantity)
+        ).toEqual(1)
         expect(orderFulfill.fulfillments[0].metadata).toEqual({
           meta_key: "meta_value",
         })
@@ -546,7 +548,9 @@ medusaIntegrationTestRunner({
         const fulfilledItem = orderFulfill.items?.find((i) => i.id === itemId)
 
         expect(orderFulfill.fulfillments).toHaveLength(1)
-        expect(fulfilledItem?.detail.fulfilled_quantity).toEqual(1)
+        expect(normalizeBigNumbers(fulfilledItem?.detail.fulfilled_quantity)).toEqual(
+          1
+        )
 
         const inventoryModule = container.resolve(Modules.INVENTORY)
         const reservation = await inventoryModule.listReservationItems({
@@ -559,6 +563,52 @@ medusaIntegrationTestRunner({
           [location.id]
         )
         expect(stockAvailability.valueOf()).toEqual(1)
+      })
+
+      it("should persist created_by field when creating a fulfillment", async () => {
+        const order = await createOrderFixture({ container, product, location })
+        const itemWithInventory = order.items!.find(
+          (o) => o.variant_sku === variantSkuWithInventory
+        )!
+
+        const createdByUserId = "user_test_123"
+
+        // Create a fulfillment with created_by
+        const createOrderFulfillmentData: OrderWorkflow.CreateOrderFulfillmentWorkflowInput =
+          {
+            order_id: order.id,
+            created_by: createdByUserId,
+            items: [
+              {
+                id: itemWithInventory.id,
+                quantity: 1,
+              },
+            ],
+            no_notification: false,
+            location_id: undefined,
+          }
+
+        await createOrderFulfillmentWorkflow(container).run({
+          input: createOrderFulfillmentData,
+        })
+
+        const remoteQuery = container.resolve(
+          ContainerRegistrationKeys.REMOTE_QUERY
+        )
+        const remoteQueryObject = remoteQueryObjectFromString({
+          entryPoint: "order",
+          variables: {
+            id: order.id,
+          },
+          fields: ["*", "fulfillments.*"],
+        })
+
+        const [orderWithFulfillment] = await remoteQuery(remoteQueryObject)
+
+        expect(orderWithFulfillment.fulfillments).toHaveLength(1)
+        expect(orderWithFulfillment.fulfillments[0].created_by).toEqual(
+          createdByUserId
+        )
       })
     })
   },

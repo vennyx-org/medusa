@@ -32,11 +32,11 @@ In this chapter, you'll learn how to retrieve a product's brand (and vice-versa)
 
 ## Approach 1: Retrieve Brands in Existing API Routes
 
-Medusa's existing API routes accept a `fields` query parameter that allows you to specify the fields and relations of a model to retrieve. So, when you send a request to the [List Products](!api!/admin#products_getproducts), [Get Product](!api!/admin#products_getproductsid), or any product-related store or admin routes that accept a `fields` query parameter, you can specify in this parameter to return the product's brands.
+Medusa's existing API routes accept a `fields` query parameter that allows you to specify the fields and relations of a model to retrieve. So, when you send a request to the [List Products](!api!/admin/products/list-products), [Get Product](!api!/admin/products/get-a-product), or any product-related admin routes that accept a `fields` query parameter, you can specify in this parameter to return the product's brands.
 
 <Note>
 
-Learn more about using the `fields` query parameter to retrieve custom linked data models in the [Retrieve Custom Linked Data Models from Medusa's API Routes](../../../fundamentals/api-routes/retrieve-custom-links/page.mdx) chapter.
+Learn more about using the `fields` query parameter to retrieve custom linked data models in the [Retrieve Custom Linked Data Models from Medusa's API Routes](../../../fundamentals/api-routes/retrieve-custom-links/page.mdx) chapter. For store routes, you'll need to override the allowed fields and relations to retrieve your custom linked data models.
 
 </Note>
 
@@ -49,7 +49,7 @@ curl 'http://localhost:9000/admin/products?fields=+brand.*' \
 
 <Note title="Tip">
 
-Make sure to replace `{token}` with your admin user's authentication token. Learn how to retrieve it in the [API reference](!api!/store#authentication).
+Make sure to replace `{token}` with your admin user's authentication token. Learn how to retrieve it in the [API reference](!api!/store/authentication).
 
 </Note>
 
@@ -75,21 +75,21 @@ By using the `fields` query parameter, you don't have to re-create existing API 
 
 While you can retrieve linked records using the `fields` query parameter of an existing API route, you can't filter by linked records.
 
-Instead, you'll have to create a custom API route that uses [Query](../../../fundamentals/module-links/query/page.mdx#apply-filters-and-pagination-on-linked-records) to retrieve linked records with filters.
+Instead, you'll have to create a custom API route that uses [Query](../../../fundamentals/query/page.mdx#filter-by-linked-data-models-property) to filter by linked records.
 
 ---
 
 ## Approach 2: Use Query to Retrieve Linked Records
 
-You can also retrieve linked records using [Query](../../../fundamentals/module-links/query/page.mdx). Query allows you to retrieve data across modules with filters, pagination, and more. You can resolve Query from the Medusa container and use it in your API route or workflow.
+You can also retrieve linked records using [Query](../../../fundamentals/query/page.mdx). Query allows you to retrieve data across modules with filters, pagination, and more. You can resolve Query from the Medusa container and use it in your API route or workflow.
 
 For example, you can create an API route that retrieves brands and their products. If you followed the [Create Brands API route chapter](../../custom-features/api-route/page.mdx), you'll have the file `src/api/admin/brands/route.ts` with a `POST` API route. Add a new `GET` function to the same file:
 
 export const highlights = [
-  ["11", "resolve", "Resolve Query from the Medusa container."],
-  ["13", "graph", "Run a query to retrieve brands with their linked products."],
-  ["14", "entity", "The name of the model to query."],
-  ["15", "fields", "The fields and relations to retrieve."]
+  ["14", "resolve", "Resolve Query from the Medusa container."],
+  ["18", "graph", "Run a query to retrieve brands with their linked products."],
+  ["19", "entity", "The name of the model to query."],
+  ["20", "fields", "The fields and relations to retrieve."]
 ]
 
 ```ts title="src/api/admin/brands/route.ts" highlights={highlights}
@@ -98,12 +98,17 @@ import {
   MedusaRequest,
   MedusaResponse,
 } from "@medusajs/framework/http"
+import {
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils"
 
 export const GET = async (
   req: MedusaRequest,
   res: MedusaResponse
 ) => {
-  const query = req.scope.resolve("query")
+  const query = req.scope.resolve(
+    ContainerRegistrationKeys.QUERY
+  )
   
   const { data: brands } = await query.graph({
     entity: "brand",
@@ -134,7 +139,7 @@ curl 'http://localhost:9000/admin/brands' \
 
 <Note title="Tip">
 
-Make sure to replace `{token}` with your admin user's authentication token. Learn how to retrieve it in the [API reference](!api!/store#authentication).
+Make sure to replace `{token}` with your admin user's authentication token. Learn how to retrieve it in the [API reference](!api!/store/authentication).
 
 </Note>
 
@@ -157,11 +162,23 @@ This returns the brands in your store with their linked products. For example:
 }
 ```
 
-### Limitations: Filtering by Brand in Query
+### Filter by Brand in Query
 
-While you can use Query to retrieve linked records, you can't filter by linked records.
+Starting from [Medusa v2.18.0](https://github.com/medusajs/medusa/releases/tag/v2.18.0), you can also filter products by their linked brand. For example:
 
-For an alternative approach, refer to the [Query documentation](../../../fundamentals/module-links/query/page.mdx#apply-filters-and-pagination-on-linked-records).
+```ts
+const { data: products } = await query.graph({
+  entity: "product",
+  fields: ["*", "brand.*"],
+  filters: {
+    brand: {
+      name: "Acme",
+    },
+  },
+})
+```
+
+This retrieves only the products linked to a brand named `Acme`. Learn more about filtering by linked records in the [Query documentation](../../../fundamentals/query/page.mdx#filter-by-linked-data-models-property).
 
 ---
 
@@ -169,7 +186,7 @@ For an alternative approach, refer to the [Query documentation](../../../fundame
 
 By following the examples of the previous chapters, you:
 
-- Defined a link between the Brand and Product modules's data models, allowing you to associate a product with a brand.
+- Defined a link between the Brand and Product modules' data models, allowing you to associate a product with a brand.
 - Extended the create-product workflow and route to allow setting the product's brand while creating the product.
 - Queried a product's brand, and vice versa.
 

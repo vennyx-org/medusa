@@ -4,7 +4,7 @@ import {
   ReceiptPercent,
   XCircle,
 } from "@medusajs/icons"
-import { AdminOrderLineItem } from "@medusajs/types"
+import { AdminOrderLinePreview } from "@medusajs/types"
 import { Badge, Input, Text, toast, Tooltip } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
 
@@ -20,7 +20,7 @@ import {
 } from "../../../../../hooks/api/order-edits"
 
 type OrderEditItemProps = {
-  item: AdminOrderLineItem
+  item: AdminOrderLinePreview
   currencyCode: string
   orderId: string
 }
@@ -77,7 +77,9 @@ function OrderEditItem({ item, currencyCode, orderId }: OrderEditItemProps) {
         await updateOriginalItem({ quantity, itemId: item.id })
       }
     } catch (e) {
-      toast.error(e.message)
+      toast.error(
+        e instanceof Error ? e.message : t("errorBoundary.defaultTitle")
+      )
     }
   }
 
@@ -94,7 +96,9 @@ function OrderEditItem({ item, currencyCode, orderId }: OrderEditItemProps) {
         })
       }
     } catch (e) {
-      toast.error(e.message)
+      toast.error(
+        e instanceof Error ? e.message : t("errorBoundary.defaultTitle")
+      )
     }
   }
 
@@ -108,11 +112,16 @@ function OrderEditItem({ item, currencyCode, orderId }: OrderEditItemProps) {
         await undoAction(updateItemAction.id) // Remove action that updated items quantity to fulfilled quantity which makes it "removed"
       }
     } catch (e) {
-      toast.error(e.message)
+      toast.error(
+        e instanceof Error ? e.message : t("errorBoundary.defaultTitle")
+      )
     }
   }
 
   const onDuplicate = async () => {
+    if (!item.variant_id) {
+      return
+    }
     try {
       await addItems({
         items: [
@@ -123,14 +132,16 @@ function OrderEditItem({ item, currencyCode, orderId }: OrderEditItemProps) {
         ],
       })
     } catch (e) {
-      toast.error(e.message)
+      toast.error(
+        e instanceof Error ? e.message : t("errorBoundary.defaultTitle")
+      )
     }
   }
 
   return (
     <div
       key={item.quantity}
-      className="bg-ui-bg-subtle shadow-elevation-card-rest my-2 rounded-xl "
+      className="my-2 rounded-xl bg-ui-bg-subtle shadow-elevation-card-rest"
     >
       <div className="flex flex-col items-center gap-x-2 gap-y-2 p-3 text-sm md:flex-row">
         <div className="flex flex-1 items-center justify-between">
@@ -145,7 +156,7 @@ function OrderEditItem({ item, currencyCode, orderId }: OrderEditItemProps) {
 
                 {item.variant_sku && <span>({item.variant_sku})</span>}
               </div>
-              <Text as="div" className="text-ui-fg-subtle txt-small">
+              <Text as="div" className="txt-small text-ui-fg-subtle">
                 {item.subtitle}
               </Text>
             </div>
@@ -178,7 +189,7 @@ function OrderEditItem({ item, currencyCode, orderId }: OrderEditItemProps) {
         <div className="flex flex-1 items-center justify-between">
           <div className="flex flex-grow items-center gap-2">
             <Input
-              className="bg-ui-bg-base txt-small w-[67px] rounded-lg [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              className="txt-small w-[67px] rounded-lg bg-ui-bg-base [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               type="number"
               step="any"
               disabled={item.detail.fulfilled_quantity === item.quantity}
@@ -208,13 +219,13 @@ function OrderEditItem({ item, currencyCode, orderId }: OrderEditItemProps) {
                     </span>
                   }
                 >
-                  <ReceiptPercent className="text-ui-fg-subtle font-normal" />
+                  <ReceiptPercent className="font-normal text-ui-fg-subtle" />
                 </Tooltip>
               </div>
             )}
           </div>
 
-          <div className="text-ui-fg-subtle txt-small mr-2 flex flex-shrink-0">
+          <div className="txt-small mr-2 flex flex-shrink-0 text-ui-fg-subtle">
             <MoneyAmountCell currencyCode={currencyCode} amount={item.total} />
           </div>
 

@@ -1,5 +1,6 @@
 import chalk from "chalk"
 import { readFileSync, writeFileSync } from "fs"
+import { STATUS_CODES } from "http"
 import { OpenAPIV3 } from "openapi-types"
 import { basename, join } from "path"
 import ts, { SyntaxKind } from "typescript"
@@ -31,6 +32,9 @@ import FunctionKindGenerator, {
   VariableNode,
 } from "./function.js"
 import { API_ROUTE_PARAM_REGEX } from "../../constants.js"
+import QueryConfigHelper, {
+  FieldRestrictions,
+} from "../helpers/query-config.js"
 import TypesHelper from "../helpers/types.js"
 import {
   isLevelExceeded,
@@ -39,6 +43,10 @@ import {
 import { MedusaEvent } from "types"
 
 const RES_STATUS_REGEX = /^res[\s\S]*\.status\((\d+)\)/
+// matches responses that only send a status code, such as `res.sendStatus(201)`
+// or the deprecated `res.send(200)`. Express sends the status code's message
+// as a plain text body in these cases.
+const RES_SEND_STATUS_REGEX = /^res[\s\S]*\.(?:sendStatus|send)\((\d+)\)/
 
 type SchemaDescriptionOptions = {
   symbol?: ts.Symbol
@@ -85,8 +93,13 @@ class OasKindGenerator extends FunctionKindGenerator {
     "RequestWithContext",
     "AuthenticatedMedusaRequest",
     "MedusaStoreRequest",
+    "StoreRequestWithContext",
+    "StoreVariantListRequest",
   ]
-  readonly REQUEST_CHECK_QUERY_ARGS = ["RequestWithContext"]
+  readonly REQUEST_CHECK_QUERY_ARGS = [
+    "RequestWithContext",
+    "StoreVariantListRequest",
+  ]
   // as it's not always possible to detect authenticated request
   // use this to override the default detection logic.
   readonly AUTH_REQUESTS: AuthRequests[] = [
@@ -150,6 +163,7 @@ class OasKindGenerator extends FunctionKindGenerator {
   protected oasSchemaHelper: OasSchemaHelper
   protected schemaFactory: SchemaFactory
   protected typesHelper: TypesHelper
+  protected queryConfigHelper: QueryConfigHelper
   protected events: MedusaEvent[] = []
 
   constructor(options: GeneratorOptions) {
@@ -164,6 +178,7 @@ class OasKindGenerator extends FunctionKindGenerator {
     this.typesHelper = new TypesHelper({
       checker: this.checker,
     })
+    this.queryConfigHelper = new QueryConfigHelper()
     this.init()
 
     this.generatorEventManager.listen(
@@ -205,14 +220,46 @@ class OasKindGenerator extends FunctionKindGenerator {
       return false
     }
 
-    const hasCorrectRequestType = this.REQUEST_TYPE_NAMES.some(
-      (name) => functionNode.parameters[0].type?.getText().startsWith(name)
-    )
-    const hasCorrectResponseType = this.RESPONSE_TYPE_NAMES.some(
-      (name) => functionNode.parameters[1].type?.getText().startsWith(name)
+    const hasCorrectRequestType =
+      this.getRequestTypeReferenceNode(functionNode.parameters[0].type) !==
+      undefined
+    const hasCorrectResponseType = this.RESPONSE_TYPE_NAMES.some((name) =>
+      functionNode.parameters[1].type?.getText().startsWith(name)
     )
 
     return hasCorrectRequestType && hasCorrectResponseType
+  }
+
+  /**
+   * Resolve the request's type reference node from a function's first parameter type.
+   * This supports a direct type reference, such as `MedusaRequest<T>`, a union of request
+   * types, such as `MedusaRequest<T> | AuthenticatedMedusaRequest<T>`, and an intersection
+   * with additional request properties, such as `MedusaStoreRequest<T> & ConfiguredStoreSearch`.
+   * In both composite cases, the first member matching {@link REQUEST_TYPE_NAMES} is returned,
+   * as union members share the same type arguments and intersection members are mixins.
+   *
+   * @param typeNode - The first parameter's type node.
+   * @returns The matching request type reference node, if any.
+   */
+  getRequestTypeReferenceNode(
+    typeNode: ts.TypeNode | undefined
+  ): ts.TypeReferenceNode | undefined {
+    if (!typeNode) {
+      return undefined
+    }
+
+    const candidateNodes: ts.TypeNode[] =
+      ts.isUnionTypeNode(typeNode) || ts.isIntersectionTypeNode(typeNode)
+        ? [...typeNode.types]
+        : [typeNode]
+
+    return candidateNodes.find(
+      (candidate): candidate is ts.TypeReferenceNode =>
+        ts.isTypeReferenceNode(candidate) &&
+        this.REQUEST_TYPE_NAMES.some((name) =>
+          candidate.typeName.getText().startsWith(name)
+        )
+    )
   }
 
   /**
@@ -411,28 +458,16 @@ class OasKindGenerator extends FunctionKindGenerator {
       oas.tags = [tagName]
     }
 
-    // detect returned response status
-    const responseStatus = this.getResponseStatus(node)
+    // detect returned response status and content
+    const { status: responseStatus, content: responseContent } =
+      this.getResponseDetails(node)
 
     // add responses
     oas.responses = {
-      [responseStatus]: {
-        description: "OK",
-      },
-    }
-
-    if (responseSchema && Object.keys(responseSchema).length > 0) {
-      ;(oas.responses[responseStatus] as OpenAPIV3.ResponseObject).content = {
-        "application/json": {
-          schema:
-            this.oasSchemaHelper.namedSchemaToReference(responseSchema) ||
-            this.oasSchemaHelper.schemaChildrenToRefs(responseSchema),
-        },
-      }
-    }
-
-    oas.responses = {
-      ...(oas.responses || {}),
+      [responseStatus]: this.createSuccessResponse({
+        schema: responseSchema,
+        content: responseContent,
+      }),
       ...DEFAULT_OAS_RESPONSES,
     }
 
@@ -449,6 +484,16 @@ class OasKindGenerator extends FunctionKindGenerator {
       // get associated events
       oas["x-events"] = this.getOasEvents(oas["x-workflow"])
     }
+
+    // get the fields and relations restrictions of the route's query config
+    const fieldRestrictions = this.getFieldRestrictions({
+      node,
+      oasPath,
+      methodName,
+    })
+
+    oas["x-allowed"] = fieldRestrictions?.allowed
+    oas["x-disallowed"] = fieldRestrictions?.disallowed
 
     // check deprecation and version in tags
     const { deprecatedTag, sinceTag, featureFlagTag } =
@@ -634,7 +679,8 @@ class OasKindGenerator extends FunctionKindGenerator {
     }
 
     // update response schema and status
-    const newStatus = this.getResponseStatus(node)
+    const { status: newStatus, content: newResponseContent } =
+      this.getResponseDetails(node)
     const newResponseSchema = this.getResponseSchema({
       node,
       tagName,
@@ -642,33 +688,26 @@ class OasKindGenerator extends FunctionKindGenerator {
     })
     let updatedResponseSchema: OpenApiSchema | undefined
 
-    if (!oas.responses && newResponseSchema) {
+    if (!oas.responses && (newResponseSchema || newResponseContent)) {
       // add response schema
       oas.responses = {
-        [newStatus]: {
-          description: "OK",
-          content: {
-            "application/json": {
-              schema:
-                this.oasSchemaHelper.namedSchemaToReference(
-                  newResponseSchema
-                ) ||
-                this.oasSchemaHelper.schemaChildrenToRefs(newResponseSchema),
-            },
-          },
-        },
+        [newStatus]: this.createSuccessResponse({
+          schema: newResponseSchema,
+          content: newResponseContent,
+        }),
         ...DEFAULT_OAS_RESPONSES,
       }
       updatedResponseSchema = newResponseSchema
     } else if (oas.responses && !newResponseSchema) {
-      // check if it has a success response of a type other than JSON
-      if (!this.hasResponseType(node, oas)) {
+      // the route doesn't send a JSON body, so only the generated content,
+      // if any, is kept. Manually added content types are kept as-is.
+      if (newResponseContent || !this.hasResponseType(node, oas)) {
         // remove response schema by only keeping the default responses
         oas.responses = {
           ...DEFAULT_OAS_RESPONSES,
-          [newStatus]: {
-            description: "OK",
-          },
+          [newStatus]: this.createSuccessResponse({
+            content: newResponseContent,
+          }),
         }
       }
     } else {
@@ -678,7 +717,7 @@ class OasKindGenerator extends FunctionKindGenerator {
       )
       const oldResponseSchema = oldResponseStatus
         ? ((oas.responses![oldResponseStatus] as OpenAPIV3.ResponseObject)
-            .content?.["application/json"].schema as OpenApiSchema)
+            .content?.["application/json"]?.schema as OpenApiSchema)
         : undefined
 
       updatedResponseSchema = this.updateSchema({
@@ -693,21 +732,9 @@ class OasKindGenerator extends FunctionKindGenerator {
 
       if (updatedResponseSchema && Object.keys(updatedResponseSchema).length) {
         // update the response schema
-        oas.responses![newStatus] = {
-          description: "OK",
-          content: {
-            "application/json": {
-              schema: updatedResponseSchema
-                ? this.oasSchemaHelper.namedSchemaToReference(
-                    updatedResponseSchema
-                  ) ||
-                  this.oasSchemaHelper.schemaChildrenToRefs(
-                    updatedResponseSchema
-                  )
-                : updatedResponseSchema,
-            },
-          },
-        }
+        oas.responses![newStatus] = this.createSuccessResponse({
+          schema: updatedResponseSchema,
+        })
       } else if (oldResponseStatus) {
         // delete the old response schema
         delete oas.responses![oldResponseStatus]
@@ -802,6 +829,25 @@ class OasKindGenerator extends FunctionKindGenerator {
     if (oas["x-workflow"]) {
       // get associated events
       oas["x-events"] = this.getOasEvents(oas["x-workflow"])
+    }
+
+    // update the fields and relations restrictions of the route's query config
+    const fieldRestrictions = this.getFieldRestrictions({
+      node,
+      oasPath,
+      methodName,
+    })
+
+    if (fieldRestrictions?.allowed) {
+      oas["x-allowed"] = fieldRestrictions.allowed
+    } else {
+      delete oas["x-allowed"]
+    }
+
+    if (fieldRestrictions?.disallowed) {
+      oas["x-disallowed"] = fieldRestrictions.disallowed
+    } else {
+      delete oas["x-disallowed"]
     }
 
     // check deprecation and version in tags
@@ -1233,10 +1279,11 @@ class OasKindGenerator extends FunctionKindGenerator {
       )
     }
 
-    if (
-      !node.parameters[0].type ||
-      !ts.isTypeReferenceNode(node.parameters[0].type)
-    ) {
+    const requestTypeReferenceNode = this.getRequestTypeReferenceNode(
+      node.parameters[0].type
+    )
+
+    if (!requestTypeReferenceNode) {
       return {
         queryParameters,
         requestSchema,
@@ -1244,14 +1291,14 @@ class OasKindGenerator extends FunctionKindGenerator {
     }
 
     const requestType = this.checker.getTypeFromTypeNode(
-      node.parameters[0].type
+      requestTypeReferenceNode
     ) as ts.TypeReference
 
     const requestTypeArguments =
       requestType.typeArguments || requestType.aliasTypeArguments
     const shouldCheckTypeArgumentForQuery =
       this.REQUEST_CHECK_QUERY_ARGS.includes(
-        node.parameters[0].type.typeName.getText()
+        requestTypeReferenceNode.typeName.getText()
       )
 
     if (
@@ -1275,11 +1322,11 @@ class OasKindGenerator extends FunctionKindGenerator {
     const isQuery = methodName === "get"
 
     const zodObjectRequestBodyTypeName = getCorrectZodTypeName({
-      typeReferenceNode: node.parameters[0].type,
+      typeReferenceNode: requestTypeReferenceNode,
       itemType: requestTypeArguments[0],
     })
     const zodObjectQueryTypeName = getCorrectZodTypeName({
-      typeReferenceNode: node.parameters[0].type,
+      typeReferenceNode: requestTypeReferenceNode,
       itemType: requestTypeArguments[checkQueryIndex],
     })
 
@@ -1371,7 +1418,7 @@ class OasKindGenerator extends FunctionKindGenerator {
         schema: {
           type: "string",
           externalDocs: {
-            url: "https://docs.medusajs.com/api/store#publishable-api-key",
+            url: "https://docs.medusajs.com/api/store/publishable-api-key",
           },
         },
       }),
@@ -1395,23 +1442,113 @@ class OasKindGenerator extends FunctionKindGenerator {
   }
 
   /**
-   * Retrieve the response's status.
+   * Retrieve the status and content of the response that the route sends.
    *
-   * @param node - The node to retrieve its response status.
-   * @returns The response's status.
+   * @param node - The node to retrieve its response details.
+   * @returns The response's status and, if the route doesn't send a JSON body,
+   * the response's content.
    */
-  getResponseStatus(node: FunctionNode): string {
-    let responseStatus = "200"
+  getResponseDetails(node: FunctionNode): {
+    /**
+     * The response's status.
+     */
+    status: string
+    /**
+     * The response's content, if the route sends a body that isn't JSON.
+     */
+    content?: OpenAPIV3.ResponseObject["content"]
+  } {
+    let status = "200"
+    let content: OpenAPIV3.ResponseObject["content"] | undefined
+
     if ("body" in node && node.body && "statements" in node.body) {
       node.body.statements.forEach((statement) => {
-        const matched = RES_STATUS_REGEX.exec(statement.getText())?.splice(1)
-        if (matched?.length === 1) {
-          responseStatus = matched[0]
+        const statementText = statement.getText()
+        const sendStatusMatched =
+          RES_SEND_STATUS_REGEX.exec(statementText)?.at(1)
+
+        if (sendStatusMatched) {
+          status = sendStatusMatched
+          content = this.getStatusMessageContent(status)
+          return
+        }
+
+        const statusMatched = RES_STATUS_REGEX.exec(statementText)?.at(1)
+
+        if (statusMatched) {
+          status = statusMatched
+          content = undefined
         }
       })
     }
 
-    return responseStatus
+    return { status, content }
+  }
+
+  /**
+   * Retrieve the content of a response whose body is the status code's message,
+   * such as `Created` for the `201` status code.
+   *
+   * @param status - The response's status.
+   * @returns The response's content, if the status has an associated message.
+   */
+  getStatusMessageContent(
+    status: string
+  ): OpenAPIV3.ResponseObject["content"] | undefined {
+    const statusMessage = STATUS_CODES[status]
+
+    if (!statusMessage) {
+      return
+    }
+
+    return {
+      "text/plain": {
+        schema: {
+          type: "string",
+          title: "message",
+          description: `The ${status} status code's message.`,
+          example: statusMessage,
+        },
+      },
+    }
+  }
+
+  /**
+   * Create the success response of an OAS operation.
+   *
+   * @param param0 - The response's details.
+   * @returns The success response.
+   */
+  createSuccessResponse({
+    schema,
+    content,
+  }: {
+    /**
+     * The JSON schema of the response's body, if available.
+     */
+    schema?: OpenApiSchema
+    /**
+     * The response's content, used if the response doesn't have a JSON body.
+     */
+    content?: OpenAPIV3.ResponseObject["content"]
+  }): OpenAPIV3.ResponseObject {
+    const response: OpenAPIV3.ResponseObject = {
+      description: "OK",
+    }
+
+    if (schema && Object.keys(schema).length > 0) {
+      response.content = {
+        "application/json": {
+          schema:
+            this.oasSchemaHelper.namedSchemaToReference(schema) ||
+            this.oasSchemaHelper.schemaChildrenToRefs(schema),
+        },
+      }
+    } else if (content) {
+      response.content = content
+    }
+
+    return response
   }
 
   /**
@@ -1539,13 +1676,17 @@ class OasKindGenerator extends FunctionKindGenerator {
     }
 
     const symbol = itemType.aliasSymbol || itemType.symbol
-    const description = descriptionOptions?.typeStr
-      ? this.getSchemaDescription(
-          descriptionOptions as SchemaDescriptionOptions
-        )
-      : title
-        ? this.getSchemaDescription({ typeStr: title, nodeType: itemType })
-        : SUMMARY_PLACEHOLDER
+    // the TSDoc comment of the property, if any, is more accurate than the
+    // description generated from the knowledge base.
+    const description =
+      this.getSymbolDescription(originalSymbol) ||
+      (descriptionOptions?.typeStr
+        ? this.getSchemaDescription(
+            descriptionOptions as SchemaDescriptionOptions
+          )
+        : title
+          ? this.getSchemaDescription({ typeStr: title, nodeType: itemType })
+          : SUMMARY_PLACEHOLDER)
     const typeAsString =
       zodObjectTypeName || this.checker.typeToString(itemType)
 
@@ -1772,7 +1913,7 @@ class OasKindGenerator extends FunctionKindGenerator {
         }
       case itemType.isIntersection():
         const allOfItems = this.typesHelper
-          .cleanUpTypes((itemType as ts.IntersectionType).types)
+          .cleanUpIntersectionTypes((itemType as ts.IntersectionType).types)
           .map((intersectionType) => {
             return this.typeToSchema({
               itemType: intersectionType,
@@ -1873,16 +2014,23 @@ class OasKindGenerator extends FunctionKindGenerator {
         const isDeleteResponse =
           baseType?.aliasSymbol?.getEscapedName() === "DeleteResponse"
 
+        const schemaName =
+          itemType.isClassOrInterface() ||
+          itemType.isTypeParameter() ||
+          (isZodObject(itemType) && zodObjectTypeName)
+            ? this.oasSchemaHelper.normalizeSchemaName(typeAsString)
+            : undefined
+
         const objSchema: OpenApiSchema = {
           type: "object",
-          description,
+          // a named schema is written to its own file and referenced with `$ref`,
+          // which discards the description of the property it was reached from.
+          // So, the type's description is used instead when available.
+          description: schemaName
+            ? this.getSymbolDescription(symbol) || description
+            : description,
           deprecated: isDeprecated,
-          "x-schemaName":
-            itemType.isClassOrInterface() ||
-            itemType.isTypeParameter() ||
-            (isZodObject(itemType) && zodObjectTypeName)
-              ? this.oasSchemaHelper.normalizeSchemaName(typeAsString)
-              : undefined,
+          "x-schemaName": schemaName,
           // this is changed later
           required: undefined,
           "x-featureFlag": featureFlag,
@@ -2028,6 +2176,22 @@ class OasKindGenerator extends FunctionKindGenerator {
       default:
         return {}
     }
+  }
+
+  /**
+   * Retrieve the description of a symbol from its TSDoc comment.
+   *
+   * @param symbol - The symbol to retrieve its description.
+   * @returns The symbol's description, if it has a TSDoc comment.
+   */
+  getSymbolDescription(symbol?: ts.Symbol): string | undefined {
+    const commentParts = symbol?.getDocumentationComment(this.checker)
+
+    if (!commentParts?.length) {
+      return
+    }
+
+    return ts.displayPartsToString(commentParts).trim() || undefined
   }
 
   /**
@@ -2408,6 +2572,44 @@ class OasKindGenerator extends FunctionKindGenerator {
     ) {
       oldSchemaObj.anyOf = newSchemaObj.anyOf
       wasUpdated = true
+    } else if (oldSchemaType === "allOf") {
+      const getPropertyType = (
+        property: OpenApiSchema | OpenAPIV3.ReferenceObject
+      ) => {
+        return this.oasSchemaHelper.isRefObject(property)
+          ? "object"
+          : this.inferOasSchemaType(property)
+      }
+
+      oldSchemaObj!.allOf!.forEach((oldItem, index) => {
+        const newItem = newSchemaObj.allOf![index]
+        if (
+          this.oasSchemaHelper.isRefObject(oldItem) ||
+          this.oasSchemaHelper.isRefObject(newItem) ||
+          !oldItem.properties ||
+          !newItem.properties
+        ) {
+          return
+        }
+
+        Object.entries(oldItem.properties).forEach(
+          ([propertyName, oldProperty]) => {
+            const newProperty = newItem.properties![propertyName]
+            if (
+              !newProperty ||
+              getPropertyType(oldProperty) === getPropertyType(newProperty)
+            ) {
+              return
+            }
+
+            oldItem.properties![propertyName] = this.mergeWithExistingSchema({
+              schema: newProperty,
+              level: maybeIncrementLevel(level, "object"),
+            }).schema
+            wasUpdated = true
+          }
+        )
+      })
     } else if (oldSchemaType === "object") {
       if (!oldSchemaObj?.properties && newSchemaObj?.properties) {
         oldSchemaObj!.properties = newSchemaObj.properties
@@ -2471,50 +2673,13 @@ class OasKindGenerator extends FunctionKindGenerator {
               !Object.hasOwn(oldSchemaObj!.properties!, propertyKey)
           )
           .forEach((newPropertyKey) => {
-            const tryToUpdateSchema = (
-              schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject
-            ) => {
-              let updatedSchema = schema
-              const newPropertySchemaName = this.oasSchemaHelper.isRefObject(
-                schema
-              )
-                ? schema.$ref
-                : "x-schemaName" in schema
-                  ? (schema["x-schemaName"] as string)
-                  : undefined
-              if (newPropertySchemaName) {
-                const schemaToUpdate = this.oasSchemaHelper.getSchemaByName(
-                  newPropertySchemaName,
-                  true,
-                  true
-                )
+            const updateResult = this.mergeWithExistingSchema({
+              schema: newSchemaObj!.properties![newPropertyKey],
+              level: maybeIncrementLevel(level, "object"),
+            })
+            wasUpdated = updateResult.wasUpdated || wasUpdated
 
-                if (schemaToUpdate) {
-                  const updateResult = this.updateSchema({
-                    oldSchema: schemaToUpdate.schema,
-                    newSchema: schema,
-                    level: maybeIncrementLevel(level, "object"),
-                  })
-                  updatedSchema = updateResult?.schema || newProperty
-                  wasUpdated = updateResult?.wasUpdated || wasUpdated
-                }
-              }
-
-              return updatedSchema
-            }
-
-            let newProperty = newSchemaObj!.properties![newPropertyKey]
-
-            if (
-              !this.oasSchemaHelper.isRefObject(newProperty) &&
-              newProperty.type === "array"
-            ) {
-              newProperty.items = tryToUpdateSchema(newProperty.items)
-            } else {
-              newProperty = tryToUpdateSchema(newProperty)
-            }
-
-            oldSchemaObj!.properties![newPropertyKey] = newProperty
+            oldSchemaObj!.properties![newPropertyKey] = updateResult.schema
           })
       }
     } else if (
@@ -2573,15 +2738,68 @@ class OasKindGenerator extends FunctionKindGenerator {
         false
 
       const schemaNameChanged =
-        oldSchemaObj!["x-schemaName"] !== newSchemaObj?.["x-schemaName"]
+        !!newSchemaObj?.["x-schemaName"] &&
+        oldSchemaObj!["x-schemaName"] !== newSchemaObj["x-schemaName"]
       wasUpdated = requiredChanged || schemaNameChanged
     }
     oldSchemaObj!.required = newSchemaObj?.required
-    oldSchemaObj!["x-schemaName"] = newSchemaObj?.["x-schemaName"]
+    if (newSchemaObj?.["x-schemaName"]) {
+      oldSchemaObj!["x-schemaName"] = newSchemaObj?.["x-schemaName"]
+    }
 
     return {
       schema: oldSchemaObj,
       wasUpdated,
+    }
+  }
+
+  /**
+   * Merges a schema, or an array schema's items, that references a named schema
+   * with the named schema's existing output, so that its manual changes are kept.
+   *
+   * @returns The merged schema and whether the named schema was updated.
+   */
+  mergeWithExistingSchema({
+    schema,
+    level,
+  }: {
+    schema: OpenApiSchema | OpenAPIV3.ReferenceObject
+    level: number
+  }): {
+    schema: OpenApiSchema | OpenAPIV3.ReferenceObject
+    wasUpdated: boolean
+  } {
+    if (!this.oasSchemaHelper.isRefObject(schema) && schema.type === "array") {
+      const updateResult = this.mergeWithExistingSchema({
+        schema: schema.items,
+        level,
+      })
+      return {
+        schema: { ...schema, items: updateResult.schema },
+        wasUpdated: updateResult.wasUpdated,
+      }
+    }
+
+    const schemaName = this.oasSchemaHelper.isRefObject(schema)
+      ? schema.$ref
+      : (schema["x-schemaName"] as string | undefined)
+    const existingSchema = schemaName
+      ? this.oasSchemaHelper.getSchemaByName(schemaName, true, true)
+      : undefined
+
+    if (!existingSchema) {
+      return { schema, wasUpdated: false }
+    }
+
+    const updateResult = this.updateSchema({
+      oldSchema: existingSchema.schema,
+      newSchema: schema,
+      level,
+    })
+
+    return {
+      schema: updateResult?.schema || schema,
+      wasUpdated: updateResult?.wasUpdated || false,
     }
   }
 
@@ -2607,6 +2825,38 @@ class OasKindGenerator extends FunctionKindGenerator {
       default:
         return "object"
     }
+  }
+
+  /**
+   * Retrieve the fields and relations that an API route allows or disallows
+   * requesting, as configured in the route's middleware.
+   *
+   * @param param0 - The route's details.
+   * @returns The route's restrictions, if it has any.
+   */
+  getFieldRestrictions({
+    node,
+    oasPath,
+    methodName,
+  }: {
+    /**
+     * The node of the route's function.
+     */
+    node: FunctionNode
+    /**
+     * The route's OAS path.
+     */
+    oasPath: string
+    /**
+     * The lowercase name of the method. For example, `get`.
+     */
+    methodName: string
+  }): FieldRestrictions | undefined {
+    return this.queryConfigHelper.getFieldRestrictions({
+      routeFilePath: node.getSourceFile().fileName,
+      oasPath,
+      httpMethod: methodName,
+    })
   }
 
   /**

@@ -133,6 +133,14 @@ const InnerForm = <TRes,>({
     })
   }
 
+  function addRow() {
+    insert(fields.length, {
+      key: "",
+      value: "",
+      disabled: false,
+    })
+  }
+
   return (
     <RouteDrawer.Form form={form}>
       <KeyboundForm
@@ -140,14 +148,14 @@ const InnerForm = <TRes,>({
         className="flex flex-1 flex-col overflow-hidden"
       >
         <RouteDrawer.Body className="flex flex-1 flex-col gap-y-8 overflow-y-auto">
-          <div className="bg-ui-bg-base shadow-elevation-card-rest grid grid-cols-1 divide-y rounded-lg">
-            <div className="bg-ui-bg-subtle grid grid-cols-2 divide-x rounded-t-lg">
-              <div className="txt-compact-small-plus text-ui-fg-subtle px-2 py-1.5">
+          <div className="grid grid-cols-1 divide-y rounded-lg bg-ui-bg-base shadow-elevation-card-rest">
+            <div className="grid grid-cols-2 divide-x rounded-t-lg bg-ui-bg-subtle">
+              <div className="txt-compact-small-plus px-2 py-1.5 text-ui-fg-subtle">
                 <label id={METADATA_KEY_LABEL_ID}>
                   {t("metadata.edit.labels.key")}
                 </label>
               </div>
-              <div className="txt-compact-small-plus text-ui-fg-subtle px-2 py-1.5">
+              <div className="txt-compact-small-plus px-2 py-1.5 text-ui-fg-subtle">
                 <label id={METADATA_VALUE_LABEL_ID}>
                   {t("metadata.edit.labels.value")}
                 </label>
@@ -216,9 +224,7 @@ const InnerForm = <TRes,>({
                         }}
                       />
                     </div>
-                    <DropdownMenu
-                      dir={direction}
-                    >
+                    <DropdownMenu dir={direction}>
                       <DropdownMenu.Trigger
                         className={clx(
                           "invisible absolute inset-y-0 -end-2.5 my-auto group-hover/table:visible data-[state='open']:visible",
@@ -273,20 +279,30 @@ const InnerForm = <TRes,>({
           )}
         </RouteDrawer.Body>
         <RouteDrawer.Footer>
-          <div className="flex items-center justify-end gap-x-2">
-            <RouteDrawer.Close asChild>
-              <Button
-                size="small"
-                variant="secondary"
-                type="button"
-                disabled={isMutating}
-              >
-                {t("actions.cancel")}
-              </Button>
-            </RouteDrawer.Close>
-            <Button size="small" type="submit" isLoading={isMutating}>
-              {t("actions.save")}
+          <div className="flex items-center justify-between">
+            <Button
+              size="small"
+              variant="secondary"
+              type="button"
+              onClick={addRow}
+            >
+              {t("metadata.edit.actions.addRow")}
             </Button>
+            <div className="flex items-center gap-x-2">
+              <RouteDrawer.Close asChild>
+                <Button
+                  size="small"
+                  variant="secondary"
+                  type="button"
+                  disabled={isMutating}
+                >
+                  {t("actions.cancel")}
+                </Button>
+              </RouteDrawer.Close>
+              <Button size="small" type="submit" isLoading={isMutating}>
+                {t("actions.save")}
+              </Button>
+            </div>
           </div>
         </RouteDrawer.Footer>
       </KeyboundForm>
@@ -304,7 +320,7 @@ const GridInput = forwardRef<
       {...props}
       autoComplete="off"
       className={clx(
-        "txt-compact-small text-ui-fg-base placeholder:text-ui-fg-muted disabled:text-ui-fg-disabled disabled:bg-ui-bg-base bg-transparent px-2 py-1.5 outline-none",
+        "txt-compact-small bg-transparent px-2 py-1.5 text-ui-fg-base outline-none placeholder:text-ui-fg-muted disabled:bg-ui-bg-base disabled:text-ui-fg-disabled",
         className
       )}
     />

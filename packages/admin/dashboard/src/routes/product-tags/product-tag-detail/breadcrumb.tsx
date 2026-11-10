@@ -11,7 +11,7 @@ export const ProductTagDetailBreadcrumb = (
   const { id } = props.params || {}
 
   const { product_tag } = useProductTag(id!, undefined, {
-    initialData: props.data,
+    initialData: props.loaderData,
     enabled: Boolean(id),
   })
 
@@ -21,3 +21,7 @@ export const ProductTagDetailBreadcrumb = (
 
   return <span>{product_tag.value}</span>
 }
+
+export const seo = (match: UIMatch<HttpTypes.AdminProductTagResponse>) => ({
+  title: match.loaderData?.product_tag?.value,
+})

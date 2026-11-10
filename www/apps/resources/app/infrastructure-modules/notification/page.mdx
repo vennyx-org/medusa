@@ -16,7 +16,7 @@ Cloud offers [Medusa Emails](!cloud!/emails), a managed email service that allow
 
 ## What is the Notification Module?
 
-The Notification Module exposes the functionalities to send a notification to a customer or user. For example, sending an order confirmation email. Medusa uses the Notification Module in its core commerce features for notification operations, and you an use it in your custom features as well.
+The Notification Module exposes the functionalities to send a notification to a customer or user. For example, sending an order confirmation email. Medusa uses the Notification Module in its core commerce features for notification operations, and you can use it in your custom features as well.
 
 ---
 
@@ -62,6 +62,12 @@ export const workflow = createWorkflow(
 In the example above, you create a workflow that has a step. In the step, you resolve the service of the Notification Module from the [Medusa container](!docs!/learn/fundamentals/medusa-container).
 
 Then, you use the `createNotifications` method of the Notification Module to send an email notification.
+
+<Note type="warning">
+
+Medusa stores the `data` property of every notification, and the [List Notifications](!api!/admin/notifications/list-notifications) and [Get Notification](!api!/admin/notifications/get-a-notification) API routes return it. Any admin user with the `notification:read` [RBAC policy](../../enterprise/rbac/concepts/page.mdx#policy) can view it, so don't pass data that those users shouldn't see.
+
+</Note>
 
 Find a full example of sending a notification in the [Send Notification guide](./send-notification/page.mdx).
 

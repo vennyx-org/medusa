@@ -1,5 +1,5 @@
-import { InlineIcon } from "docs-ui"
-import { Plus, EllipsisHorizontal, ChevronUpDown } from "@medusajs/icons"
+import { InlineIcon, getOsShortcut, Kbd } from "docs-ui"
+import { EllipsisHorizontal, ChevronUpDown } from "@medusajs/icons"
 
 export const metadata = {
   title: `Organizations`,
@@ -29,19 +29,22 @@ To create a new organization when you already have a Cloud account:
 2. Choose "Create Organization" from the dropdown.
 3. In the "Setup your organization" step, enter your organization's name and click the "Create" button.
 4. In the final step:
-    - Choose a plan for your organization. By default, the **Hobby** plan is selected. You can change the plan by clicking the "Change plan" link.
+    - Choose a plan for your organization. By default, the **Develop** plan is selected. You can change the plan by clicking the "Change plan" link.
     - **Payment Details**: Enter your card details. You'll be charged upfront based on the plan you selected once you finish the setup.
-    - **Billing details**: If you chose the **Pro** plan, enter your billing details, including your legal name and billing email address. These details are used for taxes and invoicing.
     - **Billing address**: Enter your billing address. This address is used for generated invoices.
 5. Once you're done, click the "Start your X/mo plan" button. Then, Medusa will charge you for the plan you selected, create an organization, and redirect you to your organization's Cloud dashboard.
+
+<Note title="Free Trial">
+
+If you don't belong to any organizations yet and you're eligible for a free trial, which is available only in select regions, Medusa starts a free trial for the new organization and redirects you to the organization's projects list. Learn how to view the trial's status in the [Manage Plans](../billing/plans/page.mdx#view-trial-status) guide.
+
+</Note>
 
 ---
 
 ## Organization Dashboard
 
 When you open the Cloud dashboard and log in, you're viewing the projects, resources, and settings of a specific organization. You'll find the name of that organization at the top left of the dashboard.
-
-![Cloud dashboard interface showing the current organization name prominently displayed in the top-left corner of the navigation header, indicating which organization's projects and resources are currently being managed in the dashboard view](https://res.cloudinary.com/dza7lstvk/image/upload/v1749738810/Cloud/CleanShot_2025-06-12_at_17.32.46_2x_dx0jet.png)
 
 ### Switch Organization
 
@@ -54,33 +57,23 @@ To switch to a different organization:
 
 This will change the view to the selected organization, and you'll see its projects, resources, and settings.
 
-![Organization switcher at the top left of the Cloud dashboard](https://res.cloudinary.com/dza7lstvk/image/upload/v1749733300/Cloud/CleanShot_2025-06-12_at_16.00.18_2x_yqui1n.png)
-
----
-
-## View Organization Settings
-
-To view an organization's settings:
-
-1. If you're in a different organization, [switch to the organization](#switch-organization) whose settings you want to view.
-2. Click on the <InlineIcon Icon={ChevronUpDown} alt="switch organization" /> icon in the [organization switcher](#switch-organization) at the top left of the Cloud dashboard.
-3. Choose "Organization Settings" from the dropdown.
-
-This will open a new window where you can view and manage an organization's settings.
-
-![Window showing the organization settings](https://res.cloudinary.com/dza7lstvk/image/upload/v1749733557/Cloud/CleanShot_2025-06-12_at_16.05.41_2x_zkkdff.png)
-
 ---
 
 ## Edit Organization Details
 
 To edit an organization's general details:
 
-1. [Open the organization's settings](#view-organization-settings).
-2. In the General tab, you can edit the organization's name, billing email address, and Tax ID.
-3. Once you're done making changes, click the "Save changes" button in the Details section.
+<Note title="Tip">
 
-![Window showing the organization settings with the General tab selected and the Details section highlighted](https://res.cloudinary.com/dza7lstvk/image/upload/v1749733691/Cloud/CleanShot_2025-06-12_at_16.07.52_2x_uaabq2.png)
+You can also navigate to an organization's settings from the [command palette](../command-palette/page.mdx). Press <Kbd>{getOsShortcut()}</Kbd> + <Kbd>K</Kbd> and select **Organization Settings**.
+
+</Note>
+
+1. If you're in a different organization, [switch to the organization](#switch-organization) whose settings you want to view.
+2. Make sure you're on the projects overview page of the organization. You can do this by clicking on the organization name at the top left of the dashboard.
+3. Click **Settings** > **General** in the sidebar to open the organization's settings.
+4. You can edit the organization's name, billing email address, or tax ID.
+5. Once you're done making changes, click the **Save changes** button in the Details section.
 
 ---
 
@@ -94,11 +87,16 @@ Leaving an organization will remove you from it, and you'll no longer have acces
 
 To leave an organization:
 
-1. [Open the organization's settings](#view-organization-settings).
-2. In the General tab, find the "Leave organization" section.
-3. Click the "Leave organization" button.
+<Note title="Tip">
 
-![Window showing the organization settings with the General tab selected and the Leave organization section highlighted](https://res.cloudinary.com/dza7lstvk/image/upload/v1749733992/Cloud/CleanShot_2025-06-12_at_16.11.39_2x_h9rn5g.png)
+You can also navigate to an organization's settings from the [command palette](../command-palette/page.mdx). Press <Kbd>{getOsShortcut()}</Kbd> + <Kbd>K</Kbd> and select **Organization Settings**.
+
+</Note>
+
+1. If you're in a different organization, [switch to the organization](#switch-organization) whose settings you want to view.
+2. Make sure you're on the projects overview page of the organization. You can do this by clicking on the organization name at the top left of the dashboard.
+3. Click **Settings** > **General** in the sidebar to open the organization's settings.
+4. Click the "Leave organization" button.
 
 ---
 
@@ -110,13 +108,20 @@ Deleting an organization will remove all its projects, resources, and settings. 
 
 </Note>
 
+Organization deletion is only available for organizations that have canceled their subscriptions. Organizations with active paid subscriptions cannot be deleted.
+
 To delete an organization:
 
-1. [Open the organization's settings](#view-organization-settings).
-2. In the General tab, find the "Delete organization" section.
-3. Click the "Delete organization" button.
+<Note title="Tip">
 
-![Window showing the organization settings with the General tab selected and the Delete organization section highlighted](https://res.cloudinary.com/dza7lstvk/image/upload/v1749734079/Cloud/CleanShot_2025-06-12_at_16.14.14_2x_hianix.png)
+You can also navigate to an organization's settings from the [command palette](../command-palette/page.mdx). Press <Kbd>{getOsShortcut()}</Kbd> + <Kbd>K</Kbd> and select **Organization Settings**.
+
+</Note>
+
+1. If you're in a different organization, [switch to the organization](#switch-organization) whose settings you want to view.
+2. Make sure you're on the projects overview page of the organization. You can do this by clicking on the organization name at the top left of the dashboard.
+3. Click **Settings** > **General** in the sidebar to open the organization's settings.
+4. If your organization has canceled its subscription, click the "Delete organization" button to proceed with deletion.
 
 ---
 
@@ -124,20 +129,17 @@ To delete an organization:
 
 To view the members of an organization:
 
-1. [Open the organization's settings](#view-organization-settings).
-2. Click on the "Team" tab.
+1. If you're in a different organization, [switch to the organization](#switch-organization) whose settings you want to view.
+2. Make sure you're on the projects overview page of the organization. You can do this by clicking on the organization name at the top left of the dashboard.
+3. Click on **Team** in the sidebar.
 
-In this window, you can view the members of the organization, their roles, and their email addresses. You can also view invited members who haven't accepted the invitation yet.
-
-![Window showing the organization members in the Team tab](https://res.cloudinary.com/dza7lstvk/image/upload/v1749734177/Cloud/CleanShot_2025-06-12_at_16.15.56_2x_ytgcyg.png)
+This opens the Team page where you can view the members of the organization, their roles, and their email addresses. You can also view invited members who haven't accepted the invitation yet.
 
 ### View Available Seats
 
-Based on your organization's plan, you may have a limited number of seats available for members. You can view the number of available seats at the top of the Team tab.
+Based on your organization's plan, you may have a limited number of seats available for members. You can view the number of available seats at the top of the Team page.
 
 If you need more seats, learn more about [other available plans](../pricing/page.mdx) or [purchasing add-on resources](../billing/page.mdx#purchase-add-on-resources).
-
-![Window showing the organization members in the Team tab with the available seats highlighted](https://res.cloudinary.com/dza7lstvk/image/upload/v1749737803/Cloud/CleanShot_2025-06-12_at_17.16.13_2x_zk8n32.png)
 
 ### Invite Members to Organization
 
@@ -149,13 +151,18 @@ Make sure you have [enough available seats](#view-available-seats) in your organ
 
 To invite members to your organization:
 
-1. [Open the organization's settings](#view-organization-settings).
-2. Click on the "Team" tab.
-3. In the "Invite members" section, enter the email addresses of the users you want to invite. You can enter multiple email addresses separated by commas.
+<Note title="Tip">
+
+You can also navigate to an organization's team member settings from the [command palette](../command-palette/page.mdx). Press <Kbd>{getOsShortcut()}</Kbd> + <Kbd>K</Kbd> and select **Team Members**.
+
+</Note>
+
+1. If you're in a different organization, [switch to the organization](#switch-organization) whose settings you want to view.
+2. Make sure you're on the projects overview page of the organization. You can do this by clicking on the organization name at the top left of the dashboard.
+3. Click on **Team** in the sidebar.
+4. In the "Invite members" section, enter the email addresses of the users you want to invite. You can enter multiple email addresses separated by commas.
 
 These users will receive an email invitation to join your organization. They can accept the invitation by clicking the link in the email.
-
-![Window showing the organization members in the Team tab with the Invite members section highlighted](https://res.cloudinary.com/dza7lstvk/image/upload/v1749734465/Cloud/CleanShot_2025-06-12_at_16.20.40_2x_p23ygx.png)
 
 ### Resend Invitation
 
@@ -163,13 +170,18 @@ You may need to resend an invitation if a user has lost the invitation email or 
 
 To resend an invitation:
 
-1. [Open the organization's settings](#view-organization-settings).
-2. Click on the "Team" tab.
-3. In the "Invited members" section, find the user whose invitation you want to resend.
-4. Click the <InlineIcon alt="ellipsis" Icon={EllipsisHorizontal} /> button at the end of the user's row.
-5. Choose "Resend invite" from the dropdown.
+<Note title="Tip">
 
-![Window showing the organization members in the Team tab with the dropdown of an invited member opened](https://res.cloudinary.com/dza7lstvk/image/upload/v1749734835/Cloud/CleanShot_2025-06-12_at_16.26.37_2x_ztph29.png)
+You can also navigate to an organization's team member settings from the [command palette](../command-palette/page.mdx). Press <Kbd>{getOsShortcut()}</Kbd> + <Kbd>K</Kbd> and select **Team Members**.
+
+</Note>
+
+1. If you're in a different organization, [switch to the organization](#switch-organization) whose settings you want to view.
+2. Make sure you're on the projects overview page of the organization. You can do this by clicking on the organization name at the top left of the dashboard.
+3. Click on **Team** in the sidebar.
+4. In the "Organization members" section, find the user whose invitation you want to resend. If a user's invitation has expired, you'll see an "Invite expired" badge in their row.
+5. Click the <InlineIcon alt="ellipsis" Icon={EllipsisHorizontal} /> button at the end of the user's row.
+6. Choose "Resend invite" from the dropdown.
 
 ### Revoke Invitation
 
@@ -177,13 +189,18 @@ You can revoke an invitation to a user if you no longer want them to join your o
 
 To revoke an invitation:
 
-1. [Open the organization's settings](#view-organization-settings).
-2. Click on the "Team" tab.
-3. In the "Invited members" section, find the user whose invitation you want to revoke.
-4. Click the <InlineIcon alt="ellipsis" Icon={EllipsisHorizontal} /> button at the end of the user's row.
-5. Choose "Revoke invite" from the dropdown.
+<Note title="Tip">
 
-![Window showing the organization members in the Team tab with the dropdown of an invited member opened](https://res.cloudinary.com/dza7lstvk/image/upload/v1749734835/Cloud/CleanShot_2025-06-12_at_16.26.37_2x_ztph29.png)
+You can also navigate to an organization's team member settings from the [command palette](../command-palette/page.mdx). Press <Kbd>{getOsShortcut()}</Kbd> + <Kbd>K</Kbd> and select **Team Members**.
+
+</Note>
+
+1. If you're in a different organization, [switch to the organization](#switch-organization) whose settings you want to view.
+2. Make sure you're on the projects overview page of the organization. You can do this by clicking on the organization name at the top left of the dashboard.
+3. Click on **Team** in the sidebar.
+4. In the "Organization members" section, find the user whose invitation you want to resend. If a user's invitation has expired, you'll see an "Invite expired" badge in their row.
+4. Click the <InlineIcon alt="ellipsis" Icon={EllipsisHorizontal} /> button at the end of the user's row.
+5. Choose **Revoke invite** from the dropdown.
 
 ### Remove Members from Organization
 
@@ -191,13 +208,40 @@ Owner and admin users can remove any members from the organization that aren't o
 
 To remove a member from your organization:
 
-1. [Open the organization's settings](#view-organization-settings).
-2. Click on the "Team" tab.
-3. In the "Organization members" section, find the member you want to remove.
-4. Click the <InlineIcon alt="ellipsis" Icon={EllipsisHorizontal} /> button at the end of the member's row.
-5. Choose "Remove from organization" from the dropdown.
+<Note title="Tip">
 
-![Window showing the organization members in the Team tab with the dropdown of a member opened](https://res.cloudinary.com/dza7lstvk/image/upload/v1749734819/Cloud/CleanShot_2025-06-12_at_16.25.33_2x_a6jo82.png)
+You can also navigate to an organization's team member settings from the [command palette](../command-palette/page.mdx). Press <Kbd>{getOsShortcut()}</Kbd> + <Kbd>K</Kbd> and select **Team Members**.
+
+</Note>
+
+1. If you're in a different organization, [switch to the organization](#switch-organization) whose settings you want to view.
+2. Make sure you're on the projects overview page of the organization. You can do this by clicking on the organization name at the top left of the dashboard.
+3. Click on **Team** in the sidebar.
+4. In the "Organization members" section, find the member you want to remove.
+5. Click the <InlineIcon alt="ellipsis" Icon={EllipsisHorizontal} /> button at the end of the member's row.
+6. Choose **Remove from organization** from the dropdown.
+
+### Promote a Member to Owner
+
+Organization owners can promote other members to the Owner role. This action is only available to owners and only appears for members who are not already owners.
+
+To promote a member to owner:
+
+<Note title="Tip">
+
+You can also navigate to an organization's team member settings from the [command palette](../command-palette/page.mdx). Press <Kbd>{getOsShortcut()}</Kbd> + <Kbd>K</Kbd> and select **Team Members**.
+
+</Note>
+
+1. If you're in a different organization, [switch to the organization](#switch-organization) whose settings you want to view.
+2. Make sure you're on the projects overview page of the organization. You can do this by clicking on the organization name at the top left of the dashboard.
+3. Click on **Team** in the sidebar.
+4. In the "Organization members" section, find the member you want to promote.
+5. Click the <InlineIcon alt="ellipsis" Icon={EllipsisHorizontal} /> button at the end of the member's row.
+6. Choose **Promote to Owner** from the dropdown.
+7. Confirm the promotion in the dialog that appears.
+
+The member is promoted to owner and gains full owner privileges in the organization.
 
 ---
 

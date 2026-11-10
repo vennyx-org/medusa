@@ -1,5 +1,6 @@
 import type { CreateCustomerDTO, CustomerDTO } from "@medusajs/framework/types"
 import {
+  createHook,
   createWorkflow,
   transform,
   WorkflowData,
@@ -26,9 +27,9 @@ export type CreateCustomerAccountWorkflowInput = {
 export const createCustomerAccountWorkflowId = "create-customer-account"
 /**
  * This workflow creates a customer and attaches it to an auth identity. It's used by the
- * [Register Customer Store API Route](https://docs.medusajs.com/api/store#customers_postcustomers).
+ * [Register Customer Store API Route](https://docs.medusajs.com/api/store/customers/register-customer).
  *
- * You can create an auth identity first using the [Retrieve Registration JWT Token API Route](https://docs.medusajs.com/api/store#auth_postactor_typeauth_provider_register).
+ * You can create an auth identity first using the [Retrieve Registration JWT Token API Route](https://docs.medusajs.com/api/store/auth/retrieve-registration-jwt-token).
  * Learn more about basic authentication flows in [this documentation](https://docs.medusajs.com/resources/commerce-modules/auth/authentication-route).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to
@@ -50,13 +51,17 @@ export const createCustomerAccountWorkflowId = "create-customer-account"
  * @summary
  *
  * Create or register a customer account.
+ *
+ * @property hooks.validate - This hook is executed after the built-in validation and before the customer is created. You can consume this hook to perform any custom validation. If validation fails, you can throw an error to stop the workflow execution.
  */
 export const createCustomerAccountWorkflow = createWorkflow(
   createCustomerAccountWorkflowId,
-  (
-    input: WorkflowData<CreateCustomerAccountWorkflowInput>
-  ): WorkflowResponse<CustomerDTO> => {
+  (input: WorkflowData<CreateCustomerAccountWorkflowInput>) => {
     validateCustomerAccountCreation(input)
+
+    const validate = createHook("validate", {
+      input,
+    })
 
     const customerData = transform({ input }, (data) => {
       return {
@@ -82,6 +87,8 @@ export const createCustomerAccountWorkflow = createWorkflow(
       value: customer.id,
     })
 
-    return new WorkflowResponse(customer)
+    return new WorkflowResponse(customer, {
+      hooks: [validate],
+    })
   }
 )

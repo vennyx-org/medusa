@@ -1,6 +1,6 @@
 import { HttpTypes } from "@medusajs/types"
-import { Client } from "../client"
-import { ClientHeaders } from "../types"
+import { Client } from "../client.js"
+import { ClientHeaders } from "../types.js"
 
 const taxProviderUrl = "/admin/tax-providers"
 
@@ -18,7 +18,7 @@ export class TaxProvider {
 
   /**
    * This method retrieves a list of tax providers. It sends a request to the
-   * [List Tax Providers](https://docs.medusajs.com/api/admin#tax-providers_gettaxproviders)
+   * [List Tax Providers](https://docs.medusajs.com/api/admin/tax-providers/list-tax-providers)
    * API route.
    * 
    * @since 2.8.0
@@ -63,7 +63,7 @@ export class TaxProvider {
    * })
    * ```
    *
-   * Learn more about the `fields` property in the [API reference](https://docs.medusajs.com/api/store#select-fields-and-relations).
+   * Learn more about the `fields` property in the [API reference](https://docs.medusajs.com/api/store/select-fields-and-relations).
    */
   async list(
     query?: HttpTypes.AdminGetTaxProvidersParams,

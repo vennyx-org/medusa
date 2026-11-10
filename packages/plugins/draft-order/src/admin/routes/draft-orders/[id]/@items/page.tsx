@@ -2,10 +2,12 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { Check, PencilSquare, Plus } from "@medusajs/icons"
+import { usePermissions } from "@medusajs/dashboard/hooks"
+import { Check, Component, PencilSquare, Plus } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import {
   Button,
+  clx,
   createDataTableColumnHelper,
   CurrencyInput,
   DataTableRowSelectionState,
@@ -57,6 +59,7 @@ import {
 } from "../../../../lib/data/currencies"
 import { getFullDate } from "../../../../lib/utils/date-utils"
 import { convertNumber } from "../../../../lib/utils/number-utils"
+import { EDIT_DRAFT_ORDER_PERMISSIONS } from "../../../../lib/permissions"
 
 const STACKED_MODAL_ID = "items_stacked_modal"
 
@@ -129,6 +132,8 @@ const ItemsForm = ({ preview, currencyCode }: ItemsFormProps) => {
 
   const { handleSuccess } = useRouteModal()
   const { searchValue, onSearchValueChange, query } = useDebouncedSearch()
+  const { hasPermission } = usePermissions()
+  const canReadVariants = hasPermission("product_variant:read")
 
   const { mutateAsync: confirmOrderEdit } = useDraftOrderConfirmEdit(preview.id)
   const { mutateAsync: requestOrderEdit } = useDraftOrderRequestEdit(preview.id)
@@ -247,10 +252,12 @@ const ItemsForm = ({ preview, currencyCode }: ItemsFormProps) => {
                         </IconButton>
                       </DropdownMenu.Trigger>
                       <DropdownMenu.Content>
-                        <StackedModalTrigger
-                          type={StackedModalContent.ADD_ITEMS}
-                          setModalContent={setModalContent}
-                        />
+                        {canReadVariants && (
+                          <StackedModalTrigger
+                            type={StackedModalContent.ADD_ITEMS}
+                            setModalContent={setModalContent}
+                          />
+                        )}
                         <StackedModalTrigger
                           type={StackedModalContent.ADD_CUSTOM_ITEM}
                           setModalContent={setModalContent}
@@ -403,10 +410,13 @@ const VariantItem = ({ item, preview, currencyCode }: ItemProps) => {
 
   const { mutateAsync: updateActionItem, isPending: isUpdatingActionItem } =
     useDraftOrderUpdateActionItem(preview.id)
+  const { mutateAsync: removeActionItem, isPending: isRemovingActionItem } =
+    useDraftOrderRemoveActionItem(preview.id)
   const { mutateAsync: updateOriginalItem, isPending: isUpdatingOriginalItem } =
     useDraftOrderUpdateItem(preview.id)
 
-  const isPending = isUpdatingActionItem || isUpdatingOriginalItem
+  const isPending =
+    isUpdatingActionItem || isUpdatingOriginalItem || isRemovingActionItem
 
   const onSubmit = form.handleSubmit(async (data) => {
     /**
@@ -437,6 +447,19 @@ const VariantItem = ({ item, preview, currencyCode }: ItemProps) => {
           },
         }
       )
+
+      return
+    }
+
+    if (data.quantity === 0) {
+      await removeActionItem(actionId, {
+        onSuccess: () => {
+          setEditing(false)
+        },
+        onError: (e) => {
+          toast.error(e.message)
+        },
+      })
 
       return
     }
@@ -835,6 +858,8 @@ const ExistingItemsForm = ({ orderId, items }: ExistingItemsFormProps) => {
       order,
       offset: offset ? parseInt(offset) : undefined,
       limit: LIMIT,
+      fields:
+        "*inventory_items.inventory.location_levels,+inventory_quantity,+manage_inventory",
     },
     {
       placeholderData: keepPreviousData,
@@ -935,6 +960,36 @@ const ExistingItemsForm = ({ orderId, items }: ExistingItemsFormProps) => {
 const columnHelper =
   createDataTableColumnHelper<HttpTypes.AdminProductVariant>()
 
+const getVariantInventory = (variant: HttpTypes.AdminProductVariant) => {
+  if (!variant.manage_inventory) {
+    return { text: "Not managed", hasInventoryKit: false, notManaged: true }
+  }
+
+  const quantity = variant.inventory_quantity
+
+  const inventoryItems = (variant.inventory_items
+    ?.map((i) => i.inventory)
+    .filter(Boolean) ?? []) as HttpTypes.AdminInventoryItem[]
+
+  const hasInventoryKit = inventoryItems.length > 1
+
+  const locations: Record<string, boolean> = {}
+  inventoryItems.forEach((i) => {
+    i.location_levels?.forEach((l) => {
+      locations[l.id] = true
+    })
+  })
+  const locationCount = Object.keys(locations).length
+
+  const text = hasInventoryKit
+    ? `${quantity} available`
+    : `${quantity} available at ${locationCount} location${
+        locationCount === 1 ? "" : "s"
+      }`
+
+  return { text, hasInventoryKit, quantity, notManaged: false }
+}
+
 const useColumns = () => {
   return useMemo(() => {
     return [
@@ -994,6 +1049,29 @@ const useColumns = () => {
         enableSorting: true,
         sortAscLabel: "Oldest first",
         sortDescLabel: "Newest first",
+      }),
+      columnHelper.display({
+        id: "inventory",
+        header: "Stock",
+        cell: ({ row }) => {
+          const { text, hasInventoryKit, quantity, notManaged } =
+            getVariantInventory(row.original)
+
+          return (
+            <Tooltip content={text}>
+              <div className="flex h-full w-full items-center gap-2 overflow-hidden">
+                {hasInventoryKit && <Component />}
+                <span
+                  className={clx("truncate", {
+                    "text-ui-fg-error": !quantity && !notManaged,
+                  })}
+                >
+                  {text}
+                </span>
+              </div>
+            </Tooltip>
+          )
+        },
       }),
     ]
   }, [])
@@ -1158,5 +1236,9 @@ const customItemSchema = z.object({
   quantity: z.number(),
   unit_price: z.union([z.number(), z.string()]),
 })
+
+export const handle = {
+  permissions: EDIT_DRAFT_ORDER_PERMISSIONS,
+}
 
 export default Items

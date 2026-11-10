@@ -9,15 +9,19 @@ import {
   MedusaError,
   Modules,
 } from "@medusajs/framework/utils"
-import { generateJwtTokenForAuthIdentity } from "../../../utils/generate-jwt-token"
+import { generateJwtTokenWithChecks } from "../../../utils/generate-jwt-token"
+import { isActorAssociationRequired } from "../../../utils/require-actor-association"
 
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   const { actor_type, auth_provider } = req.params
-
+  const service: IAuthModuleService = req.scope.resolve(Modules.AUTH)
   const config: ConfigModule = req.scope.resolve(
     ContainerRegistrationKeys.CONFIG_MODULE
   )
-  const service: IAuthModuleService = req.scope.resolve(Modules.AUTH)
+  const requiresActorAssociation = isActorAssociationRequired(
+    config,
+    auth_provider
+  )
 
   const authData = {
     url: req.url,
@@ -27,34 +31,31 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     protocol: req.protocol,
   } as AuthenticationInput
 
-  const { success, error, authIdentity } = await service.validateCallback(
-    auth_provider,
-    authData
-  )
+  const { success, error, authIdentity, mfaChallenge } =
+    await service.validateCallback(auth_provider, authData)
 
-  if (success && authIdentity) {
-    const { http } = config.projectConfig
+  if (
+    success &&
+    authIdentity &&
+    (!requiresActorAssociation ||
+      !!authIdentity.app_metadata?.[`${actor_type}_id`])
+  ) {
+    const result = await generateJwtTokenWithChecks(req.scope, {
+      authIdentity,
+      mfaChallenge,
+      actorType: actor_type,
+      authProvider: auth_provider,
+    })
 
-    const token = await generateJwtTokenForAuthIdentity(
-      {
-        authIdentity,
-        actorType: actor_type,
-        authProvider: auth_provider,
-        container: req.scope,
-      },
-      {
-        secret: http.jwtSecret!,
-        expiresIn: http.jwtExpiresIn,
-        options: http.jwtOptions,
-      }
-    )
-
-    return res.json({ token })
+    return res.json(result)
   }
 
+  // A distinct error would reveal whether the credentials are valid.
   throw new MedusaError(
     MedusaError.Types.UNAUTHORIZED,
-    error || "Authentication failed"
+    requiresActorAssociation
+      ? "Authentication failed"
+      : error || "Authentication failed"
   )
 }
 

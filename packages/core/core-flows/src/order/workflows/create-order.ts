@@ -26,10 +26,13 @@ import {
 import { pricingContextResult } from "../../cart/utils/schemas"
 import { confirmVariantInventoryWorkflow } from "../../cart/workflows/confirm-variant-inventory"
 import { getVariantsAndItemsWithPrices } from "../../cart/workflows/get-variants-and-items-with-prices"
-import { useQueryGraphStep } from "../../common"
+import { getTranslatedLineItemsStep, useQueryGraphStep } from "../../common"
 import { refreshDraftOrderAdjustmentsWorkflow } from "../../draft-order/workflows/refresh-draft-order-adjustments"
 import { createOrdersStep } from "../steps"
-import { productVariantsFields } from "../utils/fields"
+import {
+  productVariantsCacheTags,
+  productVariantsFields,
+} from "../utils/fields"
 import { updateOrderTaxLinesWorkflow } from "./update-tax-lines"
 
 function prepareLineItems(data) {
@@ -85,6 +88,11 @@ function getOrderInput(data) {
   return data_
 }
 
+const variantFields = deduplicate([
+  ...productVariantsFields,
+  ...requiredVariantFieldsForInventoryConfirmation,
+])
+
 /**
  * The data to create an order, along with custom data that's passed to the workflow's hooks.
  */
@@ -92,7 +100,7 @@ export type CreateOrderWorkflowInput = CreateOrderDTO & AdditionalData
 
 export const createOrdersWorkflowId = "create-orders"
 /**
- * This workflow creates an order. It's used by the [Create Draft Order Admin API Route](https://docs.medusajs.com/api/admin#draft-orders_postdraftorders), but
+ * This workflow creates an order. It's used by the [Create Draft Order Admin API Route](https://docs.medusajs.com/api/admin/draft-orders/create-draft-order), but
  * you can also use it to create any order.
  *
  * This workflow has a hook that allows you to perform custom actions on the created order. For example, you can pass under `additional_data` custom data that
@@ -100,6 +108,15 @@ export const createOrdersWorkflowId = "create-orders"
  *
  * You can also use this workflow within your customizations or your own custom workflows, allowing you to wrap custom logic around creating an order. For example,
  * you can create a workflow that imports orders from an external system, then uses this workflow to create the orders in Medusa.
+ *
+ * :::note
+ *
+ * This workflow only validates that the order's items have sufficient inventory quantity; it doesn't create inventory reservations for the order's items.
+ * So, fulfilling an order created by this workflow with {@link createOrderFulfillmentWorkflow} throws an error for items whose variants have `manage_inventory` enabled,
+ * as they don't have an associated reservation. To create the reservations, use the [createReservationsWorkflow](https://docs.medusajs.com/resources/references/medusa-workflows/createReservationsWorkflow)
+ * after creating the order, passing each reservation the `line_item_id` of the order's item so that the fulfillment workflow can find it.
+ *
+ * :::
  *
  * @example
  * const { result } = await createOrderWorkflow(container)
@@ -207,6 +224,32 @@ export const createOrderWorkflow = createWorkflow(
     const setPricingContextResult = setPricingContext.getResult()
 
     /**
+     * Load the customer together with their groups so that customer-group-scoped
+     * price lists are matched when pricing the initial line items. The
+     * find-or-create-customer step does not load groups, so without this the
+     * pricing context would be missing `customer.groups.id`.
+     */
+    const customerId = transform(
+      { customerData },
+      (data) => data.customerData.customer?.id
+    )
+
+    const customerForPricing = when(
+      "fetch-customer-groups",
+      { customerId },
+      ({ customerId }) => !!customerId
+    ).then(() => {
+      const { data: customer } = useQueryGraphStep({
+        entity: "customer",
+        fields: ["id", "groups.id"],
+        filters: { id: customerId },
+        options: { isList: false },
+      }).config({ name: "customer-groups-query" })
+
+      return customer
+    })
+
+    /**
      * Only fetch variants with calculated prices if needed, otherwise only fetch variants without
      * calculated prices.
      *
@@ -240,16 +283,14 @@ export const createOrderWorkflow = createWorkflow(
      */
     const { data: variantsWithoutCalculatedPrice } = useQueryGraphStep({
       entity: "variants",
-      fields: deduplicate([
-        ...productVariantsFields,
-        ...requiredVariantFieldsForInventoryConfirmation,
-      ]),
+      fields: variantFields,
       filters: {
         id: variantIdsWithoutCalculatedPrice,
       },
       options: {
         cache: {
-          enable: true,
+          tags: productVariantsCacheTags,
+          computeAutomaticTags: true,
         },
       },
     }).config({ name: "query-variants-without-calculated-price" })
@@ -264,22 +305,24 @@ export const createOrderWorkflow = createWorkflow(
         return !!variantIdsForPriceCalculation.length
       }
     ).then(() => {
+      const customerId = transform(
+        { customerData },
+        (data) => data.customerData.customer?.id
+      )
       return getVariantsAndItemsWithPrices.runAsStep({
         input: {
           cart: {
             currency_code: input.currency_code,
             region,
             region_id: region.id,
-            customer_id: customerData.customer?.id,
+            customer_id: customerId,
+            customer: customerForPricing,
           },
           items: input.items,
           setPricingContextResult: setPricingContextResult!,
           variants: {
             id: variantIdsForPriceCalculation,
-            fields: deduplicate([
-              ...productVariantsFields,
-              ...requiredVariantFieldsForInventoryConfirmation,
-            ]),
+            fields: variantFields,
           },
         },
       })
@@ -360,12 +403,21 @@ export const createOrderWorkflow = createWorkflow(
 
     validateLineItemPricesStep({ items: lineItems })
 
-    const orderToCreate = transform({ lineItems, orderInput }, (data) => {
-      return {
-        ...data.orderInput,
-        items: data.lineItems,
-      }
+    const translatedLineItems = getTranslatedLineItemsStep({
+      items: lineItems,
+      variants,
+      locale: input.locale,
     })
+
+    const orderToCreate = transform(
+      { translatedLineItems, orderInput },
+      (data) => {
+        return {
+          ...data.orderInput,
+          items: data.translatedLineItems,
+        }
+      }
+    )
 
     const orders = createOrdersStep([orderToCreate])
     const order = transform({ orders }, (data) => data.orders?.[0])
@@ -401,6 +453,8 @@ export const createOrderWorkflow = createWorkflow(
         "shipping_methods.adjustments.*",
         "total",
         "id",
+        "email",
+        "customer_id",
       ],
       filters: {
         id: order.id,

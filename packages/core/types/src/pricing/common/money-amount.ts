@@ -13,7 +13,7 @@ export interface MoneyAmountDTO {
    */
   id: string
   /**
-   * The currency code of this money amount.
+   * The currency code of this money amount. It's always lowercase, such as `usd`. To compare it with your own data, normalize your value with `normalizeCurrencyCode` from `@medusajs/framework/utils`.
    */
   currency_code?: string
   /**
@@ -63,7 +63,7 @@ export interface CreateMoneyAmountDTO {
    */
   id?: string
   /**
-   * The currency code of this money amount.
+   * The currency code of this money amount. It's normalized to lowercase when stored. For example, `EUR` is stored as `eur`.
    */
   currency_code: string
   /**
@@ -91,7 +91,7 @@ export interface UpdateMoneyAmountDTO {
    */
   id: string
   /**
-   * The code of the currency to associate with the money amount.
+   * The code of the currency to associate with the money amount. It's normalized to lowercase when stored. For example, `EUR` is stored as `eur`.
    */
   currency_code?: string | null
   /**
@@ -111,10 +111,37 @@ export interface UpdateMoneyAmountDTO {
 /**
  * @interface
  *
+ * The money amount to create or update.
+ */
+export interface UpsertMoneyAmountDTO {
+  /**
+   * The ID of the money amount.
+   */
+  id?: string
+  /**
+   * The currency code of this money amount. It's normalized to lowercase when stored. For example, `EUR` is stored as `eur`.
+   */
+  currency_code?: string
+  /**
+   * The amount of this money amount.
+   */
+  amount?: BigNumberInput
+  /**
+   * The minimum quantity required to be purchased for this money amount to be applied.
+   */
+  min_quantity?: BigNumberInput | null
+  /**
+   * The maximum quantity required to be purchased for this money amount to be applied.
+   */
+  max_quantity?: BigNumberInput | null
+}
+
+/**
+ * @interface
+ *
  * Filters to apply on a money amount.
  */
-export interface FilterableMoneyAmountProps
-  extends BaseFilterable<FilterableMoneyAmountProps> {
+export interface FilterableMoneyAmountProps extends BaseFilterable<FilterableMoneyAmountProps> {
   /**
    * IDs to filter money amounts by.
    */

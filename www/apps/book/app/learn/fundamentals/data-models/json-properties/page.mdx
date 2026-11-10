@@ -8,7 +8,7 @@ In this chapter, you'll learn how to use and manage [JSON properties](../propert
 
 ## What is a JSON Property?
 
-A JSON property in a data model is a flexible object that can contain various types of values.
+A JSON property in a data model stores any JSON-serializable value in a `jsonb` column.
 
 For example, you can create a `Brand` data model with a `metadata` JSON property to store additional information about the brand:
 
@@ -22,9 +22,33 @@ const Brand = model.define("brand", {
 })
 ```
 
+By default, the TypeScript type of a `json` property is `Record<string, unknown>`. You can pass a type argument to use a different shape, including arrays:
+
+<Note>
+
+The type argument is supported since [Medusa v2.19.0](https://github.com/medusajs/medusa/releases/tag/v2.19.0).
+
+</Note>
+
+```ts
+import { model } from "@medusajs/framework/utils"
+
+const Brand = model.define("brand", {
+  id: model.id().primaryKey(),
+  name: model.text(),
+  warnings: model.json<{ code: string; message: string }[]>(),
+})
+```
+
+<Note title="Tip">
+
+To store an array of strings, use the [array property type](../properties/page.mdx#array) instead, which stores the value in a `text[]` column.
+
+</Note>
+
 ### Accepted Values in JSON Property
 
-JSON properties are made up of key-value pairs. The keys are strings, and the values can be one of the following types:
+JSON properties support any JSON-serializable value, including objects, arrays, strings, numbers, and booleans. When the property stores an object, its keys are strings and values can be one of the following types:
 
 - **Strings**: Text values.
     - Empty strings remove the property from the JSON object. Learn more in the [Remove a Property from the JSON Property](#remove-a-property-from-the-json-property) section.
@@ -236,8 +260,53 @@ The brand record will now have the `metadata` property updated to remove the `is
 }
 ```
 
+<Note title="Tip">
+
+Only an empty string removes a property. If you pass `null` as the value of a property, Medusa stores `null` as the property's value instead of removing it.
+
+</Note>
+
+### Manage Metadata in Commerce Modules and Workflows
+
+The merge behavior explained in this chapter also applies to the `metadata` property of data models in Medusa's Commerce Modules. This includes:
+
+- Module service methods, such as the Product Module's `updateProducts`, the Order Module's `updateOrders` and `updateOrderLineItems`, and the Cart Module's `updateCarts` and `updateLineItems`.
+- Workflows and steps that use these methods, such as `updateProductsWorkflow`, `updateOrderWorkflow`, `updateCartWorkflow`, and `updateCartsStep`.
+- All API routes that are built on top of these workflows.
+
+So, when you pass `metadata` to these API routes, methods, workflows, or steps:
+
+- Medusa merges the top-level properties you pass with the existing `metadata`. Properties you don't pass remain unchanged.
+- Medusa replaces nested objects entirely, as explained in the [Caveat: Updating Nested Objects](#caveat-updating-nested-objects) section. To change a single nested property, retrieve the record first, then pass the entire nested object with your changes.
+- Medusa removes properties whose value is an empty string.
+
+For example, to add a property to a product's `metadata` and remove another one using the `updateProductsWorkflow`:
+
+```ts
+import { updateProductsWorkflow } from "@medusajs/medusa/core-flows"
+
+// ...
+
+const { result } = await updateProductsWorkflow(container)
+  .run({
+    input: {
+      products: [
+        {
+          id: "prod_123",
+          metadata: {
+            erp_id: "erp_123",
+            old_tax_code: "",
+          },
+        },
+      ],
+    },
+  })
+```
+
+After the update, the product's `metadata` has the new `erp_id` property, doesn't have the `old_tax_code` property, and keeps all other existing properties.
+
 ### Manage JSON Properties in API Routes
 
 The instructions above also apply when managing JSON properties in API routes, since they typically use a service's `update` method under the hood.
 
-Refer to the [API reference](!api!/store#manage-metadata) to learn more about managing JSON properties, such as `metadata`, in API routes.
+Refer to the [API reference](!api!/store/manage-metadata) to learn more about managing JSON properties, such as `metadata`, in API routes.

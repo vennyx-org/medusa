@@ -444,6 +444,54 @@ moduleIntegrationTestRunner<IProductModuleService>({
           expect(productVariant.title).toEqual("new test")
         })
 
+        it("should delete one metadata field without removing the others", async () => {
+          await service.updateProductVariants(variantOne.id, {
+            metadata: {
+              keep: "value",
+              remove: "value",
+            },
+          })
+
+          await service.updateProductVariants(variantOne.id, {
+            metadata: {
+              remove: "",
+            },
+          })
+
+          const productVariant = await service.retrieveProductVariant(
+            variantOne.id
+          )
+
+          expect(productVariant.metadata).toEqual({
+            keep: "value",
+          })
+        })
+
+        it("should update scalar fields without altering the variant's options", async () => {
+          // A scalar-only update (no `options` in the payload) skips the option
+          // resolution/uniqueness/relation-reconcile path. This must NOT wipe or
+          // change the variant's existing option assignments.
+          const before = await service.retrieveProductVariant(variantOne.id, {
+            relations: ["options"],
+          })
+
+          await service.updateProductVariants(variantOne.id, {
+            title: "scalar-only update",
+            sku: "scalar-only-sku",
+          })
+
+          const after = await service.retrieveProductVariant(variantOne.id, {
+            relations: ["options"],
+          })
+
+          expect(after.title).toEqual("scalar-only update")
+          expect(after.sku).toEqual("scalar-only-sku")
+          // Options preserved unchanged.
+          expect(after.options?.map((o) => o.id).sort()).toEqual(
+            before.options?.map((o) => o.id).sort()
+          )
+        })
+
         it("should do a partial update on the options of a variant successfully", async () => {
           await service.updateProductVariants(variantOne.id, {
             options: { size: "small", color: "red" },
@@ -466,6 +514,67 @@ moduleIntegrationTestRunner<IProductModuleService>({
               }),
             ])
           )
+        })
+
+        it("should keep the options of a variant when updating with an empty options map", async () => {
+          await service.updateProductVariants(
+            { id: variantOne.id, product_id: productOne.id },
+            { title: "updated variant", options: {} }
+          )
+
+          const productVariant = await service.retrieveProductVariant(
+            variantOne.id,
+            { relations: ["options"] }
+          )
+
+          expect(productVariant.title).toEqual("updated variant")
+          expect(productVariant.options).toHaveLength(2)
+        })
+
+        it("should update the variant matched by the selector even when the data contains another id", async () => {
+          const otherVariant = await service.createProductVariants({
+            title: "other variant",
+            product_id: productOne.id,
+            options: { size: "small", color: "blue" },
+          } as CreateProductVariantDTO)
+
+          const updated = await service.updateProductVariants(
+            { id: variantOne.id, product_id: productOne.id },
+            { id: otherVariant.id, title: "updated" } as UpdateProductVariantDTO
+          )
+
+          expect(updated).toEqual([
+            expect.objectContaining({ id: variantOne.id, title: "updated" }),
+          ])
+
+          const [selected, other] = await Promise.all([
+            service.retrieveProductVariant(variantOne.id),
+            service.retrieveProductVariant(otherVariant.id),
+          ])
+
+          expect(selected.title).toEqual("updated")
+          expect(other.title).toEqual("other variant")
+        })
+
+        it("should update the variant matching the given id even when the data contains another id", async () => {
+          const otherVariant = await service.createProductVariants({
+            title: "other variant",
+            product_id: productOne.id,
+            options: { size: "small", color: "blue" },
+          } as CreateProductVariantDTO)
+
+          await service.updateProductVariants(variantOne.id, {
+            id: otherVariant.id,
+            title: "updated",
+          } as UpdateProductVariantDTO)
+
+          const [selected, other] = await Promise.all([
+            service.retrieveProductVariant(variantOne.id),
+            service.retrieveProductVariant(otherVariant.id),
+          ])
+
+          expect(selected.title).toEqual("updated")
+          expect(other.title).toEqual("other variant")
         })
 
         it("should throw an error when an id does not exist", async () => {

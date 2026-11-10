@@ -1,6 +1,6 @@
 import { HttpTypes } from "@medusajs/types"
-import { Client } from "../client"
-import { ClientHeaders } from "../types"
+import { Client } from "../client.js"
+import { ClientHeaders } from "../types.js"
 
 export class PricePreference {
   /**
@@ -17,26 +17,26 @@ export class PricePreference {
 
   /**
    * This method retrieves a price preference. It sends a request to the
-   * [Get Price Preference](https://docs.medusajs.com/api/admin#price-preferences_getpricepreferencesid)
+   * [Get Price Preference](https://docs.medusajs.com/api/admin/price-preferences/get-a-price-preference)
    * API route.
-   * 
+   *
    * @param id - The price preference's ID.
    * @param query - Configure the fields to retrieve in the price preference.
    * @param headers - Headers to pass in the request
    * @returns The price preference's details.
-   * 
+   *
    * @example
    * To retrieve a price preference by its ID:
-   * 
+   *
    * ```ts
    * sdk.admin.pricePreference.retrieve("prpref_123")
    * .then(({ price_preference }) => {
    *   console.log(price_preference)
    * })
    * ```
-   * 
+   *
    * To specify the fields and relations to retrieve:
-   * 
+   *
    * ```ts
    * sdk.admin.pricePreference.retrieve("prpref_123", {
    *   fields: "id,is_tax_inclusive"
@@ -45,12 +45,12 @@ export class PricePreference {
    *   console.log(price_preference)
    * })
    * ```
-   * 
-   * Learn more about the `fields` property in the [API reference](https://docs.medusajs.com/api/store#select-fields-and-relations).
+   *
+   * Learn more about the `fields` property in the [API reference](https://docs.medusajs.com/api/store/select-fields-and-relations).
    */
   async retrieve(
     id: string,
-    query?: HttpTypes.AdminPricePreferenceParams,
+    query?: HttpTypes.AdminGetPricePreferenceParams,
     headers?: ClientHeaders
   ) {
     return this.client.fetch<HttpTypes.AdminPricePreferenceResponse>(
@@ -64,27 +64,27 @@ export class PricePreference {
   }
 
   /**
-   * This method retrieves a paginated list of price preferences. It sends a request to the 
-   * [List Price Preferences](https://docs.medusajs.com/api/admin#price-preferences_getpricepreferences) API route.
-   * 
+   * This method retrieves a paginated list of price preferences. It sends a request to the
+   * [List Price Preferences](https://docs.medusajs.com/api/admin/price-preferences/list-price-preferences) API route.
+   *
    * @param query - Filters and pagination configurations.
    * @param headers - Headers to pass in the request.
    * @returns The paginated list of price preferences.
-   * 
+   *
    * @example
    * To retrieve the list of price preferences:
-   * 
+   *
    * ```ts
    * sdk.admin.pricePreference.list()
    * .then(({ price_preferences, count, limit, offset }) => {
    *   console.log(price_preferences)
    * })
    * ```
-   * 
+   *
    * To configure the pagination, pass the `limit` and `offset` query parameters.
-   * 
+   *
    * For example, to retrieve only 10 items and skip 10 items:
-   * 
+   *
    * ```ts
    * sdk.admin.pricePreference.list({
    *   limit: 10,
@@ -94,10 +94,10 @@ export class PricePreference {
    *   console.log(price_preferences)
    * })
    * ```
-   * 
+   *
    * Using the `fields` query parameter, you can specify the fields and relations to retrieve
    * in each price preference:
-   * 
+   *
    * ```ts
    * sdk.admin.pricePreference.list({
    *   fields: "id,is_tax_inclusive"
@@ -106,8 +106,8 @@ export class PricePreference {
    *   console.log(price_preferences)
    * })
    * ```
-   * 
-   * Learn more about the `fields` property in the [API reference](https://docs.medusajs.com/api/store#select-fields-and-relations).
+   *
+   * Learn more about the `fields` property in the [API reference](https://docs.medusajs.com/api/store/select-fields-and-relations).
    */
   async list(
     query?: HttpTypes.AdminPricePreferenceListParams,
@@ -125,14 +125,14 @@ export class PricePreference {
 
   /**
    * This method creates a price preference. It sends a request to the
-   * [Create Price Preference](https://docs.medusajs.com/api/admin#price-preferences_postpricepreferences)
+   * [Create Price Preference](https://docs.medusajs.com/api/admin/price-preferences/create-price-preference)
    * API route.
-   * 
+   *
    * @param body - The details of the price preference to create.
    * @param query - Configure the fields to retrieve in the price preference.
    * @param headers - Headers to pass in the request
    * @returns The price preference's details.
-   * 
+   *
    * @example
    * sdk.admin.pricePreference.create({
    *   attribute: "region_id",
@@ -145,7 +145,7 @@ export class PricePreference {
    */
   async create(
     body: HttpTypes.AdminCreatePricePreference,
-    query?: HttpTypes.AdminPricePreferenceParams,
+    query?: HttpTypes.AdminGetPricePreferenceParams,
     headers?: ClientHeaders
   ) {
     return this.client.fetch<HttpTypes.AdminPricePreferenceResponse>(
@@ -161,15 +161,15 @@ export class PricePreference {
 
   /**
    * This method updates a price preference. It sends a request to the
-   * [Update Price Preference](https://docs.medusajs.com/api/admin#price-preferences_postpricepreferencesid)
+   * [Update Price Preference](https://docs.medusajs.com/api/admin/price-preferences/update-a-price-preference)
    * API route.
-   * 
+   *
    * @param id - The price preference's ID.
    * @param body - The data to update in the price preference.
    * @param query - Configure the fields to retrieve in the price preference.
    * @param headers - Headers to pass in the request
    * @returns The price preference's details.
-   * 
+   *
    * @example
    * sdk.admin.pricePreference.update("prpref_123", {
    *   is_tax_inclusive: true
@@ -181,7 +181,7 @@ export class PricePreference {
   async update(
     id: string,
     body: HttpTypes.AdminUpdatePricePreference,
-    query?: HttpTypes.AdminPricePreferenceParams,
+    query?: HttpTypes.AdminGetPricePreferenceParams,
     headers?: ClientHeaders
   ) {
     return this.client.fetch<HttpTypes.AdminPricePreferenceResponse>(
@@ -197,13 +197,13 @@ export class PricePreference {
 
   /**
    * This method deletes a price preference. It sends a request to the
-   * [Delete Price Preference](https://docs.medusajs.com/api/admin#price-preferences_deletepricepreferencesid)
+   * [Delete Price Preference](https://docs.medusajs.com/api/admin/price-preferences/delete-a-price-preference)
    * API route.
-   * 
+   *
    * @param id - The price preference's ID.
    * @param headers - Headers to pass in the request
    * @returns The deletion's details.
-   * 
+   *
    * @example
    * sdk.admin.pricePreference.delete("prpref_123")
    * .then(({ deleted }) => {

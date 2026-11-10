@@ -28,11 +28,13 @@ This guide is mainly useful for developers and technical teams building customiz
 
 A publishable API key is a client key scoped to one or more sales channels. When you build a storefront, you must pass a publishable API key in the request headers indicating the sales channel to scope the request to. This impacts the products retrieved, available stock quantities, and other data.
 
-To learn how to pass the publishable API key in request headers, refer to the [API Reference](!api!/store#publishable-api-key).
+To learn how to pass the publishable API key in request headers, refer to the [API Reference](!api!/store/publishable-api-key).
 
 ---
 
 ## View Publishable API Keys
+
+<PermissionsBadge permissions={["api_key:read"]} />
 
 To view the publishable API keys in the Medusa Admin, go to Settings -> Publishable API Keys.
 
@@ -43,6 +45,8 @@ Here, you can see a list of all the publishable API keys you have set up in your
 ---
 
 ## Create Publishable API Key
+
+<PermissionsBadge permissions={["api_key:create"]} />
 
 To create a new publishable API key:
 
@@ -56,6 +60,8 @@ To create a new publishable API key:
 ---
 
 ## View Publishable API Key Details
+
+<PermissionsBadge permissions={["api_key:read"]} />
 
 To view the details of a publishable API key:
 
@@ -73,8 +79,12 @@ You can see the status of the publishable API key in the header of the first sec
 <Table>
   <Table.Header>
     <Table.Row>
-      <Table.HeaderCell>Status</Table.HeaderCell>
-      <Table.HeaderCell>Description</Table.HeaderCell>
+      <Table.HeaderCell>
+        Status
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Description
+      </Table.HeaderCell>
     </Table.Row>
   </Table.Header>
   <Table.Body>
@@ -104,6 +114,8 @@ To copy a publishable API key:
 
 ## Edit Publishable API Key
 
+<PermissionsBadge permissions={["api_key:update"]} />
+
 To edit a publishable API key:
 
 1. Go to the publishable API key's details page.
@@ -122,6 +134,8 @@ You can manage the sales channels of a publishable API key in its details page. 
 
 ### Add Sales Channels
 
+<PermissionsBadge permissions={["api_key:update", "sales_channel:read", "sales_channel:update"]} />
+
 To add a sales channel to a publishable API key:
 
 1. Go to the publishable API key's details page.
@@ -132,6 +146,8 @@ To add a sales channel to a publishable API key:
 ![Add sales channels form](https://res.cloudinary.com/dza7lstvk/image/upload/v1740490636/User%20Guide/Screenshot_2025-02-25_at_3.37.05_PM_ontnzy.png)
 
 ### Remove Sales Channels
+
+<PermissionsBadge permissions={["api_key:update", "sales_channel:read", "sales_channel:update"]} />
 
 To remove a sales channel from a publishable API key:
 
@@ -145,6 +161,8 @@ To remove a sales channel from a publishable API key:
 ---
 
 ## Revoke Publishable API Key
+
+<PermissionsBadge permissions={["api_key:update"]} />
 
 <Note type="warning">
 
@@ -162,6 +180,8 @@ To revoke a publishable API key:
 ---
 
 ## Delete Publishable API Key
+
+<PermissionsBadge permissions={["api_key:delete"]} />
 
 <Note type="warning">
 

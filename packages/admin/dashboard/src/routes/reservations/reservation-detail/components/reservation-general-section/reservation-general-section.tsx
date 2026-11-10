@@ -2,13 +2,13 @@ import { AdminReservationResponse } from "@medusajs/types"
 import { Container, Heading } from "@medusajs/ui"
 
 import { ActionMenu } from "../../../../../components/common/action-menu"
-import { InventoryTypes } from "@medusajs/types"
 import { PencilSquare } from "@medusajs/icons"
 import { SectionRow } from "../../../../../components/common/section"
 import { useInventoryItem } from "../../../../../hooks/api/inventory"
 import { useStockLocation } from "../../../../../hooks/api/stock-locations"
 import { useTranslation } from "react-i18next"
-import { useOrder } from "../../../../../hooks/api"
+import { useReservationItemPermissions } from "../../../../../hooks/use-resource-permissions"
+import { formatQuantity } from "../../../../../lib/format-quantity"
 
 type ReservationGeneralSectionProps = {
   reservation: AdminReservationResponse["reservation"]
@@ -18,6 +18,7 @@ export const ReservationGeneralSection = ({
   reservation,
 }: ReservationGeneralSectionProps) => {
   const { t } = useTranslation()
+  const { canUpdate } = useReservationItemPermissions()
 
   const { inventory_item: inventoryItem, isPending: isLoadingInventoryItem } =
     useInventoryItem(reservation.inventory_item_id)
@@ -35,8 +36,7 @@ export const ReservationGeneralSection = ({
   }
 
   const locationLevel = inventoryItem.location_levels!.find(
-    (l: InventoryTypes.InventoryLevelDTO) =>
-      l.location_id === reservation.location_id
+    (l) => l.location_id === reservation.location_id
   )
 
   return (
@@ -47,19 +47,21 @@ export const ReservationGeneralSection = ({
             itemName: inventoryItem.title ?? inventoryItem.sku,
           })}
         </Heading>
-        <ActionMenu
-          groups={[
-            {
-              actions: [
-                {
-                  icon: <PencilSquare />,
-                  label: t("actions.edit"),
-                  to: `edit`,
-                },
-              ],
-            },
-          ]}
-        />
+        {canUpdate && (
+          <ActionMenu
+            groups={[
+              {
+                actions: [
+                  {
+                    icon: <PencilSquare />,
+                    label: t("actions.edit"),
+                    to: `edit`,
+                  },
+                ],
+              },
+            ]}
+          />
+        )}
       </div>
       <SectionRow
         title={t("inventory.reservation.lineItemId")}
@@ -75,15 +77,24 @@ export const ReservationGeneralSection = ({
       />
       <SectionRow
         title={t("inventory.reservation.inStockAtLocation")}
-        value={locationLevel?.stocked_quantity}
+        value={formatQuantity(
+          locationLevel?.stocked_quantity,
+          inventoryItem.unit_of_measure
+        )}
       />
       <SectionRow
         title={t("inventory.reservation.availableAtLocation")}
-        value={locationLevel?.available_quantity}
+        value={formatQuantity(
+          locationLevel?.available_quantity,
+          inventoryItem.unit_of_measure
+        )}
       />
       <SectionRow
         title={t("inventory.reservation.reservedAtLocation")}
-        value={locationLevel?.reserved_quantity}
+        value={formatQuantity(
+          locationLevel?.reserved_quantity,
+          inventoryItem.unit_of_measure
+        )}
       />
     </Container>
   )

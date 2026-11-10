@@ -12,9 +12,11 @@ import { ActionMenu } from "../../../../../components/common/action-menu"
 import { _DataTable } from "../../../../../components/table/data-table"
 import { useUpdateRegion } from "../../../../../hooks/api/regions"
 import { useDataTable } from "../../../../../hooks/use-data-table"
+import { useRegionPermissions } from "../../../../../hooks/use-resource-permissions"
 import { useCountries } from "../../../common/hooks/use-countries"
 import { useCountryTableColumns } from "../../../common/hooks/use-country-table-columns"
 import { useCountryTableQuery } from "../../../common/hooks/use-country-table-query"
+import { StaticCountry } from "../../../../../lib/data/countries"
 
 type RegionCountrySectionProps = {
   region: HttpTypes.AdminRegion
@@ -26,6 +28,7 @@ const PAGE_SIZE = 10
 export const RegionCountrySection = ({ region }: RegionCountrySectionProps) => {
   const { t } = useTranslation()
   const prompt = usePrompt()
+  const { canUpdate } = useRegionPermissions()
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
@@ -34,18 +37,18 @@ export const RegionCountrySection = ({ region }: RegionCountrySectionProps) => {
     prefix: PREFIX,
   })
   const { countries, count } = useCountries({
-    countries: region.countries || [],
+    countries: (region.countries || []) as StaticCountry[],
     ...searchParams,
   })
 
-  const columns = useColumns()
+  const columns = useColumns(canUpdate)
 
   const { table } = useDataTable({
     data: countries || [],
     columns,
     count,
     enablePagination: true,
-    enableRowSelection: true,
+    enableRowSelection: canUpdate,
     getRowId: (row) => row.iso_2,
     pageSize: PAGE_SIZE,
     rowSelection: {
@@ -101,19 +104,21 @@ export const RegionCountrySection = ({ region }: RegionCountrySectionProps) => {
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
         <Heading level="h2">{t("fields.countries")}</Heading>
-        <ActionMenu
-          groups={[
-            {
-              actions: [
-                {
-                  label: t("regions.addCountries"),
-                  icon: <PlusMini />,
-                  to: "countries/add",
-                },
-              ],
-            },
-          ]}
-        />
+        {canUpdate && (
+          <ActionMenu
+            groups={[
+              {
+                actions: [
+                  {
+                    label: t("regions.addCountries"),
+                    icon: <PlusMini />,
+                    to: "countries/add",
+                  },
+                ],
+              },
+            ]}
+          />
+        )}
       </div>
       <_DataTable
         table={table}
@@ -121,20 +126,24 @@ export const RegionCountrySection = ({ region }: RegionCountrySectionProps) => {
         pageSize={PAGE_SIZE}
         count={count}
         orderBy={[
-          { key: "display_name", label: t("fields.name") },
+          { key: "name", label: t("fields.name") },
           { key: "iso_2", label: t("fields.code") },
         ]}
         search
         pagination
         queryObject={raw}
         prefix={PREFIX}
-        commands={[
-          {
-            action: handleRemoveCountries,
-            label: t("actions.remove"),
-            shortcut: "r",
-          },
-        ]}
+        commands={
+          canUpdate
+            ? [
+                {
+                  action: handleRemoveCountries,
+                  label: t("actions.remove"),
+                  shortcut: "r",
+                },
+              ]
+            : []
+        }
       />
     </Container>
   )
@@ -144,7 +153,7 @@ const CountryActions = ({
   country,
   region,
 }: {
-  country: HttpTypes.AdminRegionCountry
+  country: StaticCountry
   region: HttpTypes.AdminRegion
 }) => {
   const { t } = useTranslation()
@@ -152,8 +161,8 @@ const CountryActions = ({
   const { mutateAsync } = useUpdateRegion(region.id)
 
   const payload = region.countries
-    ?.filter((c) => c.iso_2 !== country.iso_2)
-    .map((c) => c.iso_2)
+    ?.filter((c) => c.iso_2 && c.iso_2 !== country.iso_2)
+    .map((c) => c.iso_2!)
 
   const handleRemove = async () => {
     const res = await prompt({
@@ -203,53 +212,63 @@ const CountryActions = ({
   )
 }
 
-const columnHelper = createColumnHelper<HttpTypes.AdminRegionCountry>()
+const columnHelper = createColumnHelper<StaticCountry>()
 
-const useColumns = () => {
+const useColumns = (canUpdate: boolean) => {
   const base = useCountryTableColumns()
 
   return useMemo(
     () => [
-      columnHelper.display({
-        id: "select",
-        header: ({ table }) => {
-          return (
-            <Checkbox
-              checked={
-                table.getIsSomePageRowsSelected()
-                  ? "indeterminate"
-                  : table.getIsAllPageRowsSelected()
-              }
-              onCheckedChange={(value) =>
-                table.toggleAllPageRowsSelected(!!value)
-              }
-            />
-          )
-        },
-        cell: ({ row }) => {
-          return (
-            <Checkbox
-              checked={row.getIsSelected()}
-              onCheckedChange={(value) => row.toggleSelected(!!value)}
-              onClick={(e) => {
-                e.stopPropagation()
-              }}
-            />
-          )
-        },
-      }),
+      ...(canUpdate
+        ? [
+            columnHelper.display({
+              id: "select",
+              header: ({ table }) => {
+                return (
+                  <Checkbox
+                    checked={
+                      table.getIsSomePageRowsSelected()
+                        ? "indeterminate"
+                        : table.getIsAllPageRowsSelected()
+                    }
+                    onCheckedChange={(value) =>
+                      table.toggleAllPageRowsSelected(!!value)
+                    }
+                  />
+                )
+              },
+              cell: ({ row }) => {
+                return (
+                  <Checkbox
+                    checked={row.getIsSelected()}
+                    onCheckedChange={(value) => row.toggleSelected(!!value)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                    }}
+                  />
+                )
+              },
+            }),
+          ]
+        : []),
       ...base,
-      columnHelper.display({
-        id: "actions",
-        cell: ({ row, table }) => {
-          const { region } = table.options.meta as {
-            region: HttpTypes.AdminRegion
-          }
+      ...(canUpdate
+        ? [
+            columnHelper.display({
+              id: "actions",
+              cell: ({ row, table }) => {
+                const { region } = table.options.meta as {
+                  region: HttpTypes.AdminRegion
+                }
 
-          return <CountryActions country={row.original} region={region} />
-        },
-      }),
+                return (
+                  <CountryActions country={row.original} region={region} />
+                )
+              },
+            }),
+          ]
+        : []),
     ],
-    [base]
-  ) as ColumnDef<HttpTypes.AdminRegionCountry>[]
+    [base, canUpdate]
+  ) as ColumnDef<StaticCountry>[]
 }

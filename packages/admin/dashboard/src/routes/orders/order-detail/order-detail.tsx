@@ -1,10 +1,10 @@
+import { CORE_LAYOUT_IDS } from "@medusajs/admin-shared"
 import { useLoaderData, useParams } from "react-router-dom"
 
 import { TwoColumnPageSkeleton } from "../../../components/common/skeleton"
-import { TwoColumnPage } from "../../../components/layout/pages"
+import { LayoutComposer, detailPageDefaultEntries } from "../../../components/layout-composer"
 import { useOrder, useOrderPreview } from "../../../hooks/api/orders"
 import { usePlugins } from "../../../hooks/api/plugins"
-import { useExtension } from "../../../providers/extension-provider"
 import { ActiveOrderClaimSection } from "./components/active-order-claim-section"
 import { ActiveOrderExchangeSection } from "./components/active-order-exchange-section"
 import { ActiveOrderReturnSection } from "./components/active-order-return-section"
@@ -15,14 +15,14 @@ import { OrderFulfillmentSection } from "./components/order-fulfillment-section"
 import { OrderGeneralSection } from "./components/order-general-section"
 import { OrderPaymentSection } from "./components/order-payment-section"
 import { OrderSummarySection } from "./components/order-summary-section"
-import { DEFAULT_FIELDS } from "./constants"
+import { DEFAULT_FIELDS, ExtendedOrder } from "./constants"
 import { orderLoader } from "./loader"
+import { PermissionGuard } from "../../../components/common/permission-guard"
 
 export const OrderDetail = () => {
   const initialData = useLoaderData() as Awaited<ReturnType<typeof orderLoader>>
 
   const { id } = useParams()
-  const { getWidgets } = useExtension()
   const { plugins = [] } = usePlugins()
 
   const { order, isLoading, isError, error } = useOrder(
@@ -37,7 +37,7 @@ export const OrderDetail = () => {
 
   // TODO: Retrieve endpoints don't have an order ability, so a JS sort until this is available
   if (order) {
-    order.items = order.items.sort((itemA, itemB) => {
+    order.items = order.items.sort((itemA: any, itemB: any) => {
       if (itemA.created_at > itemB.created_at) {
         return 1
       }
@@ -65,32 +65,68 @@ export const OrderDetail = () => {
   }
 
   return (
-    <TwoColumnPage
-      widgets={{
-        after: getWidgets("order.details.after"),
-        before: getWidgets("order.details.before"),
-        sideAfter: getWidgets("order.details.side.after"),
-        sideBefore: getWidgets("order.details.side.before"),
-      }}
+    <LayoutComposer
+      widgetsZonePrefix="order.details"
+      preferredLayoutId={CORE_LAYOUT_IDS.TWO_COLUMN}
       data={order}
-      showJSON
-      showMetadata
-      hasOutlet
-    >
-      <TwoColumnPage.Main>
-        <OrderActiveEditSection order={order} />
-        <ActiveOrderClaimSection orderPreview={orderPreview!} />
-        <ActiveOrderExchangeSection orderPreview={orderPreview!} />
-        <ActiveOrderReturnSection orderPreview={orderPreview!} />
-        <OrderGeneralSection order={order} />
-        <OrderSummarySection order={order} plugins={plugins} />
-        <OrderPaymentSection order={order} plugins={plugins} />
-        <OrderFulfillmentSection order={order} />
-      </TwoColumnPage.Main>
-      <TwoColumnPage.Sidebar>
-        <OrderCustomerSection order={order} />
-        <OrderActivitySection order={order} />
-      </TwoColumnPage.Sidebar>
-    </TwoColumnPage>
+      sections={{
+        main: (
+          <>
+            <LayoutComposer.Entry id="OrderActiveEditSection">
+              <PermissionGuard permission="order_change:read">
+                <OrderActiveEditSection order={order} />
+              </PermissionGuard>
+            </LayoutComposer.Entry>
+            <LayoutComposer.Entry id="ActiveOrderClaimSection">
+              <PermissionGuard permission="order_claim:read">
+                <ActiveOrderClaimSection orderPreview={orderPreview!} />
+              </PermissionGuard>
+            </LayoutComposer.Entry>
+            <LayoutComposer.Entry id="ActiveOrderExchangeSection">
+              <PermissionGuard permission="order_exchange:read">
+                <ActiveOrderExchangeSection orderPreview={orderPreview!} />
+              </PermissionGuard>
+            </LayoutComposer.Entry>
+            <LayoutComposer.Entry id="ActiveOrderReturnSection">
+              <PermissionGuard permission="return:read">
+                <ActiveOrderReturnSection orderPreview={orderPreview!} />
+              </PermissionGuard>
+            </LayoutComposer.Entry>
+            <LayoutComposer.Entry id="OrderGeneralSection">
+              <OrderGeneralSection order={order as ExtendedOrder} />
+            </LayoutComposer.Entry>
+            <LayoutComposer.Entry id="OrderSummarySection">
+              <OrderSummarySection order={order} plugins={plugins} />
+            </LayoutComposer.Entry>
+            <LayoutComposer.Entry id="OrderPaymentSection">
+              <PermissionGuard permissions={["payment:read", "refund:read"]}>
+                <OrderPaymentSection
+                  order={order as ExtendedOrder}
+                  plugins={plugins}
+                />
+              </PermissionGuard>
+            </LayoutComposer.Entry>
+            <LayoutComposer.Entry id="OrderFulfillmentSection">
+              <PermissionGuard permission="fulfillment:read">
+                <OrderFulfillmentSection order={order as ExtendedOrder} />
+              </PermissionGuard>
+            </LayoutComposer.Entry>
+            {detailPageDefaultEntries(order)}
+          </>
+        ),
+        side: (
+          <>
+            <LayoutComposer.Entry id="OrderCustomerSection">
+              <PermissionGuard permission="customer:read">
+                <OrderCustomerSection order={order} />
+              </PermissionGuard>
+            </LayoutComposer.Entry>
+            <LayoutComposer.Entry id="OrderActivitySection">
+              <OrderActivitySection order={order as ExtendedOrder} />
+            </LayoutComposer.Entry>
+          </>
+        ),
+      }}
+    />
   )
 }

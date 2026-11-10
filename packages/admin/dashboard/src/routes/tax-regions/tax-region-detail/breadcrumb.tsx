@@ -12,7 +12,7 @@ export const TaxRegionDetailBreadcrumb = (
   const { id } = props.params || {}
 
   const { tax_region } = useTaxRegion(id!, undefined, {
-    initialData: props.data,
+    initialData: props.loaderData,
     enabled: Boolean(id),
   })
 
@@ -26,4 +26,15 @@ export const TaxRegionDetailBreadcrumb = (
         tax_region.country_code?.toUpperCase()}
     </span>
   )
+}
+
+export const seo = (match: UIMatch<HttpTypes.AdminTaxRegionResponse>) => {
+  const taxRegion = match.loaderData?.tax_region
+
+  return {
+    title: taxRegion
+      ? getCountryByIso2(taxRegion.country_code)?.display_name ||
+        taxRegion.country_code?.toUpperCase()
+      : undefined,
+  }
 }

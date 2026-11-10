@@ -1,13 +1,32 @@
-import { MiddlewareRoute } from "@medusajs/framework/http"
 import { validateAndTransformQuery } from "@medusajs/framework"
+import { authorize, MiddlewareRoute } from "@medusajs/framework/http"
+import { PolicyOperation } from "@medusajs/framework/utils"
 import * as QueryConfig from "./query-config"
-import { AdminGetLocalesParams, AdminGetLocaleParams } from "./validators"
+import { Entities } from "./query-config"
+import { AdminGetLocaleParams, AdminGetLocalesParams } from "./validators"
 
 export const adminLocalesRoutesMiddlewares: MiddlewareRoute[] = [
+  {
+    matcher: "/admin/locales/*",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.store_locale,
+          operation: PolicyOperation.read,
+        },
+      ]),
+    ],
+  },
   {
     method: ["GET"],
     matcher: "/admin/locales",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.store_locale,
+          operation: PolicyOperation.read,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetLocalesParams,
         QueryConfig.listTransformQueryConfig

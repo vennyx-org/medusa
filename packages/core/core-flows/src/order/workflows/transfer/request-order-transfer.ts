@@ -7,7 +7,7 @@ import {
   transform,
 } from "@medusajs/framework/workflows-sdk"
 import type { CustomerDTO, OrderPreviewDTO } from "@medusajs/framework/types"
-import { v4 as uid } from "uuid"
+import { randomUUID as uid } from "crypto"
 
 import { emitEventStep, useRemoteQueryStep } from "../../../common"
 import { createOrderChangeStep } from "../../steps/create-order-change"
@@ -18,7 +18,7 @@ import {
   MedusaError,
   OrderChangeStatus,
   OrderWorkflowEvents,
-} from "@medusajs/utils"
+} from "@medusajs/framework/utils"
 import { previewOrderChangeStep, updateOrderChangesStep } from "../../steps"
 
 /**
@@ -88,8 +88,8 @@ export const requestOrderTransferWorkflowId = "request-order-transfer-workflow"
  * This workflow requests an order transfer from a guest customer to a registered customer. It can be requested by an admin user or a customer.
  * If a customer requested the transfer, the `logged_in_user` input property should be the same as the customer's ID.
  *
- * This workflow is used by the [Request Order Transfer Store API Route](https://docs.medusajs.com/api/store#orders_postordersidtransferrequest),
- * and the [Request Order Transfer Admin API Route](https://docs.medusajs.com/api/admin#orders_postordersidtransfer).
+ * This workflow is used by the [Request Order Transfer Store API Route](https://docs.medusajs.com/api/store/orders/request-order-transfer),
+ * and the [Request Order Transfer Admin API Route](https://docs.medusajs.com/api/admin/orders/request-transfer).
  *
  * You can use this workflow within your customizations or your own custom workflows, allowing you to build a custom flow around requesting an order transfer.
  *
@@ -143,8 +143,8 @@ export const requestOrderTransferWorkflow = createWorkflow(
     const change = createOrderChangeStep(orderChangeInput)
 
     const actionInput = transform(
-      { order, input, change },
-      ({ order, input, change }) => [
+      { order, input, change, customer },
+      ({ order, input, change, customer }) => [
         {
           order_change_id: change.id,
           order_id: input.order_id,
@@ -155,6 +155,7 @@ export const requestOrderTransferWorkflow = createWorkflow(
           details: {
             token: uid(),
             original_email: order.email,
+            ...(input.update_order_email ? { new_email: customer.email } : {}),
           },
         },
       ]

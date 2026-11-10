@@ -12,7 +12,7 @@ export const ProductTypeDetailBreadcrumb = (
   const { id } = props.params || {}
 
   const { product_type } = useProductType(id!, undefined, {
-    initialData: props.data,
+    initialData: props.loaderData,
     enabled: Boolean(id),
   })
 
@@ -22,3 +22,7 @@ export const ProductTypeDetailBreadcrumb = (
 
   return <span>{product_type.value}</span>
 }
+
+export const seo = (match: UIMatch<HttpTypes.AdminProductTypeResponse>) => ({
+  title: match.loaderData?.product_type?.value,
+})

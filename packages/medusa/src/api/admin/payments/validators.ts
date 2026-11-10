@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 import {
   applyAndAndOrOperators,
   booleanString,
@@ -49,7 +49,7 @@ export type AdminCreatePaymentCaptureType = z.infer<
 >
 export const AdminCreatePaymentCapture = z
   .object({
-    amount: z.number().optional(),
+    amount: z.number().positive().optional(),
   })
   .strict()
 
@@ -58,18 +58,9 @@ export type AdminCreatePaymentRefundType = z.infer<
 >
 export const AdminCreatePaymentRefund = z
   .object({
-    amount: z.number().optional(),
+    amount: z.number().positive().optional(),
     refund_reason_id: z.string().optional(),
     note: z.string().optional(),
-  })
-  .strict()
-
-export type AdminCreatePaymentRefundReasonType = z.infer<
-  typeof AdminCreatePaymentRefundReason
->
-export const AdminCreatePaymentRefundReason = z
-  .object({
-    label: z.string(),
-    description: z.string().optional(),
+    idempotency_key: z.string().min(1).max(255).optional(),
   })
   .strict()

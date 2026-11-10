@@ -1,0 +1,486 @@
+name: Docs Automation
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - "packages/**"
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "Commit SHA to analyze and generate docs for"
+        required: true
+        type: string
+
+concurrency:
+  group: docs-release-staging
+  cancel-in-progress: false
+
+jobs:
+  # Runs the model with no App token and no write access. Its only output is a
+  # patch and a PR body, which `open-pr` validates before the App token exists.
+  generate:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.head_commit.author.name != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      has_changes: ${{ steps.changes.outputs.has_changes }}
+      develop_sha: ${{ steps.branch.outputs.develop_sha }}
+      staging_sha: ${{ steps.branch.outputs.staging_sha }}
+      pr_number: ${{ steps.existing-pr.outputs.number }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          check-latest: true
+          cache: "yarn"
+
+      - name: Install monorepo dependencies
+        uses: ./.github/actions/cache-deps
+        with:
+          extension: docs-automation
+
+      - name: Install www dependencies
+        working-directory: www
+        run: yarn install
+
+      - name: Build www packages
+        working-directory: www
+        run: yarn build:packages
+
+      - name: Install www/utils dependencies
+        working-directory: www/utils
+        run: yarn install
+
+      - name: Build www/utils packages
+        working-directory: www/utils
+        run: yarn build
+
+      - name: Analyze commit diff
+        id: analyze
+        working-directory: www/utils/packages/docs-automator
+        run: yarn analyze --commit-sha "$COMMIT_SHA" --output /tmp/analysis.json
+        env:
+          COMMIT_SHA: ${{ inputs.commit_sha || github.sha }}
+          MONOREPO_ROOT_PATH: ${{ github.workspace }}
+        continue-on-error: true
+
+      - name: Check if documentation changes are needed
+        id: check
+        run: |
+          if [ "${{ steps.analyze.outcome }}" = "failure" ]; then
+            echo "needs_docs=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          node --input-type=module << 'EOF'
+          import { readFileSync, appendFileSync } from "fs"
+          const a = JSON.parse(readFileSync("/tmp/analysis.json", "utf8"))
+          const needed = a.affectedProjects.length > 0 ? "true" : "false"
+          appendFileSync(process.env.GITHUB_OUTPUT, `needs_docs=${needed}\n`)
+          EOF
+
+      - name: Configure git
+        if: steps.check.outputs.needs_docs == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Checkout or create release docs branch
+        id: branch
+        if: steps.check.outputs.needs_docs == 'true'
+        run: |
+          git fetch origin
+          echo "develop_sha=$(git rev-parse origin/develop)" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code origin docs/release-docs-staging > /dev/null 2>&1; then
+            git checkout docs/release-docs-staging
+            echo "staging_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            git merge -X theirs origin/develop -m "chore: sync docs/release-docs-staging with develop"
+            echo "Checked out and synced existing branch docs/release-docs-staging"
+          else
+            git checkout -b docs/release-docs-staging
+            echo "Created new branch docs/release-docs-staging"
+          fi
+
+      - name: Fetch existing PR body
+        id: existing-pr
+        if: steps.check.outputs.needs_docs == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          # The docs/release-docs-staging branch is long-lived: its PR is reused
+          # until the next release. Claude rewrites this body in place, so a
+          # failed lookup fails the step rather than losing the existing entries.
+          REPO_OWNER="${REPO%%/*}"
+          PR_NUMBER=$(gh api "repos/$REPO/pulls?head=${REPO_OWNER}:docs/release-docs-staging&state=open" --jq '.[0].number')
+          if [ "$PR_NUMBER" = "null" ]; then
+            PR_NUMBER=""
+          fi
+
+          if [ -n "$PR_NUMBER" ]; then
+            gh api "repos/$REPO/pulls/$PR_NUMBER" --jq '.body // ""' > /tmp/existing-pr-body.md
+            echo "Fetched body of PR #$PR_NUMBER"
+          else
+            : > /tmp/existing-pr-body.md
+            echo "No open PR for docs/release-docs-staging yet"
+          fi
+          echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Extract Claude prompt
+        id: extract-prompt
+        if: steps.check.outputs.needs_docs == 'true'
+        env:
+          COMMIT_SHA: ${{ inputs.commit_sha || github.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          node --input-type=module << 'EOF'
+            import { readFileSync, appendFileSync } from "fs"
+            const a = JSON.parse(readFileSync("/tmp/analysis.json", "utf8"))
+            const { COMMIT_SHA: sha, REPO: repo } = process.env
+            const date = new Date().toISOString().split("T")[0]
+            const projectList = a.affectedProjects
+              .map((p) => `- **${p.project}**: ${p.reason}`)
+              .join("\n")
+
+            const prefix = "IMPORTANT: Only make file changes using the Write and Edit tools. Never use git commands to stage, commit, or push files.\n\nIMPORTANT: To load the writing-docs skill, use the Skill tool directly with skill='writing-docs'. Do NOT spawn a sub-agent or use the Task tool to load it.\n\n"
+
+            // Claude owns the whole PR description so its format stays consistent
+            // across runs instead of being appended to by this workflow.
+            const suffix = [
+              "",
+              "",
+              "---",
+              "",
+              "IMPORTANT — final step: update the pull request description.",
+              "",
+              "These documentation changes land on a long-lived pull request that is reused for every commit until the next release. Read the current description from /tmp/existing-pr-body.md with the Read tool (the file is empty if the pull request does not exist yet), then write the FULL updated description to /tmp/pr-body.md with the Write tool.",
+              "",
+              "Rules for the updated description:",
+              "- Keep the existing structure and formatting exactly as-is. Do not reformat, reorder, or rewrite entries that are already there.",
+              "- Never remove, merge, or shorten existing entries. The description only grows.",
+              "- Add exactly one new entry for this commit, after the existing entries, matching the format the existing entries already use.",
+              "- Your new entry must summarize the documentation changes you just made in 2-4 sentences or a few bullet points.",
+              "- Write the file even if the description ends up unchanged in structure.",
+              "",
+              "Facts for this commit's entry:",
+              `- Commit: [\`${sha.slice(0, 7)}\`](https://github.com/${repo}/commit/${sha})`,
+              `- Date: ${date}`,
+              "- Affected projects:",
+              projectList.replace(/^/gm, "  "),
+              "",
+              "If /tmp/existing-pr-body.md is empty, create the description from scratch with exactly this structure:",
+              "",
+              "```markdown",
+              "## Automated Documentation Updates",
+              "",
+              "This PR accumulates automated documentation changes for the next release.",
+              "Each entry below corresponds to a merged commit that triggered updates.",
+              "",
+              "> Review carefully before merging. Claude may have missed context",
+              "> or made incorrect assumptions.",
+              "",
+              "---",
+              "",
+              `### [\`${sha.slice(0, 7)}\`](https://github.com/${repo}/commit/${sha}) — ${date}`,
+              "",
+              "<your 2-4 sentence summary of what was updated>",
+              "",
+              "**Affected projects:**",
+              projectList,
+              "```",
+              "",
+            ].join("\n")
+
+            const delimiter = "CLAUDE_PROMPT_EOF"
+            appendFileSync(
+              process.env.GITHUB_OUTPUT,
+              `CLAUDE_PROMPT<<${delimiter}\n${prefix}${a.claudePrompt}${suffix}\n${delimiter}\n`
+            )
+          EOF
+
+      - name: Lock down repo automation files
+        if: steps.check.outputs.needs_docs == 'true'
+        run: chmod -R a-w .github .claude scripts
+
+      - name: Run Claude Code to update docs
+        if: steps.check.outputs.needs_docs == 'true'
+        uses: anthropics/claude-code-base-action@132be24009ca6f292db66a3d1d5a17249cf68a5d # main, installs Claude Code 2.1.282
+        env:
+          # The action runs its own setup-node, defaulting to 18.x
+          NODE_VERSION: 22
+        with:
+          anthropic_api_key: ${{ secrets.CLAUDE_CODE_API_TOKEN }}
+          # `_temp` holds the runner's GITHUB_ENV/GITHUB_PATH files, which would let the model set env vars for later steps.
+          settings: |
+            {
+              "permissions": {
+                "deny": [
+                  "Read(//proc/**)",
+                  "Read(//home/runner/work/_temp/**)",
+                  "Write(//home/runner/work/_temp/**)",
+                  "Edit(//home/runner/work/_temp/**)",
+                  "Write(//**/.claude/**)",
+                  "Edit(//**/.claude/**)",
+                  "Write(//**/.github/**)",
+                  "Edit(//**/.github/**)",
+                  "Write(//**/.mcp.json)",
+                  "Edit(//**/.mcp.json)",
+                  "Write(//**/package.json)",
+                  "Edit(//**/package.json)"
+                ]
+              }
+            }
+          claude_args: >-
+            --model claude-opus-5-5
+            --max-turns 40
+            --allowedTools "Skill,Read,Write,Edit,Glob,Grep,Bash(ls:*)"
+          prompt: ${{ steps.extract-prompt.outputs.CLAUDE_PROMPT }}
+
+      - name: Verify no protected files were modified
+        if: steps.check.outputs.needs_docs == 'true'
+        run: |
+          PROTECTED=$(git diff --name-only | grep -E \
+            "^www/apps/resources/references/|^www/apps/ui/specs/components/|^www/apps/api-reference/" \
+            || true)
+          if [ -n "$PROTECTED" ]; then
+            echo "ERROR: Protected directories were modified:"
+            echo "$PROTECTED"
+            exit 1
+          fi
+
+      - name: Run prep scripts for affected projects
+        if: steps.check.outputs.needs_docs == 'true'
+        run: |
+          PROJECTS=$(node --input-type=module << 'EOF'
+            import { readFileSync } from "fs"
+            const a = JSON.parse(readFileSync("/tmp/analysis.json", "utf8"))
+            process.stdout.write(a.affectedProjects.map((p) => p.project).join(" "))
+          EOF
+          )
+          for project in $PROJECTS; do
+            echo "Running prep for $project..."
+            (cd "www/apps/$project" && yarn prep) || true
+          done
+
+      - name: Run lint:content for affected projects
+        if: steps.check.outputs.needs_docs == 'true'
+        run: |
+          PROJECTS=$(node --input-type=module << 'EOF'
+            import { readFileSync } from "fs"
+            const a = JSON.parse(readFileSync("/tmp/analysis.json", "utf8"))
+            process.stdout.write(a.affectedProjects.map((p) => p.project).join(" "))
+          EOF
+          )
+          for project in $PROJECTS; do
+            echo "Running lint:content for $project..."
+            (cd "www/apps/$project" && yarn lint:content) || true
+          done
+
+      - name: Stage documentation changes
+        id: changes
+        if: steps.check.outputs.needs_docs == 'true'
+        run: |
+          git add www/apps/book www/apps/resources www/apps/ui www/apps/user-guide
+          if git diff --staged --quiet; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "No documentation changes to commit."
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve PR body
+        if: steps.check.outputs.needs_docs == 'true' && steps.changes.outputs.has_changes == 'true'
+        env:
+          COMMIT_SHA: ${{ inputs.commit_sha || github.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          node --input-type=module << 'EOF'
+            import { existsSync, readFileSync, writeFileSync } from "fs"
+
+            const a = JSON.parse(readFileSync("/tmp/analysis.json", "utf8"))
+            const { COMMIT_SHA: sha, REPO: repo } = process.env
+            const date = new Date().toISOString().split("T")[0]
+
+            const existingBody = readFileSync("/tmp/existing-pr-body.md", "utf8").trim()
+            const claudeBody = existsSync("/tmp/pr-body.md")
+              ? readFileSync("/tmp/pr-body.md", "utf8").trim()
+              : ""
+
+            // Claude owns the body. Fall back to a deterministic append only if it
+            // wrote nothing, or if it dropped content that was already there.
+            const droppedContent =
+              existingBody.length > 0 && claudeBody.length < existingBody.length
+            if (claudeBody && !droppedContent) {
+              writeFileSync("/tmp/pr-body.md", claudeBody)
+              process.exit(0)
+            }
+
+            console.log(
+              claudeBody
+                ? "Claude's PR body is shorter than the existing one; falling back."
+                : "Claude wrote no PR body; falling back."
+            )
+
+            const projectList = a.affectedProjects
+              .map((p) => `- **${p.project}**: ${p.reason}`)
+              .join("\n")
+
+            const newEntry = [
+              `### [\`${sha.slice(0, 7)}\`](https://github.com/${repo}/commit/${sha}) — ${date}`,
+              "",
+              "_No summary was generated._",
+              "",
+              "**Affected projects:**",
+              projectList,
+            ].join("\n")
+
+            const header = [
+              "## Automated Documentation Updates",
+              "",
+              "This PR accumulates automated documentation changes for the next release.",
+              "Each entry below corresponds to a merged commit that triggered updates.",
+              "",
+              "> Review carefully before merging. Claude may have missed context",
+              "> or made incorrect assumptions.",
+            ].join("\n")
+
+            const base = existingBody || header
+            writeFileSync("/tmp/pr-body.md", `${base}\n\n---\n\n${newEntry}`)
+          EOF
+
+      - name: Package result
+        if: steps.check.outputs.needs_docs == 'true' && steps.changes.outputs.has_changes == 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/docs-out
+          git diff --cached --binary > /tmp/docs-out/docs.patch
+          cp /tmp/pr-body.md /tmp/docs-out/pr-body.md
+
+      - name: Upload result
+        if: steps.check.outputs.needs_docs == 'true' && steps.changes.outputs.has_changes == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: docs-automation-${{ github.run_id }}
+          path: /tmp/docs-out/
+          if-no-files-found: error
+          retention-days: 1
+
+  # Never runs code from the model's job. Validates the patch against fixed
+  # paths and limits before the App token exists.
+  open-pr:
+    needs: generate
+    if: needs.generate.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download result
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: docs-automation-${{ github.run_id }}
+          path: /tmp/docs-out
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Recreate release docs branch
+        env:
+          DEVELOP_SHA: ${{ needs.generate.outputs.develop_sha }}
+          STAGING_SHA: ${{ needs.generate.outputs.staging_sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin
+          if [ -n "$STAGING_SHA" ]; then
+            git checkout -b docs/release-docs-staging "$STAGING_SHA"
+            git merge -X theirs "$DEVELOP_SHA" -m "chore: sync docs/release-docs-staging with develop"
+          else
+            git checkout -b docs/release-docs-staging "$DEVELOP_SHA"
+          fi
+
+      - name: Validate and apply patch
+        run: |
+          set -euo pipefail
+          cd /tmp/docs-out
+          if [[ ! -s docs.patch || "$(wc -c < docs.patch)" -gt 5242880 ]]; then
+            echo "::error::docs.patch is empty or exceeds 5 MB." >&2
+            exit 1
+          fi
+          if [[ "$(wc -c < pr-body.md)" -gt 60000 ]]; then
+            echo "::error::pr-body.md exceeds 60 KB." >&2
+            exit 1
+          fi
+          cd "$GITHUB_WORKSPACE"
+          git apply --index /tmp/docs-out/docs.patch
+
+          CHANGED=$(git diff --cached --no-renames --name-only)
+          OUTSIDE=$(echo "$CHANGED" | grep -vE '^www/apps/(book|resources|ui|user-guide)/' || true)
+          PROTECTED=$(echo "$CHANGED" | grep -E \
+            '^www/apps/resources/references/|^www/apps/ui/specs/components/|^www/apps/api-reference/|(^|/)(package\.json|yarn\.lock)$|(^|/)scripts/|(^|/)[^/]*\.config\.[cm]?[jt]s$|(^|/)\.' \
+            || true)
+          if [[ -n "$OUTSIDE" || -n "$PROTECTED" ]]; then
+            echo "::error::Patch touches disallowed paths:" >&2
+            printf '%s\n' "$OUTSIDE" "$PROTECTED" >&2
+            exit 1
+          fi
+
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.MEDUSA_APP_ID }}
+          private-key: ${{ secrets.MEDUSA_APP_PRIVATE_KEY }}
+
+      - name: Commit and push release docs branch
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          COMMIT_SHA: ${{ inputs.commit_sha || github.sha }}
+        run: |
+          set -euo pipefail
+          git commit -m "chore(docs): automated documentation update for $COMMIT_SHA"
+          AUTH="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          echo "::add-mask::$AUTH"
+          git -c "http.extraheader=$AUTH" push "https://github.com/$GITHUB_REPOSITORY.git" HEAD:refs/heads/docs/release-docs-staging
+
+      - name: Create or update Pull Request
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ needs.generate.outputs.pr_number }}
+          # The branch is long-lived, so the title stays static
+          PR_TITLE: "docs: doc changes for next release [automated]"
+        run: |
+          if [ -n "$PR_NUMBER" ]; then
+            gh api "repos/$REPO/pulls/$PR_NUMBER" \
+              --method PATCH \
+              --field title="$PR_TITLE" \
+              --field body="$(cat /tmp/docs-out/pr-body.md)"
+          else
+            PR_NUMBER=$(gh api "repos/$REPO/pulls" \
+              --method POST \
+              --field title="$PR_TITLE" \
+              --field body="$(cat /tmp/docs-out/pr-body.md)" \
+              --field base="develop" \
+              --field head="docs/release-docs-staging" \
+              --jq '.number')
+            gh api "repos/$REPO/issues/$PR_NUMBER/labels" \
+              --method POST \
+              --field 'labels[]=type: docs'
+          fi

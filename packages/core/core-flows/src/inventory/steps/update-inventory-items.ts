@@ -26,6 +26,15 @@ export const updateInventoryItemsStep = createStep(
     const inventoryService = container.resolve<IInventoryService>(
       Modules.INVENTORY
     )
+
+    if (!input.length) {
+      return new StepResponse([], {
+        dataBeforeUpdate: [],
+        selects: [],
+        relations: [],
+      })
+    }
+
     const { selects, relations } = getSelectsAndRelationsFromObjectArray(input)
 
     const dataBeforeUpdate = await inventoryService.listInventoryItems(
@@ -33,9 +42,8 @@ export const updateInventoryItemsStep = createStep(
       {}
     )
 
-    const updatedInventoryItems = await inventoryService.updateInventoryItems(
-      input
-    )
+    const updatedInventoryItems =
+      await inventoryService.updateInventoryItems(input)
 
     return new StepResponse(updatedInventoryItems, {
       dataBeforeUpdate,

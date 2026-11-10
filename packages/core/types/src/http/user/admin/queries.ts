@@ -1,4 +1,4 @@
-import { OperatorMap } from "../../../dal"
+import { BaseFilterable, OperatorMap } from "../../../dal"
 import { FindParams, SelectParams } from "../../common"
 
 export interface AdminUserListParams extends FindParams {
@@ -37,3 +37,11 @@ export interface AdminUserListParams extends FindParams {
 }
 
 export interface AdminUserParams extends SelectParams {}
+
+export interface AdminGetUserRolesParams
+  extends FindParams,
+    BaseFilterable<AdminGetUserRolesParams> {
+  role_id?: string | string[]
+  scope?: string | string[]
+  scope_id?: string | string[]
+}

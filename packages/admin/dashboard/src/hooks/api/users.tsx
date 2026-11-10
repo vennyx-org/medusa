@@ -12,9 +12,15 @@ import { queryClient } from "../../lib/query-client"
 import { queryKeysFactory } from "../../lib/query-key-factory"
 
 const USERS_QUERY_KEY = "users" as const
-const usersQueryKeys = {
+export const usersQueryKeys = {
   ...queryKeysFactory(USERS_QUERY_KEY),
-  me: () => [USERS_QUERY_KEY, "me"],
+  me: (query?: HttpTypes.AdminUserParams) =>
+    [USERS_QUERY_KEY, "me", query ? { query } : undefined].filter((k) => !!k),
+  roles: (id: string, query?: HttpTypes.AdminRbacRoleUserListParams) =>
+    [USERS_QUERY_KEY, id, "roles", query ? { query } : undefined].filter(
+      (k) => !!k
+    ),
+  authProviders: (id: string) => [USERS_QUERY_KEY, id, "auth-providers"],
 }
 
 export const useMe = (
@@ -28,7 +34,7 @@ export const useMe = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () => sdk.admin.user.me(query),
-    queryKey: usersQueryKeys.me(),
+    queryKey: usersQueryKeys.me(query),
     ...options,
   })
 
@@ -60,6 +66,28 @@ export const useUser = (
   return { ...data, ...rest }
 }
 
+export const useUserRoles = (
+  id: string,
+  query?: HttpTypes.AdminRbacRoleUserListParams,
+  options?: Omit<
+    UseQueryOptions<
+      HttpTypes.AdminUserRoleListResponse,
+      FetchError,
+      HttpTypes.AdminUserRoleListResponse,
+      QueryKey
+    >,
+    "queryFn" | "queryKey"
+  >
+) => {
+  const { data, ...rest } = useQuery({
+    queryFn: () => sdk.admin.user.listRoles(id, query),
+    queryKey: usersQueryKeys.roles(id, query),
+    ...options,
+  })
+
+  return { ...data, ...rest }
+}
+
 export const useUsers = (
   query?: HttpTypes.AdminUserListParams,
   options?: Omit<
@@ -81,19 +109,23 @@ export const useUsers = (
   return { ...data, ...rest }
 }
 
-export const useCreateUser = (
+export const useUpdateMe = (
   query?: HttpTypes.AdminUserParams,
   options?: UseMutationOptions<
     HttpTypes.AdminUserResponse,
     FetchError,
-    HttpTypes.AdminCreateUser,
+    HttpTypes.AdminUpdateUser,
     QueryKey
   >
 ) => {
   return useMutation({
-    mutationFn: (payload) => sdk.admin.user.create(payload, query),
+    mutationFn: (payload) => sdk.admin.user.updateMe(payload, query),
     onSuccess: (data, variables, context) => {
+      queryClient.invalidateQueries({ queryKey: usersQueryKeys.me() })
       queryClient.invalidateQueries({ queryKey: usersQueryKeys.lists() })
+      queryClient.invalidateQueries({
+        queryKey: usersQueryKeys.detail(data.user.id),
+      })
 
       options?.onSuccess?.(data, variables, context)
     },
@@ -122,6 +154,41 @@ export const useUpdateUser = (
 
       options?.onSuccess?.(data, variables, context)
     },
+    ...options,
+  })
+}
+
+export const useUserAuthProviders = (
+  id: string,
+  options?: Omit<
+    UseQueryOptions<
+      HttpTypes.AdminUserAuthProvidersResponse,
+      FetchError,
+      HttpTypes.AdminUserAuthProvidersResponse,
+      QueryKey
+    >,
+    "queryFn" | "queryKey"
+  >
+) => {
+  const { data, ...rest } = useQuery({
+    queryFn: () => sdk.admin.user.listAuthProviders(id),
+    queryKey: usersQueryKeys.authProviders(id),
+    ...options,
+  })
+
+  return { ...data, ...rest }
+}
+
+export const useGenerateUserResetPasswordToken = (
+  id: string,
+  options?: UseMutationOptions<
+    HttpTypes.AdminUserResetPasswordTokenResponse,
+    FetchError,
+    void
+  >
+) => {
+  return useMutation({
+    mutationFn: () => sdk.admin.user.generateResetPasswordToken(id),
     ...options,
   })
 }

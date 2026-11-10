@@ -13,19 +13,35 @@ export const metadata = {
 
 Create a new admin user.
 
-```bash
+```bash npx2yarn
 npx medusa user --email <email> [--password <password>]
 ```
+
+<Note title="Using RBAC?">
+
+If the [role-based access control (RBAC) Module](../../../enterprise/rbac/page.mdx) is installed, the created user is assigned the Super Admin role by default, giving them full access to all resources and operations.
+
+When you pass the `--invite` option, the invite carries the Super Admin role, and the user receives it when they accept the invite.
+
+</Note>
 
 ## Options
 
 <Table>
   <Table.Header>
     <Table.Row>
-      <Table.HeaderCell>Option</Table.HeaderCell>
-      <Table.HeaderCell>Description</Table.HeaderCell>
-      <Table.HeaderCell>Required</Table.HeaderCell>
-      <Table.HeaderCell>Default</Table.HeaderCell>
+      <Table.HeaderCell>
+        Option
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Description
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Required
+      </Table.HeaderCell>
+      <Table.HeaderCell>
+        Default
+      </Table.HeaderCell>
     </Table.Row>
   </Table.Header>
   <Table.Body>
@@ -128,11 +144,11 @@ The `user` command accepts the `--invite` option to create a user invite. The us
 
 For example:
 
-```bash
+```bash npx2yarn
 npx medusa user --email user@example.com --invite
 ```
 
 The command will create a user invite and output the invite token. You can then either:
 
 - Accept the invite in the Medusa Admin at the path `/app/invite?token=<invite_token>`
-- Accept the invite using the [Accept Invite API route](!api!/admin#invites_postinvitesaccept).
+- Accept the invite using the [Accept Invite API route](!api!/admin/invites/accept-invite).

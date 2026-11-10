@@ -28,7 +28,10 @@ const customOptions: Record<string, Partial<TypeDocOptions>> = {
     name: "caching",
   }),
   "core-flows": getOptions({
-    entryPointPath: "packages/core/core-flows/src/index.ts",
+    entryPointPath: [
+      "packages/core/core-flows/src/index.ts",
+      "packages/plugins/loyalty/src/workflows/index.ts",
+    ],
     tsConfigName: "core-flows.json",
     name: "core-flows",
     plugin: ["typedoc-plugin-workflows"],
@@ -53,13 +56,19 @@ const customOptions: Record<string, Partial<TypeDocOptions>> = {
     name: "event",
   }),
   events: getOptions({
-    entryPointPath: "packages/core/utils/src/core-flows/events.ts",
+    entryPointPath: [
+      "packages/core/utils/src/core-flows/events.ts",
+      "packages/core/utils/src/auth/events.ts",
+    ],
     tsConfigName: "utils.json",
     name: "events",
     enableEventsResolver: true,
   }),
   "module-events": getOptions({
-    entryPointPath: "packages/core/utils/src/core-flows/events.ts",
+    entryPointPath: [
+      "packages/core/utils/src/core-flows/events.ts",
+      "packages/core/utils/src/auth/events.ts",
+    ],
     tsConfigName: "utils.json",
     name: "module-events",
     enableEventsResolver: true,
@@ -87,6 +96,18 @@ const customOptions: Record<string, Partial<TypeDocOptions>> = {
       "packages/core/utils/src/analytics/abstract-analytics-provider.ts",
     tsConfigName: "utils.json",
     name: "analytics-provider",
+  }),
+  search: getOptions({
+    entryPointPath: "packages/core/types/src/search/service.ts",
+    tsConfigName: "types.json",
+    name: "search",
+    parentIgnore: true,
+  }),
+  "search-provider": getOptions({
+    entryPointPath:
+      "packages/core/utils/src/search/abstract-search-provider.ts",
+    tsConfigName: "utils.json",
+    name: "search-provider",
   }),
   "fulfillment-provider": getOptions({
     entryPointPath: "packages/core/utils/src/fulfillment/provider.ts",
@@ -121,6 +142,11 @@ const customOptions: Record<string, Partial<TypeDocOptions>> = {
     entryPointPath: "packages/core/types/src/locking/index.ts",
     tsConfigName: "types.json",
     name: "locking",
+  }),
+  mfa: getOptions({
+    entryPointPath: "packages/core/types/src/auth/mfa-provider.ts",
+    tsConfigName: "types.json",
+    name: "mfa",
   }),
   medusa: getOptions({
     entryPointPath: "packages/medusa/src/index.ts",
@@ -226,6 +252,49 @@ const customOptions: Record<string, Partial<TypeDocOptions>> = {
     tsConfigName: "workflows.json",
     name: "workflows",
     enableInternalResolve: true,
+  }),
+  loyalty: getOptions({
+    entryPointPath: "packages/plugins/loyalty/src/types/loyalty/service.ts",
+    tsConfigName: "loyalty.json",
+    name: "loyalty",
+    entryPointStrategy: "expand",
+    plugin: ["typedoc-plugin-rename-defaults"],
+    enableInternalResolve: true,
+  }),
+  "loyalty-models": getOptions({
+    entryPointPath: "packages/plugins/loyalty/src/modules/loyalty/models",
+    name: `loyalty-models`,
+    tsConfigName: `loyalty.json`,
+    generateModelsDiagram: true,
+    diagramAddToFile:
+      "packages/plugins/loyalty/src/modules/loyalty/models/index.ts",
+    resolveDmlRelations: true,
+    generateDMLsDiagram: true,
+    diagramDMLAddToFile:
+      "packages/plugins/loyalty/src/modules/loyalty/models/index.ts",
+    normalizeDmlTypes: true,
+  }),
+  "store-credit": getOptions({
+    entryPointPath:
+      "packages/plugins/loyalty/src/types/store-credit/service.ts",
+    tsConfigName: "loyalty.json",
+    name: "store-credit",
+    entryPointStrategy: "expand",
+    plugin: ["typedoc-plugin-rename-defaults"],
+    enableInternalResolve: true,
+  }),
+  "store-credit-models": getOptions({
+    entryPointPath: "packages/plugins/loyalty/src/modules/store-credit/models",
+    name: `store-credit-models`,
+    tsConfigName: `loyalty.json`,
+    generateModelsDiagram: true,
+    diagramAddToFile:
+      "packages/plugins/loyalty/src/modules/store-credit/models/index.ts",
+    resolveDmlRelations: true,
+    generateDMLsDiagram: true,
+    diagramDMLAddToFile:
+      "packages/plugins/loyalty/src/modules/store-credit/models/index.ts",
+    normalizeDmlTypes: true,
   }),
 }
 

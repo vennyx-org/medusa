@@ -2,10 +2,12 @@ import {
   validateAndTransformBody,
   validateAndTransformQuery,
 } from "@medusajs/framework"
-import { MiddlewareRoute } from "@medusajs/framework/http"
+import { authorize, MiddlewareRoute } from "@medusajs/framework/http"
+import { PolicyOperation } from "@medusajs/framework/utils"
 import { DEFAULT_BATCH_ENDPOINTS_SIZE_LIMIT } from "../../../utils/middlewares"
 import { createBatchBody } from "../../utils/validators"
 import * as QueryConfig from "./query-config"
+import { Entities } from "./query-config"
 import {
   AdminCreatePriceList,
   AdminCreatePriceListPrice,
@@ -20,9 +22,37 @@ import {
 
 export const adminPriceListsRoutesMiddlewares: MiddlewareRoute[] = [
   {
+    matcher: "/admin/price-lists/*",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.price_list,
+          operation: PolicyOperation.read,
+        },
+      ]),
+    ],
+  },
+  {
+    matcher: "/admin/price-lists/*/prices/*",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.price,
+          operation: PolicyOperation.read,
+        },
+      ]),
+    ],
+  },
+  {
     method: ["GET"],
     matcher: "/admin/price-lists",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.price_list,
+          operation: PolicyOperation.read,
+        },
+      ]),
       validateAndTransformQuery(
         AdminGetPriceListsParams,
         QueryConfig.listPriceListQueryConfig
@@ -43,6 +73,12 @@ export const adminPriceListsRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/price-lists",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.price_list,
+          operation: PolicyOperation.create,
+        },
+      ]),
       validateAndTransformBody(AdminCreatePriceList),
       validateAndTransformQuery(
         AdminGetPriceListsParams,
@@ -54,6 +90,12 @@ export const adminPriceListsRoutesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/admin/price-lists/:id",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.price_list,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(AdminUpdatePriceList),
       validateAndTransformQuery(
         AdminGetPriceListParams,
@@ -62,9 +104,27 @@ export const adminPriceListsRoutesMiddlewares: MiddlewareRoute[] = [
     ],
   },
   {
+    method: ["DELETE"],
+    matcher: "/admin/price-lists/:id",
+    middlewares: [
+      authorize([
+        {
+          resource: Entities.price_list,
+          operation: PolicyOperation.delete,
+        },
+      ]),
+    ],
+  },
+  {
     method: ["POST"],
     matcher: "/admin/price-lists/:id/products",
     middlewares: [
+      authorize([
+        {
+          resource: Entities.price_list,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(AdminRemoveProductsPriceList),
       validateAndTransformQuery(
         AdminGetPriceListParams,
@@ -89,6 +149,12 @@ export const adminPriceListsRoutesMiddlewares: MiddlewareRoute[] = [
       sizeLimit: DEFAULT_BATCH_ENDPOINTS_SIZE_LIMIT,
     },
     middlewares: [
+      authorize([
+        {
+          resource: Entities.price_list,
+          operation: PolicyOperation.update,
+        },
+      ]),
       validateAndTransformBody(
         createBatchBody(AdminCreatePriceListPrice, AdminUpdatePriceListPrice)
       ),

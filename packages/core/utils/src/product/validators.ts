@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "@medusajs/deps/zod"
 import { ProductStatus } from "./enums"
 
 export const booleanString = () =>
@@ -30,9 +30,20 @@ export const CreateVariantPrice = z.object({
   rules: z.record(z.string(), z.string()).optional(),
 })
 
+// Note: this validator is only used by the CSV import flow
+// (core-flows/src/product/steps/normalize-products{,-to-chunks}.ts). The
+// public POST /admin/products and POST /admin/product-options routes use
+// their own schemas in packages/medusa/src/api/admin. Widening this schema
+// affects the import flow only.
+//
+// `id` lets a CSV row link the product to an existing option instead of
+// creating a fresh one; `is_exclusive` lets a row authored outside Medusa
+// opt out of the exclusive-by-default behavior when creating a new option.
 export const CreateProductOption = z.object({
-  title: z.string(),
-  values: z.array(z.string()),
+  id: z.string().optional(),
+  title: z.string().optional(),
+  values: z.array(z.string()).optional(),
+  is_exclusive: booleanString().optional(),
 })
 
 export const CreateProductVariant = z
@@ -53,9 +64,9 @@ export const CreateProductVariant = z
     width: z.number().nullish(),
     origin_country: z.string().nullish(),
     material: z.string().nullish(),
-    metadata: z.record(z.unknown()).nullish(),
+    metadata: z.record(z.string(), z.unknown()).nullish(),
     prices: z.array(CreateVariantPrice),
-    options: z.record(z.string()).optional(),
+    options: z.record(z.string(), z.string()).optional(),
     inventory_items: z
       .array(
         z.object({
@@ -95,7 +106,7 @@ export const CreateProduct = z
     mid_code: z.string().nullish(),
     origin_country: z.string().nullish(),
     material: z.string().nullish(),
-    metadata: z.record(z.unknown()).nullish(),
+    metadata: z.record(z.string(), z.unknown()).nullish(),
   })
   .strict()
 
@@ -103,6 +114,7 @@ export const UpdateProductOption = z.object({
   id: z.string().optional(),
   title: z.string().optional(),
   values: z.array(z.string()).optional(),
+  is_exclusive: booleanString().optional(),
 })
 
 export const UpdateVariantPrice = z.object({
@@ -134,8 +146,8 @@ export const UpdateProductVariant = z
     width: numericString().nullish(),
     origin_country: z.string().nullish(),
     material: z.string().nullish(),
-    metadata: z.record(z.unknown()).nullish(),
-    options: z.record(z.string()).optional(),
+    metadata: z.record(z.string(), z.unknown()).nullish(),
+    options: z.record(z.string(), z.string()).optional(),
   })
   .strict()
 
@@ -168,6 +180,6 @@ export const UpdateProduct = z
     mid_code: z.string().nullish(),
     origin_country: z.string().nullish(),
     material: z.string().nullish(),
-    metadata: z.record(z.unknown()).nullish(),
+    metadata: z.record(z.string(), z.unknown()).nullish(),
   })
   .strict()

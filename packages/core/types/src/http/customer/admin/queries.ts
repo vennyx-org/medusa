@@ -1,4 +1,4 @@
-import { FindParams } from "../../common"
+import { FindParams, SelectParams } from "../../common"
 import {
   BaseCustomerAddressFilters,
   BaseCustomerFilters,
@@ -17,3 +17,15 @@ export interface AdminCustomerFilters extends BaseCustomerFilters {
 }
 export interface AdminCustomerAddressFilters
   extends BaseCustomerAddressFilters, FindParams {}
+
+export interface AdminCustomerParams extends SelectParams {}
+
+export interface AdminCustomerGroupInCustomerParams {
+  created_at?: any
+  id?: string | string[] | undefined
+  updated_at?: any
+  deleted_at?: any
+  name?: string | string[] | undefined
+}
+
+export interface AdminCustomerAddressParams extends SelectParams {}

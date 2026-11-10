@@ -277,6 +277,39 @@ describe("CacheInvalidationParser", () => {
         isInArray: false,
       })
     })
+
+    it("should handle nested entities with numeric ids", () => {
+      const product = {
+        id: "prod_123",
+        title: "Test Product",
+        cms: {
+          id: 123,
+          meta_title: "External title",
+          meta_description: "External description",
+        },
+        variants: [
+          {
+            id: 456,
+            title: "Variant 1",
+            sku: "SKU-001",
+          },
+        ],
+      }
+
+      const entities = parser.parseObjectForEntities(product)
+
+      expect(entities).toHaveLength(2)
+      expect(entities).toContainEqual({
+        type: "Product",
+        id: "prod_123",
+        isInArray: false,
+      })
+      expect(entities).toContainEqual({
+        type: "ProductVariant",
+        id: 456,
+        isInArray: true,
+      })
+    })
   })
 
   describe("buildInvalidationEvents", () => {
@@ -289,10 +322,12 @@ describe("CacheInvalidationParser", () => {
       expect(events[0]).toMatchObject({
         entityType: "Product",
         entityId: "prod_123",
-        relatedEntities: [],
       })
 
-      expect(events[0].cacheKeys).toEqual(["Product:prod_123"])
+      expect(events[0].cacheKeys).toEqual([
+        "Product:prod_123",
+        "Product:list:*",
+      ])
     })
 
     it("should build invalidation events with related entities", () => {
@@ -308,8 +343,10 @@ describe("CacheInvalidationParser", () => {
 
       const productEvent = events.find((e) => e.entityType === "Product")
       expect(productEvent).toBeDefined()
-      expect(productEvent!.relatedEntities).toHaveLength(2)
-      expect(productEvent!.cacheKeys).toEqual(["Product:prod_123"])
+      expect(productEvent!.cacheKeys).toEqual([
+        "Product:prod_123",
+        "Product:list:*",
+      ])
     })
 
     it("should avoid duplicate entities in events", () => {
@@ -337,7 +374,10 @@ describe("CacheInvalidationParser", () => {
       const events = parser.buildInvalidationEvents(entities)
       const productEvent = events.find((e) => e.entityType === "Product")!
 
-      expect(productEvent.cacheKeys).toEqual(["Product:prod_123"])
+      expect(productEvent.cacheKeys).toEqual([
+        "Product:prod_123",
+        "Product:list:*",
+      ])
     })
   })
 
@@ -374,12 +414,18 @@ describe("CacheInvalidationParser", () => {
 
       // Validate cache keys for each entity type
       const productEvent = events.find((e) => e.entityType === "Product")!
-      expect(productEvent.cacheKeys).toEqual(["Product:prod_123"])
+      expect(productEvent.cacheKeys).toEqual([
+        "Product:prod_123",
+        "Product:list:*",
+      ])
 
       const collectionEvent = events.find(
         (e) => e.entityType === "ProductCollection"
       )!
-      expect(collectionEvent.cacheKeys).toEqual(["ProductCollection:col_456"])
+      expect(collectionEvent.cacheKeys).toEqual([
+        "ProductCollection:col_456",
+        "ProductCollection:list:*",
+      ])
 
       const categoryEvents = events.filter(
         (e) => e.entityType === "ProductCategory"
@@ -434,10 +480,13 @@ describe("CacheInvalidationParser", () => {
 
       // Validate cache keys for each entity type
       const orderEvent = events.find((e) => e.entityType === "Order")!
-      expect(orderEvent.cacheKeys).toEqual(["Order:order_123"])
+      expect(orderEvent.cacheKeys).toEqual(["Order:order_123", "Order:list:*"])
 
       const customerEvent = events.find((e) => e.entityType === "Customer")!
-      expect(customerEvent.cacheKeys).toEqual(["Customer:cus_456"])
+      expect(customerEvent.cacheKeys).toEqual([
+        "Customer:cus_456",
+        "Customer:list:*",
+      ])
 
       const itemEvent = events.find((e) => e.entityType === "OrderItem")!
       expect(itemEvent.cacheKeys).toEqual([
@@ -448,7 +497,10 @@ describe("CacheInvalidationParser", () => {
       const variantEvent = events.find(
         (e) => e.entityType === "ProductVariant"
       )!
-      expect(variantEvent.cacheKeys).toEqual(["ProductVariant:var_111"])
+      expect(variantEvent.cacheKeys).toEqual([
+        "ProductVariant:var_111",
+        "ProductVariant:list:*",
+      ])
     })
 
     it("should include simplified cache keys for created operation", () => {
@@ -475,13 +527,58 @@ describe("CacheInvalidationParser", () => {
       ])
     })
 
-    it("should include simplified cache keys for updated operation", () => {
+    it("should invalidate list caches for updated operation", () => {
       const entities: EntityReference[] = [{ type: "Product", id: "prod_123" }]
 
       const events = parser.buildInvalidationEvents(entities, "updated")
 
       const productEvent = events[0]
-      expect(productEvent.cacheKeys).toEqual(["Product:prod_123"])
+      expect(productEvent.cacheKeys).toEqual([
+        "Product:prod_123",
+        "Product:list:*",
+      ])
+    })
+
+    it("should invalidate list caches for restored operation", () => {
+      // A restored entity re-enters every list it was soft deleted out of.
+      const entities: EntityReference[] = [{ type: "Product", id: "prod_123" }]
+
+      const events = parser.buildInvalidationEvents(entities, "restored")
+
+      expect(events[0].cacheKeys).toEqual([
+        "Product:prod_123",
+        "Product:list:*",
+      ])
+    })
+
+    it.each(["attached", "detached"] as const)(
+      "should invalidate list caches for %s operation",
+      (operation) => {
+        const entities: EntityReference[] = [
+          { type: "LinkProductVariantInventoryItem", id: "pvitem_123" },
+        ]
+
+        const events = parser.buildInvalidationEvents(entities, operation)
+
+        expect(events[0].cacheKeys).toEqual([
+          "LinkProductVariantInventoryItem:pvitem_123",
+          "LinkProductVariantInventoryItem:list:*",
+        ])
+      }
+    )
+
+    it("should still invalidate the list cache when a link is attached without an id", () => {
+      // Link modules emit the attach payload before the row is persisted, so no
+      // id is available. The list key is the only usable tag in that case.
+      const entities: EntityReference[] = [
+        { type: "LinkProductVariantInventoryItem", id: undefined as any },
+      ]
+
+      const events = parser.buildInvalidationEvents(entities, "attached")
+
+      expect(events[0].cacheKeys).toContain(
+        "LinkProductVariantInventoryItem:list:*"
+      )
     })
   })
 })

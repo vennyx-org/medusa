@@ -88,13 +88,15 @@ properties:
   amount:
     type: number
     title: amount
-    description: The shipping option's amount.
+    description: >-
+      The shipping option's amount for the cart. For a shipping option whose
+      `price_type` is `calculated`, this amount is computed on the fly by the
+      fulfillment provider against the cart.
   data:
     type: object
     description: The shipping option's data, useful for the provider handling fulfillment.
     externalDocs:
-      url: >-
-        https://docs.medusajs.com/resources/commerce-modules/fulfillment/shipping-option#data-property
+      url: https://docs.medusajs.com/resources/commerce-modules/fulfillment/shipping-option#data-property
   prices:
     type: array
     description: The shipping option's prices.

@@ -28,13 +28,7 @@ export * from "./remote-query-entry-points"
 export * from "./to-remote-query"
 
 export type LogLevel =
-  | "query"
-  | "schema"
-  | "error"
-  | "warn"
-  | "info"
-  | "log"
-  | "migration"
+  "query" | "schema" | "error" | "warn" | "info" | "log" | "migration"
 export type LoggerOptions = boolean | "all" | LogLevel[]
 
 export type CustomModuleDefinition = {
@@ -100,8 +94,7 @@ export type ModuleDefinition = {
   /** @internal only used in exceptional cases - relying on the shared contrainer breaks encapsulation */
   __passSharedContainer?: boolean
   defaultModuleDeclaration:
-    | InternalModuleDeclaration
-    | ExternalModuleDeclaration
+    InternalModuleDeclaration | ExternalModuleDeclaration
 }
 
 export type LinkModuleDefinition = {
@@ -231,6 +224,12 @@ export type ModuleJoinerConfig = Omit<
    * If not explicitly defined, this array will be populated by databaseConfig.extraFields
    */
   extraDataFields?: string[]
+  /**
+   * Resolved database client URL for this module. This is used to determine if we can do in-DB cross module filtering
+   *
+   * @internal
+   */
+  databaseClientUrl?: string
   databaseConfig?: {
     /**
      * Name of the pivot table. If not provided it is auto generated
@@ -278,7 +277,7 @@ export type ModuleExports<T = Constructor<any>> = {
     moduleDeclaration?: InternalModuleDeclaration
   ): Promise<void>
   /**
-   * Explicitly set the the true location of the module resources.
+   * Explicitly set the true location of the module resources.
    * Can be used to re-export the module from a different location and specify its original location.
    */
   discoveryPath?: string
@@ -299,6 +298,10 @@ export interface ModuleServiceInitializeOptions {
     database?: string
     driverOptions?: Record<string, unknown> & {
       connection?: Record<string, unknown>
+      /** Dynamic password function called for each new connection (e.g. AWS RDS IAM token) */
+      dynamicPassword?: (() => string) | (() => Promise<string>)
+      /** Optional function to check if a connection's credentials have expired */
+      expirationChecker?: () => boolean
     }
     debug?: boolean
     pool?: Record<string, unknown>
@@ -313,8 +316,7 @@ export type ModuleServiceInitializeCustomDataLayerOptions = {
 }
 
 export type ModuleBootstrapDeclaration =
-  | InternalModuleDeclaration
-  | ExternalModuleDeclaration
+  InternalModuleDeclaration | ExternalModuleDeclaration
 // TODO: These should be added back when the chain of types are fixed
 // | ModuleServiceInitializeOptions
 // | ModuleServiceInitializeCustomDataLayerOptions

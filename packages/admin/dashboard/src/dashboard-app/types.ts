@@ -6,9 +6,13 @@ import {
   InjectionZone,
   NestedRoutePosition,
 } from "@medusajs/admin-shared"
+import {
+  LayoutDefinition,
+  SectionWidgetMap,
+} from "../components/layout-composer/types"
 import { ComponentType } from "react"
 import { LoaderFunction } from "react-router-dom"
-import { ZodFirstPartySchemaTypes } from "zod"
+import { z } from "zod"
 import { INavItem } from "../components/layout/nav-item"
 
 export type RouteExtension = {
@@ -26,11 +30,16 @@ export type MenuItemExtension = {
   nested?: NestedRoutePosition
   rank?: number
   translationNs?: string
+  /**
+   * The permissions the user must all hold for the item to show in the sidebar.
+   */
+  permissions?: string | string[]
 }
 
 export type WidgetExtension = {
   Component: ComponentType
   zone: InjectionZone[]
+  widgetId?: string
 }
 
 export type DisplayExtension = {
@@ -39,7 +48,7 @@ export type DisplayExtension = {
 }
 
 export type FormFieldExtension = {
-  validation: ZodFirstPartySchemaTypes
+  validation: z.ZodTypeAny
   Component?: ComponentType<any>
   label?: string
   description?: string
@@ -54,7 +63,7 @@ export type FormExtension = {
 
 export type ConfigFieldExtension = {
   defaultValue: ((data: any) => any) | any
-  validation: ZodFirstPartySchemaTypes
+  validation: z.ZodTypeAny
 }
 
 export type ConfigExtension = {
@@ -98,6 +107,10 @@ export type I18nModule = {
   resources: I18nExtension
 }
 
+export type LayoutModule = {
+  layouts: LayoutDefinition[]
+}
+
 export type MenuItemKey = "coreExtensions" | "settingsExtensions"
 
 export type FormField = FormFieldExtension & {
@@ -131,7 +144,9 @@ export type DisplayMap = Map<
 
 export type MenuMap = Map<MenuItemKey, INavItem[]>
 
-export type WidgetMap = Map<InjectionZone, React.ComponentType[]>
+export type WidgetMap = Map<InjectionZone, WidgetExtension[]>
+
+export type LayoutMap = Map<string, LayoutDefinition>
 
 export type DashboardPlugin = {
   formModule: FormModule
@@ -140,4 +155,26 @@ export type DashboardPlugin = {
   widgetModule: WidgetModule
   routeModule: RouteModule
   i18nModule?: I18nModule
+  layoutModule?: LayoutModule
+}
+
+export type ExtensionApi = {
+  getMenu: (path: MenuItemKey) => INavItem[]
+  getWidgets: (zone: InjectionZone) => ComponentType[]
+  getLayout: (layoutId: string) => LayoutDefinition | undefined
+  getWidgetsForSections: (route: string, sections: string[]) => SectionWidgetMap
+  getFormFields: (
+    model: CustomFieldModel,
+    zone: CustomFieldFormZone,
+    tab?: CustomFieldFormTab
+  ) => FormField[]
+  getFormConfigs: (
+    model: CustomFieldModel,
+    zone: CustomFieldFormZone
+  ) => ConfigField[]
+  getDisplays: (
+    model: CustomFieldModel,
+    zone: CustomFieldContainerZone
+  ) => ComponentType<{ data: any }>[]
+  getI18nResources: () => I18nExtension
 }

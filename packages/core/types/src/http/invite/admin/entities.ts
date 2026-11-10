@@ -1,3 +1,5 @@
+import { AdminRbacRole } from "../../rbac/admin/entities"
+
 export interface AdminInvite {
   /**
    * The invite's ID.
@@ -12,9 +14,10 @@ export interface AdminInvite {
    */
   accepted: boolean
   /**
-   * The invite token.
+   * The invite token. Omitted when the authenticated actor can't assign the
+   * invite's roles.
    */
-  token: string
+  token?: string
   /**
    * The date the invite expires.
    */
@@ -23,6 +26,10 @@ export interface AdminInvite {
    * Key-value pairs of custom data.
    */
   metadata?: Record<string, unknown>
+  /**
+   * The RBAC roles assigned to the invite.
+   */
+  rbac_roles?: AdminRbacRole[]
   /**
    * The date that the invite was created.
    */
