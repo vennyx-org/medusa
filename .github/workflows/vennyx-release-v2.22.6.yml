@@ -275,8 +275,9 @@ jobs:
             # Since v2.22 the CLI exits unless package.json lists @medusajs/medusa or
             # @medusajs/cli, which no longer holds after the rename to @vennyx-org/*.
             # They were already built in "Build original packages", so publish the
-            # existing output and skip lifecycle scripts for them.
-            local PUBLISH_FLAGS=""
+            # existing output and drop the prepare script for them. The script is
+            # removed rather than skipped with --ignore-scripts because npm 10 still
+            # runs prepare on publish when that flag is passed.
             if jq -e '.scripts.prepare // "" | test("build:plugin")' package.json > /dev/null; then
               if [ ! -d ".medusa/server" ]; then
                 echo "[Worker $pid] Missing .medusa/server build output for $PKG_NAME"
@@ -284,10 +285,10 @@ jobs:
                 cd "$ORIGINAL_DIR" || return 1
                 return 1
               fi
-              PUBLISH_FLAGS="--ignore-scripts"
+              jq 'del(.scripts.prepare)' package.json > package.json.tmp && mv package.json.tmp package.json
             fi
 
-            if npm publish $PUBLISH_FLAGS --access restricted --tag "$PUBLISH_TAG" 2>&1; then
+            if npm publish --access restricted --tag "$PUBLISH_TAG" 2>&1; then
               echo "[Worker $pid] Successfully published $PKG_NAME@$PKG_VERSION"
               echo "$PKG_NAME@$PKG_VERSION" >> "/tmp/publish-results/success-$pid-$(date +%s%N)"
             else
